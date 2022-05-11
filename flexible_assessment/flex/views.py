@@ -1,35 +1,17 @@
-import os
 import pprint
 
-from django.conf import settings
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.urls import reverse
 from django.views.decorators.http import require_POST
-from pylti1p3.contrib.django import (DjangoCacheDataStorage, DjangoMessageLaunch, DjangoOIDCLogin)
-from pylti1p3.tool_config import ToolConfJsonFile
+from pylti1p3.contrib.django import DjangoMessageLaunch, DjangoOIDCLogin
+
+from .view_helpers import (get_launch_data_storage, get_launch_url,
+                           get_lti_config_path, get_tool_conf,
+                           set_user_profile)
 
 
 def index(request):
-    return HttpResponse("Home page")
-
-
-def get_launch_data_storage():
-    return DjangoCacheDataStorage()
-
-
-def get_launch_url(request):
-    target_link_uri = request.POST.get('target_link_uri', request.GET.get('target_link_uri'))
-    if not target_link_uri:
-        raise Exception('Missing "target_link_uri" param')
-
-    return target_link_uri
-
-def get_lti_config_path():
-    return os.path.join(settings.BASE_DIR, 'configs', 'flexible_assessment.json')
-
-def get_tool_conf():
-    tool_conf = ToolConfJsonFile(get_lti_config_path())
-    return tool_conf
+    return HttpResponse('Home page')
 
 
 def login(request):
@@ -39,9 +21,7 @@ def login(request):
 
     oidc_login = DjangoOIDCLogin(request, tool_conf, launch_data_storage=launch_data_storage)
     target_link_uri = get_launch_url(request)
-    return oidc_login\
-        .enable_check_cookies()\
-        .redirect(target_link_uri)
+    return oidc_login.enable_check_cookies().redirect(target_link_uri)
 
 
 @require_POST
@@ -50,10 +30,36 @@ def launch(request):
     launch_data_storage = get_launch_data_storage()
     message_launch = DjangoMessageLaunch(request, tool_conf, launch_data_storage=launch_data_storage)
     message_launch_data = message_launch.get_launch_data()
-    pprint.pprint(message_launch_data['https://purl.imsglobal.org/spec/lti/claim/custom'])
+    pprint.pprint(message_launch_data)
 
-    return HttpResponse("Launch successful")
+    custom_fields = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/custom']
+
+    # TODO: TAEnrollement view
+    if 'TeacherEnrollment' in custom_fields['role']:
+        set_user_profile(request, custom_fields, 'TeacherEnrollment')
+        return HttpResponseRedirect(reverse('flex:instructor_view'))
+
+    elif 'StudentEnrollment' in custom_fields['role']:
+        set_user_profile(request, custom_fields, 'StudentEnrollment')
+        return HttpResponseRedirect(reverse('flex:student_view'))
+
 
 def get_jwks(request):
     tool_conf = get_tool_conf()
     return JsonResponse(tool_conf.get_jwks(), safe=False)
+
+
+def instuctor(request):
+    response_string = 'Instructor Page, your user id: {} and name: {}'
+    user_id = request.session['user_id']
+    display_name = request.session['display_name']
+
+    return HttpResponse(response_string.format(user_id, display_name))
+
+
+def student(request):
+    response_string = 'Student Page, your user id: {} and name: {}'
+    user_id = request.session['user_id']
+    display_name = request.session['display_name']
+    
+    return HttpResponse(response_string.format(user_id, display_name))
