@@ -6,8 +6,7 @@ from django.views.decorators.http import require_POST
 from pylti1p3.contrib.django import DjangoMessageLaunch, DjangoOIDCLogin
 
 from .view_helpers import (get_launch_data_storage, get_launch_url,
-                           get_lti_config_path, get_tool_conf,
-                           set_user_profile)
+                           get_lti_config_path, get_tool_conf, set_user_course)
 
 
 def index(request):
@@ -36,11 +35,11 @@ def launch(request):
 
     # TODO: TAEnrollement view
     if 'TeacherEnrollment' in custom_fields['role']:
-        set_user_profile(request, custom_fields, 'TeacherEnrollment')
+        set_user_course(request, custom_fields, 'TeacherEnrollment')
         return HttpResponseRedirect(reverse('flex:instructor_view'))
 
     elif 'StudentEnrollment' in custom_fields['role']:
-        set_user_profile(request, custom_fields, 'StudentEnrollment')
+        set_user_course(request, custom_fields, 'StudentEnrollment')
         return HttpResponseRedirect(reverse('flex:student_view'))
 
 

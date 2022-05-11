@@ -16,17 +16,13 @@ class UserProfileManager(BaseUserManager):
         return user
 
     def create_superuser(self, user_id, login_id, display_name, role, password=None):
-        """
-        Creates and saves a superuser with the given email, date of
-        birth and password.
-        """
         user = self.create_user(user_id, login_id, display_name, role, password=password)
         user.save(using=self._db)
         return user
 
 
 class UserProfile(AbstractBaseUser):
-    user_id = models.IntegerField(unique=True)
+    user_id = models.IntegerField(primary_key=True)
     login_id = models.CharField(max_length=100)
     display_name = models.CharField(max_length=255)
     role = models.CharField(max_length=100) # make this choice set
@@ -63,8 +59,8 @@ class UserCourse(models.Model):
             models.constraints.UniqueConstraint(fields=['user_id', 'course_id'], name='User and Course unique')
         ]
 
-    user_id = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 class Assessment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -80,11 +76,11 @@ class AssessmentCourse(models.Model):
             models.constraints.UniqueConstraint(fields=['assessment_id', 'course_id'], name='Assessment and Course unique')
         ]
 
-    assessment_id = models.ForeignKey(Assessment, on_delete=models.CASCADE)
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 class FlexAssessment(models.Model):
-    user_id = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    assessment_id = models.ForeignKey(Assessment, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     flex = models.FloatField()
 
