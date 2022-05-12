@@ -3,8 +3,9 @@ import os
 from django.conf import settings
 from pylti1p3.contrib.django import DjangoCacheDataStorage
 from pylti1p3.tool_config import ToolConfJsonFile
+from django.contrib.auth.models import Group
 
-from .models import Course, UserCourse, UserProfile
+from .models import Course, Roles, UserCourse, UserProfile
 
 
 def set_user_profile(request, user_id, login_id, display_name, role):
@@ -49,6 +50,26 @@ def set_user_course(request, custom_fields, role):
     course = set_course(course_id, course_name)
 
     set_user_course_enrollment(user, course)
+    set_user_group(user)
+
+
+def set_user_group(user):
+    print(user.groups.all())
+    if not user.groups.all():
+        roles = dict(Roles.choices)
+        role = roles[user.role]
+        group = Group.objects.get(name=role)
+        user.groups.add(group)
+
+
+def create_groups(apps, _):
+    Group = apps.get_model('auth', 'Group')
+    current_role_names = list(
+        Group.objects.all().values_list('name', flat=True))
+    role_names = list(dict(Roles.choices).values())
+    if role_names != current_role_names:
+        groups = [Group(name=role) for role in role_names]
+        Group.objects.bulk_create(groups)
 
 
 def get_launch_data_storage():
@@ -57,8 +78,7 @@ def get_launch_data_storage():
 
 def get_launch_url(request):
     target_link_uri = request.POST.get(
-        'target_link_uri',
-        request.GET.get('target_link_uri'))
+        'target_link_uri', request.GET.get('target_link_uri'))
     if not target_link_uri:
         raise Exception('Missing "target_link_uri" param')
 
