@@ -49,6 +49,7 @@ class UserProfile(AbstractBaseUser):
 class Course(models.Model):
     id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=100)
+    availability = models.DateTimeField()
 
     def __str__(self):
         return self.title
@@ -65,7 +66,10 @@ class UserCourse(models.Model):
 class Assessment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.CharField(max_length=100)
+    # add ranges
     default = models.FloatField()
+    max = models.FloatField()
+    min = models.FloatField()
 
     def __str__(self):
         return self.title
