@@ -18,7 +18,10 @@ def login(request):
     launch_data_storage = utils.get_launch_data_storage()
     pprint.pprint(request)
 
-    oidc_login = DjangoOIDCLogin(request, tool_conf, launch_data_storage=launch_data_storage)
+    oidc_login = DjangoOIDCLogin(
+        request,
+        tool_conf,
+        launch_data_storage=launch_data_storage)
     target_link_uri = utils.get_launch_url(request)
     return oidc_login.enable_check_cookies().redirect(target_link_uri)
 
@@ -27,7 +30,8 @@ def login(request):
 def launch(request):
     tool_conf = utils.get_tool_conf()
     launch_data_storage = utils.get_launch_data_storage()
-    message_launch = DjangoMessageLaunch(request, tool_conf, launch_data_storage=launch_data_storage)
+    message_launch = DjangoMessageLaunch(
+        request, tool_conf, launch_data_storage=launch_data_storage)
     message_launch_data = message_launch.get_launch_data()
     pprint.pprint(message_launch_data)
 
@@ -60,5 +64,5 @@ def student(request):
     response_string = 'Student Page, your user id: {} and name: {}'
     user_id = request.session['user_id']
     display_name = request.session['display_name']
-    
+
     return HttpResponse(response_string.format(user_id, display_name))

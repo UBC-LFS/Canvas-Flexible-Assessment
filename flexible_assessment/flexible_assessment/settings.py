@@ -72,7 +72,8 @@ WSGI_APPLICATION = 'flexible_assessment.wsgi.application'
 
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_SAMESITE = None  # should be set as 'None' for Django >= 3.1
-SESSION_COOKIE_SECURE = False  # should be True in case of HTTPS usage (production)
+# should be True in case of HTTPS usage (production)
+SESSION_COOKIE_SECURE = False
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Database

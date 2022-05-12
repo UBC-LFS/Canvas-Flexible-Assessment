@@ -4,20 +4,27 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 
 class UserProfileManager(BaseUserManager):
-    def create_user(self, user_id, login_id, display_name, role, password=None):
+    def create_user(self, user_id, login_id,
+                    display_name, role, password=None):
         user = self.model(
-            user_id = user_id,
-            login_id = login_id,
-            display_name = display_name,
-            role = role
+            user_id=user_id,
+            login_id=login_id,
+            display_name=display_name,
+            role=role
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, user_id, login_id, display_name, role, password=None):
-        user = self.create_user(user_id, login_id, display_name, role, password=password)
+    def create_superuser(self, user_id, login_id,
+                         display_name, role, password=None):
+        user = self.create_user(
+            user_id,
+            login_id,
+            display_name,
+            role,
+            password=password)
         user.save(using=self._db)
         return user
 
@@ -28,7 +35,8 @@ class Roles(models.IntegerChoices):
     TA = 3
     STUDENT = 4
 
-class UserProfile(AbstractBaseUser, PermissionsMixin):    
+
+class UserProfile(AbstractBaseUser, PermissionsMixin):
     user_id = models.IntegerField(primary_key=True)
     login_id = models.CharField(max_length=100)
     display_name = models.CharField(max_length=255)
@@ -64,7 +72,11 @@ class Course(models.Model):
 class UserCourse(models.Model):
     class Meta:
         constraints = [
-            models.constraints.UniqueConstraint(fields=['user_id', 'course_id'], name='User and Course unique')
+            models.constraints.UniqueConstraint(
+                fields=[
+                    'user_id',
+                    'course_id'],
+                name='User and Course unique')
         ]
 
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -86,7 +98,11 @@ class Assessment(models.Model):
 class AssessmentCourse(models.Model):
     class Meta:
         constraints = [
-            models.constraints.UniqueConstraint(fields=['assessment_id', 'course_id'], name='Assessment and Course unique')
+            models.constraints.UniqueConstraint(
+                fields=[
+                    'assessment_id',
+                    'course_id'],
+                name='Assessment and Course unique')
         ]
 
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)

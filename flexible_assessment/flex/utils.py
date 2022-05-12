@@ -10,7 +10,8 @@ from .models import Course, UserCourse, UserProfile
 def set_user_profile(request, user_id, login_id, display_name, role):
     user_set = UserProfile.objects.filter(pk=user_id)
     if not user_set.exists():
-        user = UserProfile.objects.create_user(user_id, login_id, display_name, role)
+        user = UserProfile.objects.create_user(
+            user_id, login_id, display_name, role)
     else:
         user = user_set.first()
     request.session['user_id'] = user.user_id
@@ -30,9 +31,10 @@ def set_course(course_id, course_name):
 
 
 def set_user_course_enrollment(user, course):
-    user_course_set = UserCourse.objects.filter(user_id = user.user_id, course_id = course.id)
+    user_course_set = UserCourse.objects.filter(
+        user_id=user.user_id, course_id=course.id)
     if not user_course_set.exists():
-        user_course = UserCourse(user = user, course = course)
+        user_course = UserCourse(user=user, course=course)
         user_course.save()
 
 
@@ -54,7 +56,9 @@ def get_launch_data_storage():
 
 
 def get_launch_url(request):
-    target_link_uri = request.POST.get('target_link_uri', request.GET.get('target_link_uri'))
+    target_link_uri = request.POST.get(
+        'target_link_uri',
+        request.GET.get('target_link_uri'))
     if not target_link_uri:
         raise Exception('Missing "target_link_uri" param')
 
@@ -62,10 +66,10 @@ def get_launch_url(request):
 
 
 def get_lti_config_path():
-    return os.path.join(settings.BASE_DIR, 'configs', 'flexible_assessment.json')
+    return os.path.join(settings.BASE_DIR, 'configs',
+                        'flexible_assessment.json')
 
 
 def get_tool_conf():
     tool_conf = ToolConfJsonFile(get_lti_config_path())
     return tool_conf
-    
