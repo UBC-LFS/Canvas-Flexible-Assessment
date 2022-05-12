@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+
 
 class UserProfileManager(BaseUserManager):
     def create_user(self, user_id, login_id, display_name, role, password=None):
@@ -21,11 +22,17 @@ class UserProfileManager(BaseUserManager):
         return user
 
 
-class UserProfile(AbstractBaseUser):
+class Roles(models.IntegerChoices):
+    ADMIN = 1
+    TEACHER = 2
+    TA = 3
+    STUDENT = 4
+
+class UserProfile(AbstractBaseUser, PermissionsMixin):    
     user_id = models.IntegerField(primary_key=True)
     login_id = models.CharField(max_length=100)
     display_name = models.CharField(max_length=255)
-    role = models.CharField(max_length=100) # make this choice set
+    role = models.IntegerField(choices=Roles.choices)
 
     objects = UserProfileManager()
 
@@ -35,24 +42,24 @@ class UserProfile(AbstractBaseUser):
     def __str__(self):
         return self.login_id + ', ' + self.display_name
 
-    def has_perm(self, perm, obj=None):
-        return True
-
-    def has_module_perms(self, label):
-        return True
+    @property
+    def is_superuser(self):
+        return self.role == Roles.ADMIN
 
     @property
     def is_staff(self):
-        return 'Account Admin' in self.role
+        return self.role == Roles.ADMIN
+
 
 # TODO: add flexible assessment deadline date
 class Course(models.Model):
     id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=100)
-    availability = models.DateTimeField()
+    availability = models.DateTimeField(null=True)
 
     def __str__(self):
         return self.title
+
 
 class UserCourse(models.Model):
     class Meta:
@@ -62,6 +69,7 @@ class UserCourse(models.Model):
 
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+
 
 class Assessment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -74,6 +82,7 @@ class Assessment(models.Model):
     def __str__(self):
         return self.title
 
+
 class AssessmentCourse(models.Model):
     class Meta:
         constraints = [
@@ -83,8 +92,8 @@ class AssessmentCourse(models.Model):
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
+
 class FlexAssessment(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     flex = models.FloatField()
-

@@ -1,5 +1,4 @@
 import os
-import pprint
 
 from django.conf import settings
 from pylti1p3.contrib.django import DjangoCacheDataStorage
@@ -61,8 +60,10 @@ def get_launch_url(request):
 
     return target_link_uri
 
+
 def get_lti_config_path():
     return os.path.join(settings.BASE_DIR, 'configs', 'flexible_assessment.json')
+
 
 def get_tool_conf():
     tool_conf = ToolConfJsonFile(get_lti_config_path())

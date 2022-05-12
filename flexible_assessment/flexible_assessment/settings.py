@@ -109,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-AUTH_USER_MODEL = 'flex.UserProfile' 
+AUTH_USER_MODEL = 'flex.UserProfile'
 
 
 # Internationalization
