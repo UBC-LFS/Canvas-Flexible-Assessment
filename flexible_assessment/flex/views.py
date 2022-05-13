@@ -1,9 +1,10 @@
 import pprint
 
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from pylti1p3.contrib.django import DjangoMessageLaunch, DjangoOIDCLogin
+from django.contrib.auth.decorators import login_required
 
 import flex.models as models
 import flex.utils as utils
@@ -42,10 +43,12 @@ def launch(request):
     # TODO: TAEnrollement view
     if 'TeacherEnrollment' in custom_fields['role']:
         utils.set_user_course(request, custom_fields, models.Roles.TEACHER)
+        utils.authenticate_login(request)
         return HttpResponseRedirect(reverse('flex:instructor_view'))
 
     elif 'StudentEnrollment' in custom_fields['role']:
         utils.set_user_course(request, custom_fields, models.Roles.STUDENT)
+        utils.authenticate_login(request)
         return HttpResponseRedirect(reverse('flex:student_view'))
 
 
@@ -54,17 +57,23 @@ def get_jwks(request):
     return JsonResponse(tool_conf.get_jwks(), safe=False)
 
 
+@login_required
 def instuctor(request):
     response_string = 'Instructor Page, your user id: {} and name: {}'
-    user_id = request.session['user_id']
-    display_name = request.session['display_name']
+    user_id = request.session.get('user_id', '')
+    display_name = request.session.get('display_name', '')
+    if not user_id:
+        raise Http404
 
     return HttpResponse(response_string.format(user_id, display_name))
 
 
+@login_required
 def student(request):
     response_string = 'Student Page, your user id: {} and name: {}'
-    user_id = request.session['user_id']
-    display_name = request.session['display_name']
+    user_id = request.session.get('user_id', '')
+    display_name = request.session.get('display_name', '')
+    if not user_id:
+        raise Http404
 
     return HttpResponse(response_string.format(user_id, display_name))

@@ -5,6 +5,9 @@ from pylti1p3.contrib.django import DjangoCacheDataStorage
 from pylti1p3.tool_config import ToolConfJsonFile
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as auth_login
+from django.http import HttpResponse
 
 from .models import Assessment, Course, Roles, UserCourse, UserProfile
 
@@ -17,7 +20,8 @@ def set_user_profile(request, user_id, login_id, display_name, role):
     else:
         user = user_set.first()
     request.session['user_id'] = user.user_id
-    request.session['display_name'] = user.display_name
+    request.session['login_id'] = user.login_id
+    request.session['role'] = user.role
     return user
 
 
@@ -77,26 +81,28 @@ def create_groups(sender, **kwargs):
 
 
 def add_permissions():
-    add_assessment_permissions()
-    # TODO: course permissions
-
-
-def add_assessment_permissions():
     teacher_admin_groups = Group.objects.filter(
         name='Admin') | Group.objects.filter(
         name='Teacher')
 
-    content_type = ContentType.objects.get_for_model(Assessment)
-    permission_list = Permission.objects.filter(content_type=content_type)
-    
+    assessment_content_type = ContentType.objects.get_for_model(Assessment)
+    assessment_permission_set = Permission.objects.filter(
+        content_type=assessment_content_type)
+    course_content_type = ContentType.objects.get_for_model(Course)
+    course_permission_set = Permission.objects.filter(
+        content_type=course_content_type)
+
+    assessment_course_permission_set = assessment_permission_set | course_permission_set
+
     for group in teacher_admin_groups:
         current_perms = list(
             group.permissions.all().values_list(
                 'id', flat=True))
-        assessment_perms = list(permission_list.values_list('id', flat=True))
-        
-        if current_perms != assessment_perms:
-            group.permissions.set(permission_list)
+        assessment_course_perms = list(
+            assessment_course_permission_set.values_list(
+                'id', flat=True))
+        if current_perms.sort() != assessment_course_perms.sort():
+            group.permissions.add(*assessment_course_perms)
 
 
 def get_launch_data_storage():
@@ -121,3 +127,11 @@ def get_lti_config_path():
 def get_tool_conf():
     tool_conf = ToolConfJsonFile(get_lti_config_path())
     return tool_conf
+
+
+def authenticate_login(request):
+    user = authenticate(request)
+    if user is not None:
+        auth_login(request, user)
+    else:
+        HttpResponse('Could not login')
