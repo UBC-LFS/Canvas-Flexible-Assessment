@@ -3,9 +3,10 @@ import os
 from django.conf import settings
 from pylti1p3.contrib.django import DjangoCacheDataStorage
 from pylti1p3.tool_config import ToolConfJsonFile
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 
-from .models import Course, Roles, UserCourse, UserProfile
+from .models import Assessment, Course, Roles, UserCourse, UserProfile
 
 
 def set_user_profile(request, user_id, login_id, display_name, role):
@@ -54,7 +55,6 @@ def set_user_course(request, custom_fields, role):
 
 
 def set_user_group(user):
-    print(user.groups.all())
     if not user.groups.all():
         roles = dict(Roles.choices)
         role = roles[user.role]
@@ -62,14 +62,41 @@ def set_user_group(user):
         user.groups.add(group)
 
 
-def create_groups(apps, _):
-    Group = apps.get_model('auth', 'Group')
+def create_groups(sender, **kwargs):
+    from django.contrib.auth.models import Group, Permission
+    from .models import Assessment, Course, Roles, UserCourse, UserProfile
+
     current_role_names = list(
         Group.objects.all().values_list('name', flat=True))
+
     role_names = list(dict(Roles.choices).values())
+
     if role_names != current_role_names:
         groups = [Group(name=role) for role in role_names]
         Group.objects.bulk_create(groups)
+
+
+def add_permissions():
+    add_assessment_permissions()
+    # TODO: course permissions
+
+
+def add_assessment_permissions():
+    teacher_admin_groups = Group.objects.filter(
+        name='Admin') | Group.objects.filter(
+        name='Teacher')
+
+    content_type = ContentType.objects.get_for_model(Assessment)
+    permission_list = Permission.objects.filter(content_type=content_type)
+    
+    for group in teacher_admin_groups:
+        current_perms = list(
+            group.permissions.all().values_list(
+                'id', flat=True))
+        assessment_perms = list(permission_list.values_list('id', flat=True))
+        
+        if current_perms != assessment_perms:
+            group.permissions.set(permission_list)
 
 
 def get_launch_data_storage():
@@ -78,7 +105,8 @@ def get_launch_data_storage():
 
 def get_launch_url(request):
     target_link_uri = request.POST.get(
-        'target_link_uri', request.GET.get('target_link_uri'))
+        'target_link_uri',
+        request.GET.get('target_link_uri'))
     if not target_link_uri:
         raise Exception('Missing "target_link_uri" param')
 

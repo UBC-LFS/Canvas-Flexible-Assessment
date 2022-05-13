@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 
 class UserProfileManager(BaseUserManager):
+    # TODO: limit admin perms
     def create_user(self, user_id, login_id,
                     display_name, role, password=None):
         user = self.model(

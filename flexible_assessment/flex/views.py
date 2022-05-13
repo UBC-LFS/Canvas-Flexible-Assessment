@@ -37,6 +37,8 @@ def launch(request):
 
     custom_fields = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/custom']
 
+    utils.add_permissions()
+
     # TODO: TAEnrollement view
     if 'TeacherEnrollment' in custom_fields['role']:
         utils.set_user_course(request, custom_fields, models.Roles.TEACHER)
