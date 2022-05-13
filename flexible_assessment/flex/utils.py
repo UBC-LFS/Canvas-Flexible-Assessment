@@ -1,13 +1,5 @@
-import os
-
-from django.conf import settings
-from pylti1p3.contrib.django import DjangoCacheDataStorage
-from pylti1p3.tool_config import ToolConfJsonFile
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth import authenticate
-from django.contrib.auth import login as auth_login
-from django.http import HttpResponse
 
 from .models import Assessment, Course, Roles, UserCourse, UserProfile
 
@@ -21,6 +13,7 @@ def set_user_profile(request, user_id, login_id, display_name, role):
         user = user_set.first()
     request.session['user_id'] = user.user_id
     request.session['login_id'] = user.login_id
+    request.session['display_name'] = user.display_name
     request.session['role'] = user.role
     return user
 
@@ -67,8 +60,9 @@ def set_user_group(user):
 
 
 def create_groups(sender, **kwargs):
-    from django.contrib.auth.models import Group, Permission
-    from .models import Assessment, Course, Roles, UserCourse, UserProfile
+    from django.contrib.auth.models import Group
+
+    from .models import Roles
 
     current_role_names = list(
         Group.objects.all().values_list('name', flat=True))
@@ -86,52 +80,42 @@ def add_permissions():
         name='Teacher')
 
     assessment_content_type = ContentType.objects.get_for_model(Assessment)
-    assessment_permission_set = Permission.objects.filter(
+    assessment_perm_set = Permission.objects.filter(
         content_type=assessment_content_type)
     course_content_type = ContentType.objects.get_for_model(Course)
-    course_permission_set = Permission.objects.filter(
+    course_perm_set = Permission.objects.filter(
         content_type=course_content_type)
 
-    assessment_course_permission_set = assessment_permission_set | course_permission_set
+    assessment_course_perm_set = assessment_perm_set | course_perm_set
 
-    for group in teacher_admin_groups:
+    student_group = Group.objects.filter(name='Student')
+    student_assessment_perm_set = Permission.objects.filter(
+        codename__in=['change_assessment', 'view_assessment'],
+        content_type=assessment_content_type)
+
+    add_permissions_helper(
+        teacher_admin_groups,
+        assessment_course_perm_set)
+    add_permissions_helper(student_group, student_assessment_perm_set)
+
+
+def add_permissions_helper(groups, permissions_set):
+    for group in groups:
         current_perms = list(
             group.permissions.all().values_list(
                 'id', flat=True))
-        assessment_course_perms = list(
-            assessment_course_permission_set.values_list(
+        perms = list(
+            permissions_set.values_list(
                 'id', flat=True))
-        if current_perms.sort() != assessment_course_perms.sort():
-            group.permissions.add(*assessment_course_perms)
+        current_perms.sort()
+        perms.sort()
+        if current_perms != perms:
+            group.permissions.add(*perms)
 
 
-def get_launch_data_storage():
-    return DjangoCacheDataStorage()
+def is_teacher_admin(user):
+    return user.groups.filter(name__in=['Teacher', 'Admin']).exists()
 
 
-def get_launch_url(request):
-    target_link_uri = request.POST.get(
-        'target_link_uri',
-        request.GET.get('target_link_uri'))
-    if not target_link_uri:
-        raise Exception('Missing "target_link_uri" param')
-
-    return target_link_uri
-
-
-def get_lti_config_path():
-    return os.path.join(settings.BASE_DIR, 'configs',
-                        'flexible_assessment.json')
-
-
-def get_tool_conf():
-    tool_conf = ToolConfJsonFile(get_lti_config_path())
-    return tool_conf
-
-
-def authenticate_login(request):
-    user = authenticate(request)
-    if user is not None:
-        auth_login(request, user)
-    else:
-        HttpResponse('Could not login')
+def is_student(user):
+    return user.groups.filter(name='Student').exists()

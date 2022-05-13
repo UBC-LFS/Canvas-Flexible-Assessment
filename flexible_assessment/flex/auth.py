@@ -1,4 +1,8 @@
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.backends import BaseBackend
+from django.http import HttpResponse
+
 from .models import UserProfile
 
 
@@ -21,3 +25,11 @@ class SettingsBackend(BaseBackend):
             return UserProfile.objects.get(pk=user_id)
         except UserProfile.DoesNotExist:
             return None
+
+
+def authenticate_login(request):
+    user = authenticate(request)
+    if user is not None:
+        auth_login(request, user)
+    else:
+        HttpResponse('Could not login')
