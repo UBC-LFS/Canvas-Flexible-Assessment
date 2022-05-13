@@ -1,0 +1,14 @@
+{% block content %}
+  <h1>Assessment List</h1>
+  {% if assessment_list %}
+  <ul>
+    {% for assessment in assessment_list %}
+      <li>
+        <a href="{{ assessment.get_absolute_url }}">{{ assessment.title }}</a> ({{assessment.default}})
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+    <p>There are no assessments for the course.</p>
+  {% endif %}
+{% endblock %}

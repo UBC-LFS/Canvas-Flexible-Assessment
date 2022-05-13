@@ -62,7 +62,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return self.role == Roles.ADMIN
 
 
-# TODO: add flexible assessment deadline date
 class Course(models.Model):
     id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=100)

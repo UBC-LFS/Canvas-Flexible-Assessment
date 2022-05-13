@@ -18,7 +18,7 @@ def set_user_profile(request, user_id, login_id, display_name, role):
     return user
 
 
-def set_course(course_id, course_name):
+def set_course(request, course_id, course_name):
     course_set = Course.objects.filter(pk=course_id)
     if not course_set.exists():
         course = Course(id=course_id, title=course_name)
@@ -26,6 +26,8 @@ def set_course(course_id, course_name):
     else:
         course = course_set.first()
     # TODO: check request.session['course_id'] for when adding assessments
+    request.session['course_id'] = course.id
+    request.session['course_name'] = course.title
     return course
 
 
@@ -45,7 +47,7 @@ def set_user_course(request, custom_fields, role):
     course_name = custom_fields['course_name']
 
     user = set_user_profile(request, user_id, login_id, display_name, role)
-    course = set_course(course_id, course_name)
+    course = set_course(request, course_id, course_name)
 
     set_user_course_enrollment(user, course)
     set_user_group(user)
