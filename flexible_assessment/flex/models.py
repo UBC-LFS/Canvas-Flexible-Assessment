@@ -4,11 +4,39 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.db import models
 
+# TODO: limit admin perms
+
 
 class UserProfileManager(BaseUserManager):
-    # TODO: limit admin perms
+    """Extends Base User Manager for creating users and superusers of type UserProfile
+
+    Methods
+    -------
+    create_user(user_id, login_id, display_name, role, password=None)
+        Creates regular user
+    create_superuser(user_id, login_id, display_name, role, password=None)
+        Creates superuser"""
+
     def create_user(self, user_id, login_id,
                     display_name, role, password=None):
+        """Regular User creation
+
+        Parameters
+        ----------
+        user_id : int
+            Unique id for Canvas user used for identification
+        login_id : str
+            Used as canvas login/username (CWL)
+        display_name : str
+            Name of user
+        role : int
+            Used as identification for role of user in course (see models.Roles class)
+
+        Returns
+        -------
+        user : UserProfile
+            Regular user instance"""
+
         user = self.model(
             user_id=user_id,
             login_id=login_id,
@@ -22,6 +50,24 @@ class UserProfileManager(BaseUserManager):
 
     def create_superuser(self, user_id, login_id,
                          display_name, role, password=None):
+        """Superuser creation
+
+        Parameters
+        ----------
+        user_id : int
+            Unique id for Canvas user used for identification
+        login_id : str
+            Used as canvas login/username (CWL)
+        display_name : str
+            Name of user
+        role : int
+            Used as identification for role of user in course (see models.Roles class)
+
+        Returns
+        -------
+        user : UserProfile
+            Superuser instance"""
+
         user = self.create_user(
             user_id,
             login_id,
@@ -33,6 +79,7 @@ class UserProfileManager(BaseUserManager):
 
 
 class Roles(models.IntegerChoices):
+    """Role choices available for user mapped to an integer"""
     ADMIN = 1
     TEACHER = 2
     TA = 3
@@ -40,6 +87,22 @@ class Roles(models.IntegerChoices):
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
+    """Table containing user entries for Instructor/TA/Student for course or Admin instance
+
+    Attributes
+    ----------
+    user_id : int
+        Unique id for Canvas user used for identification
+    login_id : str
+        Used as canvas login/username (CWL)
+    display_name : str
+        Name of user
+    role : int
+        Used as identification for role of user in course (see models.Roles class)
+    objects : UserProfileManager
+        Instance of user manager class extending the BaseUserManager
+    """
+
     user_id = models.IntegerField(primary_key=True)
     login_id = models.CharField(max_length=100)
     display_name = models.CharField(max_length=255)
@@ -63,6 +126,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
 
 class Course(models.Model):
+    """Table for course entries with flexible assessment
+
+    Attributes
+    ----------
+    id : int
+        Unique id for the Canvas course
+    title : str
+        Title of the course
+    availability : DateTime
+        Due date for students to add or change grade allocation for assessments
+    """
+
     id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=100)
     availability = models.DateTimeField(null=True)
@@ -72,6 +147,16 @@ class Course(models.Model):
 
 
 class UserCourse(models.Model):
+    """Table linking users and courses for many-to-many relationship, entries are unique
+
+    Attributes
+    ----------
+    user : ForeignKey -> UserProfile
+        Foreign key with UserProfile
+    course : ForeignKey -> Course
+        Foreign Key with Course
+    """
+
     class Meta:
         constraints = [
             models.constraints.UniqueConstraint(
@@ -86,6 +171,25 @@ class UserCourse(models.Model):
 
 
 class Assessment(models.Model):
+    """Table of assessment entries
+
+    Attributes
+    ----------
+    id : uuid
+        Assigns random uuid as primary key for assessment identification
+    title : str
+        Title of assessment
+    default : float
+        Default grade allocation for assessment given by Instructor
+        Should be in [0, 100]
+    max : float
+        Max grade allocation that can be set by student
+        Should be in [0, 100]
+    min : float
+        Min grade allocation that can be set by student
+        Should be in [0, 100]
+    """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.CharField(max_length=100)
     # add ranges
@@ -98,6 +202,16 @@ class Assessment(models.Model):
 
 
 class AssessmentCourse(models.Model):
+    """Table linking assessments and courses for many-to-many relationship, entries are unique
+
+    Attributes
+    ----------
+    assessment : ForeignKey -> Assessment
+        Foreign Key with Assessment
+    course : ForeignKey -> Course
+        Foreign Key with Course
+        """
+
     class Meta:
         constraints = [
             models.constraints.UniqueConstraint(
@@ -112,6 +226,19 @@ class AssessmentCourse(models.Model):
 
 
 class FlexAssessment(models.Model):
+    """Table containing students grade allocation for assessment
+    All assessments for student in a course should total to 100
+
+    Attributes
+    ----------
+    user : ForeignKey -> UserProfile
+        Foreign Key with UserProfile
+    assessment : ForeignKey -> Assessment
+        Foreign Key with Assessment
+    flex : float
+        Student's grade allocation for assessment
+    """
+
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     flex = models.FloatField()

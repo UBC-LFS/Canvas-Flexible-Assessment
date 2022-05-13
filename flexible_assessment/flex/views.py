@@ -5,6 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.http import (Http404, HttpResponse, HttpResponseRedirect,
                          JsonResponse)
+from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from pylti1p3.contrib.django import DjangoMessageLaunch, DjangoOIDCLogin
@@ -51,7 +52,7 @@ def launch(request):
     if 'TeacherEnrollment' in custom_fields['role']:
         utils.set_user_course(request, custom_fields, models.Roles.TEACHER)
         auth.authenticate_login(request)
-        return HttpResponseRedirect(reverse('flex:instructor_view'))
+        return HttpResponseRedirect(reverse('flex:instructor_home'))
 
     elif 'StudentEnrollment' in custom_fields['role']:
         utils.set_user_course(request, custom_fields, models.Roles.STUDENT)
@@ -74,6 +75,14 @@ def student(request):
         raise Http404
 
     return HttpResponse(response_string.format(user_id, display_name))
+
+
+def instructor_home(request):
+    return render(request, 'flex/instructor_home.html')
+
+
+def add_assessment(request):
+    return HttpResponse('Add Assessment Page')
 
 
 class InstructorListView(

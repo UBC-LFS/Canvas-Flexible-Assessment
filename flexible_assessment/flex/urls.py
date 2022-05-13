@@ -8,9 +8,11 @@ urlpatterns = [
     path('launch/', views.launch, name='launch'),
     path('jwks/', views.get_jwks, name='jwks'),
     path('login/', views.login, name='login'),
+    path('instructor/', views.instructor_home, name='instructor_home'),
     path(
-        'instructor/',
+        'instructor/list/',
         views.InstructorListView.as_view(),
-        name='instructor_view'),
+        name='instructor_list'),
+    path('instructor/add/', views.add_assessment, name='add_assessment'),
     path('student/', views.student, name='student_view')
 ]
