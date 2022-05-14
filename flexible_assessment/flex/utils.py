@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
-from .models import Assessment, Course, Roles, UserCourse, UserProfile
+from .models import Assessment, Course, FlexAssessment, Roles, UserCourse, UserProfile
 
 
 def set_user_profile(request, user_id, login_id, display_name, role):
@@ -91,14 +91,15 @@ def add_permissions():
     assessment_course_perm_set = assessment_perm_set | course_perm_set
 
     student_group = Group.objects.filter(name='Student')
-    student_assessment_perm_set = Permission.objects.filter(
-        codename__in=['change_assessment', 'view_assessment'],
-        content_type=assessment_content_type)
-
+    flex_assessment_content_type = ContentType.objects.get_for_model(FlexAssessment)
+    student_flex_perm_set = Permission.objects.filter(
+        codename__in=['change_flexassessment', 'view_flexassessment'],
+        content_type=flex_assessment_content_type)
+    
     add_permissions_helper(
         teacher_admin_groups,
         assessment_course_perm_set)
-    add_permissions_helper(student_group, student_assessment_perm_set)
+    add_permissions_helper(student_group, student_flex_perm_set)
 
 
 def add_permissions_helper(groups, permissions_set):

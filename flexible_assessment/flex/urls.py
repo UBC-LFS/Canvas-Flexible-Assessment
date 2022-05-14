@@ -13,6 +13,7 @@ urlpatterns = [
         'instructor/list/',
         views.InstructorListView.as_view(),
         name='instructor_list'),
+    path('instructor/asssessment/<slug:pk>/', views.InstructorAssessmentDetailView.as_view(), name='inst_assessment_detail'),
     path('instructor/add/', views.add_assessment, name='add_assessment'),
     path('student/', views.student, name='student_view')
 ]

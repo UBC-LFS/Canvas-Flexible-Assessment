@@ -76,7 +76,8 @@ def student(request):
 
     return HttpResponse(response_string.format(user_id, display_name))
 
-
+@login_required
+@user_passes_test(utils.is_teacher_admin)
 def instructor_home(request):
     return render(request, 'flex/instructor_home.html')
 
@@ -98,6 +99,13 @@ class InstructorListView(
             raise PermissionDenied
         return models.Assessment.objects.filter(
             assessmentcourse__course__id=self.request.session['course_id'])
+
+    def test_func(self):
+        return utils.is_teacher_admin(self.request.user)
+
+class InstructorAssessmentDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+    model = models.Assessment
+    raise_exception = True
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)

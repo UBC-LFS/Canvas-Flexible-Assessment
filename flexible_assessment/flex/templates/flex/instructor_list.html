@@ -4,7 +4,7 @@
   <ul>
     {% for assessment in assessment_list %}
       <li>
-        <a href="{{ assessment.get_absolute_url }}">{{ assessment.title }}</a> ({{assessment.default}})
+        <a href="{% url 'flex:inst_assessment_detail' assessment.id %}">{{ assessment.title }}</a> ({{assessment.default}})
       </li>
     {% endfor %}
   </ul>
