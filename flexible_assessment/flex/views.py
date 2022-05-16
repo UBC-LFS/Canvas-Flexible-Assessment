@@ -3,11 +3,14 @@ import pprint
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
+from django.forms import ValidationError
 from django.http import (Http404, HttpResponse, HttpResponseRedirect,
                          JsonResponse)
 from django.shortcuts import render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
+from django.views import generic
 from django.views.decorators.http import require_POST
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from pylti1p3.contrib.django import DjangoMessageLaunch, DjangoOIDCLogin
 
 import flex.auth as auth
@@ -15,7 +18,7 @@ import flex.lti as lti
 import flex.models as models
 import flex.utils as utils
 
-from django.views import generic
+from .forms import AddAssessmentForm
 
 
 def index(request):
@@ -76,14 +79,79 @@ def student(request):
 
     return HttpResponse(response_string.format(user_id, display_name))
 
+
 @login_required
 @user_passes_test(utils.is_teacher_admin)
 def instructor_home(request):
     return render(request, 'flex/instructor_home.html')
 
 
-def add_assessment(request):
-    return HttpResponse('Add Assessment Page')
+class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = models.Assessment
+    form_class = AddAssessmentForm
+    success_url = reverse_lazy('flex:instructor_list')
+
+    def form_valid(self, form):
+        course_id = self.request.session['course_id']
+        course = models.Course.objects.get(pk=course_id)
+
+        acs = course.assessmentcourse_set.all()
+        assessment_default_sum = sum([ac.assessment.default for ac in acs])
+
+        if form.cleaned_data['default'] + assessment_default_sum > 100.0:
+            form.add_error('default', ValidationError(
+                'Default assessment allocations add up to over 100%'))
+            response = super(AssessmentCreate, self).form_invalid(form)
+            return response
+
+        response = super(AssessmentCreate, self).form_valid(form)
+
+        assessment_id = self.object.id
+        assessment = models.Assessment.objects.get(pk=assessment_id)
+
+        assessment_course = models.AssessmentCourse(
+            assessment=assessment, course=course)
+        assessment_course.save()
+
+        return response
+
+    def test_func(self):
+        return utils.is_teacher_admin(self.request.user)
+
+
+class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = models.Assessment
+    form_class = AddAssessmentForm
+    success_url = reverse_lazy('flex:instructor_list')
+
+    def form_valid(self, form):
+        course_id = self.request.session['course_id']
+        course = models.Course.objects.get(pk=course_id)
+
+        acs = course.assessmentcourse_set.all()
+        assessment_default_sum = sum(
+            [ac.assessment.default for ac in acs if ac.assessment.id != self.object.id])
+
+        if form.cleaned_data['default'] + assessment_default_sum > 100.0:
+            form.add_error('default', ValidationError(
+                'Default assessment allocations add up to over 100%'))
+            response = super(AssessmentUpdate, self).form_invalid(form)
+            return response
+
+        response = super(AssessmentUpdate, self).form_valid(form)
+
+        return response
+
+    def test_func(self):
+        return utils.is_teacher_admin(self.request.user)
+
+
+class AssessmentDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = models.Assessment
+    success_url = reverse_lazy('flex:instructor_list')
+
+    def test_func(self):
+        return utils.is_teacher_admin(self.request.user)
 
 
 class InstructorListView(
@@ -103,7 +171,9 @@ class InstructorListView(
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
 
-class InstructorAssessmentDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+
+class InstructorAssessmentDetailView(
+        LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = models.Assessment
     raise_exception = True
 

@@ -193,9 +193,9 @@ class Assessment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.CharField(max_length=100)
     # add ranges
-    default = models.FloatField()
-    max = models.FloatField()
-    min = models.FloatField()
+    default = models.DecimalField(max_digits=5, decimal_places=2)
+    min = models.DecimalField(max_digits=5, decimal_places=2)
+    max = models.DecimalField(max_digits=5, decimal_places=2)
 
     def __str__(self):
         return self.title
@@ -241,4 +241,4 @@ class FlexAssessment(models.Model):
 
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
-    flex = models.FloatField()
+    flex = models.DecimalField(max_digits=5, decimal_places=2)

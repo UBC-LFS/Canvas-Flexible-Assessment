@@ -1,14 +1,30 @@
+{% extends "flex/base.html" %}
+
 {% block content %}
   <h1>Assessment List</h1>
   {% if assessment_list %}
-  <ul>
-    {% for assessment in assessment_list %}
-      <li>
-        <a href="{% url 'flex:inst_assessment_detail' assessment.id %}">{{ assessment.title }}</a> ({{assessment.default}})
-      </li>
-    {% endfor %}
-  </ul>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Default Allocation</th>
+          <th>Min Allocation</th>
+          <th>Max Allocation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for assessment in assessment_list %}
+          <tr>
+            <td><a href="{% url 'flex:inst_assessment_detail' assessment.id %}">{{ assessment.title }}</a></td>
+            <td>{{ assessment.default }}</td>
+            <td>{{ assessment.min }}</td>
+            <td>{{ assessment.max }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   {% else %}
     <p>There are no assessments for the course.</p>
   {% endif %}
+  <a class="btn btn-primary rounded-0" href="{% url 'flex:add_assessment' %}">Add new assessment</a>
 {% endblock %}

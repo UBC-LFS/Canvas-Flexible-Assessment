@@ -13,7 +13,21 @@ urlpatterns = [
         'instructor/list/',
         views.InstructorListView.as_view(),
         name='instructor_list'),
-    path('instructor/asssessment/<slug:pk>/', views.InstructorAssessmentDetailView.as_view(), name='inst_assessment_detail'),
-    path('instructor/add/', views.add_assessment, name='add_assessment'),
+    path(
+        'instructor/asssessment/<slug:pk>/',
+        views.InstructorAssessmentDetailView.as_view(),
+        name='inst_assessment_detail'),
+    path(
+        'instructor/add/',
+        views.AssessmentCreate.as_view(),
+        name='add_assessment'),
+    path(
+        'instructor/assessment/<slug:pk>/update/',
+        views.AssessmentUpdate.as_view(),
+        name='update_assessment'),
+    path(
+        'instructor/assessment/<slug:pk>/delete/',
+        views.AssessmentDelete.as_view(),
+        name='delete_assessment'),
     path('student/', views.student, name='student_view')
 ]

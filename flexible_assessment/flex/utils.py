@@ -91,11 +91,12 @@ def add_permissions():
     assessment_course_perm_set = assessment_perm_set | course_perm_set
 
     student_group = Group.objects.filter(name='Student')
-    flex_assessment_content_type = ContentType.objects.get_for_model(FlexAssessment)
+    flex_assessment_content_type = ContentType.objects.get_for_model(
+        FlexAssessment)
     student_flex_perm_set = Permission.objects.filter(
         codename__in=['change_flexassessment', 'view_flexassessment'],
         content_type=flex_assessment_content_type)
-    
+
     add_permissions_helper(
         teacher_admin_groups,
         assessment_course_perm_set)
