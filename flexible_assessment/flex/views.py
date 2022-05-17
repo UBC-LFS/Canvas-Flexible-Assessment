@@ -49,7 +49,7 @@ def launch(request):
 
     custom_fields = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/custom']
 
-    utils.add_permissions()
+    # utils.add_permissions()
 
     # TODO: TAEnrollement view
     if 'TeacherEnrollment' in custom_fields['role']:
@@ -60,7 +60,7 @@ def launch(request):
     elif 'StudentEnrollment' in custom_fields['role']:
         utils.set_user_course(request, custom_fields, models.Roles.STUDENT)
         auth.authenticate_login(request)
-        return HttpResponseRedirect(reverse('flex:student_view'))
+        return HttpResponseRedirect(reverse('flex:student_home'))
 
 
 def get_jwks(request):
@@ -70,20 +70,14 @@ def get_jwks(request):
 
 @login_required
 @user_passes_test(utils.is_student)
-def student(request):
-    response_string = 'Student Page, your user id: {} and name: {}'
-    user_id = request.session.get('user_id', '')
-    display_name = request.session.get('display_name', '')
-    if not user_id:
-        raise Http404
-
-    return HttpResponse(response_string.format(user_id, display_name))
+def student_home(request):
+    return render(request, 'flex/student/student_home.html')
 
 
 @login_required
 @user_passes_test(utils.is_teacher_admin)
 def instructor_home(request):
-    return render(request, 'flex/instructor_home.html')
+    return render(request, 'flex/instructor/instructor_home.html')
 
 
 class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -113,6 +107,14 @@ class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         assessment_course = models.AssessmentCourse(
             assessment=assessment, course=course)
         assessment_course.save()
+
+        user_courses = course.usercourse_set.all()
+        users = [user_course.user for user_course in user_courses]
+        flex_assessments = [
+            models.FlexAssessment(
+                user=user,
+                assessment=assessment) for user in users if user.role == models.Roles.STUDENT]
+        models.FlexAssessment.objects.bulk_create(flex_assessments)
 
         return response
 
@@ -171,15 +173,16 @@ class InstructorListView(
         LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
     model = models.Assessment
     context_object_name = 'assessment_list'
-    template_name = 'flex/instructor_list.html'
+    template_name = 'flex/instructor/instructor_list.html'
     raise_exception = True
 
     def get_queryset(self):
         user_id = self.request.session.get('user_id', '')
+        course_id = self.request.session.get('course_id', '')
         if not user_id:
             raise PermissionDenied
         return models.Assessment.objects.filter(
-            assessmentcourse__course__id=self.request.session['course_id'])
+            assessmentcourse__course__id=course_id)
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
@@ -193,3 +196,66 @@ class InstructorAssessmentDetailView(
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
+
+
+class StudentListView(
+        LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+    model = models.FlexAssessment
+    context_object_name = 'flex_list'
+    template_name = 'flex/student/student_list.html'
+    raise_exception = True
+
+    def get_queryset(self):
+        user_id = self.request.session.get('user_id', '')
+        course_id = self.request.session.get('course_id', '')
+        if not (user_id and course_id):
+            raise PermissionDenied
+        return models.FlexAssessment.objects.filter(
+            user__user_id=user_id,
+            assessment__assessmentcourse__course_id=course_id)
+
+    def test_func(self):
+        return utils.is_teacher_admin(
+            self.request.user) or utils.is_student(self.request.user)
+
+
+class FlexAssessmentUpdate(
+        LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = models.FlexAssessment
+    # form_class = FlexForm
+    fields = ['flex']
+    template_name = 'flex/flex_assessment_form.html'
+    success_url = reverse_lazy('flex:student_list')
+
+    def form_valid(self, form):
+        user_id = self.request.session['user_id']
+        user = models.UserProfile.objects.get(pk=user_id)
+
+        course_id = self.request.session['course_id']
+        course = models.Course.objects.get(pk=course_id)
+
+        def flex_filter(flex_assessment):
+            assessment = flex_assessment.assessment
+            flex_course = assessment.assessmentcourse_set.all().first().course
+            form_flex_assessment_id = self.object.id
+
+            return flex_assessment and flex_course == course and flex_assessment.id != form_flex_assessment_id
+
+        user_flex_assessments = user.flexassessment_set.all()
+        flex_assessments = list(filter(flex_filter, user_flex_assessments))
+        flex_allocations = [fa.flex for fa in flex_assessments]
+        flex_sum = sum(flex_allocations)
+
+        if form.cleaned_data['flex'] + flex_sum > 100.0:
+            form.add_error('default', ValidationError(
+                'Flex assessment allocations add up to over 100%'))
+            response = super(FlexAssessmentUpdate, self).form_invalid(form)
+            return response
+
+        response = super(FlexAssessmentUpdate, self).form_valid(form)
+
+        return response
+
+    def test_func(self):
+        return utils.is_teacher_admin(
+            self.request.user) or utils.is_student(self.request.user)

@@ -10,6 +10,6 @@ class FlexConfig(AppConfig):
 
     def ready(self):
         """Creates groups based on models.Roles on server ready"""
-
+        import flex.signals
         from .utils import create_groups
         post_migrate.connect(create_groups, sender=self)

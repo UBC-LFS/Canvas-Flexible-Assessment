@@ -1,0 +1,41 @@
+{% extends "flex/student/student_base.html" %}
+
+{% block content %}
+  {% if course.deadline %}
+    <h1>Assessment List</h1>
+  {% else %}
+    <h1>Add assessments to course</h1>
+  {% endif %}
+  {% if flex_list %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Assessment Title</th>
+          <th>Desired %</th>
+          <th>Default %</th>
+          <th>Min %</th>
+          <th>Max %</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for flex_assessment in flex_list %}
+          <tr>
+            <td><a href="{% url 'flex:update_flex' flex_assessment.id %}">{{ flex_assessment.assessment.title }}</a></td>
+            <td>{{ flex_assessment.flex }}</td>
+            <td>{{ flex_assessment.assessment.default }}</td>
+            <td>{{ flex_assessment.assessment.min }}</td>
+            <td>{{ flex_assessment.assessment.max }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>There are no assessments for the course.</p>
+  {% endif %}
+
+  {% if course.deadline %}
+    <h4 style="padding-top: 30px">Flexible assessment due date</h4>
+    <p>{{ course.deadline }}</p>
+  {% endif %}
+
+{% endblock %}

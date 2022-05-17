@@ -25,7 +25,6 @@ def set_course(request, course_id, course_name):
         course.save()
     else:
         course = course_set.first()
-    # TODO: check request.session['course_id'] for when adding assessments
     request.session['course_id'] = course.id
     request.session['course_name'] = course.title
     return course

@@ -10,7 +10,7 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('instructor/', views.instructor_home, name='instructor_home'),
     path(
-        'instructor/list/',
+        'instructor/assessment/',
         views.InstructorListView.as_view(),
         name='instructor_list'),
     path(
@@ -18,7 +18,7 @@ urlpatterns = [
         views.InstructorAssessmentDetailView.as_view(),
         name='inst_assessment_detail'),
     path(
-        'instructor/add/',
+        'instructor/assessment/add',
         views.AssessmentCreate.as_view(),
         name='add_assessment'),
     path(
@@ -30,8 +30,16 @@ urlpatterns = [
         views.AssessmentDelete.as_view(),
         name='delete_assessment'),
     path(
-        'instructor/date/<slug:pk>/update',
+        'instructor/course/<slug:pk>/date/update',
         views.DateUpdate.as_view(),
         name='update_date'),
-    path('student/', views.student, name='student_view')
+    path('student/', views.student_home, name='student_home'),
+    path(
+        'student/assessment/',
+        views.StudentListView.as_view(),
+        name='student_list'),
+    path(
+        'student/flex/<slug:pk>/update',
+        views.FlexAssessmentUpdate.as_view(),
+        name='update_flex')
 ]
