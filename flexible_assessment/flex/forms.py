@@ -4,27 +4,29 @@ from .models import Assessment
 
 
 class AddAssessmentForm(ModelForm):
-    def grade_range_check(self, data):
-        if data > 100.0 or data < 0.0:
-            raise ValidationError(
-                'Grade allocations must be within 0.0 and 100.0')
-
     def clean(self):
         cleaned_data = super().clean()
         default = cleaned_data.get('default')
         min = cleaned_data.get('min')
         max = cleaned_data.get('max')
 
-        self.grade_range_check(default)
-        self.grade_range_check(min)
-        self.grade_range_check(max)
+        allocations = [('Default', default), ('Maximum', max), ('Minimum', min)]
+        validation_errors = []
+
+        for name, allocation in allocations:
+            if allocation > 100.0 or allocation < 0.0:
+                validation_errors.append(ValidationError('{} must be within 0.0 and 100.0'.format(name)))
 
         if min > default:
-            raise ValidationError('Minimum must be lower than default')
-        elif default > max:
-            raise ValidationError('Maximum must be higher than default')
-        elif min > max:
-            raise ValidationError('Maximum must be higher than minimum')
+            validation_errors.append(ValidationError('Minimum must be lower than default'))
+        if default > max:
+            validation_errors.append(ValidationError('Maximum must be higher than default'))
+        if min > max:
+            validation_errors.append(ValidationError('Maximum must be higher than minimum'))
+
+        if validation_errors:
+            raise ValidationError(validation_errors)
+
 
     class Meta:
         model = Assessment
