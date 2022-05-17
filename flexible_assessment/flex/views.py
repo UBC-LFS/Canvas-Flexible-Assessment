@@ -90,8 +90,8 @@ class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         course_id = self.request.session['course_id']
         course = models.Course.objects.get(pk=course_id)
 
-        acs = course.assessmentcourse_set.all()
-        assessment_default_sum = sum([ac.assessment.default for ac in acs])
+        assessments = course.assessment_set.all()
+        assessment_default_sum = sum([assessment.default for assessment in assessments])
 
         if form.cleaned_data['default'] + assessment_default_sum > 100.0:
             form.add_error('default', ValidationError(
@@ -99,14 +99,12 @@ class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
             response = super(AssessmentCreate, self).form_invalid(form)
             return response
 
+        assessment = form.save(commit=False)
+        assessment.course = course
         response = super(AssessmentCreate, self).form_valid(form)
 
         assessment_id = self.object.id
         assessment = models.Assessment.objects.get(pk=assessment_id)
-
-        assessment_course = models.AssessmentCourse(
-            assessment=assessment, course=course)
-        assessment_course.save()
 
         user_courses = course.usercourse_set.all()
         users = [user_course.user for user_course in user_courses]
@@ -132,9 +130,9 @@ class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         course_id = self.request.session['course_id']
         course = models.Course.objects.get(pk=course_id)
 
-        acs = course.assessmentcourse_set.all()
+        assessments = course.assessment_set.all()
         assessment_default_sum = sum(
-            [ac.assessment.default for ac in acs if ac.assessment.id != self.object.id])
+            [assessment.default for assessment in assessments if assessment.id != self.object.id])
 
         if form.cleaned_data['default'] + assessment_default_sum > 100.0:
             form.add_error('default', ValidationError(
@@ -181,8 +179,7 @@ class InstructorListView(
         course_id = self.request.session.get('course_id', '')
         if not user_id:
             raise PermissionDenied
-        return models.Assessment.objects.filter(
-            assessmentcourse__course__id=course_id)
+        return models.Assessment.objects.filter(course__id=course_id)
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
@@ -212,7 +209,7 @@ class StudentListView(
             raise PermissionDenied
         return models.FlexAssessment.objects.filter(
             user__user_id=user_id,
-            assessment__assessmentcourse__course_id=course_id)
+            assessment__course_id=course_id)
 
     def test_func(self):
         return utils.is_teacher_admin(
@@ -236,7 +233,7 @@ class FlexAssessmentUpdate(
 
         def flex_filter(flex_assessment):
             assessment = flex_assessment.assessment
-            flex_course = assessment.assessmentcourse_set.all().first().course
+            flex_course = assessment.course
             form_flex_assessment_id = self.object.id
 
             return flex_assessment and flex_course == course and flex_assessment.id != form_flex_assessment_id

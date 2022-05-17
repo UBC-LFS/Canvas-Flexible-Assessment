@@ -15,9 +15,7 @@ def add_perms(sender, instance, created, **kwargs):
 def add_flex_assessments(sender, instance, created, **kwargs):
     user = instance.user
     if user.role == Roles.STUDENT:
-        assessment_courses = instance.course.assessmentcourse_set.all()
-        assessments = [
-            assessment_course.assessment for assessment_course in assessment_courses]
+        assessments = instance.course.assessment_set.all()
         flex_assessments = [
             FlexAssessment(
                 user=user,

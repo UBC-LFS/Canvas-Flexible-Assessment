@@ -195,34 +195,10 @@ class Assessment(models.Model):
     default = models.DecimalField(max_digits=5, decimal_places=2)
     min = models.DecimalField(max_digits=5, decimal_places=2)
     max = models.DecimalField(max_digits=5, decimal_places=2)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
-
-
-# TODO: remove assessments when course is deleted
-class AssessmentCourse(models.Model):
-    """Table linking assessments and courses for many-to-many relationship, entries are unique
-
-    Attributes
-    ----------
-    assessment : ForeignKey -> Assessment
-        Foreign Key with Assessment
-    course : ForeignKey -> Course
-        Foreign Key with Course
-        """
-
-    class Meta:
-        constraints = [
-            models.constraints.UniqueConstraint(
-                fields=[
-                    'assessment_id',
-                    'course_id'],
-                name='Assessment and Course unique')
-        ]
-
-    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 
 class FlexAssessment(models.Model):
