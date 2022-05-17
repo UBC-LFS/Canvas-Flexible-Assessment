@@ -89,6 +89,7 @@ def instructor_home(request):
 class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = models.Assessment
     form_class = AddAssessmentForm
+    template_name = 'flex/assessment/assessment_form.html'
     success_url = reverse_lazy('flex:instructor_list')
 
     def form_valid(self, form):
@@ -122,6 +123,7 @@ class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = models.Assessment
     form_class = AddAssessmentForm
+    template_name = 'flex/assessment/assessment_form.html'
     success_url = reverse_lazy('flex:instructor_list')
 
     def form_valid(self, form):
@@ -148,6 +150,7 @@ class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class AssessmentDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = models.Assessment
+    template_name = 'flex/assessment/assessment_confirm_delete.html'
     success_url = reverse_lazy('flex:instructor_list')
 
     def test_func(self):
@@ -175,6 +178,7 @@ class InstructorListView(
 class InstructorAssessmentDetailView(
         LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = models.Assessment
+    template_name = 'flex/assessment/assessment_detail.html'
     raise_exception = True
 
     def test_func(self):
