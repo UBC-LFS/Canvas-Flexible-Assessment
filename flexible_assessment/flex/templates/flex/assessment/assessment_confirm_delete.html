@@ -8,8 +8,8 @@
 
 <form action="" method="POST">
   {% csrf_token %}
-  <input class="btn btn-danger rounded-0" type="submit" value="Delete">
-  <a class="btn btn-secondary rounded-0" type="button" href="{% url 'flex:inst_assessment_detail' assessment.id %}">Back</a>
+  <input class="btn btn-danger" type="submit" value="Delete">
+  <a class="btn btn-secondary" type="button" href="{% url 'flex:inst_assessment_detail' assessment.id %}">Back</a>
 </form>
 
 

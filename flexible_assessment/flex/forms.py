@@ -1,7 +1,7 @@
-import numbers
+from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
-from .models import Assessment
+from .models import Assessment, Course
 
 
 class AddAssessmentForm(ModelForm):
@@ -11,24 +11,29 @@ class AddAssessmentForm(ModelForm):
         min = cleaned_data.get('min')
         max = cleaned_data.get('max')
 
-        allocations = [('Default', default), ('Maximum', max), ('Minimum', min)]
+        allocations = [('Default', default),
+                       ('Maximum', max), ('Minimum', min)]
         validation_errors = []
 
         for name, allocation in allocations:
             if allocation and (allocation > 100.0 or allocation < 0.0):
-                validation_errors.append(ValidationError('{} must be within 0.0 and 100.0'.format(name)))
+                validation_errors.append(
+                    ValidationError(
+                        '{} must be within 0.0 and 100.0'.format(name)))
 
         if default and min and max:
             if min > default:
-                validation_errors.append(ValidationError('Minimum must be lower than default'))
+                validation_errors.append(
+                    ValidationError('Minimum must be lower than default'))
             if default > max:
-                validation_errors.append(ValidationError('Maximum must be higher than default'))
+                validation_errors.append(
+                    ValidationError('Maximum must be higher than default'))
             if min > max:
-                validation_errors.append(ValidationError('Maximum must be higher than minimum'))
+                validation_errors.append(
+                    ValidationError('Maximum must be higher than minimum'))
 
         if validation_errors:
             raise ValidationError(validation_errors)
-
 
     class Meta:
         model = Assessment
@@ -37,3 +42,19 @@ class AddAssessmentForm(ModelForm):
                       'default': 'Default grade allocation',
                       'min': 'Minimum possible grade allocation set by student',
                       'max': 'Maximum possible grade allocation set by student'}
+
+
+class DateForm(ModelForm):
+    def clean_deadline(self):
+        data = self.cleaned_data['deadline']
+        return data
+
+    class Meta:
+        model = Course
+        fields = ['deadline']
+        widgets = {
+            'deadline': forms.TextInput(
+                attrs={
+                    'placeholder': 'MM/DD/YYYY HH:MM'})}
+        help_texts = {
+            'deadline': 'Due date for students to add or change grade allocation for assessments'}

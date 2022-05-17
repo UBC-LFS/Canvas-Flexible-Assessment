@@ -18,7 +18,7 @@ import flex.lti as lti
 import flex.models as models
 import flex.utils as utils
 
-from .forms import AddAssessmentForm
+from .forms import AddAssessmentForm, DateForm
 
 
 def index(request):
@@ -151,6 +151,16 @@ class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class AssessmentDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = models.Assessment
     template_name = 'flex/assessment/assessment_confirm_delete.html'
+    success_url = reverse_lazy('flex:instructor_list')
+
+    def test_func(self):
+        return utils.is_teacher_admin(self.request.user)
+
+
+class DateUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = models.Course
+    template_name = 'flex/date_form.html'
+    form_class = DateForm
     success_url = reverse_lazy('flex:instructor_list')
 
     def test_func(self):

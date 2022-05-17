@@ -2,12 +2,11 @@
 {% block content %}
   <h1>Assessment Title: {{ assessment.title }}</h1>
 
-  <p><strong>Course Title:</strong> <a href="">{{ assessment.assessmentcourse_set.all.0.course.title }}</a></p>
-  <p><strong>Id:</strong> {{ assessment.id }}</p>
   <p><strong>Default:</strong> {{ assessment.default }}</p>
   <p><strong>Max:</strong> {{ assessment.max }}</p>
   <p><strong>Min:</strong> {{ assessment.min }}</p>
+  <p><strong>Responses:</strong> <a href="">#</a></p>
 
-  <a class="btn btn-primary rounded-0 btn-block" id="insertRow" href="{% url 'flex:update_assessment' assessment.id %}">Update assessment</a>
-  <a class="btn btn-danger rounded-0 btn-block" id="insertRow" href="{% url 'flex:delete_assessment' assessment.id %}">Delete assessment</a>
+  <a class="btn btn-primary" id="insertRow" href="{% url 'flex:update_assessment' assessment.id %}">Update assessment</a>
+  <a class="btn btn-danger btn-block" id="insertRow" href="{% url 'flex:delete_assessment' assessment.id %}">Delete assessment</a>
 {% endblock %}

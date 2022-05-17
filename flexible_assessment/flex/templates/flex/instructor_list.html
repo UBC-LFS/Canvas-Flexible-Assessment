@@ -1,7 +1,11 @@
 {% extends "flex/base.html" %}
 
 {% block content %}
-  <h1>Assessment List</h1>
+  {% if course.deadline %}
+    <h1>Assessment List</h1>
+  {% else %}
+    <h1>Add assessments to course</h1>
+  {% endif %}
   {% if assessment_list %}
     <table class="table">
       <thead>
@@ -26,5 +30,14 @@
   {% else %}
     <p>There are no assessments for the course.</p>
   {% endif %}
-  <a class="btn btn-primary rounded-0" href="{% url 'flex:add_assessment' %}">Add new assessment</a>
+  <a class="btn btn-primary" href="{% url 'flex:add_assessment' %}">Add new assessment</a>
+
+  {% if not course.deadline %}
+    <a class="btn btn-primary" style="float: right;" href="{% url 'flex:update_date' course.id %}">Next Step</a>
+  {% else %}
+    <h1 style="padding-top: 30px">Edit flexible assessment availability</h1>
+    <p>{{ course.deadline }}</p>
+    <a class="btn btn-primary" href="{% url 'flex:update_date' course.id %}">Edit availability</a>
+  {% endif %}
+
 {% endblock %}

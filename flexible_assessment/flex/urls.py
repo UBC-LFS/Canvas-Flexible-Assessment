@@ -29,5 +29,9 @@ urlpatterns = [
         'instructor/assessment/<slug:pk>/delete/',
         views.AssessmentDelete.as_view(),
         name='delete_assessment'),
+    path(
+        'instructor/date/<slug:pk>/update',
+        views.DateUpdate.as_view(),
+        name='update_date'),
     path('student/', views.student, name='student_view')
 ]
