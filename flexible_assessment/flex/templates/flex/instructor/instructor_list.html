@@ -30,12 +30,32 @@
   {% else %}
     <p>There are no assessments for the course.</p>
   {% endif %}
-  <a class="btn btn-primary" href="{% url 'flex:add_assessment' %}">Add new assessment</a>
+  <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% else %}
+            <a class="btn btn-outline-primary btn-sm disabled">Previous</a>
+        {% endif %}
+
+        <span class="current">
+            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% else %}
+            <a class="btn btn-outline-primary btn-sm disabled">Next</a>
+        {% endif %}
+    </span>
+  </div>
+
+  <a class="btn btn-primary" style="margin-top: 10px" href="{% url 'flex:add_assessment' %}">Add new assessment</a>
 
   {% if not course.deadline %}
     <a class="btn btn-primary" style="float: right;" href="{% url 'flex:update_date' course.id %}">Next Step</a>
   {% else %}
-    <h1 style="padding-top: 30px">Edit flexible assessment availability</h1>
+    <h1 style="padding-top: 20px">Edit flexible assessment availability</h1>
     <p>{{ course.deadline }}</p>
     <a class="btn btn-primary" href="{% url 'flex:update_date' course.id %}">Edit availability</a>
   {% endif %}

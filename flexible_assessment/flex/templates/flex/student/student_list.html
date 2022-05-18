@@ -32,9 +32,30 @@
   {% else %}
     <p>There are no assessments for the course.</p>
   {% endif %}
+  <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% else %}
+            <a class="btn btn-outline-primary btn-sm disabled">Previous</a>
+        {% endif %}
+
+        <span class="current">
+            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% else %}
+            <a class="btn btn-outline-primary btn-sm disabled">Next</a>
+        {% endif %}
+    </span>
+  </div>
 
   {% if course.deadline %}
-    <h4 style="padding-top: 30px">Flexible assessment due date</h4>
+    <h4 style="padding-top: 20px">Remaining Flex Allocation</h4>
+    <p>{{ flex_remainder }}%</p>
+    <h4 style="padding-top: 10px">Flexible assessment due date</h4>
     <p>{{ course.deadline }}</p>
   {% endif %}
 

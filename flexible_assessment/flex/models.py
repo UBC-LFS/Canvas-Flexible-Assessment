@@ -188,6 +188,8 @@ class Assessment(models.Model):
     min : float
         Min grade allocation that can be set by student
         Should be in [0, 100]
+    course : ForeignKey -> Course
+        Foreign Key with Course
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -199,6 +201,9 @@ class Assessment(models.Model):
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        ordering = ["title"]
 
 
 class FlexAssessment(models.Model):
@@ -218,3 +223,6 @@ class FlexAssessment(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     flex = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+
+    class Meta:
+        ordering = ["assessment__title"]

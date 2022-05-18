@@ -65,6 +65,7 @@ class DateForm(ModelForm):
 class FlexForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         flex_assessment = kwargs.get('instance', None)
         if flex_assessment:
             deadline = flex_assessment.assessment.course.deadline
@@ -78,13 +79,14 @@ class FlexForm(ModelForm):
         validation_errors = []
 
         if flex and (flex > 100.0 or flex < 0.0):
-            validation_errors.append(ValidationError('Flex must be within 0.0 and 100.0'))
+            validation_errors.append(
+                ValidationError('Flex must be within 0.0 and 100.0'))
 
         if validation_errors:
             raise ValidationError(validation_errors)
-        
+
         return flex
-    
+
     class Meta:
         model = FlexAssessment
         fields = ['flex']

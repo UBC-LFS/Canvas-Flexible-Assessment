@@ -1,6 +1,7 @@
 {% extends "flex/instructor/instructor_base.html" %}
 
 {% block content %}
+  <p><strong>Default allocation avaialable for assessment:</strong> {{ default_remainder }}</p>
   <form action="" method="post">
     {% csrf_token %}
     <table>
