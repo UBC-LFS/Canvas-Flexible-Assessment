@@ -5,8 +5,9 @@
   <p><strong>Default:</strong> {{ assessment.default }}</p>
   <p><strong>Max:</strong> {{ assessment.max }}</p>
   <p><strong>Min:</strong> {{ assessment.min }}</p>
-  <p><strong>Responses:</strong> <a href="">#</a></p>
+  <p><strong>Responses:</strong> <a href="">{{ response_count }}</a></p>
 
-  <a class="btn btn-primary" id="insertRow" href="{% url 'flex:update_assessment' assessment.id %}">Update assessment</a>
-  <a class="btn btn-danger btn-block" id="insertRow" href="{% url 'flex:delete_assessment' assessment.id %}">Delete assessment</a>
+  <a class="btn btn-primary" href="{% url 'flex:update_assessment' assessment.id %}">Update assessment</a>
+  <a class="btn btn-danger" href="{% url 'flex:delete_assessment' assessment.id %}">Delete assessment</a>
+  <a class="btn btn-secondary" href="{% url 'flex:instructor_list' %}">Back</a>
 {% endblock %}

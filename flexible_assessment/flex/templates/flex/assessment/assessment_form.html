@@ -7,6 +7,14 @@
     <table>
     {{ form.as_table }}
     </table>
+    {% if form.fields.reset_flex %}
+      <p style="color:red;">Checking reset flex would set student's desired % to None for any that are out of the range</p>
+    {% endif %}
     <input class="btn btn-primary" type="submit" value="Submit">
+    {% if form.fields.reset_flex %}
+      <a class="btn btn-secondary" type="button" href="{% url 'flex:inst_assessment_detail' assessment.id %}">Back</a>
+    {% else %}
+      <a class="btn btn-secondary" type="button" href="{% url 'flex:instructor_list' %}">Back</a>
+    {% endif %}
   </form>
 {% endblock %}

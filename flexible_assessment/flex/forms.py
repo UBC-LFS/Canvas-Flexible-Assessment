@@ -46,6 +46,13 @@ class AddAssessmentForm(ModelForm):
                       'max': 'Maximum possible grade allocation set by student'}
 
 
+class UpdateAssessmentForm(AddAssessmentForm):
+    reset_flex = forms.BooleanField(
+        label='Reset flex',
+        required=False,
+        initial=False)
+
+
 class DateForm(ModelForm):
     def clean_deadline(self):
         data = self.cleaned_data['deadline']

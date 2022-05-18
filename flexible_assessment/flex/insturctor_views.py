@@ -8,7 +8,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 import flex.models as models
 import flex.utils as utils
 
-from .forms import AddAssessmentForm, DateForm
+from .forms import AddAssessmentForm, DateForm, UpdateAssessmentForm
 
 
 class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -23,6 +23,7 @@ class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         assessment_default_sum = self._get_assessment_sum()
         context['default_sum'] = assessment_default_sum
         context['default_remainder'] = 100 - assessment_default_sum
+        context['reset_confirm'] = False
 
         return context
 
@@ -78,7 +79,7 @@ class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
 class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = models.Assessment
-    form_class = AddAssessmentForm
+    form_class = UpdateAssessmentForm
     template_name = 'flex/assessment/assessment_form.html'
     success_url = reverse_lazy('flex:instructor_list')
 
@@ -94,13 +95,16 @@ class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def form_valid(self, form):
         assessment_default_sum = self.get_context_data().get('default_sum')
 
-        error_response = self._check_allocation_total(
+        allocation_response = self._check_allocation_total(
             form, assessment_default_sum)
-        if error_response:
-            return error_response
+        if allocation_response:
+            return allocation_response
+
+        flex_range_response = self._handle_flex_out_of_range(form)
+        if flex_range_response:
+            return flex_range_response
 
         response = super(AssessmentUpdate, self).form_valid(form)
-
         return response
 
     def _get_assessment_sum(self):
@@ -119,6 +123,35 @@ class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             return response
         else:
             return None
+
+    def _handle_flex_out_of_range(self, form):
+        new_min = form.cleaned_data.get('min', '')
+        new_max = form.cleaned_data.get('max', '')
+        assessment = models.Assessment.objects.get(pk=self.object.id)
+        flex_assessments = assessment.flexassessment_set.all()
+
+        def out_of_range_filter(flex_assessment):
+            flex = flex_assessment.flex
+            return flex and (flex < new_min or flex > new_max)
+
+        invalid_flexes = list(filter(out_of_range_filter, flex_assessments))
+
+        reset_flex = form.cleaned_data.get('reset_flex', False)
+        if invalid_flexes and not reset_flex:
+            if len(invalid_flexes) > 10:
+                form.add_error(None, ValidationError(
+                    'Warning: {} students have flex allocation out of new range '.format(len(invalid_flex))))
+            else:
+                for invalid_flex in invalid_flexes:
+                    login_id = invalid_flex.user.login_id
+                    display_name = invalid_flex.user.display_name
+                    flex = invalid_flex.flex
+
+                    form.add_error(None, ValidationError(
+                        '{} ({}) has flex allocation out of range ({}%)'.format(display_name, login_id, flex)))
+
+            response = super(AssessmentUpdate, self).form_invalid(form)
+            return response
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
@@ -167,6 +200,16 @@ class AssessmentDetailView(
     model = models.Assessment
     template_name = 'flex/assessment/assessment_detail.html'
     raise_exception = True
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        assessment = context['assessment']
+        flex_assessments = list(
+            filter(
+                lambda fa: fa.flex,
+                assessment.flexassessment_set.all()))
+        context['response_count'] = len(flex_assessments)
+        return context
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
