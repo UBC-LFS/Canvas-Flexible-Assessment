@@ -18,7 +18,7 @@ import flex.lti as lti
 import flex.models as models
 import flex.utils as utils
 
-from .forms import AddAssessmentForm, DateForm
+from .forms import AddAssessmentForm, DateForm, FlexForm
 
 
 def index(request):
@@ -219,33 +219,43 @@ class StudentListView(
 class FlexAssessmentUpdate(
         LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = models.FlexAssessment
-    # form_class = FlexForm
-    fields = ['flex']
+    form_class = FlexForm
     template_name = 'flex/flex_assessment_form.html'
     success_url = reverse_lazy('flex:student_list')
 
+    def get_context_data(self, **kwargs):
+        context = super(FlexAssessmentUpdate, self).get_context_data(**kwargs)
+
+        user_id = self.request.session['user_id']
+        course_id = self.request.session['course_id']
+        curr_flex_assessment_id = self.object.id
+
+        flex_sum = get_flex_sum(user_id, course_id, curr_flex_assessment_id)
+        context['flex_remainder'] = 100 - flex_sum
+
+        return context
+
     def form_valid(self, form):
         user_id = self.request.session['user_id']
-        user = models.UserProfile.objects.get(pk=user_id)
-
         course_id = self.request.session['course_id']
-        course = models.Course.objects.get(pk=course_id)
+        curr_flex_assessment_id = self.object.id
 
-        def flex_filter(flex_assessment):
-            assessment = flex_assessment.assessment
-            flex_course = assessment.course
-            form_flex_assessment_id = self.object.id
-
-            return flex_assessment and flex_course == course and flex_assessment.id != form_flex_assessment_id
-
-        user_flex_assessments = user.flexassessment_set.all()
-        flex_assessments = list(filter(flex_filter, user_flex_assessments))
-        flex_allocations = [fa.flex for fa in flex_assessments]
-        flex_sum = sum(flex_allocations)
+        flex_sum = get_flex_sum(user_id, course_id, curr_flex_assessment_id)
 
         if form.cleaned_data['flex'] + flex_sum > 100.0:
-            form.add_error('default', ValidationError(
+            form.add_error('flex', ValidationError(
                 'Flex assessment allocations add up to over 100%'))
+            response = super(FlexAssessmentUpdate, self).form_invalid(form)
+            return response
+        
+        flex_assessment = models.FlexAssessment.objects.get(pk=self.object.id)
+        assessment = flex_assessment.assessment
+        if form.cleaned_data['flex'] > assessment.max:
+            form.add_error('flex', ValidationError('Flex should be less than or equal to max'))
+        elif form.cleaned_data['flex'] < assessment.min:
+            form.add_error('flex', ValidationError('Flex should be greater than or equal to min'))
+        
+        if form.has_error('flex'):
             response = super(FlexAssessmentUpdate, self).form_invalid(form)
             return response
 
@@ -256,3 +266,20 @@ class FlexAssessmentUpdate(
     def test_func(self):
         return utils.is_teacher_admin(
             self.request.user) or utils.is_student(self.request.user)
+
+def get_flex_sum(user_id, course_id, curr_flex_assessment_id):
+    user = models.UserProfile.objects.get(pk=user_id)
+    course = models.Course.objects.get(pk=course_id)
+
+    def flex_filter(flex_assessment):
+        assessment = flex_assessment.assessment
+        flex_course = assessment.course
+        form_flex_assessment_id = curr_flex_assessment_id
+
+        return flex_assessment.flex and flex_course == course and flex_assessment.id != form_flex_assessment_id
+
+    user_flex_assessments = user.flexassessment_set.all()
+    flex_assessments = list(filter(flex_filter, user_flex_assessments))
+    flex_allocations = [flex_asessment.flex for flex_asessment in flex_assessments]
+
+    return sum(flex_allocations)

@@ -1,6 +1,10 @@
 {% extends "flex/student/student_base.html" %}
 
 {% block content %}
+  <p><strong>Default:</strong> {{ flexassessment.assessment.default }}</p>
+  <p><strong>Max:</strong> {{ flexassessment.assessment.max }}</p>
+  <p><strong>Min:</strong> {{ flexassessment.assessment.min }}</p>
+  <p><strong>Remaining flex:</strong> {{ flex_remainder }}</p>
   <form action="" method="post">
     {% csrf_token %}
     <table>
