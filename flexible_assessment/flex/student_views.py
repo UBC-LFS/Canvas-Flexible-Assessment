@@ -8,7 +8,7 @@ from django.views.generic.edit import UpdateView
 import flex.models as models
 import flex.utils as utils
 
-from .forms import FlexForm
+from .forms import CommentForm, FlexForm
 
 
 class StudentListView(
@@ -149,7 +149,7 @@ class FlexAssessmentUpdate(
 
 class CommentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = models.UserComment
-    fields = ['comment']
+    form_class = CommentForm
     template_name = 'flex/student/student_comment.html'
     success_url = reverse_lazy('flex:student_list')
 

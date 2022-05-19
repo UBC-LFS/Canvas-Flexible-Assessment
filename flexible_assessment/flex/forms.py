@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
-from .models import Assessment, Course, FlexAssessment
+from .models import Assessment, Course, FlexAssessment, UserComment
 
 
 class AddAssessmentForm(ModelForm):
@@ -62,9 +62,9 @@ class DateForm(ModelForm):
         model = Course
         fields = ['deadline']
         widgets = {
-            'deadline': forms.TextInput(
-                attrs={
-                    'placeholder': 'MM/DD/YYYY HH:MM'})}
+            'deadline': forms.DateTimeInput(format='%m/%d/%y %H:%M',
+                                            attrs={
+                                                'placeholder': 'mm/dd/yy hh:mm'})}
         help_texts = {
             'deadline': 'Due date for students to add or change grade allocation for assessments'}
 
@@ -72,7 +72,7 @@ class DateForm(ModelForm):
 class FlexForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        # TODO: verify deadline after submitting as well
         flex_assessment = kwargs.get('instance', None)
         if flex_assessment:
             deadline = flex_assessment.assessment.course.deadline
@@ -98,3 +98,12 @@ class FlexForm(ModelForm):
         model = FlexAssessment
         fields = ['flex']
         help_texts = {'flex': 'Grade allocation for assessment'}
+
+
+class CommentForm(ModelForm):
+    class Meta:
+        model = UserComment
+        fields = ['comment']
+        widgets = {
+            'comment': forms.Textarea(attrs={'rows': 3, 'cols': 25})
+        }
