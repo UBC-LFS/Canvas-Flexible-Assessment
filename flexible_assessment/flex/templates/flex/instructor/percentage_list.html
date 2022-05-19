@@ -1,0 +1,57 @@
+{% extends "flex/instructor/instructor_base.html" %}
+{% load flextags %}
+
+{% block content %}
+  <h1>Student List</h1>
+  {% if student_list %}
+    <table class="table table-striped" style="table-layout: fixed; margin-bottom: 0;">
+      <caption>Click student to edit their desired %</caption>
+      <thead>
+        <tr>
+          <th style="width: 150px">Student</th>
+          {% for assessment in course.assessment_set.all %}
+            <th style="text-align: center;">{{ assessment.title }}</th>
+          {% endfor %}
+          <th style="width: 250px">Comment</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in student_list %}
+          <tr>
+            <td style="word-wrap: break-word;"><a href="">{{ student.display_name }}</a></td>
+            {% for assessment in course.assessment_set.all %}
+              {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
+                <td style="text-align: center;">{{ flex_assessment.flex }}</td>
+              {% endwith %}
+            {% endfor %}
+            {% with student.usercomment_set.all|comment_filter:course.id as user_comment %}
+              <td style="word-wrap: break-word;">{{ user_comment.comment }}</td>
+            {% endwith %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No students in this course have launched the app yet.</p>
+  {% endif %}
+  <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% else %}
+            <a class="btn btn-outline-primary btn-sm disabled">Previous</a>
+        {% endif %}
+
+        <span class="current">
+            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% else %}
+            <a class="btn btn-outline-primary btn-sm disabled">Next</a>
+        {% endif %}
+    </span>
+  </div>
+
+{% endblock %}

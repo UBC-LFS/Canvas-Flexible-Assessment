@@ -195,6 +195,26 @@ class InstructorListView(
         return utils.is_teacher_admin(self.request.user)
 
 
+class FlexAssessmentListView(
+        LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+    model = models.UserProfile
+    context_object_name = 'student_list'
+    template_name = 'flex/instructor/percentage_list.html'
+    raise_exception = True
+    paginate_by = 5
+
+    def get_queryset(self):
+        user_id = self.request.session.get('user_id', '')
+        course_id = self.request.session.get('course_id', '')
+        if not user_id:
+            raise PermissionDenied
+        return models.UserProfile.objects.filter(
+            role=models.Roles.STUDENT, usercourse__course__id=course_id)
+
+    def test_func(self):
+        return utils.is_teacher_admin(self.request.user)
+
+
 class AssessmentDetailView(
         LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = models.Assessment

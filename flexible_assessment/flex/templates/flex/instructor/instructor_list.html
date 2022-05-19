@@ -7,22 +7,23 @@
     <h1>Add assessments to course</h1>
   {% endif %}
   {% if assessment_list %}
-    <table class="table">
+    <table class="table table-striped" style="margin-bottom: 0;">
+      <caption>Click assessment to edit</caption>
       <thead>
         <tr>
           <th>Title</th>
-          <th>Default Allocation</th>
-          <th>Min Allocation</th>
-          <th>Max Allocation</th>
+          <th style="text-align: center;">Default %</th>
+          <th style="text-align: center;">Min %</th>
+          <th style="text-align: center;">Max %</th>
         </tr>
       </thead>
       <tbody>
         {% for assessment in assessment_list %}
           <tr>
             <td><a href="{% url 'flex:inst_assessment_detail' assessment.id %}">{{ assessment.title }}</a></td>
-            <td>{{ assessment.default }}</td>
-            <td>{{ assessment.min }}</td>
-            <td>{{ assessment.max }}</td>
+            <td style="text-align: center;">{{ assessment.default }}</td>
+            <td style="text-align: center;">{{ assessment.min }}</td>
+            <td style="text-align: center;">{{ assessment.max }}</td>
           </tr>
         {% endfor %}
       </tbody>

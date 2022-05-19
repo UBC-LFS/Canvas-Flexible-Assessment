@@ -7,24 +7,25 @@
     <h1>Add assessments to course</h1>
   {% endif %}
   {% if flex_list %}
-    <table class="table">
+    <table class="table table-striped" style="margin-bottom: 0;">
+      <caption>Remaining Flex Allocation: {{ flex_remainder }}%</caption>
       <thead>
         <tr>
-          <th>Assessment Title</th>
-          <th>Desired %</th>
-          <th>Default %</th>
-          <th>Min %</th>
-          <th>Max %</th>
+          <th>Title</th>
+          <th style="text-align: center;">Desired %</th>
+          <th style="text-align: center;">Default %</th>
+          <th style="text-align: center;">Min %</th>
+          <th style="text-align: center;">Max %</th>
         </tr>
       </thead>
       <tbody>
         {% for flex_assessment in flex_list %}
           <tr>
             <td><a href="{% url 'flex:update_flex' flex_assessment.id %}">{{ flex_assessment.assessment.title }}</a></td>
-            <td>{{ flex_assessment.flex }}</td>
-            <td>{{ flex_assessment.assessment.default }}</td>
-            <td>{{ flex_assessment.assessment.min }}</td>
-            <td>{{ flex_assessment.assessment.max }}</td>
+            <td style="text-align: center;">{{ flex_assessment.flex }}</td>
+            <td style="text-align: center;">{{ flex_assessment.assessment.default }}</td>
+            <td style="text-align: center;">{{ flex_assessment.assessment.min }}</td>
+            <td style="text-align: center;">{{ flex_assessment.assessment.max }}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -53,9 +54,14 @@
   </div>
 
   {% if course.deadline %}
-    <h4 style="padding-top: 20px">Remaining Flex Allocation</h4>
-    <p>{{ flex_remainder }}%</p>
-    <h4 style="padding-top: 10px">Flexible assessment due date</h4>
+    <h4 style="padding-top: 20px">Comment for allocation</h4>
+    {% if comment %}
+      <span class="border p-2 border-dark" style="display: block; width: 300px; word-wrap:break-word; margin-bottom: 10px; opacity: 0.6;">{{ comment }}</span>
+      <a class="btn btn-primary" href="{% url 'flex:update_comment' user_comment_id %}">Change</a>
+    {% else %}
+      <a class="btn btn-primary" href="{% url 'flex:update_comment' user_comment_id %}">Add</a>
+    {% endif %}
+    <h4 style="padding-top: 20px">Flexible assessment due date</h4>
     <p>{{ course.deadline }}</p>
   {% endif %}
 

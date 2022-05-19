@@ -24,6 +24,12 @@ class StudentListView(
 
         flex_sum = self._get_flex_sum()
         context['flex_remainder'] = 100 - flex_sum
+        user_id = self.request.session['user_id']
+        course_id = self.request.session['course_id']
+        user_comment = models.UserComment.objects.filter(
+            user__user_id=user_id, course__id=course_id).first()
+        context['user_comment_id'] = user_comment.id
+        context['comment'] = user_comment.comment
 
         return context
 
@@ -135,6 +141,17 @@ class FlexAssessmentUpdate(
         elif form.cleaned_data['flex'] < assessment.min:
             form.add_error('flex', ValidationError(
                 'Flex should be greater than or equal to min'))
+
+    def test_func(self):
+        return utils.is_teacher_admin(
+            self.request.user) or utils.is_student(self.request.user)
+
+
+class CommentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = models.UserComment
+    fields = ['comment']
+    template_name = 'flex/student/student_comment.html'
+    success_url = reverse_lazy('flex:student_list')
 
     def test_func(self):
         return utils.is_teacher_admin(

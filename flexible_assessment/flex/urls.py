@@ -33,6 +33,10 @@ urlpatterns = [
         'instructor/course/<slug:pk>/date/update',
         insturctor_views.DateUpdate.as_view(),
         name='update_date'),
+    path(
+        'instructor/percentages/',
+        insturctor_views.FlexAssessmentListView.as_view(),
+        name='percentage_list'),
     path('student/', views.student_home, name='student_home'),
     path(
         'student/assessment/',
@@ -41,5 +45,9 @@ urlpatterns = [
     path(
         'student/flex/<slug:pk>/update',
         student_views.FlexAssessmentUpdate.as_view(),
-        name='update_flex')
+        name='update_flex'),
+    path(
+        'student/comment/<slug:pk>/update',
+        student_views.CommentUpdate.as_view(),
+        name='update_comment')
 ]

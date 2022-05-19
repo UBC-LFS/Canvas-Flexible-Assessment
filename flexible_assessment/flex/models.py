@@ -124,6 +124,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         return self.role == Roles.ADMIN
 
+    class Meta:
+        ordering = ['display_name']
+
 
 class Course(models.Model):
     """Table for course entries with flexible assessment
@@ -226,3 +229,9 @@ class FlexAssessment(models.Model):
 
     class Meta:
         ordering = ["assessment__title"]
+
+
+class UserComment(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    comment = models.TextField(max_length=100, default="", blank=True)

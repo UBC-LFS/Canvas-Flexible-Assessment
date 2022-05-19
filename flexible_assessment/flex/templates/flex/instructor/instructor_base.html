@@ -17,7 +17,7 @@
           <li><a href="{% url 'flex:instructor_home' %}">Home</a></li>
           {% if course.deadline %}
             <li><a href="{% url 'flex:instructor_list' %}">Assessments</a></li>
-            <li><a href="">Percentages</a></li>
+            <li><a href="{% url 'flex:percentage_list' %}">Percentages</a></li>
             <li><a href="">Calculate Final Grades</a></li>
           {% else %}
             <li><a href="{% url 'flex:instructor_list' %}">Course Setup</a></li>

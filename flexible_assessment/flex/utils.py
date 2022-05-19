@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
-from .models import Assessment, Course, FlexAssessment, Roles, UserCourse, UserProfile
+from .models import Assessment, Course, FlexAssessment, Roles, UserComment, UserCourse, UserProfile
 
 
 def set_user_profile(request, user_id, login_id, display_name, role):
@@ -49,7 +49,15 @@ def set_user_course(request, custom_fields, role):
     course = set_course(request, course_id, course_name)
 
     set_user_course_enrollment(user, course)
+    set_user_comment(user, course)
     set_user_group(user)
+
+
+def set_user_comment(user, course):
+    if not user.usercomment_set.filter(
+            course__id=course.id).exists() and user.role == Roles.STUDENT:
+        user_comment = UserComment(user=user, course=course)
+        user_comment.save()
 
 
 def set_user_group(user):
