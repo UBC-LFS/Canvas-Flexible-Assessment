@@ -4,10 +4,6 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
 from .models import Assessment, Course, FlexAssessment, Roles, UserComment, UserCourse, UserProfile
-from canvasapi import Canvas
-
-CANVAS_API_URL = os.getenv('CANVAS_API_URL')
-CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
 
 
 def set_user_profile(request, user_id, login_id, display_name, role):

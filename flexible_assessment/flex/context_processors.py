@@ -2,6 +2,14 @@ from .models import Course
 
 
 def add_course_to_context(request):
+    """Adds course object reference to context
+    
+    Parameters
+    ----------
+        request : request
+            Contains request data
+    """
+    
     context_addition = {}
     if request.session.get('course_id', ''):
         context_addition['course'] = Course.objects.get(

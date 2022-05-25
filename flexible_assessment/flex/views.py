@@ -18,6 +18,7 @@ def index(request):
 
 
 def login(request):
+    # TODO: OAuth 2.0 login
     tool_conf = lti.get_tool_conf()
     launch_data_storage = lti.get_launch_data_storage()
     pprint.pprint(request)
@@ -40,8 +41,6 @@ def launch(request):
     pprint.pprint(message_launch_data)
 
     custom_fields = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/custom']
-
-    # utils.add_permissions()
 
     # TODO: TAEnrollement view
     if 'TeacherEnrollment' in custom_fields['role']:

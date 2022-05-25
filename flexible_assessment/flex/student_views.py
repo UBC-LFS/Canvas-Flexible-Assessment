@@ -17,7 +17,7 @@ class StudentListView(
     context_object_name = 'flex_list'
     template_name = 'flex/student/student_list.html'
     raise_exception = True
-    paginate_by = 5
+    paginate_by = 10
 
     def get_context_data(self, **kwargs):
         context = super(StudentListView, self).get_context_data(**kwargs)
