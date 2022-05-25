@@ -1,3 +1,4 @@
+import pprint
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.forms import ValidationError
@@ -8,7 +9,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 import flex.models as models
 import flex.utils as utils
 
-from .forms import AddAssessmentForm, DateForm, UpdateAssessmentForm
+from .forms import AddAssessmentForm, AssessmentGroupForm, DateForm, UpdateAssessmentForm
 
 
 class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -230,6 +231,41 @@ class AssessmentDetailView(
                 assessment.flexassessment_set.all()))
         context['response_count'] = len(flex_assessments)
         return context
+
+    def test_func(self):
+        return utils.is_teacher_admin(self.request.user)
+
+
+class AssessmentGroupView(
+        LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
+    template_name = 'flex/instructor/assessment_group_form.html'
+    form_class = AssessmentGroupForm
+    raise_exception = True
+    success_url = reverse_lazy('flex:instructor_list')
+
+    def get_form_kwargs(self):
+        kwargs = super(AssessmentGroupView, self).get_form_kwargs()
+        course_id = self.request.session.get('course_id', '')
+        kwargs['course_id'] = course_id
+        kwargs['assessments'] = models.Assessment.objects.filter(
+            course_id=course_id)
+        return kwargs
+
+    def form_valid(self, form):
+        matched_groups = form.cleaned_data.values()
+        matched_groups_unique = len(set(matched_groups)) == len(matched_groups)
+        if not matched_groups_unique:
+            form.add_error(None, ValidationError(
+                'Matched groups must be unique'))
+            response = super(AssessmentGroupView, self).form_invalid(form)
+            return response
+
+        for id in form.cleaned_data.keys():
+            assessment = models.Assessment.objects.filter(pk=id).first()
+            assessment.group = form.cleaned_data[id]
+            assessment.save()
+        response = super(AssessmentGroupView, self).form_valid(form)
+        return response
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)

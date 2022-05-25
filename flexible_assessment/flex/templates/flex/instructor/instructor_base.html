@@ -18,7 +18,7 @@
           {% if course.deadline %}
             <li><a href="{% url 'flex:instructor_list' %}">Assessments</a></li>
             <li><a href="{% url 'flex:percentage_list' %}">Percentages</a></li>
-            <li><a href="">Calculate Final Grades</a></li>
+            <li><a href="{% url 'flex:group_form' %}">Calculate Final Grades</a></li>
           {% else %}
             <li><a href="{% url 'flex:instructor_list' %}">Course Setup</a></li>
           {% endif %}

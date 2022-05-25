@@ -173,6 +173,16 @@ class UserCourse(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 
+class AssignmentGroup(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=100)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    allocation = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Assessment(models.Model):
     """Table of assessment entries
 
@@ -201,6 +211,10 @@ class Assessment(models.Model):
     min = models.DecimalField(max_digits=5, decimal_places=2)
     max = models.DecimalField(max_digits=5, decimal_places=2)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    group = models.ForeignKey(
+        AssignmentGroup,
+        on_delete=models.CASCADE,
+        null=True)
 
     def __str__(self):
         return self.title

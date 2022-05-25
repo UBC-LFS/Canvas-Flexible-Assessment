@@ -37,6 +37,10 @@ urlpatterns = [
         'instructor/percentages/',
         insturctor_views.FlexAssessmentListView.as_view(),
         name='percentage_list'),
+    path(
+        'instructor/final/',
+        insturctor_views.AssessmentGroupView.as_view(),
+        name='group_form'),
     path('student/', views.student_home, name='student_home'),
     path(
         'student/assessment/',

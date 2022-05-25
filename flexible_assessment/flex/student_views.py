@@ -23,6 +23,7 @@ class StudentListView(
         context = super(StudentListView, self).get_context_data(**kwargs)
 
         flex_sum = self._get_flex_sum()
+        # TODO: Add handle for Remaining flex allocation < Remaining default
         context['flex_remainder'] = 100 - flex_sum
         user_id = self.request.session['user_id']
         course_id = self.request.session['course_id']

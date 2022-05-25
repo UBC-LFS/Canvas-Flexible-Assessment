@@ -1,3 +1,4 @@
-Django==4.0.4
-PyLTI1p3==1.11.0
+canvasapi==2.2.0
+Django==2.2.12
+PyLTI1p3==1.9.1
 python-dotenv==0.20.0

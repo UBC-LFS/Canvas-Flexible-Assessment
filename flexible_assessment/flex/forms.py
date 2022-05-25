@@ -1,9 +1,15 @@
 from datetime import datetime
+import pprint
 from zoneinfo import ZoneInfo
+from canvasapi import Canvas
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
-from .models import Assessment, Course, FlexAssessment, UserComment
+from .models import Assessment, Course, FlexAssessment, UserComment, AssignmentGroup
+import os
+
+CANVAS_API_URL = os.getenv('CANVAS_API_URL')
+CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
 
 
 class AddAssessmentForm(ModelForm):
@@ -107,3 +113,41 @@ class CommentForm(ModelForm):
         widgets = {
             'comment': forms.Textarea(attrs={'rows': 3, 'cols': 25})
         }
+
+
+class AssessmentGroupForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        assessments = kwargs.pop('assessments')
+        course_id = kwargs.pop('course_id')
+        super().__init__(*args, **kwargs)
+
+        if assessments:
+            canvas_course = Canvas(
+                CANVAS_API_URL,
+                CANVAS_API_KEY).get_course(course_id)
+            model_course = Course.objects.filter(pk=course_id).first()
+            
+            asgn_groups = []
+            for canvas_group in canvas_course.get_assignment_groups():
+                id = canvas_group.__getattribute__('id')
+                name = canvas_group.__getattribute__('name')
+                allocation = canvas_group.__getattribute__('group_weight')
+                asgn_group = AssignmentGroup.objects.filter(pk=id)
+                if not asgn_group.exists():
+                    asgn_groups.append(
+                        AssignmentGroup(
+                            id=id,
+                            name=name,
+                            course=model_course,
+                            allocation=allocation))
+            AssignmentGroup.objects.bulk_create(asgn_groups)
+
+            assessment_fields = {}
+            for assessment in assessments:
+                if assessment.group:
+                    initial = assessment.group
+                else:
+                    initial = None
+                assessment_fields[assessment.id.hex] = forms.ModelChoiceField(
+                    AssignmentGroup.objects.filter(course_id=course_id), label=assessment.title, initial=initial)
+            self.fields.update(assessment_fields)
