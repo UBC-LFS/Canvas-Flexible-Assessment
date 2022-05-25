@@ -42,7 +42,7 @@ def get_default_total(groups, student_id):
         grades = assessment['grade_list']['grades']
         for curr_id, score in grades:
             if student_id_str == curr_id:
-                if score:
+                if score is not None:
                     scores.append(score)
                     weights.append(assessment['group_weight'])
                 break
@@ -68,9 +68,9 @@ def get_override_total(groups, assessments, student_id):
         grades = group_assessment['grade_list']['grades']
         for curr_id, score in grades:
             if student_id_str == curr_id:
-                if score:
+                if score is not None:
                     scores.append(score)
-                    if not flex:
+                    if flex is not None:
                         flex = assessment.default
                     flex_set.append(float(flex))
 
