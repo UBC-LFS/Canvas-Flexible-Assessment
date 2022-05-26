@@ -17,6 +17,7 @@ from .forms import (AddAssessmentForm, AssessmentGroupForm, DateForm,
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
 
+
 class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     """Extends Django CreateView and authentication mixins for creating assessments.
     Uses AddAssessmentForm as form_class, redirects to instructor assessment page on success.
@@ -31,7 +32,7 @@ class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         """Adds assessment allocation sum and remainder for UI and allocation total check.
-        
+
         Returns
         -------
             context : context
@@ -48,12 +49,12 @@ class AssessmentCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def form_valid(self, form):
         """Validates allocation total and creates flex assessment for current assessment
-        
+
         Parameters
         ----------
             form : form
                 Contains Django form fields and submitted field data
-        
+
         Returns
         -------
             response : Union[HttpResponseRedirect, TemplateResponse]
@@ -128,13 +129,13 @@ class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         """Adds assessment allocation sum and remainder for UI and allocation total check.
-        
+
         Returns
         -------
             context : context
                 Contains context data for request
         """
-        
+
         context = super(AssessmentUpdate, self).get_context_data(**kwargs)
 
         assessment_default_sum = self._get_assessment_sum()
@@ -144,14 +145,14 @@ class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return context
 
     def form_valid(self, form):
-        """Validates allocation total and changes flex assessment for related assessment 
+        """Validates allocation total and changes flex assessment for related assessment
         if flex is not within max and min.
-        
+
         Parameters
         ----------
             form : form
                 Contains Django form fields and submitted field data
-        
+
         Returns
         -------
             response : Union[HttpResponseRedirect, TemplateResponse]
@@ -195,7 +196,7 @@ class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def _handle_flex_out_of_range(self, form):
         """Checks for and handles flex assessments with flex out of range of max and min.
-        If reset flex is checked in the form then out of bound flex is reset to None, 
+        If reset flex is checked in the form then out of bound flex is reset to None,
         otherwise invalid response returned.
         """
 
@@ -232,7 +233,7 @@ class AssessmentUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 
 class AssessmentDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    """Extends Django DeleteView and authentication mixins for deleting assessments. 
+    """Extends Django DeleteView and authentication mixins for deleting assessments.
     Redirects to instructor assessment page on success.
     """
 
@@ -245,7 +246,7 @@ class AssessmentDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 class DateUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """Extends Django UpdateView and authentication mixins for changing flex deadline. 
+    """Extends Django UpdateView and authentication mixins for changing flex deadline.
     Uses DateForm as form_class. Redirects to instructor assessment page on success.
     """
 
@@ -270,7 +271,7 @@ class InstructorListView(
 
     def get_queryset(self):
         """QuerySet is assessments objects for current course"""
-    
+
         user_id = self.request.session.get('user_id', '')
         course_id = self.request.session.get('course_id', '')
         if not user_id:
@@ -283,7 +284,7 @@ class InstructorListView(
 
 class FlexAssessmentListView(
         LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
-    """Extends Django generic ListView and authentication mixins for 
+    """Extends Django generic ListView and authentication mixins for
     listing student flex allocations
     """
 
@@ -306,7 +307,9 @@ class FlexAssessmentListView(
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
 
-class FinalGradeListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+
+class FinalGradeListView(
+        LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
     model = models.UserProfile
     context_object_name = 'student_list'
     template_name = 'flex/instructor/final_grade_list.html'
@@ -331,7 +334,10 @@ class FinalGradeListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListVi
                 user_id: _id
                 display_name: name
               } } } } } } } }"""
-        query_response = Canvas(CANVAS_API_URL, CANVAS_API_KEY).graphql(query, variables={"course_id":course_id})
+        query_response = Canvas(
+            CANVAS_API_URL, CANVAS_API_KEY).graphql(
+            query, variables={
+                "course_id": course_id})
         # TODO: Add KeyError handle
         groups = query_response['data']['course']['assignment_groups']['groups']
         group_dict = {}
@@ -339,7 +345,7 @@ class FinalGradeListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListVi
             id = group['group_id']
             group.pop('group_id', None)
             group_dict[id] = group
-        
+
         for group_data in group_dict.values():
             grades = group_data['grade_list']['grades']
             updated_grades = []
@@ -348,7 +354,7 @@ class FinalGradeListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListVi
                 score = grade['currentScore']
                 updated_grades.append((user_id, score))
             group_data['grade_list']['grades'] = updated_grades
-        
+
         context['groups'] = group_dict
         return context
 
@@ -363,6 +369,7 @@ class FinalGradeListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListVi
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
 
+
 class AssessmentDetailView(
         LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     """Extends Django generic DetailView and authentication mixins for
@@ -375,7 +382,7 @@ class AssessmentDetailView(
 
     def get_context_data(self, **kwargs):
         """Adds response count for assessment (i.e. number of students that added flex allocation)
-        
+
         Returns
         -------
             context : context
@@ -389,7 +396,7 @@ class AssessmentDetailView(
                 lambda fa: fa.flex,
                 assessment.flexassessment_set.all()))
         context['response_count'] = len(flex_assessments)
-    
+
         return context
 
     def test_func(self):
@@ -409,7 +416,7 @@ class AssessmentGroupView(
 
     def get_form_kwargs(self):
         """Adds course_id and assessment as keyword arguments for making form fields
-        
+
         Returns
         -------
             kwargs : kwargs
@@ -426,12 +433,12 @@ class AssessmentGroupView(
 
     def form_valid(self, form):
         """Validates matched groups are unique and adds AssignmentGroup as Foreign Key to Assessment
-        
+
         Parameters
         ----------
             form : form
                 Contains Django form fields and submitted field data
-        
+
         Returns
         -------
             response : Union[HttpResponseRedirect, TemplateResponse]
@@ -450,7 +457,7 @@ class AssessmentGroupView(
             assessment = models.Assessment.objects.filter(pk=id).first()
             assessment.group = group
             assessment.save()
-    
+
         response = super(AssessmentGroupView, self).form_valid(form)
         return response
 

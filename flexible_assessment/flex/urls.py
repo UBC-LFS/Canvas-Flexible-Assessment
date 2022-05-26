@@ -41,7 +41,10 @@ urlpatterns = [
         'instructor/final/1/',
         insturctor_views.AssessmentGroupView.as_view(),
         name='group_form'),
-    path('instructor/final/2/', insturctor_views.FinalGradeListView.as_view(), name='final_grades'),
+    path(
+        'instructor/final/2/',
+        insturctor_views.FinalGradeListView.as_view(),
+        name='final_grades'),
     path('student/', views.student_home, name='student_home'),
     path(
         'student/assessment/',

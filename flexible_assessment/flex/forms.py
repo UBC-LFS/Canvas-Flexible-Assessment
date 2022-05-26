@@ -121,33 +121,43 @@ class AssessmentGroupForm(forms.Form):
         course_id = kwargs.pop('course_id')
         super().__init__(*args, **kwargs)
 
-        if assessments:
-            canvas_course = Canvas(
-                CANVAS_API_URL,
-                CANVAS_API_KEY).get_course(course_id)
-            model_course = Course.objects.filter(pk=course_id).first()
-            
-            asgn_groups = []
-            for canvas_group in canvas_course.get_assignment_groups():
-                id = canvas_group.__getattribute__('id')
-                name = canvas_group.__getattribute__('name')
-                allocation = canvas_group.__getattribute__('group_weight')
-                asgn_group = AssignmentGroup.objects.filter(pk=id)
-                if not asgn_group.exists():
-                    asgn_groups.append(
-                        AssignmentGroup(
-                            id=id,
-                            name=name,
-                            course=model_course,
-                            allocation=allocation))
-            AssignmentGroup.objects.bulk_create(asgn_groups)
+        canvas_course = Canvas(
+            CANVAS_API_URL,
+            CANVAS_API_KEY).get_course(course_id)
+        model_course = Course.objects.filter(pk=course_id).first()
 
-            assessment_fields = {}
-            for assessment in assessments:
-                if assessment.group:
-                    initial = assessment.group
-                else:
-                    initial = None
-                assessment_fields[assessment.id.hex] = forms.ModelChoiceField(
-                    AssignmentGroup.objects.filter(course_id=course_id), label=assessment.title, initial=initial)
-            self.fields.update(assessment_fields)
+        asgn_groups_create = []
+        asgn_groups_update = []
+        for canvas_group in canvas_course.get_assignment_groups():
+            id = canvas_group.__getattribute__('id')
+            name = canvas_group.__getattribute__('name')
+            allocation = canvas_group.__getattribute__('group_weight')
+            asgn_group = AssignmentGroup.objects.filter(pk=id)
+            if not asgn_group.exists():
+                asgn_groups_create.append(
+                    AssignmentGroup(
+                        id=id,
+                        name=name,
+                        course=model_course,
+                        allocation=allocation))
+            else:
+                asgn_groups_update.append(
+                    AssignmentGroup(
+                        id=id,
+                        name=name,
+                        course=model_course,
+                        allocation=allocation))
+        AssignmentGroup.objects.bulk_create(asgn_groups_create)
+        AssignmentGroup.objects.bulk_update(
+            asgn_groups_update, [
+                'name', 'course', 'allocation'])
+
+        assessment_fields = {}
+        for assessment in assessments:
+            if assessment.group:
+                initial = assessment.group
+            else:
+                initial = None
+            assessment_fields[assessment.id.hex] = forms.ModelChoiceField(
+                AssignmentGroup.objects.filter(course_id=course_id), label=assessment.title, initial=initial)
+        self.fields.update(assessment_fields)
