@@ -1,6 +1,8 @@
 {% extends "flex/student/student_base.html" %}
 
 {% block content %}
+  <h1>Assessment Title: {{ flexassessment.assessment.title }}</h1>
+
   <p><strong>Default:</strong> {{ flexassessment.assessment.default }}</p>
   <p><strong>Max:</strong> {{ flexassessment.assessment.max }}</p>
   <p><strong>Min:</strong> {{ flexassessment.assessment.min }}</p>

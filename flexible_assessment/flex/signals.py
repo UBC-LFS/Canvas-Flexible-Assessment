@@ -27,7 +27,7 @@ def add_flex_assessments(sender, instance, created, **kwargs):
 def update_flex_assessments(sender, instance, created, **kwargs):
     flex_assessments = list(
         filter(
-            lambda fa: fa.flex,
+            lambda fa: fa.flex is not None,
             instance.flexassessment_set.all()))
     min = instance.min
     max = instance.max

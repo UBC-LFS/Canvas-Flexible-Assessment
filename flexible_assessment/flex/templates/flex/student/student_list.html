@@ -5,11 +5,23 @@
   {% if course.deadline %}
     <h1>Assessment List</h1>
   {% else %}
-    <h1>Add assessments to course</h1>
+    <h1>Instructor has not added assessments to the course</h1>
   {% endif %}
   {% if flex_list %}
+    {% with flex_list|missing_allocations as missing %}
+      {% if missing %}
+        <h5 style="color: red">Missing allocations: {{ missing }}</h5>
+      {% endif %}
+      {% if flex_remainder %}
+        <h5 style="color: red">Remaining flex allocation: {{ flex_remainder }}%</h5>
+      {% endif %}
+    {% endwith %}
     <table class="table table-striped" style="margin-bottom: 0;">
-      <caption>Remaining Flex Allocation: {{ flex_remainder }}%</caption>
+      {% if not missing and not flex_remainder %}
+        <caption>All assessments given desired % and all flex has been allocated</caption>
+      {% else %}
+        <caption>Click an assessment to edit desired %</caption>
+      {% endif %}
       <thead>
         <tr>
           <th>Title</th>

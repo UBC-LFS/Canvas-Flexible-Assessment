@@ -23,7 +23,6 @@ class StudentListView(
         context = super(StudentListView, self).get_context_data(**kwargs)
 
         flex_sum = self._get_flex_sum()
-        # TODO: Add handle for Remaining flex allocation < Remaining default
         context['flex_remainder'] = 100 - flex_sum
         user_id = self.request.session['user_id']
         course_id = self.request.session['course_id']
@@ -50,16 +49,10 @@ class StudentListView(
         user = models.UserProfile.objects.get(pk=user_id)
         course = models.Course.objects.get(pk=course_id)
 
-        def flex_filter(flex_assessment):
-            assessment = flex_assessment.assessment
-            flex_course = assessment.course
-
-            return flex_assessment.flex and flex_course == course
-
-        user_flex_assessments = user.flexassessment_set.all()
-        flex_assessments = list(filter(flex_filter, user_flex_assessments))
+        user_flex_assessments = user.flexassessment_set.filter(
+            assessment__course=course).exclude(flex__isnull=True)
         flex_allocations = [
-            flex_asessment.flex for flex_asessment in flex_assessments]
+            flex_asessment.flex for flex_asessment in user_flex_assessments]
 
         return sum(flex_allocations)
 
@@ -109,22 +102,19 @@ class FlexAssessmentUpdate(
         user = models.UserProfile.objects.get(pk=user_id)
         course = models.Course.objects.get(pk=course_id)
 
-        def flex_filter(flex_assessment):
-            assessment = flex_assessment.assessment
-            flex_course = assessment.course
-            form_flex_assessment_id = curr_flex_assessment_id
-
-            return flex_assessment.flex and flex_course == course and flex_assessment.id != form_flex_assessment_id
-
-        user_flex_assessments = user.flexassessment_set.all()
-        flex_assessments = list(filter(flex_filter, user_flex_assessments))
+        user_flex_assessments = user.flexassessment_set.filter(
+            assessment__course=course).exclude(
+            flex__isnull=True).exclude(
+            id__exact=curr_flex_assessment_id)
         flex_allocations = [
-            flex_asessment.flex for flex_asessment in flex_assessments]
+            flex_asessment.flex for flex_asessment in user_flex_assessments]
 
         return sum(flex_allocations)
 
     def _check_allocation_total(self, form, flex_sum):
-        if flex_sum and form.cleaned_data['flex'] + flex_sum > 100.0:
+        if form.cleaned_data['flex'] is None:
+            return None
+        elif flex_sum and form.cleaned_data['flex'] + flex_sum > 100.0:
             form.add_error('flex', ValidationError(
                 'Flex assessment allocations add up to over 100%'))
             response = super(FlexAssessmentUpdate, self).form_invalid(form)
@@ -135,8 +125,9 @@ class FlexAssessmentUpdate(
     def _flex_within_range(self, form):
         flex_assessment = models.FlexAssessment.objects.get(pk=self.object.id)
         assessment = flex_assessment.assessment
-        print(form.cleaned_data)
-        if form.cleaned_data['flex'] > assessment.max:
+        if form.cleaned_data['flex'] is None:
+            return
+        elif form.cleaned_data['flex'] > assessment.max:
             form.add_error('flex', ValidationError(
                 'Flex should be less than or equal to max'))
         elif form.cleaned_data['flex'] < assessment.min:

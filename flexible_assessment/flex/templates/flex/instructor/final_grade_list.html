@@ -10,6 +10,7 @@
         <tr>
           <th style="width: 150px">Student</th>
           {% for assessment in course.assessment_set.all %}
+          <!-- assessment.group.allocation -> groups[assessment.group.id]['group_weight'] -->
             <th style="text-align: center;">{{ assessment.title }} ({{ assessment.group.allocation }})%</th>
           {% endfor %}
           <th>Override Final Grade</th>
@@ -24,9 +25,18 @@
             {% for assessment in course.assessment_set.all %}
                 <td style="text-align: center;">{% get_score groups assessment.group.id student.user_id %}</td>
             {% endfor %}
-            <td>{% get_override_total groups course.assessment_set.all student.user_id %}%</td>
+            {% use_default student course as ud %}
+            {% if ud %}
+              <td>N/A</td>
+            {% else %}
+              <td>{% get_override_total groups course.assessment_set.all student.user_id %}%</td>
+            {% endif %}
             <td>{% get_default_total groups student.user_id %}%</td>
-            <td>{% get_difference groups course.assessment_set.all student.user_id %}%</td>
+            {% if ud %}
+              <td>N/A</td>
+            {% else %}
+              <td>{% get_difference groups course.assessment_set.all student.user_id %}%</td>
+            {% endif %}
           </tr>
         {% endfor %}
       </tbody>

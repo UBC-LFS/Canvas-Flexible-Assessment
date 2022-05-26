@@ -244,7 +244,11 @@ class FlexAssessment(models.Model):
 
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
-    flex = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    flex = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True)
 
     class Meta:
         ordering = ["assessment__title"]
