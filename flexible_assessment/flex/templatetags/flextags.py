@@ -121,3 +121,11 @@ def missing_allocations(flex_list):
 def get_default_min_max(id):
     assessment = Assessment.objects.filter(pk=id).first()
     return (assessment.default, assessment.min, assessment.max)
+
+
+@register.simple_tag()
+def get_group_weight(groups, id):
+    try:
+        return groups[str(id)]['group_weight']
+    except:
+        return ''

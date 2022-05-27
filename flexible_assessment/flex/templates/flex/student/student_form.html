@@ -70,15 +70,15 @@
     function check_total(){
       var total = 0;
       $(".flex").each(function() {
-        curr = parseFloat($(this).find("input").val());
+        curr = parseInt($(this).find("input").val());
         if (!isNaN(curr)) {
           total += curr;
         };
       });
 
-      rounded = total.toFixed(2).toString();
-      $('#total').text(rounded + "%");
-      if (rounded == 100.00) {
+      total_str = total.toString();
+      $('#total').text(total_str + "%");
+      if (total == 100.00) {
         $('#total').css('color', 'green');
         if (!pre_disabled) {
           $(":submit").removeAttr("disabled");

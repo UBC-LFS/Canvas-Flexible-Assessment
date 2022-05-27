@@ -11,7 +11,7 @@
           <th style="width: 150px">Student</th>
           {% for assessment in course.assessment_set.all %}
           <!-- assessment.group.allocation -> groups[assessment.group.id]['group_weight'] -->
-            <th style="text-align: center;">{{ assessment.title }} ({{ assessment.group.allocation }})%</th>
+            <th style="text-align: center;">{{ assessment.title }} ({% get_group_weight groups assessment.group.id %})%</th>
           {% endfor %}
           <th>Override Final Grade</th>
           <th>Default Total</th>
