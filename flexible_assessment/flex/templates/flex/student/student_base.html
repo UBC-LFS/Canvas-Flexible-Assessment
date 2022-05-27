@@ -16,7 +16,7 @@
         <ul class="sidebar-nav">
           <li><a href="{% url 'flex:student_home' %}">Home</a></li>
           {% if course.deadline %}
-            <li><a href="{% url 'flex:student_list' %}">Assessments</a></li>
+            <li><a href="{% url 'flex:student_form' %}">Assessments</a></li>
           {% endif %}
         </ul>
      {% endblock %}

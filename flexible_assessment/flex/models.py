@@ -177,7 +177,7 @@ class AssignmentGroup(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    # TODO: allocation not needed
+    # TODO: check if allocation needed
     allocation = models.DecimalField(max_digits=5, decimal_places=2, null=True)
 
     def __str__(self):
@@ -207,8 +207,6 @@ class Assessment(models.Model):
     group : ForeignKey -> AssignmentGroup
         Foreign Key with AssignmentGroup
     """
-
-    # TODO: Assessment comments/information to display for students
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.CharField(max_length=100)

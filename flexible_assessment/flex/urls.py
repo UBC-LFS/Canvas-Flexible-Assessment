@@ -47,15 +47,7 @@ urlpatterns = [
         name='final_grades'),
     path('student/', views.student_home, name='student_home'),
     path(
-        'student/assessment/',
-        student_views.StudentListView.as_view(),
-        name='student_list'),
-    path(
-        'student/flex/<slug:pk>/update',
-        student_views.FlexAssessmentUpdate.as_view(),
-        name='update_flex'),
-    path(
-        'student/comment/<slug:pk>/update',
-        student_views.CommentUpdate.as_view(),
-        name='update_comment')
+        'student/form/',
+        student_views.StudentFormView.as_view(),
+        name='student_form')
 ]

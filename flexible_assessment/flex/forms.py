@@ -1,9 +1,8 @@
 from datetime import datetime
-import pprint
 from zoneinfo import ZoneInfo
 from canvasapi import Canvas
 from django import forms
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.forms import ModelForm
 from .models import Assessment, Course, FlexAssessment, UserComment, AssignmentGroup
 import os
@@ -75,46 +74,6 @@ class DateForm(ModelForm):
             'deadline': 'Due date for students to add or change grade allocation for assessments'}
 
 
-class FlexForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # TODO: verify deadline after submitting as well
-        flex_assessment = kwargs.get('instance', None)
-        if flex_assessment:
-            deadline = flex_assessment.assessment.course.deadline
-            if datetime.now(ZoneInfo('America/Vancouver')) > deadline:
-                self.fields['flex'].disabled = True
-
-    def clean_flex(self):
-        cleaned_data = super().clean()
-        flex = cleaned_data.get('flex')
-
-        validation_errors = []
-
-        if flex and (flex > 100.0 or flex < 0.0):
-            validation_errors.append(
-                ValidationError('Flex must be within 0.0 and 100.0'))
-
-        if validation_errors:
-            raise ValidationError(validation_errors)
-
-        return flex
-
-    class Meta:
-        model = FlexAssessment
-        fields = ['flex']
-        help_texts = {'flex': 'Grade allocation for assessment'}
-
-
-class CommentForm(ModelForm):
-    class Meta:
-        model = UserComment
-        fields = ['comment']
-        widgets = {
-            'comment': forms.Textarea(attrs={'rows': 3, 'cols': 25})
-        }
-
-
 class AssessmentGroupForm(forms.Form):
     def __init__(self, *args, **kwargs):
         assessments = kwargs.pop('assessments')
@@ -154,10 +113,61 @@ class AssessmentGroupForm(forms.Form):
 
         assessment_fields = {}
         for assessment in assessments:
-            if assessment.group:
+            if assessment.group is not None:
                 initial = assessment.group
             else:
                 initial = None
             assessment_fields[assessment.id.hex] = forms.ModelChoiceField(
                 AssignmentGroup.objects.filter(course_id=course_id), label=assessment.title, initial=initial)
         self.fields.update(assessment_fields)
+
+
+class StudentForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        user_id = kwargs.pop('user_id')
+        course_id = kwargs.pop('course_id')
+        super().__init__(*args, **kwargs)
+
+        if not user_id or not course_id:
+            raise PermissionDenied
+
+        flex_assessments = FlexAssessment.objects.filter(
+            user__user_id=user_id, assessment__course_id=course_id)
+        user_comment = UserComment.objects.filter(
+            user__user_id=user_id, course__id=course_id).first()
+
+        flex_fields = {}
+        for fa in flex_assessments:
+            if fa.flex is not None:
+                initial_flex = fa.flex
+            else:
+                initial_flex = None
+            flex_fields[fa.assessment.id.hex] = forms.DecimalField(max_digits=5,
+                                                                   decimal_places=2,
+                                                                   initial=initial_flex,
+                                                                   max_value=100,
+                                                                   min_value=0,
+                                                                   label=fa.assessment.title,
+                                                                   widget=forms.NumberInput(attrs={'size': 3}))
+
+        comment_field = {}
+        if user_comment.comment:
+            initial_comment = user_comment.comment
+        else:
+            initial_comment = None
+        comment_field['comment'] = forms.CharField(
+            max_length=100,
+            initial=initial_comment,
+            widget=forms.Textarea(
+                attrs={
+                    'rows': 3,
+                    'cols': 25}),
+            required=False)
+
+        self.fields.update(flex_fields)
+        self.fields.update(comment_field)
+
+        deadline = Course.objects.get(pk=course_id).deadline
+        if datetime.now(ZoneInfo('America/Vancouver')) > deadline:
+            for field in self.fields.values():
+                field.disabled = True

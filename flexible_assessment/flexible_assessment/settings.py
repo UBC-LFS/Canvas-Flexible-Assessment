@@ -119,7 +119,7 @@ AUTH_USER_MODEL = 'flex.UserProfile'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Vancouver'
 
 USE_I18N = True
 

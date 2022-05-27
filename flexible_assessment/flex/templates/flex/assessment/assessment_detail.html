@@ -5,7 +5,6 @@
   <p><strong>Default:</strong> {{ assessment.default }}</p>
   <p><strong>Max:</strong> {{ assessment.max }}</p>
   <p><strong>Min:</strong> {{ assessment.min }}</p>
-  <p><strong>Responses:</strong> <a href="">{{ response_count }}</a></p>
 
   <a class="btn btn-primary" href="{% url 'flex:update_assessment' assessment.id %}">Update assessment</a>
   <a class="btn btn-danger" href="{% url 'flex:delete_assessment' assessment.id %}">Delete assessment</a>
