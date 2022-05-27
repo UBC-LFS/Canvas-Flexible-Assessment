@@ -380,25 +380,6 @@ class AssessmentDetailView(
     template_name = 'flex/assessment/assessment_detail.html'
     raise_exception = True
 
-    def get_context_data(self, **kwargs):
-        """Adds response count for assessment (i.e. number of students that added flex allocation)
-
-        Returns
-        -------
-            context : context
-                Contains context data for request
-        """
-
-        context = super().get_context_data(**kwargs)
-        assessment = context['assessment']
-        flex_assessments = list(
-            filter(
-                lambda fa: fa.flex,
-                assessment.flexassessment_set.all()))
-        context['response_count'] = len(flex_assessments)
-
-        return context
-
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
 

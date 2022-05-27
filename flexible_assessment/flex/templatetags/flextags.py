@@ -2,6 +2,8 @@ from django import template
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from flex.models import Assessment
+
 register = template.Library()
 
 
@@ -113,3 +115,9 @@ def use_default(student, course):
 def missing_allocations(flex_list):
     missing = [fa.assessment.title for fa in flex_list if fa.flex is None]
     return ', '.join(missing)
+
+
+@register.simple_tag()
+def get_default_min_max(id):
+    assessment = Assessment.objects.filter(pk=id).first()
+    return (assessment.default, assessment.min, assessment.max)

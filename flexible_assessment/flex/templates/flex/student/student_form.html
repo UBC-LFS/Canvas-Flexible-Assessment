@@ -1,0 +1,95 @@
+{% extends "flex/student/student_base.html" %}
+{% load flextags %}
+
+
+{% block content %}
+  <h3>Student Form</h3>
+
+  <form action="" method="post">
+    {% csrf_token %}
+
+    {{ form.non_field_errors }}
+
+    {% for hidden_field in form.hidden_fields %}
+        {{ hidden_field.errors }}
+        {{ hidden_field }}
+    {% endfor %}
+
+    <table class="table table-striped" style="margin-bottom: 0;">
+        <caption>All assessments should be given desired % and total flex adds up to 100%</caption>
+        <thead>
+          <tr>
+            <th style="text-align: center;">Title</th>
+            <th style="text-align: center;">Desired %</th>
+            <th style="text-align: center;">Default %</th>
+            <th style="text-align: center;">Min %</th>
+            <th style="text-align: center;">Max %</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for field in form.visible_fields %}
+                {% if field.name != "comment" %}
+                    <tr>
+                    <th style="text-align: center;">{{ field.label }}</th>
+                    <td class="flex" style="text-align: center;">
+                        {{ field.errors }}
+                        {{ field }}
+                    </td>
+                    {% get_default_min_max field.name as default_min_max %}
+                        <td style="text-align: center;">{{ default_min_max.0 }}</td>
+                        <td style="text-align: center;">{{ default_min_max.1 }}</td>
+                        <td style="text-align: center;">{{ default_min_max.2 }}</td>
+                    </tr>
+                {% endif %}
+          {% endfor %}
+        </tbody>
+    </table>
+    <h5>Total: <span id="total"></span></h5>
+    <h4 style="padding-top: 10px">Comment for allocation</h4>
+    <p>{{ form.comment }}</p>
+    <h4 style="padding-top: 10px">Flexible assessment due date</h4>
+    <p>{{ course.deadline }}</p>
+    {% past_deadline as pd %}
+    {% if pd %}
+      <input style="margin-top: 10px" class="btn btn-primary" id="submit-btn" type="submit" value="Submit Student Form" disabled>
+    {% else %}
+      <input style="margin-top: 10px" class="btn btn-primary" id="submit-btn" type="submit" value="Submit Student Form">
+    {% endif %}
+  </form>
+
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <script>
+    pre_disabled = $(':submit').attr('disabled')
+    check_total();
+
+    $(".flex").on('change', function(){
+      check_total();
+    });
+
+    function check_total(){
+      var total = 0;
+      $(".flex").each(function() {
+        curr = parseFloat($(this).find("input").val());
+        if (!isNaN(curr)) {
+          total += curr;
+        };
+      });
+
+      rounded = total.toFixed(2).toString();
+      $('#total').text(rounded + "%");
+      if (rounded == 100.00) {
+        $('#total').css('color', 'green');
+        if (!pre_disabled) {
+          $(":submit").removeAttr("disabled");
+        };
+      } else {
+        $('#total').css('color', 'red');
+        if (!pre_disabled) {
+          $(':submit').attr("disabled", true);
+        };
+      };
+    };
+
+  </script>
+{% endblock %}
