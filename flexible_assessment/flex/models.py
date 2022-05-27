@@ -177,8 +177,6 @@ class AssignmentGroup(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    # TODO: check if allocation needed
-    allocation = models.DecimalField(max_digits=5, decimal_places=2, null=True)
 
     def __str__(self):
         return self.name
@@ -210,9 +208,9 @@ class Assessment(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.CharField(max_length=100)
-    default = models.DecimalField(max_digits=5, decimal_places=2)
-    min = models.DecimalField(max_digits=5, decimal_places=2)
-    max = models.DecimalField(max_digits=5, decimal_places=2)
+    default = models.IntegerField()
+    min = models.IntegerField()
+    max = models.IntegerField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     group = models.ForeignKey(
         AssignmentGroup,
@@ -242,11 +240,7 @@ class FlexAssessment(models.Model):
 
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
-    flex = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True)
+    flex = models.IntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ["assessment__title"]

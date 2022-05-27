@@ -90,26 +90,22 @@ class AssessmentGroupForm(forms.Form):
         for canvas_group in canvas_course.get_assignment_groups():
             id = canvas_group.__getattribute__('id')
             name = canvas_group.__getattribute__('name')
-            allocation = canvas_group.__getattribute__('group_weight')
             asgn_group = AssignmentGroup.objects.filter(pk=id)
             if not asgn_group.exists():
                 asgn_groups_create.append(
                     AssignmentGroup(
                         id=id,
                         name=name,
-                        course=model_course,
-                        allocation=allocation))
+                        course=model_course))
             else:
                 asgn_groups_update.append(
                     AssignmentGroup(
                         id=id,
                         name=name,
-                        course=model_course,
-                        allocation=allocation))
+                        course=model_course))
         AssignmentGroup.objects.bulk_create(asgn_groups_create)
         AssignmentGroup.objects.bulk_update(
-            asgn_groups_update, [
-                'name', 'course', 'allocation'])
+            asgn_groups_update, ['name', 'course'])
 
         assessment_fields = {}
         for assessment in assessments:
@@ -139,12 +135,10 @@ class StudentForm(forms.Form):
         flex_fields = {}
         for fa in flex_assessments:
             if fa.flex is not None:
-                initial_flex = fa.flex
+                initial_flex = int(fa.flex)
             else:
                 initial_flex = None
-            flex_fields[fa.assessment.id.hex] = forms.DecimalField(max_digits=5,
-                                                                   decimal_places=2,
-                                                                   initial=initial_flex,
+            flex_fields[fa.assessment.id.hex] = forms.IntegerField(initial=initial_flex,
                                                                    max_value=100,
                                                                    min_value=0,
                                                                    label=fa.assessment.title,
