@@ -70,7 +70,7 @@
     function check_total(){
       var total = 0;
       $(".flex").each(function() {
-        curr = parseInt($(this).find("input").val());
+        curr = parseFloat($(this).find("input").val());
         if (!isNaN(curr)) {
           total += curr;
         };
