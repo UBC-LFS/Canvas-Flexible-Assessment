@@ -251,7 +251,7 @@ class DateUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """
 
     model = models.Course
-    template_name = 'flex/date_form.html'
+    template_name = 'flex/instructor/date_form.html'
     form_class = DateForm
     success_url = reverse_lazy('flex:instructor_list')
 
