@@ -16,7 +16,7 @@
         <ul class="sidebar-nav">
           <li><a href="{% url 'flex:instructor_home' %}">Home</a></li>
           {% if course.deadline %}
-            <li><a href="{% url 'flex:instructor_list' %}">Assessments</a></li>
+            <li><a href="{% url 'flex:instructor_form' %}">Assessments</a></li>
             <li><a href="{% url 'flex:percentage_list' %}">Percentages</a></li>
             <li><a href="{% url 'flex:group_form' %}">Calculate Final Grades</a></li>
           {% else %}

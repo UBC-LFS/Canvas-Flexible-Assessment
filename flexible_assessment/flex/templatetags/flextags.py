@@ -127,5 +127,5 @@ def get_default_min_max(id):
 def get_group_weight(groups, id):
     try:
         return groups[str(id)]['group_weight']
-    except:
+    except BaseException:
         return ''

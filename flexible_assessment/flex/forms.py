@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 from canvasapi import Canvas
 from django import forms
 from django.core.exceptions import ValidationError, PermissionDenied
-from django.forms import ModelForm
+from django.forms import BaseFormSet, BaseModelFormSet, ModelForm, formset_factory, modelform_factory, modelformset_factory
 from .models import Assessment, Course, FlexAssessment, UserComment, AssignmentGroup
 import os
 
@@ -165,3 +165,61 @@ class StudentForm(forms.Form):
         if datetime.now(ZoneInfo('America/Vancouver')) > deadline:
             for field in self.fields.values():
                 field.disabled = True
+
+
+class AssessmentBaseFormSet(BaseModelFormSet):
+    def clean(self):
+        if any(self.errors):
+            return
+
+        for form in self.forms:
+            if not form.cleaned_data or set(form.cleaned_data.keys()) != set(
+                    ('title', 'default', 'min', 'max', 'id', 'DELETE')):
+                self.forms.remove(form)
+
+        default_sum = sum([form.cleaned_data.get('default', 0)
+                          for form in self.forms if not form.cleaned_data.get('DELETE', False)])
+        if default_sum != 100:
+            raise ValidationError(
+                'Default assessments should add up to 100%, currently it is {}%'.format(default_sum))
+
+        for form in self.forms:
+            cleaned_data = form.cleaned_data
+            default = cleaned_data.get('default')
+            min = cleaned_data.get('min')
+            max = cleaned_data.get('max')
+
+            allocations = [('default', default),
+                           ('max', max),
+                           ('min', min)]
+            labels = {'default': 'Default', 'max': 'Maximum', 'min': 'Minimum'}
+
+            for field, allocation in allocations:
+                if allocation and (allocation > 100.0 or allocation < 0.0):
+                    form.add_error(
+                        field, ValidationError(
+                            '{} must be within 0.0 and 100.0'.format(
+                                labels[field])))
+
+            if default and min and max:
+                if min > default:
+                    form.add_error('min', ValidationError(
+                        'Minimum must be lower than default'))
+                if default > max:
+                    form.add_error('max', ValidationError(
+                        'Maximum must be higher than default'))
+                if min > max:
+                    form.add_error(None, ValidationError(
+                        'Maximum must be higher than minimum'))
+
+
+AssessmentFormSet = modelformset_factory(Assessment,
+                                         fields=(
+                                             'title', 'default', 'min', 'max'),
+                                         extra=0,
+                                         widgets={'title': forms.TextInput(attrs={'size': 12}),
+                                                  'default': forms.NumberInput(attrs={'size': 3}),
+                                                  'min': forms.NumberInput(attrs={'size': 3}),
+                                                  'max': forms.NumberInput(attrs={'size': 3})},
+                                         formset=AssessmentBaseFormSet,
+                                         can_delete=True)

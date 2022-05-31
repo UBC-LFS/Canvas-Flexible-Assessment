@@ -10,25 +10,9 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('instructor/', views.instructor_home, name='instructor_home'),
     path(
-        'instructor/assessment/',
-        insturctor_views.InstructorListView.as_view(),
-        name='instructor_list'),
-    path(
-        'instructor/asssessment/<slug:pk>/',
-        insturctor_views.AssessmentDetailView.as_view(),
-        name='inst_assessment_detail'),
-    path(
-        'instructor/assessment/add',
-        insturctor_views.AssessmentCreate.as_view(),
-        name='add_assessment'),
-    path(
-        'instructor/assessment/<slug:pk>/update/',
-        insturctor_views.AssessmentUpdate.as_view(),
-        name='update_assessment'),
-    path(
-        'instructor/assessment/<slug:pk>/delete/',
-        insturctor_views.AssessmentDelete.as_view(),
-        name='delete_assessment'),
+        'instructor/form/',
+        insturctor_views.InstructorFormView.as_view(),
+        name='instructor_form'),
     path(
         'instructor/course/<slug:pk>/date/update',
         insturctor_views.DateUpdate.as_view(),
