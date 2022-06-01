@@ -16,7 +16,7 @@
         {% endfor %}
 
         <div id="form_set">
-            <table class='table table-striped' style="width: 80%">
+            <table class='table table-striped' style="width: 80%; margin-bottom: 0;">
             <caption>Total default allocations should add up to 100%</caption>
                 <thead>
                     <tr>
@@ -24,7 +24,7 @@
                     <th style="text-align: center;">Default %</th>
                     <th style="text-align: center;">Min %</th>
                     <th style="text-align: center;">Max %</th>
-                    <th style="text-align: center;">Delete?</th>
+                    <th style="text-align: center;">Remove</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -57,15 +57,16 @@
                                 </td>
                             {% endif %}
                     {% endfor %}
-                    <td style="vertical-align: middle;"><input class="btn btn-danger btn-sm py-1 px-1 delete" type="button" value="Remove"></td>
+                    <td style="text-align: center;vertical-align: middle;"><button class="btn btn-outline-danger btn-sm delete" type="button"><i class="bi bi-trash3"></i></button></td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
-        <input class="btn btn-outline-primary" type="button" value="Add Assessment" id="add" style="margin-bottom: 10px;">
-        <h5 style="margin-bottom: 20px;">Total: <span id="total"></span></h5>
+        <button class="btn btn-outline-primary" type="button" id="add" style="margin-bottom: 10px;"><i class="bi bi-plus-lg"></i> Assessment</button>
+        <h5>Total: <span id="total"></span></h5>
 
+        <h4 style="padding-top: 20px">Flexible assessment availability</h4>
         {{ date_form.non_field_errors }}
         <table class='table table-bordered' style="width: 10%">
             <caption>Open and close dates for flexible assessment</caption>
@@ -84,8 +85,10 @@
                 </tr>
             </tbody>
         </table>
-        <input class="btn btn-primary" type="submit" value="Submit">
+        <a href="{% url 'flex:instructor_home' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>
     </form>
+
     <table id="empty_form" style="display:none">
         <tr>
             {% for field in formset.empty_form.visible_fields %}
@@ -106,7 +109,7 @@
                     </td>
                 {% endif %}
             {% endfor %}
-            <td><input class="btn btn-danger btn-sm py-1 px-1 delete" type="button" value="Remove" style="margin-bottom: 10px;"></td>
+            <td style="text-align: center;vertical-align: middle;"><button class="btn btn-outline-danger btn-sm delete" type="button"><i class="bi bi-trash3"></i></button></td>
         </tr>
     </table>
 

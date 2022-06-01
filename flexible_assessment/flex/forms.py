@@ -18,8 +18,8 @@ class DateForm(ModelForm):
         close = cleaned_data.get('close')
 
         if open > close:
-            self.add_error(None, ValidationError('Close date should be after open date'))
-
+            self.add_error(None, ValidationError(
+                'Close date should be after open date'))
 
     class Meta:
         model = Course

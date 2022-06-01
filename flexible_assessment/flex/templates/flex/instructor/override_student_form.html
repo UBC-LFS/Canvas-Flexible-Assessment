@@ -1,9 +1,10 @@
-{% extends "flex/student/student_base.html" %}
+{% extends "flex/instructor/instructor_base.html" %}
 {% load flextags %}
 
 
 {% block content %}
-  <h3>Student Form</h3>
+  <h3>Override Student Form</h3>
+  <h4>Student: {{ student_name }}</h4>
 
   <form action="" method="post">
     {% csrf_token %}
@@ -45,23 +46,13 @@
         </tbody>
     </table>
     <h5>Total: <span id="total"></span></h5>
-    <h4 style="padding-top: 10px">Comment for allocation</h4>
-    <p>{{ form.comment }}</p>
-    <h4 style="padding-top: 10px">Flexible assessment availability</h4>
-    <p>{{ course.open }} - {{ course.close }}</p>
-    <a href="{% url 'flex:student_home' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
-    {% not_open as no %}
-    {% if no %}
-      <button class="btn btn-primary" type="submit" disabled><i class="bi bi-send"></i> Submit</button>
-    {% else %}
-      <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>
-    {% endif %}
+    <a href="{% url 'flex:percentage_list' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+    <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>
   </form>
 
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
   <script>
-    pre_disabled = $(':submit').attr('disabled')
     check_total();
 
     $(document).on('change', '.flex', function(){
@@ -81,14 +72,8 @@
       $('#total').text(total_str + "%");
       if (total == 100.00) {
         $('#total').css('color', 'green');
-        if (!pre_disabled) {
-          $(":submit").removeAttr("disabled");
-        };
       } else {
         $('#total').css('color', 'red');
-        if (!pre_disabled) {
-          $(':submit').attr("disabled", true);
-        };
       };
     };
 

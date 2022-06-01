@@ -24,7 +24,7 @@ def not_open(context):
         open = course.open
         close = course.close
         now = datetime.now(ZoneInfo('America/Vancouver'))
-        return now > close or now < open 
+        return now > close or now < open
     else:
         return False
 

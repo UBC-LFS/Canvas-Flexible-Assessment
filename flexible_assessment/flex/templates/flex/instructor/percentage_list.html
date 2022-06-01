@@ -18,7 +18,7 @@
       <tbody>
         {% for student in student_list %}
           <tr>
-            <td style="word-wrap: break-word;"><a href="">{{ student.display_name }}</a></td>
+            <td style="word-wrap: break-word;"><a href="{% url 'flex:override_student_form' student.user_id %}">{{ student.display_name }}</a></td>
             {% for assessment in course.assessment_set.all %}
               {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
                 <td style="text-align: center;">{{ flex_assessment.flex }}</td>

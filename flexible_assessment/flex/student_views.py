@@ -52,7 +52,7 @@ class StudentFormView(
 
         if not user_id or not course_id:
             raise PermissionDenied
-            
+
         course = models.Course.objects.get(pk=course_id)
         open = course.open
         close = course.close

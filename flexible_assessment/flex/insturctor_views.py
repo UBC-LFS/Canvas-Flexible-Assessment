@@ -12,7 +12,7 @@ import flex.models as models
 import flex.utils as utils
 
 from .forms import (AssessmentFormSet, AssessmentGroupForm,
-                    DateForm)
+                    DateForm, StudentForm)
 
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
@@ -180,10 +180,15 @@ class InstructorFormView(
         course_id = self.request.session.get('course_id', None)
 
         if self.request.POST:
-            context['date_form'] = DateForm(self.request.POST, instance=models.Course.objects.get(pk=course_id), prefix='date')
-            context['formset'] = AssessmentFormSet(self.request.POST, prefix='assessment')
+            context['date_form'] = DateForm(
+                self.request.POST, instance=models.Course.objects.get(
+                    pk=course_id), prefix='date')
+            context['formset'] = AssessmentFormSet(
+                self.request.POST, prefix='assessment')
         else:
-            context['date_form'] = DateForm(instance=models.Course.objects.get(pk=course_id), prefix='date')
+            context['date_form'] = DateForm(
+                instance=models.Course.objects.get(
+                    pk=course_id), prefix='date')
             context['formset'] = AssessmentFormSet(
                 queryset=models.Assessment.objects.filter(
                     course_id=course_id), prefix='assessment')
@@ -192,7 +197,11 @@ class InstructorFormView(
 
     def post(self, request, *args, **kwargs):
         course_id = request.session.get('course_id', None)
-        date_form = DateForm(request.POST, instance=models.Course.objects.get(pk=course_id), prefix='date')
+        date_form = DateForm(
+            request.POST,
+            instance=models.Course.objects.get(
+                pk=course_id),
+            prefix='date')
 
         formset = AssessmentFormSet(request.POST, prefix='assessment')
 
@@ -218,7 +227,7 @@ class InstructorFormView(
             assessment.save()
             self._set_flex_assessments(course, assessment)
             assessment_ids.append(assessment.id)
-        
+
         to_delete = course.assessment_set.all().exclude(id__in=assessment_ids)
         to_delete.delete()
 
@@ -237,6 +246,87 @@ class InstructorFormView(
             for user in users
             if not models.FlexAssessment.objects.filter(user=user, assessment=assessment).exists()]
         models.FlexAssessment.objects.bulk_create(flex_assessments)
+
+    def test_func(self):
+        return utils.is_teacher_admin(self.request.user)
+
+
+# TODO: Create helpers for student form and override student form
+class OverrideStudentFormView(
+        LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
+    template_name = 'flex/instructor/override_student_form.html'
+    form_class = StudentForm
+    raise_exception = True
+    success_url = reverse_lazy('flex:percentage_list')
+
+    def get_context_data(self, **kwargs):
+        context = super(
+            OverrideStudentFormView,
+            self).get_context_data(
+            **kwargs)
+        student_name = models.UserProfile.objects.get(
+            pk=self.kwargs['pk']).display_name
+        context['student_name'] = student_name
+        return context
+
+    def get_form_kwargs(self):
+        """Adds course_id as keyword arguments for making form fields
+
+        Returns
+        -------
+            kwargs : kwargs
+                Form keyword arguments
+        """
+        kwargs = super(OverrideStudentFormView, self).get_form_kwargs()
+        user_id = self.kwargs['pk']
+        course_id = self.request.session.get('course_id', '')
+
+        if not user_id or not course_id:
+            raise PermissionDenied
+
+        kwargs['user_id'] = user_id
+        kwargs['course_id'] = course_id
+
+        return kwargs
+
+    def form_valid(self, form):
+        user_id = self.kwargs['pk']
+        course_id = self.request.session.get('course_id', '')
+
+        if not user_id or not course_id:
+            raise PermissionDenied
+
+        form.cleaned_data.pop('comment')
+
+        flex_total = sum(form.cleaned_data.values())
+        if flex_total != 100:
+            form.add_error(
+                None, ValidationError(
+                    'Total flex has to add up to 100%, currently it is ({})%'.format(flex_total)))
+
+        assessment_fields = list(form.cleaned_data.items())
+        for assessment_id, flex in assessment_fields:
+            assessment = models.Assessment.objects.get(pk=assessment_id)
+            if flex > assessment.max:
+                form.add_error(assessment_id, ValidationError(
+                    'Flex should be less than or equal to max'))
+            elif flex < assessment.min:
+                form.add_error(assessment_id, ValidationError(
+                    'Flex should be greater than or equal to min'))
+
+        if form.errors:
+            response = super(OverrideStudentFormView, self).form_invalid(form)
+            return response
+
+        for assessment_id, flex in assessment_fields:
+            assessment = models.Assessment.objects.get(pk=assessment_id)
+            flex_assessment = assessment.flexassessment_set.filter(
+                user__user_id=user_id).first()
+            flex_assessment.flex = flex
+            flex_assessment.save()
+
+        response = super(OverrideStudentFormView, self).form_valid(form)
+        return response
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
