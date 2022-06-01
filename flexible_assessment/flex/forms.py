@@ -116,8 +116,11 @@ class StudentForm(forms.Form):
         self.fields.update(flex_fields)
         self.fields.update(comment_field)
 
-        close = Course.objects.get(pk=course_id).close
-        if datetime.now(ZoneInfo('America/Vancouver')) > close:
+        course = Course.objects.get(pk=course_id)
+        open = course.open
+        close = course.close
+        now = datetime.now(ZoneInfo('America/Vancouver'))
+        if now > close or now < open:
             for field in self.fields.values():
                 field.disabled = True
 

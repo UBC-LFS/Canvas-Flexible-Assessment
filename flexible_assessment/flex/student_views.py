@@ -52,11 +52,17 @@ class StudentFormView(
 
         if not user_id or not course_id:
             raise PermissionDenied
-
-        close = models.Course.objects.get(pk=course_id).close
-        if datetime.now(ZoneInfo('America/Vancouver')) > close:
+            
+        course = models.Course.objects.get(pk=course_id)
+        open = course.open
+        close = course.close
+        now = datetime.now(ZoneInfo('America/Vancouver'))
+        if now > close:
             form.add_error(None, ValidationError(
                 'Past deadline to submit form'))
+        elif now < open:
+            form.add_error(None, ValidationError(
+                'Form is not open yet'))
 
         comment = form.cleaned_data.pop('comment')
 

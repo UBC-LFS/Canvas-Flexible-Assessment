@@ -49,8 +49,8 @@
     <p>{{ form.comment }}</p>
     <h4 style="padding-top: 10px">Flexible assessment due date</h4>
     <p>{{ course.close }}</p>
-    {% past_deadline as pd %}
-    {% if pd %}
+    {% not_open as no %}
+    {% if no %}
       <input style="margin-top: 10px" class="btn btn-primary" id="submit-btn" type="submit" value="Submit Student Form" disabled>
     {% else %}
       <input style="margin-top: 10px" class="btn btn-primary" id="submit-btn" type="submit" value="Submit Student Form">

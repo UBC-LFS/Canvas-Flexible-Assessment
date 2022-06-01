@@ -18,11 +18,13 @@ def comment_filter(comment_set, course_id):
 
 
 @register.simple_tag(takes_context=True)
-def past_deadline(context):
+def not_open(context):
     course = context["course"]
     if course:
+        open = course.open
         close = course.close
-        return datetime.now(ZoneInfo('America/Vancouver')) > close
+        now = datetime.now(ZoneInfo('America/Vancouver'))
+        return now > close or now < open 
     else:
         return False
 
