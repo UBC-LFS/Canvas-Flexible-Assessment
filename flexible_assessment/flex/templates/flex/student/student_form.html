@@ -47,8 +47,8 @@
     <h5>Total: <span id="total"></span></h5>
     <h4 style="padding-top: 10px">Comment for allocation</h4>
     <p>{{ form.comment }}</p>
-    <h4 style="padding-top: 10px">Flexible assessment due date</h4>
-    <p>{{ course.close }}</p>
+    <h4 style="padding-top: 10px">Flexible assessment availability</h4>
+    <p>{{ course.open }} - {{ course.close }}</p>
     {% not_open as no %}
     {% if no %}
       <input style="margin-top: 10px" class="btn btn-primary" id="submit-btn" type="submit" value="Submit Student Form" disabled>
