@@ -4,9 +4,9 @@ from canvasapi import Canvas
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.forms import BaseModelFormSet, ValidationError
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
-from django.views.generic.edit import UpdateView
 
 import flex.models as models
 import flex.utils as utils
@@ -193,29 +193,36 @@ class InstructorFormView(
     def post(self, request, *args, **kwargs):
         course_id = request.session.get('course_id', None)
         date_form = DateForm(request.POST, instance=models.Course.objects.get(pk=course_id), prefix='date')
-        formset = AssessmentFormSet(request.POST, prefix='assessment')
-        if formset.is_valid() and date_form.is_valid():
-            date_form.save()
-            return self.form_valid(formset, date_form)
-        else:
-            return self.form_invalid(formset)
 
-    def form_valid(self, formset, date_form):
-        course_id = self.request.session['course_id']
-        course = models.Course.objects.get(pk=course_id)
+        formset = AssessmentFormSet(request.POST, prefix='assessment')
+
+        if formset.is_valid() and date_form.is_valid():
+            return self.forms_valid(formset, date_form)
+        elif not formset.is_valid():
+            return self.form_invalid(formset)
+        else:
+            return self.form_invalid(date_form)
+
+    def forms_valid(self, formset, date_form):
+        date_form.save()
 
         formset.clean()
 
+        course_id = self.request.session['course_id']
+        course = models.Course.objects.get(pk=course_id)
+
+        assessment_ids = []
         for form in formset.forms:
             assessment = form.save(commit=False)
-            if form.cleaned_data.get('DELETE', False):
-                form.cleaned_data['id'].delete()
-            else:
-                assessment.course = course
-                assessment.save()
-                self._set_flex_assessments(course, assessment)
+            assessment.course = course
+            assessment.save()
+            self._set_flex_assessments(course, assessment)
+            assessment_ids.append(assessment.id)
+        
+        to_delete = course.assessment_set.all().exclude(id__in=assessment_ids)
+        to_delete.delete()
 
-        response = super(InstructorFormView, self).form_valid(form)
+        response = HttpResponseRedirect(self.get_success_url())
 
         return response
 

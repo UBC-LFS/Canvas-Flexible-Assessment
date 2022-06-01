@@ -63,9 +63,9 @@
     pre_disabled = $(':submit').attr('disabled')
     check_total();
 
-    $(".flex").on('change', function(){
-      check_total();
-    });
+    $(document).on('change', '.flex', function(){
+            check_total();
+        });
 
     function check_total(){
       var total = 0;

@@ -12,26 +12,21 @@ CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
 
 
 class DateForm(ModelForm):
-    def clean_open(self):
-        data = self.cleaned_data['open']
-        return data
+    def clean(self):
+        cleaned_data = super().clean()
+        open = cleaned_data.get('open')
+        close = cleaned_data.get('close')
 
-    def clean_close(self):
-        data = self.cleaned_data['close']
-        return data
+        if open > close:
+            self.add_error(None, ValidationError('Close date should be after open date'))
+
 
     class Meta:
         model = Course
         fields = ['open', 'close']
         widgets = {
-            'open': forms.DateTimeInput(format='%m/%d/%y %H:%M',
-                                            attrs={
-                                                'placeholder': 'mm/dd/yy hh:mm',
-                                                'size': 5}),
-            'close': forms.DateTimeInput(format='%m/%d/%y %H:%M',
-                                            attrs={
-                                                'placeholder': 'mm/dd/yy hh:mm',
-                                                'size': 5})}
+            'open': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'close': forms.DateTimeInput(attrs={'type': 'datetime-local'})}
 
 
 class AssessmentGroupForm(forms.Form):
@@ -134,11 +129,11 @@ class AssessmentBaseFormSet(BaseModelFormSet):
 
         for form in self.forms:
             if not form.cleaned_data or set(form.cleaned_data.keys()) != set(
-                    ('title', 'default', 'min', 'max', 'id', 'DELETE')):
+                    ('title', 'default', 'min', 'max', 'id')):
                 self.forms.remove(form)
 
         default_sum = sum([form.cleaned_data.get('default', 0)
-                          for form in self.forms if not form.cleaned_data.get('DELETE', False)])
+                          for form in self.forms])
         if default_sum != 100:
             raise ValidationError(
                 'Default assessments should add up to 100%, currently it is {}%'.format(default_sum))
@@ -181,5 +176,4 @@ AssessmentFormSet = modelformset_factory(Assessment,
                                                   'default': forms.NumberInput(attrs={'size': 3}),
                                                   'min': forms.NumberInput(attrs={'size': 3}),
                                                   'max': forms.NumberInput(attrs={'size': 3})},
-                                         formset=AssessmentBaseFormSet,
-                                         can_delete=True)
+                                         formset=AssessmentBaseFormSet)

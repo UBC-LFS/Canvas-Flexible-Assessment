@@ -9,7 +9,6 @@
 
         {{ formset.management_form }}
         {{ formset.non_form_errors }}
-        {{ date_form.non_field_errors }}
 
         {% for hidden_field in date_form.hidden_fields %}
             {{ hidden_field.errors }}
@@ -18,6 +17,7 @@
 
         <div id="form_set">
             <table class='table table-striped' style="width: 80%">
+            <caption>Total default allocations should add up to 100%</caption>
                 <thead>
                     <tr>
                     <th style="text-align: center;">Title</th>
@@ -32,28 +32,43 @@
                     {% for hidden in form.hidden_fields %}
                         {{ hidden }}
                     {% endfor %}
-                    <tr>
+                    <tr height="60px">
                     {% for field in form.visible_fields %}
                             {% if form.non_field_errors and field.label == "Title" %}
-                                <td style="text-align: center;">
+                                <td style="text-align: center; vertical-align: middle;">
                                     {{ form.non_field_errors }}
                                     {{ field.errors }}
                                     {{ field }}
                                 </td>
+                            {% elif field.label == "Default" %}
+                                <td class="default" style="text-align: center; vertical-align: middle;">
+                                    {{ field.errors }}
+                                    {{ field }}
+                                </td>
+                            {% elif field.label == "Delete" %}
+                                <td class="delete" style="text-align: center; vertical-align: middle;">
+                                    {{ field.errors }}
+                                    {{ field }}
+                                </td>
                             {% else %}
-                                <td style="text-align: center;">
+                                <td style="text-align: center; vertical-align: middle;">
                                     {{ field.errors }}
                                     {{ field }}
                                 </td>
                             {% endif %}
                     {% endfor %}
+                    <td style="vertical-align: middle;"><input class="btn btn-danger btn-sm py-1 px-1 delete" type="button" value="Remove"></td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
-        <input class="btn btn-outline-primary" type="button" value="Add Assessment" id="add_more">
-        <table class='table table-bordered' style="margin-top: 20px; width: 10%">
+        <input class="btn btn-outline-primary" type="button" value="Add Assessment" id="add" style="margin-bottom: 10px;">
+        <h5 style="margin-bottom: 20px;">Total: <span id="total"></span></h5>
+
+        {{ date_form.non_field_errors }}
+        <table class='table table-bordered' style="width: 10%">
+            <caption>Open and close dates for flexible assessment</caption>
             <thead>
                 <tr>
                     <th>Open Date</th>
@@ -62,8 +77,10 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{{ date_form.open }}</td>
-                    <td>{{ date_form.close }}</td>
+                    <td>{{ date_form.open.errors }}
+                        {{ date_form.open }}</td>
+                    <td>{{ date_form.close.errors }}
+                        {{ date_form.close }}</td>
                 </tr>
             </tbody>
         </table>
@@ -72,11 +89,24 @@
     <table id="empty_form" style="display:none">
         <tr>
             {% for field in formset.empty_form.visible_fields %}
-                <td style="text-align: center;">
-                    {{ field.errors }}
-                    {{ field }}
-                </td>
+                {% if field.label == "Default" %}
+                    <td class="default" style="text-align: center; vertical-align: middle;">
+                        {{ field.errors }}
+                        {{ field }}
+                    </td>
+                {% elif field.label == "Delete" %}
+                    <td class="delete" style="text-align: center; vertical-align: middle;">
+                        {{ field.errors }}
+                        {{ field }}
+                    </td>
+                {% else %}
+                    <td style="text-align: center; vertical-align: middle;">
+                        {{ field.errors }}
+                        {{ field }}
+                    </td>
+                {% endif %}
             {% endfor %}
+            <td><input class="btn btn-danger btn-sm py-1 px-1 delete" type="button" value="Remove" style="margin-bottom: 10px;"></td>
         </tr>
     </table>
 
@@ -84,13 +114,78 @@
 
 
     <script>
-        $('#add_more').click(function() {
-            var form_idx = $('#id_assessment-TOTAL_FORMS').val();
-            console.log(form_idx)
-            console.log($('#empty_form'))
-            $('#form_set tr:last').after($('#empty_form').html().replace(/__prefix__/g, form_idx).replace(/<tbody>|<\/tbody>/g, ''));
-            $('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) + 1);
-            console.log($('#id_assessment-TOTAL_FORMS').val())
+        check_total();
+
+        $(document).on('change click', '.default', function() {
+            check_total();
         });
+
+        function check_total(){
+            var total = 0;
+            $(".default").each(function() {
+                curr = parseFloat($(this).find("input").val());
+                var to_delete = $(this).siblings('.delete').children().first().is(':checked')
+                if (!isNaN(curr) && !to_delete) {
+                    total += curr;
+                };
+            });
+
+            total_str = total.toString();
+            $('#total').text(total_str + "%");
+            if (total == 100.00) {
+                $('#total').css('color', 'green');
+                $(":submit").removeAttr("disabled");
+            } else {
+                $('#total').css('color', 'red');
+                $(':submit').attr("disabled", true);
+            };
+        };
+
+        $('#add').click(function() {
+            var form_idx = $('#id_assessment-TOTAL_FORMS').val();
+            if ($('#form_set tbody').children().length == 0) {
+                $('#form_set tbody').append($('#empty_form').html().replace(/__prefix__/g, form_idx).replace(/<tbody>|<\/tbody>/g, ''));
+            } else {
+                $('#form_set tr:last').after($('#empty_form').html().replace(/__prefix__/g, form_idx).replace(/<tbody>|<\/tbody>/g, ''));
+            }
+            $('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+        });
+
+        $(document).on('click', '.delete', delete_row);
+
+        function delete_row() {
+            var form_idx = $('#id_assessment-TOTAL_FORMS').val();
+
+            var tr = $(this).closest('tr');
+            tr.prev('input:hidden').remove();
+            tr.remove();
+
+            $('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) - 1);
+            var filtered = $('input').filter(function () {
+                return this.id.match(/id_assessment-\d+-/);
+            });
+
+            curr = -1;
+            decrement = false;
+            filtered.each(function() {
+                var form_idx = parseInt(this.id.replace(/[^\d]/g, ''));
+                if (form_idx-curr > 1) {
+                    decrement = true;
+                };
+
+                if (decrement) {
+                    var new_id = this.id.replace(/(\d+)/, function(match, n) {
+                        return parseInt(n)-1;
+                    });
+                    var new_name = this.name.replace(/(\d+)/, function(match, n) {
+                        return parseInt(n)-1;
+                    });
+                    this.id = new_id;
+                    this.name = new_name;
+                };
+                curr = form_idx;
+            });
+            check_total();
+        };
     </script>
 {% endblock %}
