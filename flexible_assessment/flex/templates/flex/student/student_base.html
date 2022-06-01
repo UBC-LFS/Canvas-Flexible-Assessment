@@ -15,7 +15,7 @@
         <span class="fs-3 fw-semibold">Navigation</span>
         <ul class="sidebar-nav">
           <li><a href="{% url 'flex:student_home' %}">Home</a></li>
-          {% if course.deadline %}
+          {% if course.close %}
             <li><a href="{% url 'flex:student_form' %}">Assessments</a></li>
           {% endif %}
         </ul>

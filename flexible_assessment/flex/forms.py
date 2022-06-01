@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 from canvasapi import Canvas
 from django import forms
 from django.core.exceptions import ValidationError, PermissionDenied
-from django.forms import ModelForm
+from django.forms import BaseFormSet, BaseModelFormSet, ModelForm, formset_factory, modelform_factory, modelformset_factory
 from .models import Assessment, Course, FlexAssessment, UserComment, AssignmentGroup
 import os
 
@@ -11,67 +11,27 @@ CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
 
 
-class AddAssessmentForm(ModelForm):
-    def clean(self):
-        cleaned_data = super().clean()
-        default = cleaned_data.get('default')
-        min = cleaned_data.get('min')
-        max = cleaned_data.get('max')
-
-        allocations = [('Default', default),
-                       ('Maximum', max), ('Minimum', min)]
-        validation_errors = []
-
-        for name, allocation in allocations:
-            if allocation and (allocation > 100.0 or allocation < 0.0):
-                validation_errors.append(
-                    ValidationError(
-                        '{} must be within 0.0 and 100.0'.format(name)))
-
-        if default and min and max:
-            if min > default:
-                validation_errors.append(
-                    ValidationError('Minimum must be lower than default'))
-            if default > max:
-                validation_errors.append(
-                    ValidationError('Maximum must be higher than default'))
-            if min > max:
-                validation_errors.append(
-                    ValidationError('Maximum must be higher than minimum'))
-
-        if validation_errors:
-            raise ValidationError(validation_errors)
-
-    class Meta:
-        model = Assessment
-        fields = ['title', 'default', 'min', 'max']
-        help_texts = {'title': 'Enter assessment title',
-                      'default': 'Default grade allocation',
-                      'min': 'Minimum possible grade allocation set by student',
-                      'max': 'Maximum possible grade allocation set by student'}
-
-
-class UpdateAssessmentForm(AddAssessmentForm):
-    reset_flex = forms.BooleanField(
-        label='Reset flex',
-        required=False,
-        initial=False)
-
-
 class DateForm(ModelForm):
-    def clean_deadline(self):
-        data = self.cleaned_data['deadline']
+    def clean_open(self):
+        data = self.cleaned_data['open']
+        return data
+
+    def clean_close(self):
+        data = self.cleaned_data['close']
         return data
 
     class Meta:
         model = Course
-        fields = ['deadline']
+        fields = ['open', 'close']
         widgets = {
-            'deadline': forms.DateTimeInput(format='%m/%d/%y %H:%M',
+            'open': forms.DateTimeInput(format='%m/%d/%y %H:%M',
                                             attrs={
-                                                'placeholder': 'mm/dd/yy hh:mm'})}
-        help_texts = {
-            'deadline': 'Due date for students to add or change grade allocation for assessments'}
+                                                'placeholder': 'mm/dd/yy hh:mm',
+                                                'size': 5}),
+            'close': forms.DateTimeInput(format='%m/%d/%y %H:%M',
+                                            attrs={
+                                                'placeholder': 'mm/dd/yy hh:mm',
+                                                'size': 5})}
 
 
 class AssessmentGroupForm(forms.Form):
@@ -161,7 +121,65 @@ class StudentForm(forms.Form):
         self.fields.update(flex_fields)
         self.fields.update(comment_field)
 
-        deadline = Course.objects.get(pk=course_id).deadline
-        if datetime.now(ZoneInfo('America/Vancouver')) > deadline:
+        close = Course.objects.get(pk=course_id).close
+        if datetime.now(ZoneInfo('America/Vancouver')) > close:
             for field in self.fields.values():
                 field.disabled = True
+
+
+class AssessmentBaseFormSet(BaseModelFormSet):
+    def clean(self):
+        if any(self.errors):
+            return
+
+        for form in self.forms:
+            if not form.cleaned_data or set(form.cleaned_data.keys()) != set(
+                    ('title', 'default', 'min', 'max', 'id', 'DELETE')):
+                self.forms.remove(form)
+
+        default_sum = sum([form.cleaned_data.get('default', 0)
+                          for form in self.forms if not form.cleaned_data.get('DELETE', False)])
+        if default_sum != 100:
+            raise ValidationError(
+                'Default assessments should add up to 100%, currently it is {}%'.format(default_sum))
+
+        for form in self.forms:
+            cleaned_data = form.cleaned_data
+            default = cleaned_data.get('default')
+            min = cleaned_data.get('min')
+            max = cleaned_data.get('max')
+
+            allocations = [('default', default),
+                           ('max', max),
+                           ('min', min)]
+            labels = {'default': 'Default', 'max': 'Maximum', 'min': 'Minimum'}
+
+            for field, allocation in allocations:
+                if allocation and (allocation > 100.0 or allocation < 0.0):
+                    form.add_error(
+                        field, ValidationError(
+                            '{} must be within 0.0 and 100.0'.format(
+                                labels[field])))
+
+            if default and min and max:
+                if min > default:
+                    form.add_error('min', ValidationError(
+                        'Minimum must be lower than default'))
+                if default > max:
+                    form.add_error('max', ValidationError(
+                        'Maximum must be higher than default'))
+                if min > max:
+                    form.add_error(None, ValidationError(
+                        'Maximum must be higher than minimum'))
+
+
+AssessmentFormSet = modelformset_factory(Assessment,
+                                         fields=(
+                                             'title', 'default', 'min', 'max'),
+                                         extra=0,
+                                         widgets={'title': forms.TextInput(attrs={'size': 15}),
+                                                  'default': forms.NumberInput(attrs={'size': 3}),
+                                                  'min': forms.NumberInput(attrs={'size': 3}),
+                                                  'max': forms.NumberInput(attrs={'size': 3})},
+                                         formset=AssessmentBaseFormSet,
+                                         can_delete=True)

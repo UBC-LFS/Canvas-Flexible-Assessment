@@ -137,13 +137,16 @@ class Course(models.Model):
         Unique id for the Canvas course
     title : str
         Title of the course
-    deadline : DateTime
+    open : DateTime
+        Open date for students to add or change grade allocation for assessments
+    close : DateTime
         Due date for students to add or change grade allocation for assessments
     """
 
     id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=100)
-    deadline = models.DateTimeField(null=True)
+    open = models.DateTimeField(null=True)
+    close = models.DateTimeField(null=True)
 
     def __str__(self):
         return self.title

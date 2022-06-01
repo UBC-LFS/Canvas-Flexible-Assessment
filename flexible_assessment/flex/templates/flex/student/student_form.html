@@ -30,15 +30,15 @@
             {% for field in form.visible_fields %}
                 {% if field.name != "comment" %}
                     <tr>
-                    <th style="text-align: center;">{{ field.label }}</th>
-                    <td class="flex" style="text-align: center;">
-                        {{ field.errors }}
-                        {{ field }}
-                    </td>
-                    {% get_default_min_max field.name as default_min_max %}
-                        <td style="text-align: center;">{{ default_min_max.0 }}</td>
-                        <td style="text-align: center;">{{ default_min_max.1 }}</td>
-                        <td style="text-align: center;">{{ default_min_max.2 }}</td>
+                      <th style="text-align: center;">{{ field.label }}</th>
+                      <td class="flex" style="text-align: center;">
+                          {{ field.errors }}
+                          {{ field }}
+                      </td>
+                      {% get_default_min_max field.name as default_min_max %}
+                          <td style="text-align: center;">{{ default_min_max.0 }}</td>
+                          <td style="text-align: center;">{{ default_min_max.1 }}</td>
+                          <td style="text-align: center;">{{ default_min_max.2 }}</td>
                     </tr>
                 {% endif %}
           {% endfor %}
@@ -48,7 +48,7 @@
     <h4 style="padding-top: 10px">Comment for allocation</h4>
     <p>{{ form.comment }}</p>
     <h4 style="padding-top: 10px">Flexible assessment due date</h4>
-    <p>{{ course.deadline }}</p>
+    <p>{{ course.close }}</p>
     {% past_deadline as pd %}
     {% if pd %}
       <input style="margin-top: 10px" class="btn btn-primary" id="submit-btn" type="submit" value="Submit Student Form" disabled>

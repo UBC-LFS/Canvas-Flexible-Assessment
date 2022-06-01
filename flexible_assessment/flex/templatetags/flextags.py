@@ -21,8 +21,8 @@ def comment_filter(comment_set, course_id):
 def past_deadline(context):
     course = context["course"]
     if course:
-        deadline = course.deadline
-        return datetime.now(ZoneInfo('America/Vancouver')) > deadline
+        close = course.close
+        return datetime.now(ZoneInfo('America/Vancouver')) > close
     else:
         return False
 
@@ -127,5 +127,5 @@ def get_default_min_max(id):
 def get_group_weight(groups, id):
     try:
         return groups[str(id)]['group_weight']
-    except:
+    except BaseException:
         return ''
