@@ -21,8 +21,8 @@ def comment_filter(comment_set, course_id):
 def past_deadline(context):
     course = context["course"]
     if course:
-        deadline = course.deadline
-        return datetime.now(ZoneInfo('America/Vancouver')) > deadline
+        close = course.close
+        return datetime.now(ZoneInfo('America/Vancouver')) > close
     else:
         return False
 

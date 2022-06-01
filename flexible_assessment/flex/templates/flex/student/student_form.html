@@ -48,7 +48,7 @@
     <h4 style="padding-top: 10px">Comment for allocation</h4>
     <p>{{ form.comment }}</p>
     <h4 style="padding-top: 10px">Flexible assessment due date</h4>
-    <p>{{ course.deadline }}</p>
+    <p>{{ course.close }}</p>
     {% past_deadline as pd %}
     {% if pd %}
       <input style="margin-top: 10px" class="btn btn-primary" id="submit-btn" type="submit" value="Submit Student Form" disabled>

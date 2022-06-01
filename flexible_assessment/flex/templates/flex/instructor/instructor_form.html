@@ -9,9 +9,15 @@
 
         {{ formset.management_form }}
         {{ formset.non_form_errors }}
+        {{ date_form.non_field_errors }}
+
+        {% for hidden_field in date_form.hidden_fields %}
+            {{ hidden_field.errors }}
+            {{ hidden_field }}
+        {% endfor %}
 
         <div id="form_set">
-            <table class='table table-striped' style="width: 75%">
+            <table class='table table-striped' style="width: 80%">
                 <thead>
                     <tr>
                     <th style="text-align: center;">Title</th>
@@ -47,6 +53,20 @@
             </table>
         </div>
         <input class="btn btn-outline-primary" type="button" value="Add Assessment" id="add_more">
+        <table class='table table-bordered' style="margin-top: 20px; width: 10%">
+            <thead>
+                <tr>
+                    <th>Open Date</th>
+                    <th>Close Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ date_form.open }}</td>
+                    <td>{{ date_form.close }}</td>
+                </tr>
+            </tbody>
+        </table>
         <input class="btn btn-primary" type="submit" value="Submit">
     </form>
     <table id="empty_form" style="display:none">
@@ -65,12 +85,12 @@
 
     <script>
         $('#add_more').click(function() {
-            var form_idx = $('#id_form-TOTAL_FORMS').val();
+            var form_idx = $('#id_assessment-TOTAL_FORMS').val();
             console.log(form_idx)
             console.log($('#empty_form'))
             $('#form_set tr:last').after($('#empty_form').html().replace(/__prefix__/g, form_idx).replace(/<tbody>|<\/tbody>/g, ''));
-            $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
-            console.log($('#id_form-TOTAL_FORMS').val())
+            $('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+            console.log($('#id_assessment-TOTAL_FORMS').val())
         });
     </script>
 {% endblock %}

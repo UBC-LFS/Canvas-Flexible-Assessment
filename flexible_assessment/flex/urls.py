@@ -14,10 +14,6 @@ urlpatterns = [
         insturctor_views.InstructorFormView.as_view(),
         name='instructor_form'),
     path(
-        'instructor/course/<slug:pk>/date/update',
-        insturctor_views.DateUpdate.as_view(),
-        name='update_date'),
-    path(
         'instructor/percentages/',
         insturctor_views.FlexAssessmentListView.as_view(),
         name='percentage_list'),

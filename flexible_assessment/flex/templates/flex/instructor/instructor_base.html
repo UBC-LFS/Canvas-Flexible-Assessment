@@ -15,12 +15,12 @@
         <span class="fs-3 fw-semibold">Navigation</span>
         <ul class="sidebar-nav">
           <li><a href="{% url 'flex:instructor_home' %}">Home</a></li>
-          {% if course.deadline %}
+          {% if course.close %}
             <li><a href="{% url 'flex:instructor_form' %}">Assessments</a></li>
             <li><a href="{% url 'flex:percentage_list' %}">Percentages</a></li>
             <li><a href="{% url 'flex:group_form' %}">Calculate Final Grades</a></li>
           {% else %}
-            <li><a href="{% url 'flex:instructor_list' %}">Course Setup</a></li>
+            <li><a href="{% url 'flex:instructor_form' %}">Course Setup</a></li>
           {% endif %}
         </ul>
      {% endblock %}

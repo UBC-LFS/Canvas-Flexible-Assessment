@@ -3,33 +3,19 @@ import os
 from canvasapi import Canvas
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
-from django.forms import ValidationError
+from django.forms import BaseModelFormSet, ValidationError
 from django.urls import reverse_lazy
 from django.views import generic
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.edit import UpdateView
 
 import flex.models as models
 import flex.utils as utils
 
-from .forms import (AddAssessmentForm, AssessmentFormSet, AssessmentGroupForm,
-                    DateForm, UpdateAssessmentForm)
+from .forms import (AssessmentFormSet, AssessmentGroupForm,
+                    DateForm)
 
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
-
-
-class DateUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """Extends Django UpdateView and authentication mixins for changing flex deadline.
-    Uses DateForm as form_class. Redirects to instructor assessment page on success.
-    """
-
-    model = models.Course
-    template_name = 'flex/instructor/date_form.html'
-    form_class = DateForm
-    success_url = reverse_lazy('flex:instructor_form')
-
-    def test_func(self):
-        return utils.is_teacher_admin(self.request.user)
 
 
 class FlexAssessmentListView(
@@ -185,30 +171,36 @@ class AssessmentGroupView(
 class InstructorFormView(
         LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
     template_name = 'flex/instructor/instructor_form.html'
-    form_class = AddAssessmentForm
+    form_class = BaseModelFormSet
     raise_exception = True
     success_url = reverse_lazy('flex:instructor_home')
 
     def get_context_data(self, **kwargs):
         context = super(InstructorFormView, self).get_context_data(**kwargs)
+        course_id = self.request.session.get('course_id', None)
+
         if self.request.POST:
-            context['formset'] = AssessmentFormSet(self.request.POST)
+            context['date_form'] = DateForm(self.request.POST, instance=models.Course.objects.get(pk=course_id), prefix='date')
+            context['formset'] = AssessmentFormSet(self.request.POST, prefix='assessment')
         else:
-            course_id = self.request.session.get('course_id', None)
+            context['date_form'] = DateForm(instance=models.Course.objects.get(pk=course_id), prefix='date')
             context['formset'] = AssessmentFormSet(
                 queryset=models.Assessment.objects.filter(
-                    course_id=course_id))
+                    course_id=course_id), prefix='assessment')
 
         return context
 
     def post(self, request, *args, **kwargs):
-        formset = AssessmentFormSet(request.POST)
-        if formset.is_valid():
-            return self.form_valid(formset)
+        course_id = request.session.get('course_id', None)
+        date_form = DateForm(request.POST, instance=models.Course.objects.get(pk=course_id), prefix='date')
+        formset = AssessmentFormSet(request.POST, prefix='assessment')
+        if formset.is_valid() and date_form.is_valid():
+            date_form.save()
+            return self.form_valid(formset, date_form)
         else:
             return self.form_invalid(formset)
 
-    def form_valid(self, formset):
+    def form_valid(self, formset, date_form):
         course_id = self.request.session['course_id']
         course = models.Course.objects.get(pk=course_id)
 
