@@ -12,7 +12,7 @@ import flex.models as models
 import flex.utils as utils
 
 from .forms import (AssessmentFormSet, AssessmentGroupForm,
-                    DateForm, StudentForm)
+                    DateForm, StudentBaseForm, StudentForm)
 
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
@@ -256,7 +256,7 @@ class InstructorFormView(
 class OverrideStudentFormView(
         LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
     template_name = 'flex/instructor/override_student_form.html'
-    form_class = StudentForm
+    form_class = StudentBaseForm
     raise_exception = True
     success_url = reverse_lazy('flex:percentage_list')
 
@@ -296,14 +296,6 @@ class OverrideStudentFormView(
 
         if not user_id or not course_id:
             raise PermissionDenied
-
-        form.cleaned_data.pop('comment')
-
-        flex_total = sum(form.cleaned_data.values())
-        if flex_total != 100:
-            form.add_error(
-                None, ValidationError(
-                    'Total flex has to add up to 100%, currently it is ({})%'.format(flex_total)))
 
         assessment_fields = list(form.cleaned_data.items())
         for assessment_id, flex in assessment_fields:

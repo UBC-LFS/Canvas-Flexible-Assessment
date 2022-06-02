@@ -66,12 +66,6 @@ class StudentFormView(
 
         comment = form.cleaned_data.pop('comment')
 
-        flex_total = sum(form.cleaned_data.values())
-        if flex_total != 100:
-            form.add_error(
-                None, ValidationError(
-                    'Total flex has to add up to 100%, currently it is ({})%'.format(flex_total)))
-
         assessment_fields = list(form.cleaned_data.items())
         for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)

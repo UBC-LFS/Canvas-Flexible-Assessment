@@ -70,22 +70,21 @@ class AssessmentGroupForm(forms.Form):
                 initial = None
             assessment_fields[assessment.id.hex] = forms.ModelChoiceField(
                 AssignmentGroup.objects.filter(course_id=course_id), label=assessment.title, initial=initial)
+
         self.fields.update(assessment_fields)
 
 
-class StudentForm(forms.Form):
+class StudentBaseForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        user_id = kwargs.pop('user_id')
-        course_id = kwargs.pop('course_id')
+        self.user_id = kwargs.pop('user_id')
+        self.course_id = kwargs.pop('course_id')
         super().__init__(*args, **kwargs)
 
-        if not user_id or not course_id:
+        if not self.user_id or not self.course_id:
             raise PermissionDenied
 
         flex_assessments = FlexAssessment.objects.filter(
-            user__user_id=user_id, assessment__course_id=course_id)
-        user_comment = UserComment.objects.filter(
-            user__user_id=user_id, course__id=course_id).first()
+            user__user_id=self.user_id, assessment__course_id=self.course_id)
 
         flex_fields = {}
         for fa in flex_assessments:
@@ -98,6 +97,37 @@ class StudentForm(forms.Form):
                                                                    min_value=0,
                                                                    label=fa.assessment.title,
                                                                    widget=forms.NumberInput(attrs={'size': 3}))
+
+        self.fields.update(flex_fields)
+        self.field_status()
+
+    def clean(self):
+        flex_fields = dict(
+            filter(
+                lambda field: field[0] not in ['comment'],
+                self.cleaned_data.items()))
+
+        flex_total = sum(flex_fields.values())
+        if flex_total != 100:
+            self.add_error(
+                None, ValidationError(
+                    'Total flex has to add up to 100%, currently it is ({})%'.format(flex_total)))
+
+    def field_status(self):
+        course = Course.objects.get(pk=self.course_id)
+        open = course.open
+        close = course.close
+        now = datetime.now(ZoneInfo('America/Vancouver'))
+        if now > close or now < open:
+            for field in self.fields.values():
+                field.disabled = True
+
+
+class StudentForm(StudentBaseForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user_comment = UserComment.objects.filter(
+            user__user_id=self.user_id, course__id=self.course_id).first()
 
         comment_field = {}
         if user_comment.comment:
@@ -113,16 +143,8 @@ class StudentForm(forms.Form):
                     'cols': 25}),
             required=False)
 
-        self.fields.update(flex_fields)
         self.fields.update(comment_field)
-
-        course = Course.objects.get(pk=course_id)
-        open = course.open
-        close = course.close
-        now = datetime.now(ZoneInfo('America/Vancouver'))
-        if now > close or now < open:
-            for field in self.fields.values():
-                field.disabled = True
+        self.field_status()
 
 
 class AssessmentBaseFormSet(BaseModelFormSet):

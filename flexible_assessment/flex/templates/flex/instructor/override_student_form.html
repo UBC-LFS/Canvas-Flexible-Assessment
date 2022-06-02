@@ -72,8 +72,10 @@
       $('#total').text(total_str + "%");
       if (total == 100.00) {
         $('#total').css('color', 'green');
+        $(":submit").removeAttr("disabled");
       } else {
         $('#total').css('color', 'red');
+        $(':submit').attr("disabled", true);
       };
     };
 
