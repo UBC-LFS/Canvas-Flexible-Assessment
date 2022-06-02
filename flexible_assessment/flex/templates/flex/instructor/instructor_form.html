@@ -80,7 +80,7 @@
     </form>
 
     <table id="empty_form" style="display:none">
-        <tr>
+        <tr height="60px">
             {% for field in formset.empty_form.visible_fields %}
                 <td class="{{ field.label }}" style="text-align: center; vertical-align: middle;">
                     {{ field.errors }}
@@ -96,26 +96,6 @@
 
     <script>
         check_total();
-
-        var total_form = parseInt($('#id_assessment-TOTAL_FORMS').val());
-
-        var arr = [];
-
-        for (var i = 0; i < total_form; i++) {
-            arr[i] = $("#id_assessment-" + i + "-id").val();
-        }
-
-        $("form").submit(function () {
-            var current_form = parseInt($('#id_assessment-TOTAL_FORMS').val());
-            for (var i = 0; i < current_form; i++) {
-                var input = $("<input>")
-                    .attr("id", "id_assessment-" + i + "-id")
-                    .attr("name", "assessment-" + i + "-id")
-                    .attr("hidden", "hidden").val(arr[i]);
-                $("form").append(input)
-            }
-        });
-
 
         $(document).on('change', '.Default', function() {
             check_total();
@@ -154,13 +134,18 @@
         };
 
         function delete_row() {
+            var initial = $('#id_assessment-INITIAL_FORMS').val();
             var form_idx = $('#id_assessment-TOTAL_FORMS').val();
 
             var tr = $(this).closest('tr');
-            tr.prev('input:hidden').remove();
+            var input = tr.prev('input:hidden')   
+
+            input.remove();
             tr.remove();
 
+            $('#id_assessment-INITIAL_FORMS').val(parseInt(initial) - 1);
             $('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) - 1);
+    
             var filtered = $('input').filter(function () {
                 return this.id.match(/id_assessment-\d+-/);
             });
@@ -169,11 +154,12 @@
             decrement = false;
             filtered.each(function() {
                 var form_idx = parseInt(this.id.replace(/[^\d]/g, ''));
-                if (form_idx-curr > 1) {
+                if (!decrement && form_idx-curr > 1) {
                     decrement = true;
                 };
-
+                
                 if (decrement) {
+
                     var new_id = this.id.replace(/(\d+)/, function(match, n) {
                         return parseInt(n)-1;
                     });

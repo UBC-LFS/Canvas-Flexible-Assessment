@@ -252,7 +252,6 @@ class InstructorFormView(
         return utils.is_teacher_admin(self.request.user)
 
 
-# TODO: Create helpers for student form and override student form
 class OverrideStudentFormView(
         LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
     template_name = 'flex/instructor/override_student_form.html'
