@@ -3,8 +3,8 @@
 
 
 {% block content %}
-  <h3>Instructor Form</h3>
-  <form action="" method="post">
+    <h3>Instructor Form</h3>
+    <form action="" method="post">
         {% csrf_token %}
 
         {{ formset.management_form }}
@@ -40,18 +40,8 @@
                                     {{ field.errors }}
                                     {{ field }}
                                 </td>
-                            {% elif field.label == "Default" %}
-                                <td class="default" style="text-align: center; vertical-align: middle;">
-                                    {{ field.errors }}
-                                    {{ field }}
-                                </td>
-                            {% elif field.label == "Delete" %}
-                                <td class="delete" style="text-align: center; vertical-align: middle;">
-                                    {{ field.errors }}
-                                    {{ field }}
-                                </td>
                             {% else %}
-                                <td style="text-align: center; vertical-align: middle;">
+                                <td class="{{ field.label }}" style="text-align: center; vertical-align: middle;">
                                     {{ field.errors }}
                                     {{ field }}
                                 </td>
@@ -92,22 +82,10 @@
     <table id="empty_form" style="display:none">
         <tr>
             {% for field in formset.empty_form.visible_fields %}
-                {% if field.label == "Default" %}
-                    <td class="default" style="text-align: center; vertical-align: middle;">
-                        {{ field.errors }}
-                        {{ field }}
-                    </td>
-                {% elif field.label == "Delete" %}
-                    <td class="delete" style="text-align: center; vertical-align: middle;">
-                        {{ field.errors }}
-                        {{ field }}
-                    </td>
-                {% else %}
-                    <td style="text-align: center; vertical-align: middle;">
-                        {{ field.errors }}
-                        {{ field }}
-                    </td>
-                {% endif %}
+                <td class="{{ field.label }}" style="text-align: center; vertical-align: middle;">
+                    {{ field.errors }}
+                    {{ field }}
+                </td>
             {% endfor %}
             <td style="text-align: center;vertical-align: middle;"><button class="btn btn-outline-danger btn-sm delete" type="button"><i class="bi bi-trash3"></i></button></td>
         </tr>
@@ -119,16 +97,47 @@
     <script>
         check_total();
 
-        $(document).on('change click', '.default', function() {
+        var total_form = parseInt($('#id_assessment-TOTAL_FORMS').val());
+
+        var arr = [];
+
+        for (var i = 0; i < total_form; i++) {
+            arr[i] = $("#id_assessment-" + i + "-id").val();
+        }
+
+        $("form").submit(function () {
+            var current_form = parseInt($('#id_assessment-TOTAL_FORMS').val());
+            for (var i = 0; i < current_form; i++) {
+                var input = $("<input>")
+                    .attr("id", "id_assessment-" + i + "-id")
+                    .attr("name", "assessment-" + i + "-id")
+                    .attr("hidden", "hidden").val(arr[i]);
+                $("form").append(input)
+            }
+        });
+
+
+        $(document).on('change click', '.Default', function() {
             check_total();
         });
 
+        $('#add').click(function() {
+            var form_idx = $('#id_assessment-TOTAL_FORMS').val();
+            if ($('#form_set tbody').children().length == 0) {
+                $('#form_set tbody').append($('#empty_form').html().replace(/__prefix__/g, form_idx).replace(/<tbody>|<\/tbody>/g, ''));
+            } else {
+                $('#form_set tr:last').after($('#empty_form').html().replace(/__prefix__/g, form_idx).replace(/<tbody>|<\/tbody>/g, ''));
+            }
+            $('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+        });
+
+        $(document).on('click', '.delete', delete_row);
+
         function check_total(){
             var total = 0;
-            $(".default").each(function() {
+            $(".Default").each(function() {
                 curr = parseFloat($(this).find("input").val());
-                var to_delete = $(this).siblings('.delete').children().first().is(':checked')
-                if (!isNaN(curr) && !to_delete) {
+                if (!isNaN(curr)) {
                     total += curr;
                 };
             });
@@ -143,18 +152,6 @@
                 $(':submit').attr("disabled", true);
             };
         };
-
-        $('#add').click(function() {
-            var form_idx = $('#id_assessment-TOTAL_FORMS').val();
-            if ($('#form_set tbody').children().length == 0) {
-                $('#form_set tbody').append($('#empty_form').html().replace(/__prefix__/g, form_idx).replace(/<tbody>|<\/tbody>/g, ''));
-            } else {
-                $('#form_set tr:last').after($('#empty_form').html().replace(/__prefix__/g, form_idx).replace(/<tbody>|<\/tbody>/g, ''));
-            }
-            $('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) + 1);
-        });
-
-        $(document).on('click', '.delete', delete_row);
 
         function delete_row() {
             var form_idx = $('#id_assessment-TOTAL_FORMS').val();

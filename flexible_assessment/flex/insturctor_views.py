@@ -208,6 +208,7 @@ class InstructorFormView(
         if formset.is_valid() and date_form.is_valid():
             return self.forms_valid(formset, date_form)
         elif not formset.is_valid():
+            print(formset.errors)
             return self.form_invalid(formset)
         else:
             return self.form_invalid(date_form)
