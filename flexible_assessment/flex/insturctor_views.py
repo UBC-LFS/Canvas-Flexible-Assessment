@@ -12,7 +12,7 @@ import flex.models as models
 import flex.utils as utils
 
 from .forms import (AssessmentFormSet, AssessmentGroupForm,
-                    DateForm, StudentBaseForm, StudentForm)
+                    DateForm, StudentBaseForm)
 
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
@@ -156,10 +156,19 @@ class AssessmentGroupView(
             response = super(AssessmentGroupView, self).form_invalid(form)
             return response
 
+        course_id = self.request.session.get('course_id', '')
+        canvas_course = Canvas(
+            CANVAS_API_URL,
+            CANVAS_API_KEY).get_course(course_id)
+
         for id, group in form.cleaned_data.items():
             assessment = models.Assessment.objects.filter(pk=id).first()
             assessment.group = group
             assessment.save()
+
+            canvas_course.get_assignment_group(
+                group.id).edit(
+                group_weight=assessment.default)
 
         response = super(AssessmentGroupView, self).form_valid(form)
         return response

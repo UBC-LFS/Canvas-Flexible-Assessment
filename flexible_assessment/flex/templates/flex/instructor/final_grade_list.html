@@ -66,7 +66,7 @@
   <script>
     var colspan = $('.empty').parent().prev().children().length-4
     $('.empty').attr('colspan', colspan)
-    
+
     add_differences()
     calculate_average_override()
     calculate_average_default()
@@ -79,7 +79,7 @@
 
         if (override_str != 'N/A') {
           var diff = parseFloat(override_str)-parseFloat(default_str);
-          prefix = diff > 0 ? '+' : ''
+          var prefix = diff > 0 ? '+' : ''
           $(this).text(prefix + diff.toFixed(2) + '%');
         } else {
           $(this).text('N/A')
@@ -98,8 +98,7 @@
         };
       });
       var average = count != 0 ? sum/count : 0;
-      var prefix = average > 0 ? '+' : '';
-      $('.average_override').text(prefix + average.toFixed(2) + '%');
+      $('.average_override').text(average.toFixed(2) + '%');
     };
 
     function calculate_average_default() {
@@ -109,8 +108,7 @@
         sum += parseFloat($(this).html());
       });
       var average = sum/count;
-      var prefix = average > 0 ? '+' : '';
-      $('.average_default').text(prefix + average.toFixed(2) + '%');
+      $('.average_default').text(average.toFixed(2) + '%');
     };
 
     function calculate_average_diff() {

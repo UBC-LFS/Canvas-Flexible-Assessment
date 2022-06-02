@@ -127,7 +127,7 @@ def add_permissions_helper(groups, permissions_set):
 
 
 def is_teacher_admin(user):
-    return user.groups.filter(name__in=['Teacher', 'Admin']).exists()
+    return user.groups.filter(name__in=['Teacher', 'Admin', 'Ta']).exists()
 
 
 def is_student(user):
