@@ -10,12 +10,11 @@
         <tr>
           <th style="width: 150px">Student</th>
           {% for assessment in course.assessment_set.all %}
-          <!-- assessment.group.allocation -> groups[assessment.group.id]['group_weight'] -->
             <th style="text-align: center;">{{ assessment.title }} ({% get_group_weight groups assessment.group.id %})%</th>
           {% endfor %}
-          <th>Override Final Grade</th>
-          <th>Default Total</th>
-          <th>Difference</th>
+          <th style="text-align: center;">Override Final Grade</th>
+          <th style="text-align: center;">Default Total</th>
+          <th style="text-align: center;">Difference</th>
         </tr>
       </thead>
       <tbody>
@@ -25,20 +24,18 @@
             {% for assessment in course.assessment_set.all %}
                 <td style="text-align: center;">{% get_score groups assessment.group.id student.user_id %}</td>
             {% endfor %}
-            {% use_default student course as ud %}
-            {% if ud %}
-              <td>N/A</td>
-            {% else %}
-              <td>{% get_override_total groups course.assessment_set.all student.user_id %}%</td>
-            {% endif %}
-            <td>{% get_default_total groups student.user_id %}%</td>
-            {% if ud %}
-              <td>N/A</td>
-            {% else %}
-              <td>{% get_difference groups course.assessment_set.all student.user_id %}%</td>
-            {% endif %}
+            <td class="override" style="text-align: center;">{% get_override_total groups student course %}</td>
+            <td class="default" style="text-align: center;">{% get_default_total groups student.user_id %}</td>
+            <td style="text-align: center;"><span class="difference"></span></td>
           </tr>
         {% endfor %}
+        <tr>
+          <td class="empty"></td>
+          <th style="text-align: center;">Averages</th>
+          <td style="text-align: center;"><span class="average_override"></span></td>
+          <td style="text-align: center;"><span class="average_default"></span></td>
+          <td style="text-align: center;"><span class="average_difference"></span></td>
+        </tr>
       </tbody>
     </table>
   {% else %}
@@ -63,5 +60,74 @@
         {% endif %}
     </span>
   </div>
+
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+  <script>
+    var colspan = $('.empty').parent().prev().children().length-4
+    $('.empty').attr('colspan', colspan)
+    
+    add_differences()
+    calculate_average_override()
+    calculate_average_default()
+    calculate_average_diff()
+
+    function add_differences() {
+      $('.difference').each(function() {
+        var default_str = $(this).parentsUntil('tbody').find('.default').html();
+        var override_str = $(this).parentsUntil('tbody').find('.override').html();
+
+        if (override_str != 'N/A') {
+          var diff = parseFloat(override_str)-parseFloat(default_str);
+          prefix = diff > 0 ? '+' : ''
+          $(this).text(prefix + diff.toFixed(2) + '%');
+        } else {
+          $(this).text('N/A')
+        };
+      });
+    };
+
+    function calculate_average_override() {
+      var sum = 0;
+      var count = 0;
+      $('.override').each(function() {
+        var override_str = $(this).html()
+        if (override_str != 'N/A') {
+          sum += parseFloat(override_str);
+          count++
+        };
+      });
+      var average = count != 0 ? sum/count : 0;
+      var prefix = average > 0 ? '+' : '';
+      $('.average_override').text(prefix + average.toFixed(2) + '%');
+    };
+
+    function calculate_average_default() {
+      var sum = 0;
+      var count = $('.default').length;
+      $('.default').each(function() {
+        sum += parseFloat($(this).html());
+      });
+      var average = sum/count;
+      var prefix = average > 0 ? '+' : '';
+      $('.average_default').text(prefix + average.toFixed(2) + '%');
+    };
+
+    function calculate_average_diff() {
+      var sum = 0;
+      var count = 0;
+      $('.difference').each(function() {
+        var diff_str = $(this).html()
+        if (diff_str != 'N/A') {
+          sum += parseFloat(diff_str);
+          count++;
+        };
+      });
+      var average = count != 0 ? sum/count : 0;
+      var prefix = average > 0 ? '+': '';
+      $('.average_difference').text(prefix + average.toFixed(2) + '%');
+    };
+
+  </script>
 
 {% endblock %}

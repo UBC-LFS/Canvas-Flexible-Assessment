@@ -122,7 +122,7 @@
                 };
             });
 
-            total_str = total.toString();
+            var total_str = total.toString();
             $('#total').text(total_str + "%");
             if (total == 100.00) {
                 $('#total').css('color', 'green');
@@ -150,10 +150,10 @@
                 return this.id.match(/id_assessment-\d+-/);
             });
 
-            curr = -1;
-            decrement = false;
+            var curr = -1;
+            var decrement = false;
             filtered.each(function() {
-                var form_idx = parseInt(this.id.replace(/[^\d]/g, ''));
+                form_idx = parseInt(this.id.replace(/[^\d]/g, ''));
                 if (!decrement && form_idx-curr > 1) {
                     decrement = true;
                 };
