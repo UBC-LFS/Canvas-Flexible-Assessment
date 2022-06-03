@@ -12,19 +12,19 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-sm-2">
-      {% block sidebar %}
-        <span class="fs-3 fw-semibold">Navigation</span>
-        <ul class="sidebar-nav">
-          <li><a href="{% url 'flex:instructor_home' %}">Home</a></li>
+        <p class="fs-5 fw-semibold mt-3 mb-3 text-center">Flexible Assessment</p>
+        {% block sidebar %}
+        <nav class="nav flex-column">
+          <a class="nav-link" href="{% url 'flex:instructor_home' %}"><i class="bi bi-house"></i> Home</a>
           {% if course.close %}
-            <li><a href="{% url 'flex:instructor_form' %}">Assessments</a></li>
-            <li><a href="{% url 'flex:percentage_list' %}">Percentages</a></li>
-            <li><a href="{% url 'flex:group_form' %}">Calculate Final Grades</a></li>
+            <a class="nav-link" href="{% url 'flex:instructor_form' %}"><i class="bi bi-journals"></i> Assessments</a>
+            <a class="nav-link" href="{% url 'flex:percentage_list' %}"><i class="bi bi-percent"></i> Percentages</a>
+            <a class="nav-link" href="{% url 'flex:group_form' %}"><i class="bi bi-check2"></i> Final Grades</a>
           {% else %}
-            <li><a href="{% url 'flex:instructor_form' %}">Course Setup</a></li>
+            <a class="nav-link" href="{% url 'flex:instructor_form' %}"><i class="bi bi-tools"></i> Course Setup</a>
           {% endif %}
-        </ul>
-     {% endblock %}
+        </nav>
+        {% endblock %}
       </div>
       <div class="col-sm-10 ">{% block content %}{% endblock %}</div>
     </div>

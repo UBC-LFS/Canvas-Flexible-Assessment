@@ -1,50 +1,54 @@
 {% extends "flex/instructor/instructor_base.html" %}
 {% load flextags %}
+{% load django_bootstrap5 %}
 
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
 
 {% block content %}
-  <h3>Override Student Form</h3>
+  <h2 class="mt-3 mb-3">Override Student Form</h2>
   <h4>Student: {{ student_name }}</h4>
 
   <form action="" method="post">
     {% csrf_token %}
 
-    {{ form.non_field_errors }}
+    {% bootstrap_form_errors form %}
 
     {% for hidden_field in form.hidden_fields %}
-        {{ hidden_field.errors }}
-        {{ hidden_field }}
+        {% bootstrap_field hidden_field %}
     {% endfor %}
 
-    <table class="table table-striped" style="width: 80%; margin-bottom: 0;">
-        <caption>All assessments should be given desired % and total flex adds up to 100%</caption>
-        <thead>
-          <tr>
-            <th style="text-align: center;">Title</th>
-            <th style="text-align: center;">Desired %</th>
-            <th style="text-align: center;">Default %</th>
-            <th style="text-align: center;">Min %</th>
-            <th style="text-align: center;">Max %</th>
-          </tr>
-        </thead>
-        <tbody>
-            {% for field in form.visible_fields %}
-                {% if field.name != "comment" %}
-                    <tr>
-                      <th style="text-align: center;">{{ field.label }}</th>
-                      <td class="flex" style="text-align: center; width: 25%;">
-                          {{ field.errors }}
-                          {{ field }}
-                      </td>
-                      {% get_default_min_max field.name as default_min_max %}
-                          <td style="text-align: center;">{{ default_min_max.0 }}</td>
-                          <td style="text-align: center;">{{ default_min_max.1 }}</td>
-                          <td style="text-align: center;">{{ default_min_max.2 }}</td>
-                    </tr>
-                {% endif %}
-          {% endfor %}
-        </tbody>
-    </table>
+    <div class="col-9">
+      <table class="table table-striped mb-0" style="table-layout: fixed">
+          <caption>All assessments should be given desired % and total flex adds up to 100%</caption>
+          <thead>
+            <tr>
+              <th class="text-center align-middle" style="width: 30%;">Title</th>
+              <th class="text-center align-middle">Desired %</th>
+              <th class="text-center align-middle">Default %</th>
+              <th class="text-center align-middle">Min %</th>
+              <th class="text-center align-middle">Max %</th>
+            </tr>
+          </thead>
+          <tbody>
+              {% for field in form.visible_fields %}
+                  {% if field.name != "comment" %}
+                      <tr height="60px">
+                        <td class="text-center align-middle">{{ field.label }}</td>
+                        <td class="flex text-center align-middle">
+                          {% bootstrap_field field show_label=False placeholder='' wrapper_class='mb-3; vertical-align: middle;' %}
+                        </td>
+                        {% get_default_min_max field.name as default_min_max %}
+                            <td class="text-center align-middle">{{ default_min_max.0 }}</td>
+                            <td class="text-center align-middle">{{ default_min_max.1 }}</td>
+                            <td class="text-center align-middle">{{ default_min_max.2 }}</td>
+                      </tr>
+                  {% endif %}
+            {% endfor %}
+          </tbody>
+      </table>
+    </div>
     <h5>Total: <span id="total"></span></h5>
     <a href="{% url 'flex:percentage_list' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
     <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>

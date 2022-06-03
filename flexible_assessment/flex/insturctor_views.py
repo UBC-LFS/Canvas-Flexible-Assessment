@@ -74,8 +74,12 @@ class FinalGradeListView(
             CANVAS_API_URL, CANVAS_API_KEY).graphql(
             query, variables={
                 "course_id": course_id})
-        # TODO: Add KeyError handle
-        groups = query_response['data']['course']['assignment_groups']['groups']
+        
+        query_flattened = utils.flatten_dict(query_response)
+        groups = query_flattened.get('data.course.assignment_groups.groups', None)
+        if groups is None:
+            raise PermissionDenied
+        
         group_dict = {}
         for group in groups:
             id = group['group_id']
@@ -83,12 +87,21 @@ class FinalGradeListView(
             group_dict[id] = group
 
         for group_data in group_dict.values():
-            grades = group_data['grade_list']['grades']
+            group_flattened = utils.flatten_dict(group_data)
+            grades = group_flattened.get('grade_list.grades', None)
+            if grades is None:
+                raise PermissionDenied
+
             updated_grades = []
             for grade in grades:
-                user_id = grade['enrollment']['user']['user_id']
-                score = grade['currentScore']
+                grade_flattened = utils.flatten_dict(grade)
+                user_id = grade_flattened.get('enrollment.user.user_id', None)
+                if user_id is None:
+                    raise PermissionDenied
+
+                score = grade_flattened['currentScore']
                 updated_grades.append((user_id, score))
+                
             group_data['grade_list']['grades'] = updated_grades
 
         context['groups'] = group_dict
@@ -217,7 +230,6 @@ class InstructorFormView(
         if formset.is_valid() and date_form.is_valid():
             return self.forms_valid(formset, date_form)
         elif not formset.is_valid():
-            print(formset.errors)
             return self.form_invalid(formset)
         else:
             return self.form_invalid(date_form)

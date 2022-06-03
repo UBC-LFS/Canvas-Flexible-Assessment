@@ -1,90 +1,87 @@
 {% extends "flex/instructor/instructor_base.html" %}
 {% load flextags %}
+{% load django_bootstrap5 %}
 
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
 
 {% block content %}
-    <h3>Instructor Form</h3>
+    <h2 class="mt-3 mb-3">Instructor Form</h2>
     <form action="" method="post">
         {% csrf_token %}
 
         {{ formset.management_form }}
-        {{ formset.non_form_errors }}
+        {% bootstrap_formset_errors formset %}
 
         {% for hidden_field in date_form.hidden_fields %}
-            {{ hidden_field.errors }}
-            {{ hidden_field }}
+            {% bootstrap_field hidden_field %}
         {% endfor %}
 
         <div id="form_set">
-            <table class='table table-striped' style="width: 80%; margin-bottom: 0;">
-            <caption>Total default allocations should add up to 100%</caption>
+            <div class="col-10">
+                <table class='table table-striped mb-0'>
+                <caption>Total default allocations should add up to 100%</caption>
+                    <thead>
+                        <tr>
+                            <th class="text-center align-middle">Title</th>
+                            <th class="text-center align-middle">Default %</th>
+                            <th class="text-center align-middle">Min %</th>
+                            <th class="text-center align-middle">Max %</th>
+                            <th class="text-center align-middle">Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for form in formset.forms %}
+                        {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                        <tr height="60px">
+                        {% for field in form.visible_fields %}
+                            <td class="{{ field.label }} text-center align-middle">
+                                {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                            </td>
+                        {% endfor %}
+                        <td class="text-center align-middle"><button class="btn btn-outline-danger btn-sm delete" type="button"><i class="bi bi-trash3"></i></button></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <div class="d-flex align-items-center justify-content-between">
+                    <button class="btn btn-outline-primary" type="button" id="add"><i class="bi bi-plus-lg"></i> Assessment</button>
+                    <h5 class="align-middle">Total: <span id="total"></span></h5>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="mt-4">Flexible assessment availability</h4>
+        {{ date_form.non_field_errors }}
+        <div class="col-6">
+            <table class='table table-bordered'>
+                <caption>Open and close dates for flexible assessment</caption>
                 <thead>
                     <tr>
-                    <th style="text-align: center;">Title</th>
-                    <th style="text-align: center;">Default %</th>
-                    <th style="text-align: center;">Min %</th>
-                    <th style="text-align: center;">Max %</th>
-                    <th style="text-align: center;">Remove</th>
+                        <th>Open Date</th>
+                        <th>Close Date</th>
                     </tr>
                 </thead>
                 <tbody>
-                {% for form in formset.forms %}
-                    {% for hidden in form.hidden_fields %}
-                        {{ hidden }}
-                    {% endfor %}
-                    <tr height="60px">
-                    {% for field in form.visible_fields %}
-                            {% if form.non_field_errors and field.label == "Title" %}
-                                <td style="text-align: center; vertical-align: middle;">
-                                    {{ form.non_field_errors }}
-                                    {{ field.errors }}
-                                    {{ field }}
-                                </td>
-                            {% else %}
-                                <td class="{{ field.label }}" style="text-align: center; vertical-align: middle;">
-                                    {{ field.errors }}
-                                    {{ field }}
-                                </td>
-                            {% endif %}
-                    {% endfor %}
-                    <td style="text-align: center;vertical-align: middle;"><button class="btn btn-outline-danger btn-sm delete" type="button"><i class="bi bi-trash3"></i></button></td>
+                    <tr>
+                        <td>{% bootstrap_field date_form.open show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
+                        <td>{% bootstrap_field date_form.close show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
                     </tr>
-                {% endfor %}
                 </tbody>
             </table>
+            <a href="{% url 'flex:instructor_home' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>
         </div>
-        <button class="btn btn-outline-primary" type="button" id="add" style="margin-bottom: 10px;"><i class="bi bi-plus-lg"></i> Assessment</button>
-        <h5>Total: <span id="total"></span></h5>
-
-        <h4 style="padding-top: 20px">Flexible assessment availability</h4>
-        {{ date_form.non_field_errors }}
-        <table class='table table-bordered' style="width: 10%">
-            <caption>Open and close dates for flexible assessment</caption>
-            <thead>
-                <tr>
-                    <th>Open Date</th>
-                    <th>Close Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ date_form.open.errors }}
-                        {{ date_form.open }}</td>
-                    <td>{{ date_form.close.errors }}
-                        {{ date_form.close }}</td>
-                </tr>
-            </tbody>
-        </table>
-        <a href="{% url 'flex:instructor_home' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
-        <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>
     </form>
 
     <table id="empty_form" style="display:none">
         <tr height="60px">
             {% for field in formset.empty_form.visible_fields %}
                 <td class="{{ field.label }}" style="text-align: center; vertical-align: middle;">
-                    {{ field.errors }}
-                    {{ field }}
+                    {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
                 </td>
             {% endfor %}
             <td style="text-align: center;vertical-align: middle;"><button class="btn btn-outline-danger btn-sm delete" type="button"><i class="bi bi-trash3"></i></button></td>

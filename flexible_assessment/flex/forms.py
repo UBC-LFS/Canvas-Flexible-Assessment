@@ -189,7 +189,7 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                     form.add_error('max', ValidationError(
                         'Maximum must be higher than default'))
                 if min > max:
-                    form.add_error(None, ValidationError(
+                    form.add_error('title', ValidationError(
                         'Maximum must be higher than minimum'))
 
 

@@ -4,7 +4,8 @@
     list-style: none;
 }
 
-.errorlist {
+/* Remove when bootstrap used for fields */
+/* .errorlist {
     color: red;
     list-style: none;
-}
+} */
