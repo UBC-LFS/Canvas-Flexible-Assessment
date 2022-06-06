@@ -139,8 +139,8 @@ class StudentForm(StudentBaseForm):
             initial=initial_comment,
             widget=forms.Textarea(
                 attrs={
-                    'rows': 3,
-                    'cols': 25}),
+                    'rows': 3
+                    }),
             required=False)
 
         self.fields.update(comment_field)

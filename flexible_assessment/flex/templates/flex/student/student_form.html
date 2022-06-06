@@ -1,96 +1,109 @@
 {% extends "flex/student/student_base.html" %}
 {% load flextags %}
+{% load django_bootstrap5 %}
 
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
 
+{% block nav_item_assessments %}active{% endblock nav_item_assessments %} 
 {% block content %}
-  <h3>Student Form</h3>
+<h2 class="mt-3 mb-3">Student Form</h2>
 
-  <form action="" method="post">
+<form action="" method="post">
     {% csrf_token %}
 
-    {{ form.non_field_errors }}
+    {% bootstrap_form_errors form %}
 
     {% for hidden_field in form.hidden_fields %}
-        {{ hidden_field.errors }}
-        {{ hidden_field }}
+        {% bootstrap_field hidden_field %}
     {% endfor %}
 
-    <table class="table table-striped" style="width: 80%; margin-bottom: 0;">
-        <caption>All assessments should be given desired % and total flex adds up to 100%</caption>
-        <thead>
-          <tr>
-            <th style="text-align: center;">Title</th>
-            <th style="text-align: center;">Desired %</th>
-            <th style="text-align: center;">Default %</th>
-            <th style="text-align: center;">Min %</th>
-            <th style="text-align: center;">Max %</th>
-          </tr>
-        </thead>
-        <tbody>
-            {% for field in form.visible_fields %}
-                {% if field.name != "comment" %}
-                    <tr>
-                      <th style="text-align: center;">{{ field.label }}</th>
-                      <td class="flex" style="text-align: center; width: 25%;">
-                          {{ field.errors }}
-                          {{ field }}
-                      </td>
-                      {% get_default_min_max field.name as default_min_max %}
-                          <td style="text-align: center;">{{ default_min_max.0 }}</td>
-                          <td style="text-align: center;">{{ default_min_max.1 }}</td>
-                          <td style="text-align: center;">{{ default_min_max.2 }}</td>
-                    </tr>
-                {% endif %}
-          {% endfor %}
-        </tbody>
-    </table>
-    <h5>Total: <span id="total"></span></h5>
-    <h4 style="padding-top: 10px">Comment for allocation</h4>
-    <p>{{ form.comment }}</p>
-    <h4 style="padding-top: 10px">Flexible assessment availability</h4>
-    <p>{{ course.open }} - {{ course.close }}</p>
+    <div class="col-9">
+        <table class="table table-striped mb-0" style="table-layout: fixed;">
+            <caption>All assessments should be given desired % and total flex adds up to 100%</caption>
+            <thead>
+                <tr>
+                    <th class="text-center align-middle" style="width: 30%;">Title</th>
+                    <th class="text-center align-middle">Desired %</th>
+                    <th class="text-center align-middle">Default %</th>
+                    <th class="text-center align-middle">Min %</th>
+                    <th class="text-center align-middle">Max %</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for field in form.visible_fields %}
+                    {% if field.name != "comment" %}
+                        <tr height="60px">
+                            <td class="text-center align-middle">{{ field.label }}</td>
+                            <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
+								{% bootstrap_field field show_label=False placeholder='' wrapper_class='mb-3; vertical-align: middle;' %}
+                            </td>
+                            {% get_default_min_max field.name as default_min_max %}
+                            <td class="text-center align-middle">{{ default_min_max.0 }}</td>
+                            <td class="text-center align-middle">{{ default_min_max.1 }}</td>
+                            <td class="text-center align-middle">{{ default_min_max.2 }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr height="60px">
+                    <th class="text-center align-middle">Total</th>
+                    <th class="text-center align-middle"><span id="total"></span></th>
+                    <td colspan="3"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-5">
+        <h4>Comment for allocation</h4>
+        <p>{% bootstrap_field form.comment show_label=False placeholder='' wrapper_class='mb-0' %}</p>
+    </div>
+    <div class="row">
+        <h4>Flexible assessment availability</h4>
+        <p>{{ course.open }} - {{ course.close }}</p>
+    </div>
     <a href="{% url 'flex:student_home' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
     {% not_open as no %}
     {% if no %}
-      <button class="btn btn-primary" type="submit" disabled><i class="bi bi-send"></i> Submit</button>
+        <button class="btn btn-primary" type="submit" disabled><i class="bi bi-send"></i> Submit</button>
     {% else %}
-      <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>
     {% endif %}
-  </form>
+</form>
 
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
-  <script>
+<script>
     pre_disabled = $(':submit').attr('disabled')
     check_total();
 
-    $(document).on('change', '.flex', function(){
+    $(document).on('change', '.flex', function () {
         check_total();
     });
 
-    function check_total(){
-      var total = 0;
-      $(".flex").each(function() {
-        curr = parseFloat($(this).find("input").val());
-        if (!isNaN(curr)) {
-          total += curr;
-        };
-      });
+    function check_total() {
+        var total = 0;
+        $(".flex").each(function () {
+            curr = parseFloat($(this).find("input").val());
+            if (!isNaN(curr)) {
+                total += curr;
+            };
+        });
 
-      var total_str = total.toString();
-      $('#total').text(total_str + "%");
-      if (total == 100.00) {
-        $('#total').css('color', 'green');
-        if (!pre_disabled) {
-          $(":submit").removeAttr("disabled");
+        var total_str = total.toString();
+        $('#total').text(total_str + "%");
+        if (total == 100.00) {
+            $('#total').css('color', 'green');
+            if (!pre_disabled) {
+                $(":submit").removeAttr("disabled");
+            };
+        } else {
+            $('#total').css('color', 'red');
+            if (!pre_disabled) {
+                $(':submit').attr("disabled", true);
+            };
         };
-      } else {
-        $('#total').css('color', 'red');
-        if (!pre_disabled) {
-          $(':submit').attr("disabled", true);
-        };
-      };
     };
 
-  </script>
+</script>
 {% endblock %}

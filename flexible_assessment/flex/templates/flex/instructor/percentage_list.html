@@ -1,57 +1,61 @@
 {% extends "flex/instructor/instructor_base.html" %}
 {% load flextags %}
 
+{% block nav_item_percentages %}active{% endblock nav_item_percentages %} 
 {% block content %}
-  <h2 class="mt-3 mb-3">Student List</h2>
-  {% if student_list %}
-    <table class="table table-striped mb-0" style="table-layout: fixed">
-      <caption>Click student to edit their desired %</caption>
-      <thead>
-        <tr>
-          <th class="text-center align-middle" style="width: 20%">Student</th>
-          {% for assessment in course.assessment_set.all %}
-            <th class="text-center align-middle">{{ assessment.title }}</th>
-          {% endfor %}
-          <th class="text-center align-middle" style="width: 30%">Comment</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for student in student_list %}
-          <tr>
-            <td class="text-center align-middle text-break"><a href="{% url 'flex:override_student_form' student.user_id %}">{{ student.display_name }}</a></td>
-            {% for assessment in course.assessment_set.all %}
-              {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
-                <td class="text-center align-middle">{{ flex_assessment.flex }}</td>
-              {% endwith %}
-            {% endfor %}
-            {% with student.usercomment_set.all|comment_filter:course.id as user_comment %}
-              <td class="align-middle text-break">{{ user_comment.comment }}</td>
-            {% endwith %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No students in this course have launched the app yet.</p>
-  {% endif %}
-  <div class="pagination">
-    <span class="step-links">
-        {% if page_obj.has_previous %}
-            <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-compact-left"></i></a>
-        {% else %}
-            <a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-left"></i></a>
-        {% endif %}
+<h2 class="mt-3 mb-3">Student List</h2>
+{% if student_list %}
+	<table class="table table-striped mb-0" style="table-layout: fixed">
+		<caption>Click student to edit their desired %</caption>
+		<thead>
+			<tr>
+				<th class="text-center align-middle" style="width: 20%">Student</th>
+				{% for assessment in course.assessment_set.all %}
+					<th class="text-center align-middle">{{ assessment.title }}</th>
+				{% endfor %}
+				<th class="text-center align-middle" style="width: 30%">Comment</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for student in student_list %}
+				<tr>
+					<td class="text-center align-middle text-break"><a
+							href="{% url 'flex:override_student_form' student.user_id %}">{{ student.display_name }}</a></td>
+					{% for assessment in course.assessment_set.all %}
+						{% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
+							<td class="text-center align-middle">{{ flex_assessment.flex }}</td>
+						{% endwith %}
+					{% endfor %}
+					{% with student.usercomment_set.all|comment_filter:course.id as user_comment %}
+						<td class="align-middle text-break">{{ user_comment.comment }}</td>
+					{% endwith %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% else %}
+	<p>No students in this course have launched the app yet.</p>
+{% endif %}
+<div class="pagination">
+	<span class="step-links">
+		{% if page_obj.has_previous %}
+			<a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}"><i
+				class="bi bi-chevron-compact-left"></i></a>
+		{% else %}
+			<a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-left"></i></a>
+		{% endif %}
 
-        <span class="current">
-            {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-        </span>
+		<span class="current">
+			{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+		</span>
 
-        {% if page_obj.has_next %}
-            <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-compact-right"></i></a>
-        {% else %}
-            <a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-right"></i></a>
-        {% endif %}
-    </span>
-  </div>
+		{% if page_obj.has_next %}
+			<a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.next_page_number }}"><i
+					class="bi bi-chevron-compact-right"></i></a>
+		{% else %}
+			<a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-right"></i></a>
+		{% endif %}
+	</span>
+</div>
 
 {% endblock %}
