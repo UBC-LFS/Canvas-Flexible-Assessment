@@ -47,30 +47,30 @@
 			</tr>
         </tfoot>
 	</table>
+    <div class="d-flex justify-content-center pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}"><i
+                        class="bi bi-chevron-compact-left"></i></a>
+            {% else %}
+                <a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-left"></i></a>
+            {% endif %}
+
+            <span class="current">
+                {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.next_page_number }}"><i
+                        class="bi bi-chevron-compact-right"></i></a>
+            {% else %}
+                <a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-right"></i></a>
+            {% endif %}
+        </span>
+    </div>
 {% else %}
 	<p>No students in this course have launched the app yet.</p>
 {% endif %}
-<div class="d-flex justify-content-center pagination">
-	<span class="step-links">
-		{% if page_obj.has_previous %}
-			<a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}"><i
-					class="bi bi-chevron-compact-left"></i></a>
-		{% else %}
-			<a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-left"></i></a>
-		{% endif %}
-
-		<span class="current">
-			{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-		</span>
-
-		{% if page_obj.has_next %}
-			<a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.next_page_number }}"><i
-					class="bi bi-chevron-compact-right"></i></a>
-		{% else %}
-			<a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-right"></i></a>
-		{% endif %}
-	</span>
-</div>
 
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 

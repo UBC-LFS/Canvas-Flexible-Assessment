@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 from canvasapi import Canvas
 from django import forms
 from django.core.exceptions import ValidationError, PermissionDenied
-from django.forms import BaseFormSet, BaseModelFormSet, ModelForm, formset_factory, modelform_factory, modelformset_factory
+from django.forms import BaseModelFormSet, ModelForm, modelformset_factory
 from .models import Assessment, Course, FlexAssessment, UserComment, AssignmentGroup
 import os
 

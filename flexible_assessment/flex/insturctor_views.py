@@ -5,7 +5,7 @@ from canvasapi import Canvas
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.forms import BaseModelFormSet, ValidationError
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
 
@@ -77,7 +77,7 @@ class FlexAssessmentListView(
                     assessment=assessment).flex
                 values.append(flex)
 
-            comment = student.usercomment_set.get(user=student).comment
+            comment = student.usercomment_set.get(course=course).comment
             values.append(comment)
 
             writer.writerow(values)
