@@ -99,7 +99,6 @@ class StudentBaseForm(forms.Form):
                                                                    widget=forms.NumberInput(attrs={'size': 3}))
 
         self.fields.update(flex_fields)
-        self.field_status()
 
     def clean(self):
         flex_fields = dict(
