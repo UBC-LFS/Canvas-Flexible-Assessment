@@ -6,12 +6,17 @@
 <h2 class="mt-3 mb-3">Final Grade List</h2>
 {% if student_list %}
 	<table class="table table-striped mb-0" style="table-layout: fixed;">
-		<caption>Click student to edit their desired %</caption>
+		<caption>
+            <div class="d-flex align-items-center justify-content-between">
+                Click student to edit their desired % 
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'flex:final_grades_export' %}"><i class="bi bi-download"></i> Export</a>
+            </div>
+        </caption>
 		<thead>
 			<tr>
 				<th class="text-center align-middle" style="width: 20%">Student</th>
 				{% for assessment in course.assessment_set.all %}
-					<th class="text-center align-middle">{{ assessment.title }} ({% get_group_weight groups assessment.group.id %})%</th>
+					<th class="assessment text-center align-middle">{{ assessment.title }} ({% get_group_weight groups assessment.group.id %})%</th>
 				{% endfor %}
 				<th class="text-center align-middle">Override Final Grade</th>
 				<th class="text-center align-middle">Default Total</th>
@@ -21,28 +26,31 @@
 		<tbody>
 			{% for student in student_list %}
 				<tr>
-					<td class="text-break"><a href="">{{ student.display_name }}</a></td>
+					<td class="text-center align-middle text-break"><a href="{% url 'flex:override_student_form' student.user_id %}">{{ student.display_name }}</a></td>
 					{% for assessment in course.assessment_set.all %}
-						<td class="text-center align-middle">{% get_score groups assessment.group.id student.user_id %}</td>
+						<td class="text-center align-middle">{% get_score groups assessment.group.id student %}</td>
 					{% endfor %}
-					<td class="text-center align-middle override">{% get_override_total groups student course %}</td>
-					<td class="text-center align-middle default">{% get_default_total groups student.user_id %}</td>
+					<td class="text-center align-middle override">{% get_override_total_str groups student course %}</td>
+					<td class="text-center align-middle default">{% get_default_total_str groups student %}</td>
 					<td class="text-center align-middle"><span class="difference"></span></td>
 				</tr>
 			{% endfor %}
-			<tr>
+		</tbody>
+        <tfoot>
+            <tr>
 				<td class="empty"></td>
 				<th class="text-center align-middle">Averages</th>
-				<td class="text-center align-middle"><span class="average_override"></span></td>
-				<td class="text-center align-middle"><span class="average_default"></span></td>
-				<td class="text-center align-middle"><span class="average_difference"></span></td>
+                {% get_averages_str groups student_list course as averages %}
+				<td class="text-center align-middle">{{ averages.0 }}</td>
+				<td class="text-center align-middle">{{ averages.1 }}</td>
+				<td class="text-center align-middle">{{ averages.2 }}</td>
 			</tr>
-		</tbody>
+        </tfoot>
 	</table>
 {% else %}
 	<p>No students in this course have launched the app yet.</p>
 {% endif %}
-<div class="pagination">
+<div class="d-flex justify-content-center pagination">
 	<span class="step-links">
 		{% if page_obj.has_previous %}
 			<a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}"><i
@@ -67,13 +75,10 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 <script>
-	var colspan = $('.empty').parent().prev().children().length - 4
-	$('.empty').attr('colspan', colspan)
+	var colspan = $('.assessment').length;
+	$('.empty').attr('colspan', colspan);
 
-	add_differences()
-	calculate_average_override()
-	calculate_average_default()
-	calculate_average_diff()
+	add_differences();
 
 	function add_differences() {
 		$('.difference').each(function () {
@@ -82,7 +87,7 @@
 
 			if (override_str != 'N/A') {
 				var diff = parseFloat(override_str) - parseFloat(default_str);
-				var prefix = diff > 0 ? '+' : ''
+				var prefix = diff > 0 ? '+' : '';
 				$(this).text(prefix + diff.toFixed(2) + '%');
 			} else {
 				$(this).text('N/A')
@@ -90,44 +95,6 @@
 		});
 	};
 
-	function calculate_average_override() {
-		var sum = 0;
-		var count = 0;
-		$('.override').each(function () {
-			var override_str = $(this).html()
-			if (override_str != 'N/A') {
-				sum += parseFloat(override_str);
-				count++
-			};
-		});
-		var average = count != 0 ? sum / count : 0;
-		$('.average_override').text(average.toFixed(2) + '%');
-	};
-
-	function calculate_average_default() {
-		var sum = 0;
-		var count = $('.default').length;
-		$('.default').each(function () {
-			sum += parseFloat($(this).html());
-		});
-		var average = sum / count;
-		$('.average_default').text(average.toFixed(2) + '%');
-	};
-
-	function calculate_average_diff() {
-		var sum = 0;
-		var count = 0;
-		$('.difference').each(function () {
-			var diff_str = $(this).html()
-			if (diff_str != 'N/A') {
-				sum += parseFloat(diff_str);
-				count++;
-			};
-		});
-		var average = count != 0 ? sum / count : 0;
-		var prefix = average > 0 ? '+' : '';
-		$('.average_difference').text(prefix + average.toFixed(2) + '%');
-	};
 
 </script>
 

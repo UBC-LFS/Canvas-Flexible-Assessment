@@ -30,7 +30,8 @@ def not_open(context):
 
 
 @register.simple_tag()
-def get_score(groups, group_id, student_id):
+def get_score(groups, group_id, student):
+    student_id = student.user_id
     group_id_str = str(group_id)
     student_id_str = str(student_id)
     grades = groups[group_id_str]['grade_list']['grades']
@@ -39,8 +40,8 @@ def get_score(groups, group_id, student_id):
             return score
 
 
-@register.simple_tag()
-def get_default_total(groups, student_id):
+def get_default_total(groups, student):
+    student_id = student.user_id
     student_id_str = str(student_id)
     scores = []
     weights = []
@@ -60,10 +61,9 @@ def get_default_total(groups, student_id):
         overall += score * weight / 100
     overall = overall / sum(weights) * 100
 
-    return str(round(overall, 2)) + '%'
+    return round(overall, 2)
 
 
-@register.simple_tag()
 def get_override_total(groups, student, course):
     null_flex_assessments = student.flexassessment_set.filter(
         assessment__course=course, flex__isnull=True)
@@ -71,7 +71,7 @@ def get_override_total(groups, student, course):
         assessment__course=course, flex__isnull=False)
     flex_sum = sum([fa.flex for fa in flex_assessments_with_flex])
     if any(null_flex_assessments) or flex_sum != 100:
-        return 'N/A'
+        return ''
 
     student_id = student.user_id
     student_id_str = str(student_id)
@@ -98,7 +98,19 @@ def get_override_total(groups, student, course):
         overall += score * weight / 100
     overall = overall / sum(flex_set) * 100
 
-    return str(round(overall, 2)) + '%'
+    return round(overall, 2)
+
+
+@register.simple_tag()
+def get_override_total_str(groups, student, course):
+    overall = get_override_total(groups, student, course)
+    return str(overall) + '%' if overall is not '' else 'N/A'
+
+
+@register.simple_tag()
+def get_default_total_str(groups, student):
+    overall = get_default_total(groups, student)
+    return str(overall) + '%'
 
 
 @register.simple_tag()
@@ -113,3 +125,37 @@ def get_group_weight(groups, id):
         return groups[str(id)]['group_weight']
     except BaseException:
         return ''
+
+
+def get_averages(groups, students, course):
+    overrides = [get_override_total(groups, student, course)
+                 for student in students]
+    defaults = [get_default_total(groups, student) for student in students]
+    override_default = zip(overrides, defaults)
+    diffs = []
+    for override, default_total in override_default:
+        if override is not '':
+            diffs.append(override - default_total)
+    overrides_valid = list(filter(lambda ov: ov is not '', overrides))
+
+    averages = []
+    for curr_list in [overrides_valid, defaults, diffs]:
+        averages.append(
+            round(
+                sum(curr_list) /
+                len(curr_list),
+                2) if len(curr_list) != 0 else 0)
+
+    return averages
+
+
+@register.simple_tag()
+def get_averages_str(groups, students, course):
+    averages = get_averages(groups, students, course)
+    overall_avg, default_avg, diff_avg = averages[0], averages[1], averages[2]
+    overall_str = str(overall_avg) + '%'
+    default_str = str(default_avg) + '%'
+
+    prefix = '+' if diff_avg > 0 else ''
+    diff_str = prefix + str(diff_avg) + '%'
+    return (overall_str, default_str, diff_str)

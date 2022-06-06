@@ -13,7 +13,7 @@
 <form action="" method="post">
     {% csrf_token %}
 
-    {% bootstrap_form_errors form %}
+    {% bootstrap_form_errors form type='non_fields' %}
 
     {% for hidden_field in form.hidden_fields %}
         {% bootstrap_field hidden_field %}
@@ -46,12 +46,14 @@
                         </tr>
                     {% endif %}
                 {% endfor %}
-                <tr height="60px">
+			</tbody>
+            <tfoot>
+                <tr>
                     <th class="text-center align-middle">Total</th>
                     <th class="text-center align-middle"><span id="total"></span></th>
                     <td colspan="3"></td>
                 </tr>
-            </tbody>
+            </tfoot>
         </table>
     </div>
     <div class="col-5">

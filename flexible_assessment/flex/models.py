@@ -4,8 +4,6 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.db import models
 
-# TODO: limit admin perms
-
 
 class UserProfileManager(BaseUserManager):
     """Extends Base User Manager for creating users and superusers of type UserProfile

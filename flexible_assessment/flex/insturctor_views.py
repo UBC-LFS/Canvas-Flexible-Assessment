@@ -1,18 +1,20 @@
+import csv
 import os
 
 from canvasapi import Canvas
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.forms import BaseModelFormSet, ValidationError
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.views import generic
 
 import flex.models as models
 import flex.utils as utils
+from flex.templatetags.flextags import get_averages, get_default_total, get_group_weight, get_override_total, get_score
 
-from .forms import (AssessmentFormSet, AssessmentGroupForm,
-                    DateForm, StudentBaseForm)
+from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
+                    StudentBaseForm)
 
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
@@ -30,6 +32,18 @@ class FlexAssessmentListView(
     raise_exception = True
     paginate_by = 10
 
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if self.kwargs.get('csv', False):
+            students = self.get_queryset()
+            course_id = self.request.session['course_id']
+            course = models.Course.objects.get(pk=course_id)
+
+            csv_response = self.export_csv(students, course)
+            return csv_response
+        else:
+            return response
+
     def get_queryset(self):
         """QuerySet is students for current course"""
 
@@ -39,6 +53,36 @@ class FlexAssessmentListView(
             raise PermissionDenied
         return models.UserProfile.objects.filter(
             role=models.Roles.STUDENT, usercourse__course__id=course_id)
+
+    def export_csv(self, students, course):
+        assessments = [
+            assessment for assessment in course.assessment_set.all()]
+        fields = ['Student'] + \
+            [assessment.title for assessment in assessments] + ['Comment']
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(
+            'student_list')
+
+        writer = csv.writer(response, delimiter=",")
+        writer.writerow(fields)
+
+        for student in students:
+            values = []
+            values.append('{}, {}'.format(
+                student.display_name, student.login_id))
+
+            for assessment in assessments:
+                flex = student.flexassessment_set.get(
+                    assessment=assessment).flex
+                values.append(flex)
+
+            comment = student.usercomment_set.get(user=student).comment
+            values.append(comment)
+
+            writer.writerow(values)
+
+        return response
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
@@ -51,6 +95,20 @@ class FinalGradeListView(
     template_name = 'flex/instructor/final_grade_list.html'
     raise_exception = True
     paginate_by = 10
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if self.kwargs.get('csv', False):
+            students = self.get_queryset()
+            course_id = self.request.session['course_id']
+            course = models.Course.objects.get(pk=course_id)
+            groups = self.get_context_data().get('groups')
+
+            csv_response = self.export_csv(students, course, groups)
+            return csv_response
+
+        else:
+            return response
 
     def get_context_data(self, **kwargs):
         context = super(FinalGradeListView, self).get_context_data(**kwargs)
@@ -74,12 +132,13 @@ class FinalGradeListView(
             CANVAS_API_URL, CANVAS_API_KEY).graphql(
             query, variables={
                 "course_id": course_id})
-        
+
         query_flattened = utils.flatten_dict(query_response)
-        groups = query_flattened.get('data.course.assignment_groups.groups', None)
+        groups = query_flattened.get(
+            'data.course.assignment_groups.groups', None)
         if groups is None:
             raise PermissionDenied
-        
+
         group_dict = {}
         for group in groups:
             id = group['group_id']
@@ -101,7 +160,7 @@ class FinalGradeListView(
 
                 score = grade_flattened['currentScore']
                 updated_grades.append((user_id, score))
-                
+
             group_data['grade_list']['grades'] = updated_grades
 
         context['groups'] = group_dict
@@ -114,6 +173,58 @@ class FinalGradeListView(
             raise PermissionDenied
         return models.UserProfile.objects.filter(
             role=models.Roles.STUDENT, usercourse__course__id=course_id)
+
+    def export_csv(self, students, course, groups):
+        assessments = [
+            assessment for assessment in course.assessment_set.all()]
+
+        titles = [
+            "{} ({}%)".format(
+                assessment.title,
+                get_group_weight(
+                    groups,
+                    assessment.group.id)) for assessment in assessments]
+        fields = ['Student'] + titles + \
+            ['Override Final Grade', 'Default Total', 'Difference']
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(
+            'grade_list')
+
+        writer = csv.writer(response, delimiter=",")
+        writer.writerow(fields)
+
+        for student in students:
+            values = []
+            values.append(
+                '{}, {}'.format(
+                    student.display_name,
+                    student.login_id))
+
+            for assessment in assessments:
+                score = get_score(groups, assessment.group.id, student)
+                values.append(score)
+
+            override_total = get_override_total(groups, student, course)
+            default_total = get_default_total(groups, student)
+
+            if override_total is not '':
+                values.append(round(override_total, 2))
+                values.append(round(default_total, 2))
+                diff = override_total - default_total
+                values.append(round(diff, 2))
+            else:
+                values.append('')
+                values.append(round(default_total, 2))
+                values.append('')
+
+            writer.writerow(values)
+
+        writer.writerow(
+            ['Average Override', 'Average Default', 'Average Difference'])
+        writer.writerow(get_averages(groups, students, course))
+
+        return response
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
@@ -162,10 +273,22 @@ class AssessmentGroupView(
         """
 
         matched_groups = form.cleaned_data.values()
-        matched_groups_unique = len(set(matched_groups)) == len(matched_groups)
-        if not matched_groups_unique:
-            form.add_error(None, ValidationError(
-                'Matched groups must be unique'))
+
+        duplicates = []
+        seen = set()
+        for group in matched_groups:
+            if group in seen:
+                duplicates.append(group)
+            else:
+                seen.add(group)
+
+        items = list(form.cleaned_data.items())
+        for field, group in items:
+            if group in duplicates:
+                form.add_error(field, ValidationError(
+                    'Matched groups must be unique'))
+
+        if form.errors:
             response = super(AssessmentGroupView, self).form_invalid(form)
             return response
 

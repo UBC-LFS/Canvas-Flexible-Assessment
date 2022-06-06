@@ -18,7 +18,6 @@ def index(request):
 
 
 def login(request):
-    # TODO: OAuth 2.0 login
     tool_conf = lti.get_tool_conf()
     launch_data_storage = lti.get_launch_data_storage()
     pprint.pprint(request)

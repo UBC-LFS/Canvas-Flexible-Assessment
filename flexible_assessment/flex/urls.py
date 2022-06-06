@@ -18,17 +18,27 @@ urlpatterns = [
         insturctor_views.FlexAssessmentListView.as_view(),
         name='percentage_list'),
     path(
+        'instructor/percentages/csv/',
+        insturctor_views.FlexAssessmentListView.as_view(),
+        {'csv': True},
+        name='percentage_list_export'),
+    path(
         'instructor/percentages/<slug:pk>/',
         insturctor_views.OverrideStudentFormView.as_view(),
         name='override_student_form'),
     path(
-        'instructor/final/1/',
+        'instructor/final/match/',
         insturctor_views.AssessmentGroupView.as_view(),
         name='group_form'),
     path(
-        'instructor/final/2/',
+        'instructor/final/list/',
         insturctor_views.FinalGradeListView.as_view(),
         name='final_grades'),
+    path(
+        'instructor/final/list/csv/',
+        insturctor_views.FinalGradeListView.as_view(),
+        {'csv': True},
+        name='final_grades_export'),
     path('student/', views.student_home, name='student_home'),
     path(
         'student/form/',

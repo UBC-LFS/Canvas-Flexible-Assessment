@@ -140,7 +140,7 @@ class StudentForm(StudentBaseForm):
             widget=forms.Textarea(
                 attrs={
                     'rows': 3
-                    }),
+                }),
             required=False)
 
         self.fields.update(comment_field)
