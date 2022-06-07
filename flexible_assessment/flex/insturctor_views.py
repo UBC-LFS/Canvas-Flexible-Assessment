@@ -222,7 +222,7 @@ class FinalGradeListView(
 
         writer.writerow(
             ['Average Override', 'Average Default', 'Average Difference'])
-        writer.writerow(get_averages(groups, students, course))
+        writer.writerow(get_averages(groups, course))
 
         return response
 

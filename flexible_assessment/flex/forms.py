@@ -12,6 +12,13 @@ CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
 
 
 class DateForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(DateForm, self).__init__(*args, **kwargs)
+        if self.instance.open:
+            self.initial['open'] = self.instance.open
+        else:
+            self.initial['open'] = datetime.now().replace(hour=9, minute=0, second=0)
+        
     def clean(self):
         cleaned_data = super().clean()
         open = cleaned_data.get('open')
@@ -20,13 +27,15 @@ class DateForm(ModelForm):
         if open > close:
             self.add_error(None, ValidationError(
                 'Close date should be after open date'))
+            self.add_error('open', ValidationError(''))
+            self.add_error('close', ValidationError(''))
 
     class Meta:
         model = Course
         fields = ['open', 'close']
         widgets = {
-            'open': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'close': forms.DateTimeInput(attrs={'type': 'datetime-local'})}
+            'open': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'close': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M')}
 
 
 class AssessmentGroupForm(forms.Form):
@@ -188,8 +197,10 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                     form.add_error('max', ValidationError(
                         'Maximum must be higher than default'))
                 if min > max:
-                    form.add_error('title', ValidationError(
+                    form.add_error('max', ValidationError(
                         'Maximum must be higher than minimum'))
+                    form.add_error('min', ValidationError(
+                        'Minimum must be lower than maximum'))
 
 
 AssessmentFormSet = modelformset_factory(Assessment,

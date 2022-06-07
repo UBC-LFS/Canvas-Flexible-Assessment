@@ -57,8 +57,12 @@
             </tfoot>
 		</table>
 	</div>
-	<a href="{% url 'flex:percentage_list' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
-	<button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>
+    <div class="d-flex align-items-center justify-content-between col-9">
+        <a href="{% url 'flex:percentage_list' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+        <div class="d-grid col-2">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>
+        </div>
+    </div>
 </form>
 
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>

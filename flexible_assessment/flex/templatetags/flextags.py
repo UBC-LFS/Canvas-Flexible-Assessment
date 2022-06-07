@@ -2,7 +2,7 @@ from django import template
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from flex.models import Assessment
+from flex.models import Assessment, Roles, UserProfile
 
 register = template.Library()
 
@@ -127,7 +127,8 @@ def get_group_weight(groups, id):
         return ''
 
 
-def get_averages(groups, students, course):
+def get_averages(groups, course):
+    students = UserProfile.objects.filter(role=Roles.STUDENT, usercourse__course=course)
     overrides = [get_override_total(groups, student, course)
                  for student in students]
     defaults = [get_default_total(groups, student) for student in students]
@@ -150,8 +151,8 @@ def get_averages(groups, students, course):
 
 
 @register.simple_tag()
-def get_averages_str(groups, students, course):
-    averages = get_averages(groups, students, course)
+def get_averages_str(groups, course):
+    averages = get_averages(groups, course)
     overall_avg, default_avg, diff_avg = averages[0], averages[1], averages[2]
     overall_str = str(overall_avg) + '%'
     default_str = str(default_avg) + '%'

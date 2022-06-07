@@ -64,13 +64,13 @@
         <h4>Flexible assessment availability</h4>
         <p>{{ course.open }} - {{ course.close }}</p>
     </div>
-    <a href="{% url 'flex:student_home' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
     {% not_open as no %}
-    {% if no %}
-        <button class="btn btn-primary" type="submit" disabled><i class="bi bi-send"></i> Submit</button>
-    {% else %}
-        <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit</button>
-    {% endif %}
+    <div class="d-flex align-items-center justify-content-between col-9">
+        <a href="{% url 'flex:student_home' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+        <div class="d-grid col-2">
+            <button class="btn btn-primary" type="submit" {% if no %} disabled {% endif %}><i class="bi bi-send"></i> Submit</button>
+        </div>
+    </div>
 </form>
 
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
