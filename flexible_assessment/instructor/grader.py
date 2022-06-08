@@ -1,4 +1,4 @@
-from .models import UserProfile, Roles
+from flexible_assessment.models import UserProfile, Roles
 
 def get_default_total(groups, student):
     """Calculates default total grade for student using assignment groups

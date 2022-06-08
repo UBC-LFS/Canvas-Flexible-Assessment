@@ -1,5 +1,5 @@
 {% extends "student/student_base.html" %}
-{% load flextags %}
+{% load student_tags %}
 {% load django_bootstrap5 %}
 
 {% bootstrap_css %}
@@ -64,7 +64,7 @@
         <h4>Flexible assessment availability</h4>
         <p>{{ course.open }} - {{ course.close }}</p>
     </div>
-    {% not_open as no %}
+    {% not_open course as no %}
     <div class="d-flex align-items-center justify-content-between col-9">
         <a href="{% url 'student:student_home' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
         <div class="d-grid col-2">

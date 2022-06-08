@@ -3,7 +3,6 @@ import os
 
 import flexible_assessment.models as models
 import flexible_assessment.utils as utils
-import flexible_assessment.grader as grader
 from canvasapi import Canvas
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -14,6 +13,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
 
+from . import grader
 from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
                     StudentBaseForm)
 
