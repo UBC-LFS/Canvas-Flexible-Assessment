@@ -1,0 +1,186 @@
+{% extends "instructor/instructor_base.html" %}
+{% load flextags %}
+{% load django_bootstrap5 %}
+
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+
+{% block nav_item_setup %}active{% endblock nav_item_setup %} 
+{% block nav_item_assessments %}active{% endblock nav_item_assessments %} 
+{% block content %}
+<h2 class="mt-3 mb-3">Instructor Form</h2>
+<form action="" method="post">
+	{% csrf_token %}
+
+	{{ formset.management_form }}
+	{% bootstrap_formset_errors formset %}
+
+	{% for hidden_field in date_form.hidden_fields %}
+		{% bootstrap_field hidden_field %}
+	{% endfor %}
+
+	<div id="form_set">
+		<div class="col-10">
+			<table class='table table-striped mb-0'>
+				<caption>Total default allocations should add up to 100%</caption>
+				<thead>
+					<tr>
+						<th class="text-center align-middle">Title</th>
+						<th class="text-center align-middle">Default %</th>
+						<th class="text-center align-middle">Min %</th>
+						<th class="text-center align-middle">Max %</th>
+						<th class="text-center align-middle">Remove</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for form in formset.forms %}
+						{% for hidden in form.hidden_fields %}
+							{{ hidden }}
+						{% endfor %}
+						<tr height="60px">
+							{% for field in form.visible_fields %}
+								<td class="{{ field.label }} text-center align-middle">
+									{% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+								</td>
+							{% endfor %}
+							<td class="text-center align-middle"><button class="btn btn-outline-danger btn-sm delete"
+									type="button"><i class="bi bi-trash3"></i></button></td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<div class="d-flex align-items-center justify-content-between">
+				<button class="btn btn-outline-primary" type="button" id="add"><i class="bi bi-plus-lg"></i>
+					Assessment</button>
+				<h5 class="align-middle">Total: <span id="total"></span></h5>
+			</div>
+		</div>
+	</div>
+
+	<h4 class="mt-4">Flexible assessment availability</h4>
+	{% bootstrap_form_errors date_form type='non_fields' %}
+	<div class="col-6">
+		<table class='table table-bordered'>
+			<caption>Open and close dates for flexible assessment</caption>
+			<thead>
+				<tr>
+					<th>Open Date</th>
+					<th>Close Date</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>{% bootstrap_field date_form.open show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
+					<td>{% bootstrap_field date_form.close show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+    <div class="d-flex align-items-center justify-content-between col-10">
+		<a href="{% url 'instructor:instructor_home' %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+        <div class="d-grid col-2">
+            <button class="btn btn-primary" type="submit">{% if course.close %} Update {% else %} Save {% endif %}</button>
+        </div>
+    </div>
+</form>
+
+<table id="empty_form" style="display:none">
+	<tr height="60px">
+		{% for field in formset.empty_form.visible_fields %}
+			<td class="{{ field.label }}" style="text-align: center; vertical-align: middle;">
+				{% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+			</td>
+		{% endfor %}
+		<td style="text-align: center;vertical-align: middle;"><button class="btn btn-outline-danger btn-sm delete"
+				type="button"><i class="bi bi-trash3"></i></button></td>
+	</tr>
+</table>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+
+<script>
+	check_total();
+
+	$(document).on('change', '.Default', function () {
+		check_total();
+	});
+
+	$('#add').click(function () {
+		var form_idx = $('#id_assessment-TOTAL_FORMS').val();
+		if ($('#form_set tbody').children().length == 0) {
+			$('#form_set tbody').append($('#empty_form').html().replace(/__prefix__/g, form_idx).replace(/<tbody>|<\/tbody>/g, ''));
+		} else {
+			$('#form_set tr:last').after($('#empty_form').html().replace(/__prefix__/g, form_idx).replace(/<tbody>|<\/tbody>/g, ''));
+		}
+		$('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+	});
+
+	$(document).on('click', '.delete', delete_row);
+
+	function check_total() {
+		var total = 0;
+		$(".Default").each(function () {
+			curr = parseFloat($(this).find("input").val());
+			if (!isNaN(curr)) {
+				total += curr;
+			};
+		});
+
+		var total_str = total.toString();
+		$('#total').text(total_str + "%");
+		if (total == 100.00) {
+			$('#total').css('color', 'green');
+			$(":submit").removeAttr("disabled");
+		} else {
+			$('#total').css('color', 'red');
+			$(':submit').attr("disabled", true);
+		};
+	};
+
+	function delete_row() {
+        if (!confirm("Are you sure you want to delete this assessment?")) {
+            return false
+        }
+		var initial = $('#id_assessment-INITIAL_FORMS').val();
+		var form_idx = $('#id_assessment-TOTAL_FORMS').val();
+
+		var tr = $(this).closest('tr');
+		var input = tr.prev('input:hidden')
+
+		input.remove();
+		tr.remove();
+
+		$('#id_assessment-INITIAL_FORMS').val(parseInt(initial) - 1);
+		$('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) - 1);
+
+		var filtered = $('input').filter(function () {
+			return this.id.match(/id_assessment-\d+-/);
+		});
+
+		var curr = -1;
+		var decrement = false;
+		filtered.each(function () {
+			form_idx = parseInt(this.id.replace(/[^\d]/g, ''));
+			if (!decrement && form_idx - curr > 1) {
+				decrement = true;
+			};
+
+			if (decrement) {
+
+				var new_id = this.id.replace(/(\d+)/, function (match, n) {
+					return parseInt(n) - 1;
+				});
+				var new_name = this.name.replace(/(\d+)/, function (match, n) {
+					return parseInt(n) - 1;
+				});
+				this.id = new_id;
+				this.name = new_name;
+			};
+			curr = form_idx;
+		});
+		check_total();
+	};
+</script>
+{% endblock %}

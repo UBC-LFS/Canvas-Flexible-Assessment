@@ -28,7 +28,9 @@ INTERNAL_IPS = ['127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    'flex.apps.FlexConfig',
+    'flexible_assessment',
+    'instructor.apps.InstructorConfig',
+    'student.apps.StudentConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -55,7 +57,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, '..', 'flex', 'templates'),
+            os.path.join(BASE_DIR, '..', 'instructor', 'templates'),
+            os.path.join(BASE_DIR, '..', 'student', 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -64,7 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'flex.context_processors.add_course_to_context',
+                'flexible_assessment.context_processors.add_course_to_context',
             ],
         },
     },
@@ -112,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-AUTH_USER_MODEL = 'flex.UserProfile'
+AUTH_USER_MODEL = 'flexible_assessment.UserProfile'
 
 
 # Internationalization
@@ -139,5 +142,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'flex.auth.SettingsBackend',
+    'flexible_assessment.auth.SettingsBackend',
 ]

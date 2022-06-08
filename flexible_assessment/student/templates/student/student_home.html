@@ -1,0 +1,7 @@
+{% extends "student/student_base.html" %}
+
+{% block nav_item_home %}active{% endblock nav_item_home %} 
+{% block content %}
+<h1>{{ course.title }}</h1>
+<h3>Hello {{ display_name }}</h3>
+{% endblock %}
