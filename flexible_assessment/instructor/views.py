@@ -12,19 +12,18 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
+from canvas_oauth.oauth import get_oauth_token
 
 from . import grader
 from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
                     StudentBaseForm)
 
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
-CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
 
 @login_required
 @user_passes_test(utils.is_teacher_admin)
 def instructor_home(request):
     return render(request, 'instructor/instructor_home.html')
-
 
 
 class FlexAssessmentListView(
@@ -135,8 +134,10 @@ class FinalGradeListView(
                 user_id: _id
                 display_name: name
               } } } } } } } }"""
+
+        access_token = get_oauth_token(self.request)
         query_response = Canvas(
-            CANVAS_API_URL, CANVAS_API_KEY).graphql(
+            CANVAS_API_URL, access_token).graphql(
             query, variables={
                 "course_id": course_id})
 
@@ -262,6 +263,7 @@ class AssessmentGroupView(
         kwargs['course_id'] = course_id
         kwargs['assessments'] = models.Assessment.objects.filter(
             course_id=course_id)
+        kwargs['request'] = self.request
 
         return kwargs
 
@@ -300,9 +302,11 @@ class AssessmentGroupView(
             return response
 
         course_id = self.request.session.get('course_id', '')
+
+        access_token = get_oauth_token(self.request)
         canvas_course = Canvas(
             CANVAS_API_URL,
-            CANVAS_API_KEY).get_course(course_id)
+            access_token).get_course(course_id)
 
         for id, group in form.cleaned_data.items():
             assessment = models.Assessment.objects.filter(pk=id).first()

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_bootstrap5',
+    'canvas_oauth.apps.CanvasOAuthConfig',
 ]
 
 MIDDLEWARE = [
@@ -47,9 +48,14 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware', commented out as /login/ does not have a form
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware'
+    'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware', web browsers would deny x-frame
+    'canvas_oauth.middleware.OAuthMiddleware',
 ]
+
+CANVAS_OAUTH_CLIENT_ID = 10000000000003
+CANVAS_OAUTH_CLIENT_SECRET = '8Wj3jaXA4qnYBlbLJn0BqM1NI19i1M6xlQSwuUNrK2VluPIX1kZeWRcEKoZ0B6sG'
+CANVAS_OAUTH_CANVAS_DOMAIN = 'localhost:3000'
 
 ROOT_URLCONF = 'flexible_assessment.urls'
 

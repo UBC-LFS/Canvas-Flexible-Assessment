@@ -52,5 +52,3 @@ def get_jwks(request):
     tool_conf = utils.get_tool_conf()
     return JsonResponse(tool_conf.get_jwks(), safe=False)
 
-
-

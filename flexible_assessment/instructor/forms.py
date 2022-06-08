@@ -1,14 +1,16 @@
+import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
+
+from canvas_oauth.oauth import get_oauth_token
 from canvasapi import Canvas
 from django import forms
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.forms import BaseModelFormSet, ModelForm, modelformset_factory
-from flexible_assessment.models import Assessment, Course, FlexAssessment, AssignmentGroup
-import os
+from flexible_assessment.models import (Assessment, AssignmentGroup, Course,
+                                        FlexAssessment)
 
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
-CANVAS_API_KEY = os.getenv('CANVAS_API_KEY')
 
 
 class StudentBaseForm(forms.Form):
@@ -90,12 +92,14 @@ class AssessmentGroupForm(forms.Form):
     def __init__(self, *args, **kwargs):
         assessments = kwargs.pop('assessments')
         course_id = kwargs.pop('course_id')
+        request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
 
         # TODO: handle invalid access token
+        access_token = get_oauth_token(request)
         canvas_course = Canvas(
             CANVAS_API_URL,
-            CANVAS_API_KEY).get_course(course_id)
+            access_token).get_course(course_id)
         model_course = Course.objects.filter(pk=course_id).first()
 
         asgn_groups_create = []
