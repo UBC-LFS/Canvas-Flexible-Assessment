@@ -12,7 +12,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
-from canvas_oauth.oauth import get_oauth_token
+from oauth.oauth import get_oauth_token
 
 from . import grader
 from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,

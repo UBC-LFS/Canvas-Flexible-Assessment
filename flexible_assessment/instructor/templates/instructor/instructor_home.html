@@ -4,4 +4,27 @@
 {% block content %}
 <h1>{{ course.title }}</h1>
 <h3>Hello {{ display_name }}</h3>
+
+{% if messages %}
+<ul class="messages" hidden>
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+    $(function() {
+        var errors = [];
+        $('.error').each(function(_, error) {
+            errors.push(error.textContent);
+        });
+        var error_str = errors.join(', ');
+        if (error_str)
+            alert(error_str);
+    })
+</script>
+
 {% endblock %}

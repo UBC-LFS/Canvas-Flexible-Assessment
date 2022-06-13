@@ -1,16 +1,13 @@
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
 import flexible_assessment.models as models
 import flexible_assessment.utils as utils
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.forms import ValidationError
-from django.urls import reverse_lazy
-from django.views import generic
 from django.shortcuts import render
-
+from django.urls import reverse_lazy
+from django.utils import timezone
+from django.views import generic
 
 from .forms import StudentForm
 
@@ -59,7 +56,7 @@ class StudentFormView(
         course = models.Course.objects.get(pk=course_id)
         open = course.open
         close = course.close
-        now = datetime.now(ZoneInfo('America/Vancouver'))
+        now = timezone.now()
         if now > close:
             form.add_error(None, ValidationError(
                 'Past deadline to submit form'))

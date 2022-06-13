@@ -10,5 +10,5 @@ urlpatterns = [
     path('launch/', views.launch, name='launch'),
     path('jwks/', views.get_jwks, name='jwks'),
     path('login/', views.login, name='login'),
-    path('oauth/', include('canvas_oauth.urls')),
+    path('oauth/', include('oauth.urls')),
 ]

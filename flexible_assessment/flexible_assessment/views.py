@@ -7,11 +7,12 @@ from pylti1p3.contrib.django import DjangoMessageLaunch, DjangoOIDCLogin
 
 from . import auth, lti, models, utils
 
+# TODO: changed resp = requests.get(key_set_url, verify=False) in message_launch
+
 
 def login(request):
     tool_conf = lti.get_tool_conf()
     launch_data_storage = lti.get_launch_data_storage()
-    pprint.pprint(request)
 
     oidc_login = DjangoOIDCLogin(
         request,
@@ -32,6 +33,7 @@ def launch(request):
 
     custom_fields = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/custom']
 
+    # TODO: message_launch.check_staff_access()
     if 'TeacherEnrollment' in custom_fields['role']:
         utils.set_user_course(request, custom_fields, models.Roles.TEACHER)
         auth.authenticate_login(request)

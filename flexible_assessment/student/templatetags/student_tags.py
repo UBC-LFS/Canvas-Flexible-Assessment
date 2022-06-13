@@ -1,6 +1,5 @@
 from django import template
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from django.utils import timezone
 from flexible_assessment.models import Assessment
 
 register = template.Library()
@@ -10,7 +9,7 @@ def not_open(course):
     if course:
         open = course.open
         close = course.close
-        now = datetime.now(ZoneInfo('America/Vancouver'))
+        now = timezone.now()
         return now > close or now < open
     else:
         return False

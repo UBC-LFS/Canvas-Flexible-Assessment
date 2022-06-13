@@ -1,14 +1,13 @@
 import os
-from datetime import datetime
-from zoneinfo import ZoneInfo
 
-from canvas_oauth.oauth import get_oauth_token
 from canvasapi import Canvas
 from django import forms
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.forms import BaseModelFormSet, ModelForm, modelformset_factory
+from django.utils import timezone
 from flexible_assessment.models import (Assessment, AssignmentGroup, Course,
                                         FlexAssessment)
+from oauth.oauth import get_oauth_token
 
 CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 
@@ -55,7 +54,7 @@ class StudentBaseForm(forms.Form):
         course = Course.objects.get(pk=self.course_id)
         open = course.open
         close = course.close
-        now = datetime.now(ZoneInfo('America/Vancouver'))
+        now = timezone.now()
         if now > close or now < open:
             for field in self.fields.values():
                 field.disabled = True
@@ -66,7 +65,7 @@ class DateForm(ModelForm):
         if self.instance.open:
             self.initial['open'] = self.instance.open
         else:
-            self.initial['open'] = datetime.now().replace(hour=9, minute=0, second=0)
+            self.initial['open'] = timezone.now().replace(hour=9, minute=0, second=0)
         
     def clean(self):
         cleaned_data = super().clean()
@@ -95,7 +94,6 @@ class AssessmentGroupForm(forms.Form):
         request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
 
-        # TODO: handle invalid access token
         access_token = get_oauth_token(request)
         canvas_course = Canvas(
             CANVAS_API_URL,

@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
@@ -28,9 +29,10 @@ INTERNAL_IPS = ['127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    'flexible_assessment',
+    'flexible_assessment.apps.FlexConfig',
     'instructor.apps.InstructorConfig',
     'student.apps.StudentConfig',
+    'oauth.apps.OAuthConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,24 +40,30 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_bootstrap5',
-    'canvas_oauth.apps.CanvasOAuthConfig',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
-    # 'flexible_assessment.middleware.SameSiteMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware', commented out as /login/ does not have a form
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware', web browsers would deny x-frame
-    'canvas_oauth.middleware.OAuthMiddleware',
+    'oauth.middleware.OAuthMiddleware',
 ]
 
-CANVAS_OAUTH_CLIENT_ID = 10000000000003
-CANVAS_OAUTH_CLIENT_SECRET = '8Wj3jaXA4qnYBlbLJn0BqM1NI19i1M6xlQSwuUNrK2VluPIX1kZeWRcEKoZ0B6sG'
-CANVAS_OAUTH_CANVAS_DOMAIN = 'localhost:3000'
+CANVAS_OAUTH_CLIENT_ID = os.getenv('CANVAS_OAUTH_CLIENT_ID')
+CANVAS_OAUTH_CLIENT_SECRET = os.getenv('CANVAS_OAUTH_CLIENT_SECRET')
+
+CANVAS_OAUTH_AUTHORIZE_URL = 'https://canvas.example.com/login/oauth2/auth'
+CANVAS_OAUTH_ACCESS_TOKEN_URL = 'https:///login/oauth2/token'
+# TODO: GraphQL Scope not present in Canvas
+CANVAS_OAUTH_SCOPES = ['url:GET|/api/v1/courses/:id',
+                       'url:GET|/api/v1/courses/:course_id/assignment_groups',
+                       'url:GET|/api/v1/courses/:course_id/assignment_groups/:assignment_group_id',
+                       'url:PUT|/api/v1/courses/:course_id/assignment_groups/:assignment_group_id']
+CANVAS_OAUTH_TOKEN_EXPIRATION_BUFFER = timedelta()
 
 ROOT_URLCONF = 'flexible_assessment.urls'
 
@@ -81,11 +89,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'flexible_assessment.wsgi.application'
 
-SESSION_COOKIE_NAME = 'sessionid'
-SESSION_COOKIE_SAMESITE = None  # should be set as 'None' for Django >= 3.1
+SESSION_COOKIE_NAME = 'sessionid2'
+SESSION_COOKIE_SAMESITE = 'None'  # should be set as 'None' for Django >= 3.1
 # should be True in case of HTTPS usage (production)
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+
+CSRF_COOKIE_SAMESITE = 'None'
+# CSRF_COOKIE_NAME = 'csrf2'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
