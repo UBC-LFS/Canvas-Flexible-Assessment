@@ -8,7 +8,6 @@
 {% block nav_item_final %}active{% endblock nav_item_final %} 
 {% block content %}
 <h2 class="mt-3 mb-3">Match Assessments to Canvas Assignment Groups</h2>
-
 <form action="" method="post">
 	{% csrf_token %}
 
@@ -24,7 +23,7 @@
 			<caption>Match the assessment to the Canvas assignment group</caption>
 			<thead>
 				<tr>
-					<th class="text-center align-middle">Flexible Assessment</th>
+					<td class="text-center align-middle"><span style="font-weight: bold;">Flexible Assessment</span> (with default %)</td>
 					<th class="text-center align-middle">Canvas Assignment Group</th>
 				</tr>
 			</thead>
@@ -37,7 +36,12 @@
 				{% endfor %}
 			</tbody>
 		</table>
-		<button class="btn btn-primary float-end" type="submit">Continue <i class="bi bi-chevron-right"></i></button>
-	</div>
+        <div class="row">
+            <p>Note: All matched groups will have their group weight changed on Canvas to the default %. All unmatched groups will be set to 0%</p>
+        </div>
+        <button class="btn btn-primary float-end" type="submit">Continue <i class="bi bi-chevron-right"></i></button>
+
+    </div>
 </form>
+
 {% endblock %}

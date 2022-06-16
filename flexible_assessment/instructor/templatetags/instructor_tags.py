@@ -22,15 +22,15 @@ def get_score(groups, group_id, student):
 
 
 @register.simple_tag()
-def get_override_total_str(groups, student, course):
-    overall = grader.get_override_total(groups, student, course)
-    return str(overall) + '%' if overall != '' else 'N/A'
-
-
-@register.simple_tag()
-def get_default_total_str(groups, student):
-    overall = grader.get_default_total(groups, student)
-    return str(overall) + '%'
+def get_override_default(groups, student, course):
+    default = grader.get_default_total(groups, student)
+    default_str = str(default) + '%'
+    override = grader.get_override_total(groups, student, course)
+    if override:
+        override_str = str(override) + '%'
+        return ('overriden', override_str, default_str)
+    else:
+        return ('used-default', default_str, default_str)
 
 
 @register.simple_tag()

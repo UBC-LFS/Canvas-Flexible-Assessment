@@ -176,10 +176,10 @@ class UserCourse(models.Model):
 
 class AssignmentGroup(models.Model):
     """Table for assignment groups in a Canvas course
-    
+
     Attributes
     ----------
-    id : int 
+    id : int
         Unique id for the Canvas course assignment group
     name : str
         Name of the assignment group
@@ -262,7 +262,7 @@ class FlexAssessment(models.Model):
 
 class UserComment(models.Model):
     """Table containing students comment for grade allocation in the course
-    
+
     Attributes
     ----------
     user : ForeignKey -> UserProfile
@@ -272,7 +272,7 @@ class UserComment(models.Model):
     comment : str
         Student's comment for the course
     """
-    
+
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     comment = models.TextField(max_length=100, default="", blank=True)

@@ -21,7 +21,7 @@ def get_launch_url(request):
 
 def get_lti_config_path():
     return os.path.join(settings.BASE_DIR, 'configs',
-                        'flexible_assessment.json')
+                        settings.LTI_CONFIG)
 
 
 def get_tool_conf():

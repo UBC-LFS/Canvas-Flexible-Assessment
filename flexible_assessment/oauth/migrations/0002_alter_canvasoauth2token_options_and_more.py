@@ -20,6 +20,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='canvasoauth2token',
             name='user',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='oauth2_token', to=settings.AUTH_USER_MODEL),
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='oauth2_token',
+                to=settings.AUTH_USER_MODEL),
         ),
     ]

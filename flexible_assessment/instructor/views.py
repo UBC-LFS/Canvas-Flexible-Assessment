@@ -1,5 +1,9 @@
 import csv
 import os
+import re
+from urllib import response
+
+from django.conf import settings
 
 import flexible_assessment.models as models
 import flexible_assessment.utils as utils
@@ -10,7 +14,7 @@ from django.core.exceptions import PermissionDenied
 from django.forms import BaseModelFormSet, ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views import generic
 from oauth.oauth import get_oauth_token
 
@@ -18,7 +22,6 @@ from . import grader
 from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
                     StudentBaseForm)
 
-CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 
 @login_required
 @user_passes_test(utils.is_teacher_admin)
@@ -116,8 +119,41 @@ class FinalGradeListView(
         else:
             return response
 
+    def post(self, request, *args, **kwargs):
+        if self.kwargs.get('submit', False):
+            course_id = self.request.session.get('course_id', '')
+            course = models.Course.objects.get(pk=course_id)
+            groups, enrollments = self.get_groups_and_enrollments()
+            for student_id, enrollment_id in enrollments.items():
+                student = models.UserProfile.objects.get(pk=student_id)
+                override = grader.get_override_total(groups, student, course) or grader.get_default_total(groups, student)
+                query = """mutation OverrideFinalScore($enrollment_id: ID!, $override: Float) {
+                    setOverrideScore(input: { enrollmentId: $enrollment_id, overrideScore: $override }) {
+                        grades {
+                            overrideScore
+                            } } }"""
+
+                access_token = get_oauth_token(request)
+                Canvas(settings.CANVAS_DOMAIN, access_token) \
+                    .graphql(query, variables={"enrollment_id": enrollment_id, "override": override})
+
+        return HttpResponseRedirect(reverse('instructor:instructor_home'))
+
     def get_context_data(self, **kwargs):
         context = super(FinalGradeListView, self).get_context_data(**kwargs)
+        groups, _ = self.get_groups_and_enrollments()
+        context['groups'] = groups
+        return context
+
+    def get_queryset(self):
+        user_id = self.request.session.get('user_id', '')
+        course_id = self.request.session.get('course_id', '')
+        if not user_id:
+            raise PermissionDenied
+        return models.UserProfile.objects.filter(
+            role=models.Roles.STUDENT, usercourse__course__id=course_id)
+
+    def get_groups_and_enrollments(self):
         course_id = self.request.session.get('course_id', '')
         query = """query AssignmentGroupQuery($course_id: ID) {
   course(id: $course_id) {
@@ -133,11 +169,13 @@ class FinalGradeListView(
               user {
                 user_id: _id
                 display_name: name
-              } } } } } } } }"""
+              }
+              _id
+            } } } } } } }"""
 
         access_token = get_oauth_token(self.request)
         query_response = Canvas(
-            CANVAS_API_URL, access_token).graphql(
+            settings.CANVAS_DOMAIN, access_token).graphql(
             query, variables={
                 "course_id": course_id})
 
@@ -148,6 +186,7 @@ class FinalGradeListView(
             raise PermissionDenied
 
         group_dict = {}
+        user_enrollment_dict = {}
         for group in groups:
             id = group['group_id']
             group.pop('group_id', None)
@@ -163,24 +202,18 @@ class FinalGradeListView(
             for grade in grades:
                 grade_flattened = utils.flatten_dict(grade)
                 user_id = grade_flattened.get('enrollment.user.user_id', None)
+                enrollment_id = grade_flattened.get('enrollment._id', None)
                 if user_id is None:
                     raise PermissionDenied
+
+                user_enrollment_dict[user_id] = enrollment_id
 
                 score = grade_flattened['currentScore']
                 updated_grades.append((user_id, score))
 
             group_data['grade_list']['grades'] = updated_grades
 
-        context['groups'] = group_dict
-        return context
-
-    def get_queryset(self):
-        user_id = self.request.session.get('user_id', '')
-        course_id = self.request.session.get('course_id', '')
-        if not user_id:
-            raise PermissionDenied
-        return models.UserProfile.objects.filter(
-            role=models.Roles.STUDENT, usercourse__course__id=course_id)
+        return group_dict, user_enrollment_dict
 
     def export_csv(self, students, course, groups):
         assessments = [
@@ -222,7 +255,7 @@ class FinalGradeListView(
                 diff = override_total - default_total
                 values.append(round(diff, 2))
             else:
-                values.append('')
+                values.append(round(default_total, 2))
                 values.append(round(default_total, 2))
                 values.append('')
 
@@ -305,7 +338,7 @@ class AssessmentGroupView(
 
         access_token = get_oauth_token(self.request)
         canvas_course = Canvas(
-            CANVAS_API_URL,
+            settings.CANVAS_DOMAIN,
             access_token).get_course(course_id)
 
         for id, group in form.cleaned_data.items():
@@ -316,6 +349,17 @@ class AssessmentGroupView(
             canvas_course.get_assignment_group(
                 group.id).edit(
                 group_weight=assessment.default)
+
+        matched_group_ids = [group.id for group in form.cleaned_data.values()]
+        canvas_group_ids = [
+            group.id for group in canvas_course.get_assignment_groups()]
+
+        unmatched_group_ids = list(
+            filter(
+                lambda id: id not in matched_group_ids,
+                canvas_group_ids))
+        for id in unmatched_group_ids:
+            canvas_course.get_assignment_group(id).edit(group_weight=0)
 
         response = super(AssessmentGroupView, self).form_valid(form)
         return response
@@ -332,8 +376,8 @@ class InstructorFormView(
     success_url = reverse_lazy('instructor:instructor_home')
 
     def get_context_data(self, **kwargs):
-        """Populates assignment formset and date form according to POST or GET request        
-                
+        """Populates assignment formset and date form according to POST or GET request
+
         Returns
         -------
         context : context
@@ -379,7 +423,7 @@ class InstructorFormView(
             return self.form_invalid(date_form)
 
     def forms_valid(self, formset, date_form):
-        """Validates and saves assignment formset and date form 
+        """Validates and saves assignment formset and date form
 
         Parameters
         ----------
@@ -441,7 +485,7 @@ class OverrideStudentFormView(
 
     def get_context_data(self, **kwargs):
         """Adds the student name whose allocations are being overriden to the context
-        
+
         Returns
         -------
         context : context
@@ -459,7 +503,7 @@ class OverrideStudentFormView(
 
     def get_form_kwargs(self):
         """Adds course_id as keyword argument for making form fields
-        
+
         Returns
         -------
         kwargs : kwargs
@@ -479,7 +523,7 @@ class OverrideStudentFormView(
         return kwargs
 
     def form_valid(self, form):
-        """Validates form by checking if flex allocation is within range 
+        """Validates form by checking if flex allocation is within range
         and updates flex assessments for student
 
         Parameters
@@ -525,5 +569,3 @@ class OverrideStudentFormView(
 
     def test_func(self):
         return utils.is_teacher_admin(self.request.user)
-
-

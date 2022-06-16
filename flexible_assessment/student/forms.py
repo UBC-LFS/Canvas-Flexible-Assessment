@@ -2,6 +2,7 @@ from django import forms
 from flexible_assessment.models import UserComment
 from instructor.forms import StudentBaseForm
 
+
 class StudentForm(StudentBaseForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,4 +25,3 @@ class StudentForm(StudentBaseForm):
 
         self.fields.update(comment_field)
         self.field_status()
-

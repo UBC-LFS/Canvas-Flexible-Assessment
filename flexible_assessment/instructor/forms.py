@@ -2,14 +2,13 @@ import os
 
 from canvasapi import Canvas
 from django import forms
+from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.forms import BaseModelFormSet, ModelForm, modelformset_factory
 from django.utils import timezone
 from flexible_assessment.models import (Assessment, AssignmentGroup, Course,
                                         FlexAssessment)
 from oauth.oauth import get_oauth_token
-
-CANVAS_API_URL = os.getenv('CANVAS_API_URL')
 
 
 class StudentBaseForm(forms.Form):
@@ -59,14 +58,16 @@ class StudentBaseForm(forms.Form):
             for field in self.fields.values():
                 field.disabled = True
 
+
 class DateForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(DateForm, self).__init__(*args, **kwargs)
         if self.instance.open:
             self.initial['open'] = self.instance.open
         else:
-            self.initial['open'] = timezone.now().replace(hour=9, minute=0, second=0)
-        
+            self.initial['open'] = timezone.now().replace(
+                hour=9, minute=0, second=0)
+
     def clean(self):
         cleaned_data = super().clean()
         open = cleaned_data.get('open')
@@ -86,7 +87,6 @@ class DateForm(ModelForm):
             'close': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M')}
 
 
-
 class AssessmentGroupForm(forms.Form):
     def __init__(self, *args, **kwargs):
         assessments = kwargs.pop('assessments')
@@ -96,7 +96,7 @@ class AssessmentGroupForm(forms.Form):
 
         access_token = get_oauth_token(request)
         canvas_course = Canvas(
-            CANVAS_API_URL,
+            settings.CANVAS_DOMAIN,
             access_token).get_course(course_id)
         model_course = Course.objects.filter(pk=course_id).first()
 
@@ -129,7 +129,9 @@ class AssessmentGroupForm(forms.Form):
             else:
                 initial = None
             assessment_fields[assessment.id.hex] = forms.ModelChoiceField(
-                AssignmentGroup.objects.filter(course_id=course_id), label=assessment.title, initial=initial)
+                AssignmentGroup.objects.filter(course_id=course_id),
+                label='{} ({}%)'.format(assessment.title, assessment.default),
+                initial=initial)
 
         self.fields.update(assessment_fields)
 

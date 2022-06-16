@@ -9,7 +9,7 @@ class CanvasOAuth2Token(models.Model):
         on_delete=models.CASCADE,
         related_name='oauth2_token',
     )
-    
+
     access_token = models.TextField()
     refresh_token = models.TextField()
     expires = models.DateTimeField()
@@ -24,4 +24,3 @@ class CanvasOAuth2Token(models.Model):
 
     def __str__(self):
         return "OAuth2 {}".format(self.user)
-

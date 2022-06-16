@@ -1,8 +1,9 @@
 from flexible_assessment.models import UserProfile, Roles
 
+
 def get_default_total(groups, student):
     """Calculates default total grade for student using assignment groups
-    
+
     Parameters
     ----------
     groups : dict
@@ -40,15 +41,15 @@ def _valid_flex(student, course):
     flex_assessments_with_flex = student.flexassessment_set.filter(
         assessment__course=course, flex__isnull=False)
     flex_sum = sum([fa.flex for fa in flex_assessments_with_flex])
-    
+
     return (not null_flex_assessments) and (flex_sum == 100)
 
 
 def get_override_total(groups, student, course):
-    """Calculates override grade for student using assignment groups 
-    and applying flex allocations. If any flex assessment is null or 
+    """Calculates override grade for student using assignment groups
+    and applying flex allocations. If any flex assessment is null or
     do not all sum to 100%, then an empty string ('') is returned.
-    
+
     Parameters
     ----------
     groups : dict
@@ -87,7 +88,7 @@ def get_override_total(groups, student, course):
 
 def get_averages(groups, course):
     """Calculates the average override grade, default grade, and difference for all students in a course
-    
+
     Parameters
     ----------
     groups : dict
@@ -96,7 +97,8 @@ def get_averages(groups, course):
         Course object
     """
 
-    students = UserProfile.objects.filter(role=Roles.STUDENT, usercourse__course=course)
+    students = UserProfile.objects.filter(
+        role=Roles.STUDENT, usercourse__course=course)
     overrides = [get_override_total(groups, student, course)
                  for student in students]
     defaults = [get_default_total(groups, student) for student in students]
@@ -124,7 +126,7 @@ def get_group_weight(groups, id):
         return groups[str(id)]['group_weight']
     except BaseException:
         return ''
-        
+
 
 def get_score(groups, group_id, student):
     """Gets student score in assignment group"""

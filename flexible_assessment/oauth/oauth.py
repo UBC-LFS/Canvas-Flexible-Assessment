@@ -1,4 +1,3 @@
-import re
 from django.urls import reverse
 from django.http.response import HttpResponseRedirect
 from django.utils.crypto import get_random_string
@@ -17,13 +16,14 @@ def get_oauth_token(request):
     except CanvasOAuth2Token.DoesNotExist:
         raise MissingTokenError("No token found for user %s" % request.user.pk)
 
-    if oauth_token.expires_within(settings.CANVAS_OAUTH_TOKEN_EXPIRATION_BUFFER):
+    if oauth_token.expires_within(
+            settings.CANVAS_OAUTH_TOKEN_EXPIRATION_BUFFER):
         oauth_token = refresh_oauth_token(request)
 
     return oauth_token.access_token
 
 
-def handle_missing_token(request):
+def handle_missing_or_invalid_token(request):
     request.session["canvas_oauth_initial_uri"] = request.get_full_path()
 
     oauth_request_state = get_random_string(32)
@@ -38,7 +38,6 @@ def handle_missing_token(request):
         redirect_uri=oauth_redirect_uri,
         state=oauth_request_state,
         scopes=settings.CANVAS_OAUTH_SCOPES)
-    print(authorize_url)
 
     return HttpResponseRedirect(authorize_url)
 
@@ -60,11 +59,18 @@ def oauth_callback(request):
         redirect_uri=request.session["canvas_oauth_redirect_uri"],
         code=code)
 
-    CanvasOAuth2Token.objects.create(
-        user=request.user,
-        access_token=access_token,
-        expires=expires,
-        refresh_token=refresh_token)
+    if not CanvasOAuth2Token.objects.filter(user=request.user):
+        CanvasOAuth2Token.objects.create(
+            user=request.user,
+            access_token=access_token,
+            expires=expires,
+            refresh_token=refresh_token)
+    else:
+        oauth_user = CanvasOAuth2Token.objects.get(user=request.user)
+        oauth_user.access_token = access_token
+        oauth_user.expires = expires
+        oauth_user.refresh_token = refresh_token
+        oauth_user.save()
 
     initial_uri = request.session['canvas_oauth_initial_uri']
 

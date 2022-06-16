@@ -7,8 +7,6 @@ from pylti1p3.contrib.django import DjangoMessageLaunch, DjangoOIDCLogin
 
 from . import auth, lti, models, utils
 
-# TODO: changed resp = requests.get(key_set_url, verify=False) in message_launch
-
 
 def login(request):
     tool_conf = lti.get_tool_conf()
@@ -53,4 +51,3 @@ def launch(request):
 def get_jwks(request):
     tool_conf = utils.get_tool_conf()
     return JsonResponse(tool_conf.get_jwks(), safe=False)
-

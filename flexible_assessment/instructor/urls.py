@@ -2,7 +2,7 @@ from django.urls import path
 
 from . import views
 
-# TODO: remove instructor and students from urls
+
 app_name = 'instructor'
 urlpatterns = [
     path('', views.instructor_home, name='instructor_home'),
@@ -36,4 +36,9 @@ urlpatterns = [
         views.FinalGradeListView.as_view(),
         {'csv': True},
         name='final_grades_export'),
+    path(
+        'final/list/submit/',
+        views.FinalGradeListView.as_view(),
+        {'submit': True},
+        name='final_grades_submit'),
 ]
