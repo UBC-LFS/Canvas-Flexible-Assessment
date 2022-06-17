@@ -1,7 +1,4 @@
 import csv
-import os
-import re
-from urllib import response
 
 from django.conf import settings
 

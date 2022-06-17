@@ -16,7 +16,7 @@
 			<tr>
 				<th class="text-center align-middle" style="width: 20%">Student</th>
 				{% for assessment in course.assessment_set.all %}
-					<th class="assessment text-center align-middle">{{ assessment.title }} ({% get_group_weight groups assessment.group.id %})%</th>
+					<th class="assessment text-center align-middle">{{ assessment.title }} ({% get_group_weight groups assessment.group.id %}%)</th>
 				{% endfor %}
 				<th class="text-center align-middle">Override Final Grade</th>
 				<th class="text-center align-middle">Default Total</th>
@@ -70,9 +70,9 @@
         </span>
     </div>
 
-    <form method="post" action="{% url 'instructor:final_grades_submit' %}">
+    <form id="grade-submit" method="post" action="{% url 'instructor:final_grades_submit' %}">
         {% csrf_token %}
-        <button type="submit" id="grade-submit" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-primary float-end">Submit Grades to Canvas <i class="bi bi-cloud-arrow-up"></i></button>
+        <button type="submit" id="submit-button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-primary float-end">Submit Grades to Canvas <i class="bi bi-cloud-arrow-up"></i></button>
     </form>        
 {% else %}
 	<p>No students in this course have launched the app yet.</p>
@@ -88,6 +88,12 @@
 
     $('.used-default').css('color', 'gray');
     $('.used-default').css('font-style', 'italic');
+
+    $('#submit-button').click(function(e) {
+        if (confirm('Are you sure you want to submit override grades to Canvas?')) {
+            $('form#grade-submit').submit();
+        };
+    });
 
 	function add_differences() {
 		$('.difference').each(function () {

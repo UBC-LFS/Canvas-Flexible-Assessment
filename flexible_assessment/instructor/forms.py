@@ -65,7 +65,7 @@ class DateForm(ModelForm):
         if self.instance.open:
             self.initial['open'] = self.instance.open
         else:
-            self.initial['open'] = timezone.now().replace(
+            self.initial['open'] = timezone.localtime().replace(
                 hour=9, minute=0, second=0)
 
     def clean(self):
