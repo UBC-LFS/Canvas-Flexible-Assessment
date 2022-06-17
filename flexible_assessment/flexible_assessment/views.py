@@ -29,22 +29,22 @@ def launch(request):
     message_launch_data = message_launch.get_launch_data()
     pprint.pprint(message_launch_data)
 
-    custom_fields = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/custom']
+    canvas_fields = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/custom']
 
     # TODO: message_launch.check_staff_access()
-    if 'TeacherEnrollment' in custom_fields['role']:
-        utils.set_user_course(request, custom_fields, models.Roles.TEACHER)
-        auth.authenticate_login(request)
-        return HttpResponseRedirect(reverse('instructor:instructor_home'))
+    if 'TeacherEnrollment' in canvas_fields['role']:
+        utils.set_user_course(canvas_fields, models.Roles.TEACHER)
+        auth.authenticate_login(request, canvas_fields)
+        return HttpResponseRedirect(reverse('instructor:instructor_home')+'?login_redirect=True')
 
-    elif 'StudentEnrollment' in custom_fields['role']:
-        utils.set_user_course(request, custom_fields, models.Roles.STUDENT)
-        auth.authenticate_login(request)
+    elif 'StudentEnrollment' in canvas_fields['role']:
+        utils.set_user_course(canvas_fields, models.Roles.STUDENT)
+        auth.authenticate_login(request, canvas_fields)
         return HttpResponseRedirect(reverse('student:student_home'))
 
-    elif 'TaEnrollment' in custom_fields['role']:
-        utils.set_user_course(request, custom_fields, models.Roles.TA)
-        auth.authenticate_login(request)
+    elif 'TaEnrollment' in canvas_fields['role']:
+        utils.set_user_course(canvas_fields, models.Roles.TA)
+        auth.authenticate_login(request, canvas_fields)
         return HttpResponseRedirect(reverse('instructor:instructor_home'))
 
 

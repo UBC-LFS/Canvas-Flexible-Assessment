@@ -33,12 +33,11 @@ class SettingsBackend(BaseBackend):
 
         user_id = request.session['user_id']
         login_id = request.session['login_id']
-        role = request.session['role']
 
-        if user_id and login_id and role:
+        if user_id and login_id:
             try:
                 user = UserProfile.objects.get(pk=user_id)
-                if user.login_id == login_id and user.role == role:
+                if user.login_id == login_id:
                     return user
             except UserProfile.DoesNotExist:
                 return None
@@ -52,7 +51,7 @@ class SettingsBackend(BaseBackend):
             return None
 
 
-def authenticate_login(request):
+def authenticate_login(request, canvas_fields):
     """Authenticates and logs in current user using session data
 
     Parameters
@@ -60,6 +59,12 @@ def authenticate_login(request):
     request : request
         Contains request data
     """
+
+    request.session['user_id'] = canvas_fields['user_id']
+    request.session['login_id'] = canvas_fields['login_id']
+    request.session['display_name'] = canvas_fields['user_display_name']
+    request.session['course_id'] = canvas_fields['course_id']
+    request.session['course_name'] = canvas_fields['course_name']
 
     user = authenticate(request)
     if user is not None:

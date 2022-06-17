@@ -1,33 +1,55 @@
 from collections.abc import MutableMapping
+from canvasapi import Canvas
+from django.conf import settings
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
+from oauth.oauth import get_oauth_token
+
 from .models import Assessment, Course, FlexAssessment, Roles, UserComment, UserCourse, UserProfile
 
+def update_students(request):
+    course_id = request.session.get('course_id', '')
+    course_name = request.session.get('course_name', '')
 
-def set_user_profile(request, user_id, login_id, display_name, role):
+    access_token = get_oauth_token(request)
+    students_canvas = Canvas(settings.CANVAS_DOMAIN, access_token).get_course(course_id).get_users(enrollment_type='student')
+    students_db = UserProfile.objects.filter(role=Roles.STUDENT)
+
+    students_canvas_ids = [student.__getattribute__('id') for student in students_canvas]
+    students_db_ids = [student.user_id for student in students_db]
+
+    students_to_add = list(filter(lambda student: student.__getattribute__('id') not in students_db_ids, students_canvas))
+    students_to_delete = students_db.exclude(user_id__in=students_canvas_ids)
+
+    for student in students_to_add:
+        canvas_fields = {}
+        canvas_fields['user_id'] = student.__getattribute__('id')
+        canvas_fields['login_id'] = student.__getattribute__('login_id')
+        canvas_fields['user_display_name'] = student.__getattribute__('name')
+        canvas_fields['course_id'] = course_id
+        canvas_fields['course_name'] = course_name
+        set_user_course(canvas_fields, Roles.STUDENT)
+    
+    students_to_delete.delete()
+
+def set_user_profile(user_id, login_id, display_name, role):
     user_set = UserProfile.objects.filter(pk=user_id)
     if not user_set.exists():
         user = UserProfile.objects.create_user(
             user_id, login_id, display_name, role)
     else:
         user = user_set.first()
-    request.session['user_id'] = user.user_id
-    request.session['login_id'] = user.login_id
-    request.session['display_name'] = user.display_name
-    request.session['role'] = user.role
     return user
 
 
-def set_course(request, course_id, course_name):
+def set_course(course_id, course_name):
     course_set = Course.objects.filter(pk=course_id)
     if not course_set.exists():
         course = Course(id=course_id, title=course_name)
         course.save()
     else:
         course = course_set.first()
-    request.session['course_id'] = course.id
-    request.session['course_name'] = course.title
     return course
 
 
@@ -39,15 +61,15 @@ def set_user_course_enrollment(user, course):
         user_course.save()
 
 
-def set_user_course(request, custom_fields, role):
-    user_id = custom_fields['user_id']
-    login_id = custom_fields['login_id']
-    display_name = custom_fields['user_display_name']
-    course_id = custom_fields['course_id']
-    course_name = custom_fields['course_name']
+def set_user_course(canvas_fields, role):
+    user_id = canvas_fields['user_id']
+    login_id = canvas_fields['login_id']
+    display_name = canvas_fields['user_display_name']
+    course_id = canvas_fields['course_id']
+    course_name = canvas_fields['course_name']
 
-    user = set_user_profile(request, user_id, login_id, display_name, role)
-    course = set_course(request, course_id, course_name)
+    user = set_user_profile(user_id, login_id, display_name, role)
+    course = set_course(course_id, course_name)
 
     set_user_course_enrollment(user, course)
     set_user_comment(user, course)

@@ -23,6 +23,9 @@ from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
 @login_required
 @user_passes_test(utils.is_teacher_admin)
 def instructor_home(request):
+    login_redirect = request.GET.get('login_redirect')
+    if login_redirect:
+        utils.update_students(request)
     return render(request, 'instructor/instructor_home.html')
 
 
