@@ -31,8 +31,8 @@ class SettingsBackend(BaseBackend):
             User instance if one with user_id exists or None otherise
         """
 
-        user_id = request.session['user_id']
-        login_id = request.session['login_id']
+        user_id = request.session.get('user_id', '')
+        login_id = request.session.get('login_id', '')
 
         if user_id and login_id:
             try:
@@ -63,8 +63,8 @@ def authenticate_login(request, canvas_fields):
     request.session['user_id'] = canvas_fields['user_id']
     request.session['login_id'] = canvas_fields['login_id']
     request.session['display_name'] = canvas_fields['user_display_name']
-    request.session['course_id'] = canvas_fields['course_id']
-    request.session['course_name'] = canvas_fields['course_name']
+    # request.session['course_id'] = canvas_fields['course_id']
+    # request.session['course_name'] = canvas_fields['course_name']
 
     user = authenticate(request)
     if user is not None:

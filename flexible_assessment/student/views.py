@@ -1,29 +1,38 @@
+import flexible_assessment.class_views as flex
 import flexible_assessment.models as models
 import flexible_assessment.utils as utils
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.forms import ValidationError
-from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views import generic
 
 from .forms import StudentForm
 
 
+class StudentHome(LoginRequiredMixin, UserPassesTestMixin, flex.TemplateView):
+    template_name = 'student/student_home.html'
+    raise_exception = True
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['display_name'] = self.request.session.get('display_name', '')
+        return context
+
+    def test_func(self):
+        return utils.is_student(self.request.user)
+
+
 class StudentFormView(
-        LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
+        LoginRequiredMixin, UserPassesTestMixin, flex.FormView):
     """Extends Django generic FormView and authentication mixins for student form."""
 
     template_name = 'student/student_form.html'
     form_class = StudentForm
     raise_exception = True
-    success_url = reverse_lazy('student:student_home')
 
-    def get_context_data(self, **kwargs):
-        context = super(StudentFormView, self).get_context_data(**kwargs)
-        return context
+    def get_success_url(self):
+        return reverse_lazy('student:student_home', kwargs={'course_id': self.kwargs['course_id']})
 
     def get_form_kwargs(self):
         """Adds course_id as keyword arguments for making form fields
@@ -36,7 +45,7 @@ class StudentFormView(
 
         kwargs = super(StudentFormView, self).get_form_kwargs()
         user_id = self.request.session.get('user_id', '')
-        course_id = self.request.session.get('course_id', '')
+        course_id = self.kwargs['course_id']
 
         if not user_id or not course_id:
             raise PermissionDenied
@@ -48,7 +57,7 @@ class StudentFormView(
 
     def form_valid(self, form):
         user_id = self.request.session.get('user_id', '')
-        course_id = self.request.session.get('course_id', '')
+        course_id = self.kwargs['course_id']
 
         if not user_id or not course_id:
             raise PermissionDenied
@@ -97,9 +106,3 @@ class StudentFormView(
 
     def test_func(self):
         return utils.is_student(self.request.user)
-
-
-@login_required
-@user_passes_test(utils.is_student)
-def student_home(request):
-    return render(request, 'student/student_home.html')

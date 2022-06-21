@@ -9,7 +9,7 @@
 		<caption>
             <div class="d-flex align-items-center justify-content-between">
                 Click student to edit their desired % 
-                <a class="btn btn-outline-primary btn-sm" href="{% url 'instructor:final_grades_export' %}"><i class="bi bi-download"></i> Export</a>
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'instructor:final_grades_export' course.id %}"><i class="bi bi-download"></i> Export</a>
             </div>
         </caption>
 		<thead>
@@ -26,7 +26,7 @@
 		<tbody>
 			{% for student in student_list %}
 				<tr>
-					<td class="text-center align-middle text-break"><a href="{% url 'instructor:override_student_form' student.user_id %}">{{ student.display_name }}</a></td>
+					<td class="text-center align-middle text-break"><a href="{% url 'instructor:override_student_form' course.id student.user_id %}">{{ student.display_name }}</a></td>
 					{% for assessment in course.assessment_set.all %}
 						<td class="text-center align-middle">{% get_score groups assessment.group.id student %}</td>
 					{% endfor %}
@@ -70,7 +70,7 @@
         </span>
     </div>
 
-    <form id="grade-submit" method="post" action="{% url 'instructor:final_grades_submit' %}">
+    <form id="grade-submit" method="post" action="{% url 'instructor:final_grades_submit' course.id %}">
         {% csrf_token %}
         <button type="submit" id="submit-button" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-primary float-end">Submit Grades to Canvas <i class="bi bi-cloud-arrow-up"></i></button>
     </form>        

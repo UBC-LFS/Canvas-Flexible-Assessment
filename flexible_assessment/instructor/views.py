@@ -2,35 +2,44 @@ import csv
 
 from django.conf import settings
 
+import flexible_assessment.class_views as flex
 import flexible_assessment.models as models
 import flexible_assessment.utils as utils
 from canvasapi import Canvas
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.forms import BaseModelFormSet, ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views import generic
 from oauth.oauth import get_oauth_token
 
 from . import grader
 from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
                     StudentBaseForm)
 
+class InstructorHome(LoginRequiredMixin, UserPassesTestMixin, flex.TemplateView):
+    template_name = 'instructor/instructor_home.html'
+    raise_exception = True
 
-@login_required
-@user_passes_test(utils.is_teacher_admin)
-def instructor_home(request):
-    login_redirect = request.GET.get('login_redirect')
-    if login_redirect:
-        utils.update_students(request)
-    return render(request, 'instructor/instructor_home.html')
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        login_redirect = request.GET.get('login_redirect')
+        if login_redirect:
+            course = self.get_context_data().get('course', '')
+            utils.update_students(request, course)
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['display_name'] = self.request.session.get('display_name', '')
+        return context
+
+    def test_func(self):
+        return utils.is_teacher_admin(self.request.user)
 
 
 class FlexAssessmentListView(
-        LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+        LoginRequiredMixin, UserPassesTestMixin, flex.ListView):
     """Extends Django generic ListView and authentication mixins for
     listing student flex allocations
     """
@@ -45,7 +54,7 @@ class FlexAssessmentListView(
         response = super().get(request, *args, **kwargs)
         if self.kwargs.get('csv', False):
             students = self.get_queryset()
-            course_id = self.request.session['course_id']
+            course_id = self.kwargs['course_id']
             course = models.Course.objects.get(pk=course_id)
 
             csv_response = self.export_csv(students, course)
@@ -57,7 +66,7 @@ class FlexAssessmentListView(
         """QuerySet is students for current course"""
 
         user_id = self.request.session.get('user_id', '')
-        course_id = self.request.session.get('course_id', '')
+        course_id = self.kwargs['course_id']
         if not user_id:
             raise PermissionDenied
         return models.UserProfile.objects.filter(
@@ -98,7 +107,7 @@ class FlexAssessmentListView(
 
 
 class FinalGradeListView(
-        LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+        LoginRequiredMixin, UserPassesTestMixin, flex.ListView):
     model = models.UserProfile
     context_object_name = 'student_list'
     template_name = 'instructor/final_grade_list.html'
@@ -109,7 +118,7 @@ class FinalGradeListView(
         response = super().get(request, *args, **kwargs)
         if self.kwargs.get('csv', False):
             students = self.get_queryset()
-            course_id = self.request.session['course_id']
+            course_id = self.kwargs['course_id']
             course = models.Course.objects.get(pk=course_id)
             groups = self.get_context_data().get('groups')
 
@@ -121,7 +130,7 @@ class FinalGradeListView(
 
     def post(self, request, *args, **kwargs):
         if self.kwargs.get('submit', False):
-            course_id = self.request.session.get('course_id', '')
+            course_id = self.kwargs['course_id']
             course = models.Course.objects.get(pk=course_id)
             groups, enrollments = self.get_groups_and_enrollments()
             for student_id, enrollment_id in enrollments.items():
@@ -137,7 +146,7 @@ class FinalGradeListView(
                 Canvas(settings.CANVAS_DOMAIN, access_token) \
                     .graphql(query, variables={"enrollment_id": enrollment_id, "override": override})
 
-        return HttpResponseRedirect(reverse('instructor:instructor_home'))
+        return HttpResponseRedirect(reverse('instructor:instructor_home', kwargs={'course_id': self.kwargs['course_id']}))
 
     def get_context_data(self, **kwargs):
         context = super(FinalGradeListView, self).get_context_data(**kwargs)
@@ -147,14 +156,14 @@ class FinalGradeListView(
 
     def get_queryset(self):
         user_id = self.request.session.get('user_id', '')
-        course_id = self.request.session.get('course_id', '')
+        course_id = self.kwargs['course_id']
         if not user_id:
             raise PermissionDenied
         return models.UserProfile.objects.filter(
             role=models.Roles.STUDENT, usercourse__course__id=course_id)
 
     def get_groups_and_enrollments(self):
-        course_id = self.request.session.get('course_id', '')
+        course_id = self.kwargs['course_id']
         query = """query AssignmentGroupQuery($course_id: ID) {
   course(id: $course_id) {
     assignment_groups: assignmentGroupsConnection {
@@ -272,7 +281,7 @@ class FinalGradeListView(
 
 
 class AssessmentGroupView(
-        LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
+        LoginRequiredMixin, UserPassesTestMixin, flex.FormView):
     """Extends Django generic FormView and authentication mixins for
     matching assessments in the app to assignment groups on Canvas
     """
@@ -280,7 +289,9 @@ class AssessmentGroupView(
     template_name = 'instructor/assessment_group_form.html'
     form_class = AssessmentGroupForm
     raise_exception = True
-    success_url = reverse_lazy('instructor:final_grades')
+
+    def get_success_url(self):
+        return reverse_lazy('instructor:final_grades', kwargs={'course_id': self.kwargs['course_id']})
 
     def get_form_kwargs(self):
         """Adds course_id and assessment as keyword arguments for making form fields
@@ -292,7 +303,7 @@ class AssessmentGroupView(
         """
 
         kwargs = super(AssessmentGroupView, self).get_form_kwargs()
-        course_id = self.request.session.get('course_id', '')
+        course_id = self.kwargs['course_id']
         kwargs['course_id'] = course_id
         kwargs['assessments'] = models.Assessment.objects.filter(
             course_id=course_id)
@@ -334,7 +345,7 @@ class AssessmentGroupView(
             response = super(AssessmentGroupView, self).form_invalid(form)
             return response
 
-        course_id = self.request.session.get('course_id', '')
+        course_id = self.kwargs['course_id']
 
         access_token = get_oauth_token(self.request)
         canvas_course = Canvas(
@@ -369,11 +380,13 @@ class AssessmentGroupView(
 
 
 class InstructorFormView(
-        LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
+        LoginRequiredMixin, UserPassesTestMixin, flex.FormView):
     template_name = 'instructor/instructor_form.html'
     form_class = BaseModelFormSet
     raise_exception = True
-    success_url = reverse_lazy('instructor:instructor_home')
+
+    def get_success_url(self):
+        return reverse_lazy('instructor:instructor_home', kwargs={'course_id': self.kwargs['course_id']})
 
     def get_context_data(self, **kwargs):
         """Populates assignment formset and date form according to POST or GET request
@@ -385,28 +398,26 @@ class InstructorFormView(
         """
 
         context = super(InstructorFormView, self).get_context_data(**kwargs)
-        course_id = self.request.session.get('course_id', None)
+        course = context['course']
 
         if self.request.POST:
             context['date_form'] = DateForm(
-                self.request.POST, instance=models.Course.objects.get(
-                    pk=course_id), prefix='date')
+                self.request.POST, instance=course, prefix='date')
             context['formset'] = AssessmentFormSet(
                 self.request.POST, prefix='assessment')
         else:
             context['date_form'] = DateForm(
-                instance=models.Course.objects.get(
-                    pk=course_id), prefix='date')
+                instance=course, prefix='date')
             context['formset'] = AssessmentFormSet(
                 queryset=models.Assessment.objects.filter(
-                    course_id=course_id), prefix='assessment')
+                    course=course), prefix='assessment')
 
         return context
 
     def post(self, request, *args, **kwargs):
         """Defines the formset and date form for validation"""
 
-        course_id = request.session.get('course_id', None)
+        course_id = self.kwargs['course_id']
         date_form = DateForm(
             request.POST,
             instance=models.Course.objects.get(
@@ -442,7 +453,7 @@ class InstructorFormView(
 
         formset.clean()
 
-        course_id = self.request.session['course_id']
+        course_id = self.kwargs['course_id']
         course = models.Course.objects.get(pk=course_id)
 
         assessment_ids = []
@@ -477,11 +488,13 @@ class InstructorFormView(
 
 
 class OverrideStudentFormView(
-        LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
+        LoginRequiredMixin, UserPassesTestMixin, flex.FormView):
     template_name = 'instructor/override_student_form.html'
     form_class = StudentBaseForm
     raise_exception = True
-    success_url = reverse_lazy('instructor:percentage_list')
+
+    def get_success_url(self):
+        return reverse_lazy('instructor:percentage_list', kwargs={'course_id': self.kwargs['course_id']})
 
     def get_context_data(self, **kwargs):
         """Adds the student name whose allocations are being overriden to the context
@@ -512,7 +525,7 @@ class OverrideStudentFormView(
 
         kwargs = super(OverrideStudentFormView, self).get_form_kwargs()
         user_id = self.kwargs['pk']
-        course_id = self.request.session.get('course_id', '')
+        course_id = self.kwargs['course_id']
 
         if not user_id or not course_id:
             raise PermissionDenied
@@ -538,7 +551,7 @@ class OverrideStudentFormView(
         """
 
         user_id = self.kwargs['pk']
-        course_id = self.request.session.get('course_id', '')
+        course_id = self.kwargs['course_id']
 
         if not user_id or not course_id:
             raise PermissionDenied

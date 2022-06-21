@@ -86,7 +86,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'flexible_assessment.context_processors.add_course_to_context',
             ],
         },
     },
@@ -100,9 +99,7 @@ SESSION_COOKIE_SAMESITE = 'None'  # should be set as 'None' for Django >= 3.1
 SESSION_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
-
-# CSRF_COOKIE_SAMESITE = 'None'
-# CSRF_COOKIE_NAME = 'csrf'
+# SESSION_COOKIE_AGE = 15
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases

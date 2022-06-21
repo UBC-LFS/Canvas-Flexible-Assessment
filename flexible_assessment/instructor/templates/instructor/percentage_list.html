@@ -9,7 +9,7 @@
 		<caption>
             <div class="d-flex align-items-center justify-content-between">
                 Click student to edit their desired % 
-                <a class="btn btn-outline-primary btn-sm" href="{% url 'instructor:percentage_list_export' %}"><i class="bi bi-download"></i> Export</a>
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'instructor:percentage_list_export' course.id %}"><i class="bi bi-download"></i> Export</a>
             </div>
         </caption>
 		<thead>
@@ -25,7 +25,7 @@
 			{% for student in student_list %}
 				<tr>
 					<td class="text-center align-middle text-break"><a
-							href="{% url 'instructor:override_student_form' student.user_id %}">{{ student.display_name }}</a></td>
+							href="{% url 'instructor:override_student_form' course.id student.user_id %}">{{ student.display_name }}</a></td>
 					{% for assessment in course.assessment_set.all %}
 						{% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
 							<td class="text-center align-middle">{{ flex_assessment.flex }}</td>

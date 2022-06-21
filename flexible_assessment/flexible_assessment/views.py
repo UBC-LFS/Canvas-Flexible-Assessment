@@ -30,22 +30,22 @@ def launch(request):
     pprint.pprint(message_launch_data)
 
     canvas_fields = message_launch_data['https://purl.imsglobal.org/spec/lti/claim/custom']
+    course_id = canvas_fields['course_id']
 
-    # TODO: message_launch.check_staff_access()
     if 'TeacherEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.TEACHER)
         auth.authenticate_login(request, canvas_fields)
-        return HttpResponseRedirect(reverse('instructor:instructor_home')+'?login_redirect=True')
+        return HttpResponseRedirect(reverse('instructor:instructor_home', kwargs={'course_id': course_id})+'?login_redirect=True')
 
     elif 'StudentEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.STUDENT)
         auth.authenticate_login(request, canvas_fields)
-        return HttpResponseRedirect(reverse('student:student_home'))
+        return HttpResponseRedirect(reverse('student:student_home', kwargs={'course_id': course_id}))
 
     elif 'TaEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.TA)
         auth.authenticate_login(request, canvas_fields)
-        return HttpResponseRedirect(reverse('instructor:instructor_home'))
+        return HttpResponseRedirect(reverse('instructor:instructor_home', kwargs={'course_id': course_id}))
 
 
 def get_jwks(request):
