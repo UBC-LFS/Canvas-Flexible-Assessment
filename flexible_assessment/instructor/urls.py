@@ -5,7 +5,10 @@ from . import views
 
 app_name = 'instructor'
 urlpatterns = [
-    path('<int:course_id>/', views.InstructorHome.as_view(), name='instructor_home'),
+    path(
+        '<int:course_id>/',
+        views.InstructorHome.as_view(),
+        name='instructor_home'),
     path(
         '<int:course_id>/form/',
         views.InstructorFormView.as_view(),

@@ -1,5 +1,3 @@
-import os
-
 from canvasapi import Canvas
 from django import forms
 from django.conf import settings
@@ -29,11 +27,10 @@ class StudentBaseForm(forms.Form):
                 initial_flex = int(fa.flex)
             else:
                 initial_flex = None
-            flex_fields[fa.assessment.id.hex] = forms.IntegerField(initial=initial_flex,
-                                                                   max_value=100,
-                                                                   min_value=0,
-                                                                   label=fa.assessment.title,
-                                                                   widget=forms.NumberInput(attrs={'size': 3}))
+            flex_fields[fa.assessment.id.hex] = forms.IntegerField(
+                initial=initial_flex, max_value=100, min_value=0,
+                label=fa.assessment.title, widget=forms.NumberInput(
+                    attrs={'size': 3}))
 
         self.fields.update(flex_fields)
 
@@ -47,7 +44,8 @@ class StudentBaseForm(forms.Form):
         if flex_total != 100:
             self.add_error(
                 None, ValidationError(
-                    'Total flex has to add up to 100%, currently it is ({})%'.format(flex_total)))
+                    'Total flex has to add up to 100%, currently it is ({})%'
+                    .format(flex_total)))
 
     def field_status(self):
         course = Course.objects.get(pk=self.course_id)
@@ -83,8 +81,12 @@ class DateForm(ModelForm):
         model = Course
         fields = ['open', 'close']
         widgets = {
-            'open': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
-            'close': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M')}
+            'open': forms.DateTimeInput(
+                attrs={'type': 'datetime-local'},
+                format='%Y-%m-%dT%H:%M'),
+            'close': forms.DateTimeInput(
+                attrs={'type': 'datetime-local'},
+                format='%Y-%m-%dT%H:%M')}
 
 
 class AssessmentGroupForm(forms.Form):
@@ -150,7 +152,9 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                           for form in self.forms])
         if default_sum != 100:
             raise ValidationError(
-                'Default assessments should add up to 100%, currently it is {}%'.format(default_sum))
+                'Default assessments should add up to 100%'
+                ' currently it is {}%'
+                .format(default_sum))
 
         for form in self.forms:
             cleaned_data = form.cleaned_data
@@ -184,12 +188,11 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                         'Minimum must be lower than maximum'))
 
 
-AssessmentFormSet = modelformset_factory(Assessment,
-                                         fields=(
-                                             'title', 'default', 'min', 'max'),
-                                         extra=0,
-                                         widgets={'title': forms.TextInput(attrs={'size': 15}),
-                                                  'default': forms.NumberInput(attrs={'size': 3}),
-                                                  'min': forms.NumberInput(attrs={'size': 3}),
-                                                  'max': forms.NumberInput(attrs={'size': 3})},
-                                         formset=AssessmentBaseFormSet)
+AssessmentFormSet = modelformset_factory(
+    Assessment, fields=('title', 'default', 'min', 'max'),
+    extra=0,
+    widgets={'title': forms.TextInput(attrs={'size': 15}),
+             'default': forms.NumberInput(attrs={'size': 3}),
+             'min': forms.NumberInput(attrs={'size': 3}),
+             'max': forms.NumberInput(attrs={'size': 3})},
+    formset=AssessmentBaseFormSet)

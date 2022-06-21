@@ -14,9 +14,9 @@ from django.utils import timezone
 from flexible_assessment.view_roles import Instructor
 from oauth.oauth import get_oauth_token
 
-from . import grader
-from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
-                    StudentBaseForm)
+import grader
+from forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
+                   StudentBaseForm)
 
 
 class InstructorHome(flex.TemplateView):
@@ -35,7 +35,6 @@ class InstructorHome(flex.TemplateView):
         context = super().get_context_data(**kwargs)
         context['display_name'] = self.request.session.get('display_name', '')
         return context
-
 
 
 class FlexAssessmentListView(flex.ListView):
@@ -77,8 +76,10 @@ class FlexAssessmentListView(flex.ListView):
             [assessment.title for assessment in assessments] + ['Comment']
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="{}_{}_{}.csv"'.format(
-            'Students', course.title.replace(' ', '-'), timezone.localtime().strftime("%Y-%m-%dT%H%M"))
+        response['Content-Disposition'] = 'attachment;filename="{}_{}_{}.csv"'\
+            .format('Students',
+                    course.title.replace(' ', '-'),
+                    timezone.localtime().strftime("%Y-%m-%dT%H%M"))
 
         writer = csv.writer(response, delimiter=",")
         writer.writerow(fields)
@@ -99,7 +100,6 @@ class FlexAssessmentListView(flex.ListView):
             writer.writerow(values)
 
         return response
-
 
 
 class FinalGradeListView(flex.ListView):
@@ -125,7 +125,7 @@ class FinalGradeListView(flex.ListView):
 
     def post(self, request, *args, **kwargs):
         course_id = self.kwargs['course_id']
-    
+
         if self.kwargs.get('submit', False):
             access_token = get_oauth_token(self.request)
             canvas = Canvas(settings.CANVAS_DOMAIN, access_token)
@@ -139,24 +139,39 @@ class FinalGradeListView(flex.ListView):
                     "course_id": course_id})
 
             if query_response['data']['course']['allowFinalGradeOverride']:
-                messages.error(request, "Check 'Allow Final Grade Override' under Gradebook Settings")
-                return HttpResponseRedirect(reverse('instructor:final_grades', kwargs={'course_id': course_id}))
+                messages.error(
+                    request,
+                    "Check 'Allow Final Grade Override' under"
+                    " Gradebook Settings")
+                return HttpResponseRedirect(
+                    reverse(
+                        'instructor:final_grades',
+                        kwargs={'course_id': course_id}))
 
             course = models.Course.objects.get(pk=course_id)
             groups, enrollments = self.get_groups_and_enrollments()
             for student_id, enrollment_id in enrollments.items():
                 student = models.UserProfile.objects.get(pk=student_id)
-                override = grader.get_override_total(groups, student, course) or grader.get_default_total(groups, student)
+                override = grader.get_override_total(
+                    groups, student, course) or grader.get_default_total(
+                    groups, student)
 
                 mutation = """mutation OverrideFinalScore($enrollment_id: ID!, $override: Float) {
-                    setOverrideScore(input: { enrollmentId: $enrollment_id, overrideScore: $override }) {
+                    setOverrideScore(input: { enrollmentId: $enrollment_id,
+                                              overrideScore: $override }) {
                         grades {
                             overrideScore
                             } } }"""
 
-                canvas.graphql(mutation, variables={"enrollment_id": enrollment_id, "override": override})
+                canvas.graphql(
+                    mutation,
+                    variables={"enrollment_id": enrollment_id,
+                               "override": override})
 
-        return HttpResponseRedirect(reverse('instructor:instructor_home', kwargs={'course_id': course_id}))
+        return HttpResponseRedirect(
+            reverse(
+                'instructor:instructor_home',
+                kwargs={'course_id': course_id}))
 
     def get_context_data(self, **kwargs):
         context = super(FinalGradeListView, self).get_context_data(**kwargs)
@@ -248,8 +263,10 @@ class FinalGradeListView(flex.ListView):
             ['Override Final Grade', 'Default Total', 'Difference']
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="{}_{}_{}.csv"'.format(
-            'Grades', course.title.replace(' ', '-'), timezone.localtime().strftime("%Y-%m-%dT%H%M"))
+        response['Content-Disposition'] = 'attachment;filename="{}_{}_{}.csv"'\
+            .format('Grades',
+                    course.title.replace(' ', '-'),
+                    timezone.localtime().strftime("%Y-%m-%dT%H%M"))
 
         writer = csv.writer(response, delimiter=",")
         writer.writerow(fields)
@@ -297,7 +314,9 @@ class AssessmentGroupView(flex.FormView):
     form_class = AssessmentGroupForm
 
     def get_success_url(self):
-        return reverse_lazy('instructor:final_grades', kwargs={'course_id': self.kwargs['course_id']})
+        return reverse_lazy(
+            'instructor:final_grades',
+            kwargs={'course_id': self.kwargs['course_id']})
 
     def get_form_kwargs(self):
         """Adds course_id and assessment as keyword arguments for making form fields
@@ -318,7 +337,8 @@ class AssessmentGroupView(flex.FormView):
         return kwargs
 
     def form_valid(self, form):
-        """Validates matched groups are unique and adds AssignmentGroup as Foreign Key to Assessment
+        """Validates matched groups are unique and adds
+        AssignmentGroup as Foreign Key to Assessment
 
         Parameters
         ----------
@@ -328,7 +348,8 @@ class AssessmentGroupView(flex.FormView):
         Returns
         -------
         response : Union[HttpResponseRedirect, TemplateResponse]
-            HttpResponseRedirect if form is valid, TemplateResponse if error in form
+            HttpResponseRedirect if form is valid,
+            TemplateResponse if error in form
         """
 
         matched_groups = form.cleaned_data.values()
@@ -388,7 +409,9 @@ class InstructorFormView(flex.FormView):
     form_class = BaseModelFormSet
 
     def get_success_url(self):
-        return reverse_lazy('instructor:instructor_home', kwargs={'course_id': self.kwargs['course_id']})
+        return reverse_lazy(
+            'instructor:instructor_home',
+            kwargs={'course_id': self.kwargs['course_id']})
 
     def get_context_data(self, **kwargs):
         """Populates assignment formset and date form according to POST or GET request
@@ -464,7 +487,8 @@ class InstructorFormView(flex.FormView):
         Returns
         -------
         response : Union[HttpResponseRedirect, TemplateResponse]
-            HttpResponseRedirect if formset and date form is valid, TemplateResponse if error
+            HttpResponseRedirect if formset and date form is valid,
+            TemplateResponse if error
         """
 
         date_form.save()
@@ -488,23 +512,26 @@ class InstructorFormView(flex.FormView):
         response = HttpResponseRedirect(self.get_success_url())
 
         return response
-    
+
     def export_csv(self, course):
         assessments = [
             assessment for assessment in course.assessment_set.all()]
         fields = ('Assessment', 'Default', 'Min', 'Max')
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="{}_{}_{}.csv"'.format(
-            'Assessments', course.title.replace(' ', '-'), timezone.localtime().strftime("%Y-%m-%dT%H%M"))
+        response['Content-Disposition'] = 'attachment;filename="{}_{}_{}.csv"'\
+            .format('Assessments',
+                    course.title.replace(' ', '-'),
+                    timezone.localtime().strftime("%Y-%m-%dT%H%M"))
 
         writer = csv.writer(response, delimiter=",")
         writer.writerow(fields)
 
         for assessment in assessments:
-            values = (assessment.title, assessment.default, assessment.min, assessment.max)
+            values = (assessment.title, assessment.default,
+                      assessment.min, assessment.max)
             writer.writerow(values)
-        
+
         return response
 
     def _set_flex_assessments(self, course, assessment):
@@ -516,9 +543,9 @@ class InstructorFormView(flex.FormView):
         flex_assessments = [
             models.FlexAssessment(user=user, assessment=assessment)
             for user in users
-            if not models.FlexAssessment.objects.filter(user=user, assessment=assessment).exists()]
+            if not models.FlexAssessment.objects.filter(
+                user=user, assessment=assessment).exists()]
         models.FlexAssessment.objects.bulk_create(flex_assessments)
-
 
 
 class OverrideStudentFormView(flex.FormView):
@@ -527,7 +554,9 @@ class OverrideStudentFormView(flex.FormView):
     form_class = StudentBaseForm
 
     def get_success_url(self):
-        return reverse_lazy('instructor:percentage_list', kwargs={'course_id': self.kwargs['course_id']})
+        return reverse_lazy(
+            'instructor:percentage_list',
+            kwargs={'course_id': self.kwargs['course_id']})
 
     def get_context_data(self, **kwargs):
         """Adds the student name whose allocations are being overriden to the context
@@ -580,7 +609,8 @@ class OverrideStudentFormView(flex.FormView):
         Returns
         -------
         response : Union[HttpResponseRedirect, TemplateResponse]
-            HttpResponseRedirect if form is valid, TemplateResponse if error in form
+            HttpResponseRedirect if form is valid,
+            TemplateResponse if error in form
         """
 
         user_id = self.kwargs['pk']
@@ -590,12 +620,12 @@ class OverrideStudentFormView(flex.FormView):
             raise PermissionDenied
 
         assessment_fields = list(form.cleaned_data.items())
-        for assessment_id, flex in assessment_fields:
+        for assessment_id, flex_allocation in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
-            if flex > assessment.max:
+            if flex_allocation > assessment.max:
                 form.add_error(assessment_id, ValidationError(
                     'Flex should be less than or equal to max'))
-            elif flex < assessment.min:
+            elif flex_allocation < assessment.min:
                 form.add_error(assessment_id, ValidationError(
                     'Flex should be greater than or equal to min'))
 
@@ -603,16 +633,15 @@ class OverrideStudentFormView(flex.FormView):
             response = super(OverrideStudentFormView, self).form_invalid(form)
             return response
 
-        for assessment_id, flex in assessment_fields:
+        for assessment_id, flex_allocation in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
             flex_assessment = assessment.flexassessment_set.filter(
                 user__user_id=user_id).first()
-            flex_assessment.flex = flex
+            flex_assessment.flex = flex_allocation
             flex_assessment.save()
 
         response = super(OverrideStudentFormView, self).form_valid(form)
         return response
-
 
 
 class ImportAssessmentsView(flex.FormView):

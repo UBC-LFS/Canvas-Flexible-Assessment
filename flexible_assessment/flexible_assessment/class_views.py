@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views import generic
 from django.core.exceptions import ImproperlyConfigured
 
-from .models import Course
+from models import Course
 
 
 class GenericView(LoginRequiredMixin, UserPassesTestMixin):
@@ -16,7 +16,8 @@ class GenericView(LoginRequiredMixin, UserPassesTestMixin):
 
     def test_func(self):
         if not self.allowed_view_role:
-            raise ImproperlyConfigured("GenericView requires definition of 'allowed_view_role'")
+            raise ImproperlyConfigured(
+                "GenericView requires definition of 'allowed_view_role'")
         return self.allowed_view_role.permission_test(self.request.user)
 
 

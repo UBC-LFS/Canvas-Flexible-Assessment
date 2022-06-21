@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.backends import BaseBackend
 
-from .models import UserProfile
+from models import UserProfile
 
 
 class SettingsBackend(BaseBackend):

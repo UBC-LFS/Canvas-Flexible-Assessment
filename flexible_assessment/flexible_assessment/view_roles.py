@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from .models import Roles
 
+
 class ViewRole(ABC):
     @property
     @abstractmethod
@@ -18,4 +19,3 @@ class Instructor(ViewRole):
 
 class Student(ViewRole):
     permitted_roles = (Roles.STUDENT,)
-

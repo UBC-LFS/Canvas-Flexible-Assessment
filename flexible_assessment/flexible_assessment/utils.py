@@ -6,15 +6,25 @@ from oauth.oauth import get_oauth_token
 
 import flexible_assessment.models as models
 
+
 def update_students(request, course):
     access_token = get_oauth_token(request)
-    students_canvas = Canvas(settings.CANVAS_DOMAIN, access_token).get_course(course.id).get_users(enrollment_type='student')
+    students_canvas = Canvas(
+        settings.CANVAS_DOMAIN,
+        access_token).get_course(
+        course.id).get_users(
+            enrollment_type='student')
     students_db = models.UserProfile.objects.filter(role=models.Roles.STUDENT)
 
-    students_canvas_ids = [student.__getattribute__('id') for student in students_canvas]
+    students_canvas_ids = [student.__getattribute__(
+        'id') for student in students_canvas]
     students_db_ids = [student.user_id for student in students_db]
 
-    students_to_add = list(filter(lambda student: student.__getattribute__('id') not in students_db_ids, students_canvas))
+    students_to_add = list(
+        filter(
+            lambda student: student.__getattribute__(
+                'id') not in students_db_ids,
+            students_canvas))
     students_to_delete = students_db.exclude(user_id__in=students_canvas_ids)
 
     for student in students_to_add:
@@ -25,8 +35,9 @@ def update_students(request, course):
         canvas_fields['course_id'] = course.id
         canvas_fields['course_name'] = course.title
         set_user_course(canvas_fields, models.Roles.STUDENT)
-    
+
     students_to_delete.delete()
+
 
 def set_user_profile(user_id, login_id, display_name, role):
     user_set = models.UserProfile.objects.filter(pk=user_id)
@@ -71,8 +82,8 @@ def set_user_course(canvas_fields, role):
 
 
 def set_user_comment(user, course):
-    if not user.usercomment_set.filter(
-            course__id=course.id).exists() and user.role == models.Roles.STUDENT:
+    if not user.usercomment_set.filter(course__id=course.id).exists() \
+            and user.role == models.Roles.STUDENT:
         user_comment = models.UserComment(user=user, course=course)
         user_comment.save()
 

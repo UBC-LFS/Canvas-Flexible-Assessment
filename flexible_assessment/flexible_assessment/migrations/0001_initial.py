@@ -18,14 +18,31 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UserProfile',
             fields=[
-                ('password', models.CharField(max_length=128, verbose_name='password')),
-                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
+                ('password', models.CharField(
+                    max_length=128, verbose_name='password')),
+                ('last_login', models.DateTimeField(
+                    blank=True, null=True, verbose_name='last login')),
                 ('user_id', models.IntegerField(primary_key=True, serialize=False)),
                 ('login_id', models.CharField(max_length=100)),
                 ('display_name', models.CharField(max_length=255)),
-                ('role', models.IntegerField(choices=[(1, 'Admin'), (2, 'Teacher'), (3, 'Ta'), (4, 'Student')])),
-                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
-                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
+                ('role', models.IntegerField(choices=[
+                 (1, 'Admin'), (2, 'Teacher'), (3, 'Ta'), (4, 'Student')])),
+                (
+                    'groups',
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+                        related_name='user_set',
+                        related_query_name='user',
+                        to='auth.group',
+                        verbose_name='groups')),
+                ('user_permissions',
+                 models.ManyToManyField(blank=True,
+                                        help_text='Specific permissions for this user.',
+                                        related_name='user_set',
+                                        related_query_name='user',
+                                        to='auth.permission',
+                                        verbose_name='user permissions')),
             ],
             options={
                 'ordering': ['display_name'],
@@ -34,7 +51,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Assessment',
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('id', models.UUIDField(default=uuid.uuid4,
+                 primary_key=True, serialize=False)),
                 ('title', models.CharField(max_length=100)),
                 ('default', models.IntegerField()),
                 ('min', models.IntegerField()),
@@ -56,27 +74,37 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UserCourse',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='flexible_assessment.course')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
+                ('course', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='flexible_assessment.course')),
+                ('user', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
             name='UserComment',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('comment', models.TextField(blank=True, default='', max_length=100)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='flexible_assessment.course')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('course', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='flexible_assessment.course')),
+                ('user', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
             name='FlexAssessment',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('flex', models.IntegerField(blank=True, null=True)),
-                ('assessment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='flexible_assessment.assessment')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('assessment',
+                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                   to='flexible_assessment.assessment')),
+                ('user', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['assessment__title'],
@@ -87,21 +115,30 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.IntegerField(primary_key=True, serialize=False)),
                 ('name', models.CharField(max_length=100)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='flexible_assessment.course')),
+                ('course', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='flexible_assessment.course')),
             ],
         ),
         migrations.AddField(
             model_name='assessment',
             name='course',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='flexible_assessment.course'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to='flexible_assessment.course'),
         ),
         migrations.AddField(
             model_name='assessment',
             name='group',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='flexible_assessment.assignmentgroup'),
+            field=models.ForeignKey(null=True,
+                                    on_delete=django.db.models.deletion.CASCADE,
+                                    to='flexible_assessment.assignmentgroup'),
         ),
         migrations.AddConstraint(
             model_name='usercourse',
-            constraint=models.UniqueConstraint(fields=('user_id', 'course_id'), name='User and Course unique'),
+            constraint=models.UniqueConstraint(
+                fields=(
+                    'user_id',
+                    'course_id'),
+                name='User and Course unique'),
         ),
     ]

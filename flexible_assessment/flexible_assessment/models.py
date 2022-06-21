@@ -6,7 +6,8 @@ from django.db import models
 
 
 class UserProfileManager(BaseUserManager):
-    """Extends Base User Manager for creating users and superusers of type UserProfile
+    """Extends Base User Manager for creating users and superusers
+    of type UserProfile
 
     Methods
     -------
@@ -28,7 +29,8 @@ class UserProfileManager(BaseUserManager):
         display_name : str
             Name of user
         role : int
-            Used as identification for role of user in course (see models.Roles class)
+            Used as identification for role of user in course
+            (see models.Roles class)
 
         Returns
         -------
@@ -59,7 +61,8 @@ class UserProfileManager(BaseUserManager):
         display_name : str
             Name of user
         role : int
-            Used as identification for role of user in course (see models.Roles class)
+            Used as identification for role of user in course
+            (see models.Roles class)
 
         Returns
         -------
@@ -85,7 +88,8 @@ class Roles(models.IntegerChoices):
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
-    """Table containing user entries for Instructor/TA/Student for course or Admin instance
+    """Table containing user entries for Instructor/TA/Student for
+    course or Admin instance
 
     Attributes
     ----------
@@ -96,7 +100,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     display_name : str
         Name of user
     role : int
-        Used as identification for role of user in course (see models.Roles class)
+        Used as identification for role of user in course
+        (see models.Roles class)
     objects : UserProfileManager
         Instance of user manager class extending the BaseUserManager
     """
@@ -136,9 +141,11 @@ class Course(models.Model):
     title : str
         Title of the course
     open : DateTime
-        Open date for students to add or change grade allocation for assessments
+        Open date for students to add or
+        change grade allocation for assessments
     close : DateTime
-        Due date for students to add or change grade allocation for assessments
+        Due date for students to add or
+        change grade allocation for assessments
     """
 
     id = models.IntegerField(primary_key=True)
@@ -151,7 +158,8 @@ class Course(models.Model):
 
 
 class UserCourse(models.Model):
-    """Table linking users and courses for many-to-many relationship, entries are unique
+    """Table linking users and courses for many-to-many relationship,
+    entries are unique
 
     Attributes
     ----------

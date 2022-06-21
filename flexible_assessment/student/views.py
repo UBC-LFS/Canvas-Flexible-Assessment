@@ -1,9 +1,10 @@
-import flexible_assessment.class_views as flex
-import flexible_assessment.models as models
 from django.core.exceptions import PermissionDenied
 from django.forms import ValidationError
 from django.urls import reverse_lazy
 from django.utils import timezone
+
+import flexible_assessment.class_views as flex
+import flexible_assessment.models as models
 from flexible_assessment.view_roles import Student
 
 from .forms import StudentForm
@@ -20,14 +21,16 @@ class StudentHome(flex.TemplateView):
 
 
 class StudentFormView(flex.FormView):
-    """Extends Django generic FormView and authentication mixins for student form."""
+    """Extends Django generic FormView and authentication mixins
+    for student form."""
 
     allowed_view_role = Student
     template_name = 'student/student_form.html'
     form_class = StudentForm
 
     def get_success_url(self):
-        return reverse_lazy('student:student_home', kwargs={'course_id': self.kwargs['course_id']})
+        return reverse_lazy('student:student_home',
+                            kwargs={'course_id': self.kwargs['course_id']})
 
     def get_form_kwargs(self):
         """Adds course_id as keyword arguments for making form fields
@@ -58,25 +61,25 @@ class StudentFormView(flex.FormView):
             raise PermissionDenied
 
         course = models.Course.objects.get(pk=course_id)
-        open = course.open
-        close = course.close
+        open_datetime = course.open
+        close_datetime = course.close
         now = timezone.now()
-        if now > close:
+        if now > close_datetime:
             form.add_error(None, ValidationError(
                 'Past deadline to submit form'))
-        elif now < open:
+        elif now < open_datetime:
             form.add_error(None, ValidationError(
                 'Form is not open yet'))
 
         comment = form.cleaned_data.pop('comment')
 
         assessment_fields = list(form.cleaned_data.items())
-        for assessment_id, flex in assessment_fields:
+        for assessment_id, flex_allocation in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
-            if flex > assessment.max:
+            if flex_allocation > assessment.max:
                 form.add_error(assessment_id, ValidationError(
                     'Flex should be less than or equal to max'))
-            elif flex < assessment.min:
+            elif flex_allocation < assessment.min:
                 form.add_error(assessment_id, ValidationError(
                     'Flex should be greater than or equal to min'))
 
@@ -84,11 +87,11 @@ class StudentFormView(flex.FormView):
             response = super(StudentFormView, self).form_invalid(form)
             return response
 
-        for assessment_id, flex in assessment_fields:
+        for assessment_id, flex_allocation in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
             flex_assessment = assessment.flexassessment_set.filter(
                 user__user_id=user_id).first()
-            flex_assessment.flex = flex
+            flex_assessment.flex = flex_allocation
             flex_assessment.save()
 
         user_comment = models.UserComment.objects.filter(
@@ -98,4 +101,3 @@ class StudentFormView(flex.FormView):
 
         response = super(StudentFormView, self).form_valid(form)
         return response
-

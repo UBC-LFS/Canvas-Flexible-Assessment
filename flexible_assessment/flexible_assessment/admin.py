@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from .models import AssignmentGroup, UserComment, UserProfile, Course, UserCourse, Assessment, FlexAssessment
+import models
 
-admin.site.register(UserProfile)
-admin.site.register(Course)
-admin.site.register(UserCourse)
-admin.site.register(Assessment)
-admin.site.register(FlexAssessment)
-admin.site.register(UserComment)
-admin.site.register(AssignmentGroup)
+admin.site.register(models.UserProfile)
+admin.site.register(models.Course)
+admin.site.register(models.UserCourse)
+admin.site.register(models.Assessment)
+admin.site.register(models.FlexAssessment)
+admin.site.register(models.UserComment)
+admin.site.register(models.AssignmentGroup)
