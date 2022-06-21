@@ -1,14 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .utils import add_permissions
-from .models import FlexAssessment, UserCourse, UserProfile, Assessment, Roles
-
-
-@receiver(post_save, sender=UserProfile)
-def add_perms(sender, instance, created, **kwargs):
-    if created:
-        add_permissions()
+from .models import FlexAssessment, UserCourse, Assessment, Roles
 
 
 @receiver(post_save, sender=UserCourse)

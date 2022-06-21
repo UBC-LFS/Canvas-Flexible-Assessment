@@ -23,7 +23,24 @@
 	<div id="form_set">
 		<div class="col-10">
 			<table class='table table-striped mb-0'>
-				<caption>Total default allocations should add up to 100%</caption>
+				<caption>
+                    <div class="d-flex align-items-center justify-content-between">
+                        Total default allocations should add up to 100%
+                        <div class="dropdown-center">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">Actions</button>
+                            <ul class="dropdown-menu">
+                              <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-upload"></i> Import</a>
+                              </li>
+                              <li>
+                                <a class="dropdown-item {% if not course.close %}disabled{% endif %}" href="{% url 'instructor:assessments_export' course.id %}">
+                                    <i class="bi bi-download"></i> Export</a>
+                              </li>
+                            </ul>
+                        </div>
+                    </div>
+                </caption>
 				<thead>
 					<tr>
 						<th class="text-center align-middle">Title</th>
@@ -98,7 +115,6 @@
 </table>
 
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
 
 <script>
 	check_total();

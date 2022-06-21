@@ -1,8 +1,6 @@
 from collections.abc import MutableMapping
 from canvasapi import Canvas
 from django.conf import settings
-from django.contrib.auth.models import Group, Permission
-from django.contrib.contenttypes.models import ContentType
 
 from oauth.oauth import get_oauth_token
 
@@ -70,7 +68,6 @@ def set_user_course(canvas_fields, role):
 
     set_user_course_enrollment(user, course)
     set_user_comment(user, course)
-    set_user_group(user)
 
 
 def set_user_comment(user, course):
@@ -78,78 +75,6 @@ def set_user_comment(user, course):
             course__id=course.id).exists() and user.role == models.Roles.STUDENT:
         user_comment = models.UserComment(user=user, course=course)
         user_comment.save()
-
-
-def set_user_group(user):
-    if not user.groups.all():
-        roles = dict(models.Roles.choices)
-        role = roles[user.role]
-        group = Group.objects.get(name=role)
-        user.groups.add(group)
-
-
-def create_groups(sender, **kwargs):
-    from django.contrib.auth.models import Group
-
-    from .models import Roles
-
-    current_role_names = list(
-        Group.objects.all().values_list('name', flat=True))
-
-    role_names = list(dict(Roles.choices).values())
-
-    if role_names != current_role_names:
-        groups = [Group(name=role) for role in role_names]
-        Group.objects.bulk_create(groups)
-
-
-def add_permissions():
-    teacher_admin_groups = Group.objects.filter(
-        name='Admin') | Group.objects.filter(
-        name='Teacher')
-
-    assessment_content_type = ContentType.objects.get_for_model(models.Assessment)
-    assessment_perm_set = Permission.objects.filter(
-        content_type=assessment_content_type)
-    course_content_type = ContentType.objects.get_for_model(models.Course)
-    course_perm_set = Permission.objects.filter(
-        content_type=course_content_type)
-
-    assessment_course_perm_set = assessment_perm_set | course_perm_set
-
-    student_group = Group.objects.filter(name='Student')
-    flex_assessment_content_type = ContentType.objects.get_for_model(
-        models.FlexAssessment)
-    student_flex_perm_set = Permission.objects.filter(
-        codename__in=['change_flexassessment', 'view_flexassessment'],
-        content_type=flex_assessment_content_type)
-
-    add_permissions_helper(
-        teacher_admin_groups,
-        assessment_course_perm_set)
-    add_permissions_helper(student_group, student_flex_perm_set)
-
-
-def add_permissions_helper(groups, permissions_set):
-    for group in groups:
-        current_perms = list(
-            group.permissions.all().values_list(
-                'id', flat=True))
-        perms = list(
-            permissions_set.values_list(
-                'id', flat=True))
-        current_perms.sort()
-        perms.sort()
-        if current_perms != perms:
-            group.permissions.add(*perms)
-
-
-def is_teacher_admin(user):
-    return user.groups.filter(name__in=['Teacher', 'Admin', 'Ta']).exists()
-
-
-def is_student(user):
-    return user.groups.filter(name='Student').exists()
 
 
 def _flatten_dict_gen(d, parent_key, sep):

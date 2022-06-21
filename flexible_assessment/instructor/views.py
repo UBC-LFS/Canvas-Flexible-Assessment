@@ -1,25 +1,27 @@
 import csv
 
-from django.conf import settings
-
 import flexible_assessment.class_views as flex
 import flexible_assessment.models as models
 import flexible_assessment.utils as utils
 from canvasapi import Canvas
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.conf import settings
+from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.forms import BaseModelFormSet, ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
+from flexible_assessment.view_roles import Instructor
 from oauth.oauth import get_oauth_token
 
 from . import grader
 from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
                     StudentBaseForm)
 
-class InstructorHome(LoginRequiredMixin, UserPassesTestMixin, flex.TemplateView):
+
+class InstructorHome(flex.TemplateView):
+    allowed_view_role = Instructor
     template_name = 'instructor/instructor_home.html'
-    raise_exception = True
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
@@ -34,20 +36,16 @@ class InstructorHome(LoginRequiredMixin, UserPassesTestMixin, flex.TemplateView)
         context['display_name'] = self.request.session.get('display_name', '')
         return context
 
-    def test_func(self):
-        return utils.is_teacher_admin(self.request.user)
 
 
-class FlexAssessmentListView(
-        LoginRequiredMixin, UserPassesTestMixin, flex.ListView):
+class FlexAssessmentListView(flex.ListView):
     """Extends Django generic ListView and authentication mixins for
     listing student flex allocations
     """
-
+    allowed_view_role = Instructor
     model = models.UserProfile
     context_object_name = 'student_list'
     template_name = 'instructor/percentage_list.html'
-    raise_exception = True
     paginate_by = 10
 
     def get(self, request, *args, **kwargs):
@@ -79,8 +77,8 @@ class FlexAssessmentListView(
             [assessment.title for assessment in assessments] + ['Comment']
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(
-            'student_list')
+        response['Content-Disposition'] = 'attachment; filename="{}_{}_{}.csv"'.format(
+            'Students', course.title.replace(' ', '-'), timezone.localtime().strftime("%Y-%m-%dT%H%M"))
 
         writer = csv.writer(response, delimiter=",")
         writer.writerow(fields)
@@ -102,16 +100,13 @@ class FlexAssessmentListView(
 
         return response
 
-    def test_func(self):
-        return utils.is_teacher_admin(self.request.user)
 
 
-class FinalGradeListView(
-        LoginRequiredMixin, UserPassesTestMixin, flex.ListView):
+class FinalGradeListView(flex.ListView):
+    allowed_view_role = Instructor
     model = models.UserProfile
     context_object_name = 'student_list'
     template_name = 'instructor/final_grade_list.html'
-    raise_exception = True
     paginate_by = 10
 
     def get(self, request, *args, **kwargs):
@@ -129,24 +124,39 @@ class FinalGradeListView(
             return response
 
     def post(self, request, *args, **kwargs):
+        course_id = self.kwargs['course_id']
+    
         if self.kwargs.get('submit', False):
-            course_id = self.kwargs['course_id']
+            access_token = get_oauth_token(self.request)
+            canvas = Canvas(settings.CANVAS_DOMAIN, access_token)
+
+            query = """query AllowOverrideQuery($course_id: ID) {
+                course(id: $course_id) {
+                    allowFinalGradeOverride
+                    } }"""
+            query_response = canvas.graphql(
+                query, variables={
+                    "course_id": course_id})
+
+            if query_response['data']['course']['allowFinalGradeOverride']:
+                messages.error(request, "Check 'Allow Final Grade Override' under Gradebook Settings")
+                return HttpResponseRedirect(reverse('instructor:final_grades', kwargs={'course_id': course_id}))
+
             course = models.Course.objects.get(pk=course_id)
             groups, enrollments = self.get_groups_and_enrollments()
             for student_id, enrollment_id in enrollments.items():
                 student = models.UserProfile.objects.get(pk=student_id)
                 override = grader.get_override_total(groups, student, course) or grader.get_default_total(groups, student)
-                query = """mutation OverrideFinalScore($enrollment_id: ID!, $override: Float) {
+
+                mutation = """mutation OverrideFinalScore($enrollment_id: ID!, $override: Float) {
                     setOverrideScore(input: { enrollmentId: $enrollment_id, overrideScore: $override }) {
                         grades {
                             overrideScore
                             } } }"""
 
-                access_token = get_oauth_token(request)
-                Canvas(settings.CANVAS_DOMAIN, access_token) \
-                    .graphql(query, variables={"enrollment_id": enrollment_id, "override": override})
+                canvas.graphql(mutation, variables={"enrollment_id": enrollment_id, "override": override})
 
-        return HttpResponseRedirect(reverse('instructor:instructor_home', kwargs={'course_id': self.kwargs['course_id']}))
+        return HttpResponseRedirect(reverse('instructor:instructor_home', kwargs={'course_id': course_id}))
 
     def get_context_data(self, **kwargs):
         context = super(FinalGradeListView, self).get_context_data(**kwargs)
@@ -238,8 +248,8 @@ class FinalGradeListView(
             ['Override Final Grade', 'Default Total', 'Difference']
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(
-            'grade_list')
+        response['Content-Disposition'] = 'attachment; filename="{}_{}_{}.csv"'.format(
+            'Grades', course.title.replace(' ', '-'), timezone.localtime().strftime("%Y-%m-%dT%H%M"))
 
         writer = csv.writer(response, delimiter=",")
         writer.writerow(fields)
@@ -276,19 +286,15 @@ class FinalGradeListView(
 
         return response
 
-    def test_func(self):
-        return utils.is_teacher_admin(self.request.user)
 
-
-class AssessmentGroupView(
-        LoginRequiredMixin, UserPassesTestMixin, flex.FormView):
+class AssessmentGroupView(flex.FormView):
     """Extends Django generic FormView and authentication mixins for
     matching assessments in the app to assignment groups on Canvas
     """
 
+    allowed_view_role = Instructor
     template_name = 'instructor/assessment_group_form.html'
     form_class = AssessmentGroupForm
-    raise_exception = True
 
     def get_success_url(self):
         return reverse_lazy('instructor:final_grades', kwargs={'course_id': self.kwargs['course_id']})
@@ -375,15 +381,11 @@ class AssessmentGroupView(
         response = super(AssessmentGroupView, self).form_valid(form)
         return response
 
-    def test_func(self):
-        return utils.is_teacher_admin(self.request.user)
 
-
-class InstructorFormView(
-        LoginRequiredMixin, UserPassesTestMixin, flex.FormView):
+class InstructorFormView(flex.FormView):
+    allowed_view_role = Instructor
     template_name = 'instructor/instructor_form.html'
     form_class = BaseModelFormSet
-    raise_exception = True
 
     def get_success_url(self):
         return reverse_lazy('instructor:instructor_home', kwargs={'course_id': self.kwargs['course_id']})
@@ -414,6 +416,17 @@ class InstructorFormView(
 
         return context
 
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if self.kwargs.get('csv', False):
+            course_id = self.kwargs['course_id']
+            course = models.Course.objects.get(pk=course_id)
+
+            csv_response = self.export_csv(course)
+            return csv_response
+        else:
+            return response
+
     def post(self, request, *args, **kwargs):
         """Defines the formset and date form for validation"""
 
@@ -427,7 +440,12 @@ class InstructorFormView(
         formset = AssessmentFormSet(request.POST, prefix='assessment')
 
         if formset.is_valid() and date_form.is_valid():
+            access_token = get_oauth_token(request)
+            Canvas(settings.CANVAS_DOMAIN, access_token) \
+                .get_course(course_id).update_settings(hide_final_grades=True)
+
             return self.forms_valid(formset, date_form)
+
         elif not formset.is_valid():
             return self.form_invalid(formset)
         else:
@@ -470,6 +488,24 @@ class InstructorFormView(
         response = HttpResponseRedirect(self.get_success_url())
 
         return response
+    
+    def export_csv(self, course):
+        assessments = [
+            assessment for assessment in course.assessment_set.all()]
+        fields = ('Assessment', 'Default', 'Min', 'Max')
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="{}_{}_{}.csv"'.format(
+            'Assessments', course.title.replace(' ', '-'), timezone.localtime().strftime("%Y-%m-%dT%H%M"))
+
+        writer = csv.writer(response, delimiter=",")
+        writer.writerow(fields)
+
+        for assessment in assessments:
+            values = (assessment.title, assessment.default, assessment.min, assessment.max)
+            writer.writerow(values)
+        
+        return response
 
     def _set_flex_assessments(self, course, assessment):
         """Creates flex assessment objects for new assessments in the course"""
@@ -483,15 +519,12 @@ class InstructorFormView(
             if not models.FlexAssessment.objects.filter(user=user, assessment=assessment).exists()]
         models.FlexAssessment.objects.bulk_create(flex_assessments)
 
-    def test_func(self):
-        return utils.is_teacher_admin(self.request.user)
 
 
-class OverrideStudentFormView(
-        LoginRequiredMixin, UserPassesTestMixin, flex.FormView):
+class OverrideStudentFormView(flex.FormView):
+    allowed_view_role = Instructor
     template_name = 'instructor/override_student_form.html'
     form_class = StudentBaseForm
-    raise_exception = True
 
     def get_success_url(self):
         return reverse_lazy('instructor:percentage_list', kwargs={'course_id': self.kwargs['course_id']})
@@ -580,5 +613,7 @@ class OverrideStudentFormView(
         response = super(OverrideStudentFormView, self).form_valid(form)
         return response
 
-    def test_func(self):
-        return utils.is_teacher_admin(self.request.user)
+
+
+class ImportAssessmentsView(flex.FormView):
+    pass

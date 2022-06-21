@@ -11,6 +11,11 @@ urlpatterns = [
         views.InstructorFormView.as_view(),
         name='instructor_form'),
     path(
+        '<int:course_id>/form/csv',
+        views.InstructorFormView.as_view(),
+        {'csv': True},
+        name='assessments_export'),
+    path(
         '<int:course_id>/percentages/',
         views.FlexAssessmentListView.as_view(),
         name='percentage_list'),

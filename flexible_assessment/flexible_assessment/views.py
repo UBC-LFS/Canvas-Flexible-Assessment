@@ -37,15 +37,16 @@ def launch(request):
         auth.authenticate_login(request, canvas_fields)
         return HttpResponseRedirect(reverse('instructor:instructor_home', kwargs={'course_id': course_id})+'?login_redirect=True')
 
+    elif 'TaEnrollment' in canvas_fields['role']:
+        utils.set_user_course(canvas_fields, models.Roles.TA)
+        auth.authenticate_login(request, canvas_fields)
+        return HttpResponseRedirect(reverse('instructor:instructor_home', kwargs={'course_id': course_id})+'?login_redirect=True')
+
     elif 'StudentEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.STUDENT)
         auth.authenticate_login(request, canvas_fields)
         return HttpResponseRedirect(reverse('student:student_home', kwargs={'course_id': course_id}))
 
-    elif 'TaEnrollment' in canvas_fields['role']:
-        utils.set_user_course(canvas_fields, models.Roles.TA)
-        auth.authenticate_login(request, canvas_fields)
-        return HttpResponseRedirect(reverse('instructor:instructor_home', kwargs={'course_id': course_id}))
 
 
 def get_jwks(request):

@@ -1,35 +1,30 @@
 import flexible_assessment.class_views as flex
 import flexible_assessment.models as models
-import flexible_assessment.utils as utils
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.forms import ValidationError
 from django.urls import reverse_lazy
 from django.utils import timezone
+from flexible_assessment.view_roles import Student
 
 from .forms import StudentForm
 
 
-class StudentHome(LoginRequiredMixin, UserPassesTestMixin, flex.TemplateView):
+class StudentHome(flex.TemplateView):
+    allowed_view_role = Student
     template_name = 'student/student_home.html'
-    raise_exception = True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['display_name'] = self.request.session.get('display_name', '')
         return context
 
-    def test_func(self):
-        return utils.is_student(self.request.user)
 
-
-class StudentFormView(
-        LoginRequiredMixin, UserPassesTestMixin, flex.FormView):
+class StudentFormView(flex.FormView):
     """Extends Django generic FormView and authentication mixins for student form."""
 
+    allowed_view_role = Student
     template_name = 'student/student_form.html'
     form_class = StudentForm
-    raise_exception = True
 
     def get_success_url(self):
         return reverse_lazy('student:student_home', kwargs={'course_id': self.kwargs['course_id']})
@@ -104,5 +99,3 @@ class StudentFormView(
         response = super(StudentFormView, self).form_valid(form)
         return response
 
-    def test_func(self):
-        return utils.is_student(self.request.user)
