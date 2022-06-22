@@ -1,19 +1,12 @@
-from collections.abc import MutableMapping
-from canvasapi import Canvas
-from django.conf import settings
-
-from oauth.oauth import get_oauth_token
+from instructor.canvas_api import FlexCanvas
 
 import flexible_assessment.models as models
 
 
 def update_students(request, course):
-    access_token = get_oauth_token(request)
-    students_canvas = Canvas(
-        settings.CANVAS_DOMAIN,
-        access_token).get_course(
-        course.id).get_users(
-            enrollment_type='student')
+    students_canvas = FlexCanvas(request)\
+        .get_course(course.id)\
+        .get_users(enrollment_type='student')
     students_db = models.UserProfile.objects.filter(role=models.Roles.STUDENT)
 
     students_canvas_ids = [student.__getattribute__(
@@ -22,8 +15,8 @@ def update_students(request, course):
 
     students_to_add = list(
         filter(
-            lambda student: student.__getattribute__(
-                'id') not in students_db_ids,
+            lambda student: student.__getattribute__('id')
+            not in students_db_ids,
             students_canvas))
     students_to_delete = students_db.exclude(user_id__in=students_canvas_ids)
 
@@ -86,16 +79,3 @@ def set_user_comment(user, course):
             and user.role == models.Roles.STUDENT:
         user_comment = models.UserComment(user=user, course=course)
         user_comment.save()
-
-
-def _flatten_dict_gen(d, parent_key, sep):
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, MutableMapping):
-            yield from flatten_dict(v, new_key, sep=sep).items()
-        else:
-            yield new_key, v
-
-
-def flatten_dict(d: MutableMapping, parent_key: str = '', sep: str = '.'):
-    return dict(_flatten_dict_gen(d, parent_key, sep))

@@ -1,5 +1,6 @@
 from django import forms
-from flexible_assessment.models import UserComment
+from django.utils import timezone
+from flexible_assessment.models import Course, UserComment
 from instructor.forms import StudentBaseForm
 
 
@@ -24,4 +25,13 @@ class StudentForm(StudentBaseForm):
             required=False)
 
         self.fields.update(comment_field)
-        self.field_status()
+        self.set_field_status()
+
+    def set_field_status(self):
+        course = Course.objects.get(pk=self.course_id)
+        open_datetime = course.open
+        close_datetime = course.close
+        now = timezone.now()
+        if now > close_datetime or now < open_datetime:
+            for field in self.fields.values():
+                field.disabled = True

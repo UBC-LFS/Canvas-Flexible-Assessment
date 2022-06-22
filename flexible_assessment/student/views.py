@@ -3,14 +3,14 @@ from django.forms import ValidationError
 from django.urls import reverse_lazy
 from django.utils import timezone
 
-import flexible_assessment.class_views as flex
+import flexible_assessment.class_views as views
 import flexible_assessment.models as models
 from flexible_assessment.view_roles import Student
 
 from .forms import StudentForm
 
 
-class StudentHome(flex.TemplateView):
+class StudentHome(views.TemplateView):
     allowed_view_role = Student
     template_name = 'student/student_home.html'
 
@@ -20,7 +20,7 @@ class StudentHome(flex.TemplateView):
         return context
 
 
-class StudentFormView(flex.FormView):
+class StudentFormView(views.FormView):
     """Extends Django generic FormView and authentication mixins
     for student form."""
 
@@ -74,12 +74,12 @@ class StudentFormView(flex.FormView):
         comment = form.cleaned_data.pop('comment')
 
         assessment_fields = list(form.cleaned_data.items())
-        for assessment_id, flex_allocation in assessment_fields:
+        for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
-            if flex_allocation > assessment.max:
+            if flex > assessment.max:
                 form.add_error(assessment_id, ValidationError(
                     'Flex should be less than or equal to max'))
-            elif flex_allocation < assessment.min:
+            elif flex < assessment.min:
                 form.add_error(assessment_id, ValidationError(
                     'Flex should be greater than or equal to min'))
 
@@ -87,11 +87,11 @@ class StudentFormView(flex.FormView):
             response = super(StudentFormView, self).form_invalid(form)
             return response
 
-        for assessment_id, flex_allocation in assessment_fields:
+        for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
             flex_assessment = assessment.flexassessment_set.filter(
                 user__user_id=user_id).first()
-            flex_assessment.flex = flex_allocation
+            flex_assessment.flex = flex
             flex_assessment.save()
 
         user_comment = models.UserComment.objects.filter(

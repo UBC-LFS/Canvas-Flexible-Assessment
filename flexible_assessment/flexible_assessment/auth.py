@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.backends import BaseBackend
 
-from models import UserProfile
+from .models import UserProfile
 
 
 class SettingsBackend(BaseBackend):
@@ -52,7 +52,8 @@ class SettingsBackend(BaseBackend):
 
 
 def authenticate_login(request, canvas_fields):
-    """Authenticates and logs in current user using session data
+    """Authenticates and logs in current user using session data,
+    adds current user to session
 
     Parameters
     ----------
@@ -63,8 +64,6 @@ def authenticate_login(request, canvas_fields):
     request.session['user_id'] = canvas_fields['user_id']
     request.session['login_id'] = canvas_fields['login_id']
     request.session['display_name'] = canvas_fields['user_display_name']
-    # request.session['course_id'] = canvas_fields['course_id']
-    # request.session['course_name'] = canvas_fields['course_name']
 
     user = authenticate(request)
     if user is not None:

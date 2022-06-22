@@ -67,8 +67,9 @@ def get_override_total(groups, student, course):
     flex_set = []
     assessments = course.assessment_set.all()
     for assessment in assessments:
-        flex = assessment.flexassessment_set.filter(
-            user=student).first().flex
+        flex = assessment.flexassessment_set.filter(user=student)\
+            .first()\
+            .flex
         score = get_score(groups, assessment.group.id, student)
 
         if score is not None:
@@ -87,7 +88,8 @@ def get_override_total(groups, student, course):
 
 
 def get_averages(groups, course):
-    """Calculates the average override grade, default grade, and difference for all students in a course
+    """Calculates the average override grade, default grade,
+    and difference for all students in a course
 
     Parameters
     ----------
@@ -101,7 +103,8 @@ def get_averages(groups, course):
         role=Roles.STUDENT, usercourse__course=course)
     overrides = [get_override_total(groups, student, course)
                  for student in students]
-    defaults = [get_default_total(groups, student) for student in students]
+    defaults = [get_default_total(groups, student)
+                for student in students]
 
     override_default = zip(overrides, defaults)
     diffs = []

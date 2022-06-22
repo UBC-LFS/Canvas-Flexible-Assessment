@@ -2,10 +2,18 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views import generic
 from django.core.exceptions import ImproperlyConfigured
 
-from models import Course
+from .models import Course
 
 
 class GenericView(LoginRequiredMixin, UserPassesTestMixin):
+    """Generic view for Instructor and Student views
+
+    Attributes
+    ----------
+    allowed_view_role : ViewRole
+        Used for defining the test function for UserPassesTesMixin
+    """
+
     allowed_view_role = None
     raise_exception = True
 

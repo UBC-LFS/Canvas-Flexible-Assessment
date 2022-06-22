@@ -1,12 +1,10 @@
-from canvasapi import Canvas
 from django import forms
-from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.forms import BaseModelFormSet, ModelForm, modelformset_factory
 from django.utils import timezone
+from instructor.canvas_api import FlexCanvas
 from flexible_assessment.models import (Assessment, AssignmentGroup, Course,
                                         FlexAssessment)
-from oauth.oauth import get_oauth_token
 
 
 class StudentBaseForm(forms.Form):
@@ -28,9 +26,11 @@ class StudentBaseForm(forms.Form):
             else:
                 initial_flex = None
             flex_fields[fa.assessment.id.hex] = forms.IntegerField(
-                initial=initial_flex, max_value=100, min_value=0,
-                label=fa.assessment.title, widget=forms.NumberInput(
-                    attrs={'size': 3}))
+                initial=initial_flex,
+                max_value=100,
+                min_value=0,
+                label=fa.assessment.title,
+                widget=forms.NumberInput(attrs={'size': 3}))
 
         self.fields.update(flex_fields)
 
@@ -47,15 +47,6 @@ class StudentBaseForm(forms.Form):
                     'Total flex has to add up to 100%, currently it is ({})%'
                     .format(flex_total)))
 
-    def field_status(self):
-        course = Course.objects.get(pk=self.course_id)
-        open = course.open
-        close = course.close
-        now = timezone.now()
-        if now > close or now < open:
-            for field in self.fields.values():
-                field.disabled = True
-
 
 class DateForm(ModelForm):
     def __init__(self, *args, **kwargs):
@@ -68,10 +59,10 @@ class DateForm(ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        open = cleaned_data.get('open')
-        close = cleaned_data.get('close')
+        open_datetime = cleaned_data.get('open')
+        close_datetime = cleaned_data.get('close')
 
-        if open > close:
+        if open_datetime > close_datetime:
             self.add_error(None, ValidationError(
                 'Close date should be after open date'))
             self.add_error('open', ValidationError(''))
@@ -96,10 +87,8 @@ class AssessmentGroupForm(forms.Form):
         request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
 
-        access_token = get_oauth_token(request)
-        canvas_course = Canvas(
-            settings.CANVAS_DOMAIN,
-            access_token).get_course(course_id)
+        canvas_course = FlexCanvas(request)\
+            .get_course(course_id)
         model_course = Course.objects.filter(pk=course_id).first()
 
         asgn_groups_create = []
@@ -122,7 +111,8 @@ class AssessmentGroupForm(forms.Form):
                         course=model_course))
         AssignmentGroup.objects.bulk_create(asgn_groups_create)
         AssignmentGroup.objects.bulk_update(
-            asgn_groups_update, ['name', 'course'])
+            asgn_groups_update,
+            ['name', 'course'])
 
         assessment_fields = {}
         for assessment in assessments:

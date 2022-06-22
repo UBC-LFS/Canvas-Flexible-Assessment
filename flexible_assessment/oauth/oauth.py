@@ -4,7 +4,7 @@ from django.utils.crypto import get_random_string
 from django.conf import settings
 from django.contrib import messages
 
-from oauth import canvas
+from oauth import canvas_oauth
 from oauth.models import CanvasOAuth2Token
 from oauth.exceptions import (
     MissingTokenError, InvalidOAuthStateError)
@@ -33,7 +33,7 @@ def handle_missing_or_invalid_token(request):
         reverse('canvas-oauth-callback'))
     request.session["canvas_oauth_redirect_uri"] = oauth_redirect_uri
 
-    authorize_url = canvas.get_oauth_login_url(
+    authorize_url = canvas_oauth.get_oauth_login_url(
         settings.CANVAS_OAUTH_CLIENT_ID,
         redirect_uri=oauth_redirect_uri,
         state=oauth_request_state,
@@ -52,7 +52,7 @@ def oauth_callback(request):
     if state != request.session['canvas_oauth_request_state']:
         raise InvalidOAuthStateError("OAuth state mismatch!")
 
-    access_token, expires, refresh_token = canvas.get_access_token(
+    access_token, expires, refresh_token = canvas_oauth.get_access_token(
         grant_type='authorization_code',
         client_id=settings.CANVAS_OAUTH_CLIENT_ID,
         client_secret=settings.CANVAS_OAUTH_CLIENT_SECRET,
@@ -80,13 +80,14 @@ def oauth_callback(request):
 def refresh_oauth_token(request):
     oauth_token = request.user.oauth2_token
 
-    oauth_token.access_token, oauth_token.expires, _ = canvas.get_access_token(
-        grant_type='refresh_token',
-        client_id=settings.CANVAS_OAUTH_CLIENT_ID,
-        client_secret=settings.CANVAS_OAUTH_CLIENT_SECRET,
-        redirect_uri=request.build_absolute_uri(
-            reverse('canvas-oauth-callback')),
-        refresh_token=oauth_token.refresh_token)
+    oauth_token.access_token, oauth_token.expires, _ = canvas_oauth \
+        .get_access_token(
+            grant_type='refresh_token',
+            client_id=settings.CANVAS_OAUTH_CLIENT_ID,
+            client_secret=settings.CANVAS_OAUTH_CLIENT_SECRET,
+            redirect_uri=request.build_absolute_uri(
+                reverse('canvas-oauth-callback')),
+            refresh_token=oauth_token.refresh_token)
 
     oauth_token.save()
 
