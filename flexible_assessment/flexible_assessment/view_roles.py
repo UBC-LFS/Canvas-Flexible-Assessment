@@ -3,6 +3,8 @@ from .models import Roles
 
 
 class ViewRole(ABC):
+    """Abstract base class used for user test function to check role"""
+
     @property
     @abstractmethod
     def permitted_roles(self):

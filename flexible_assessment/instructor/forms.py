@@ -2,7 +2,6 @@ from django import forms
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.forms import BaseModelFormSet, ModelForm, modelformset_factory
 from django.utils import timezone
-from instructor.canvas_api import FlexCanvas
 from flexible_assessment.models import (Assessment, AssignmentGroup, Course,
                                         FlexAssessment)
 
@@ -82,13 +81,12 @@ class DateForm(ModelForm):
 
 class AssessmentGroupForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        assessments = kwargs.pop('assessments')
         course_id = kwargs.pop('course_id')
-        request = kwargs.pop('request')
+        canvas = kwargs.pop('canvas')
+        assessments = kwargs.pop('assessments')
         super().__init__(*args, **kwargs)
 
-        canvas_course = FlexCanvas(request)\
-            .get_course(course_id)
+        canvas_course = canvas.get_course(course_id)
         model_course = Course.objects.filter(pk=course_id).first()
 
         asgn_groups_create = []

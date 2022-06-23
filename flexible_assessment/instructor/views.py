@@ -34,16 +34,17 @@ class InstructorHome(views.TemplateView):
 
 
 class FlexAssessmentListView(views.ListView):
-    """Extends Django generic ListView and authentication mixins for
-    listing student flex allocations
-    """
+    """Extends ListView for student flex allocations"""
+
     allowed_view_role = Instructor
     model = models.UserProfile
     context_object_name = 'student_list'
     template_name = 'instructor/percentage_list.html'
-    paginate_by = 10
+    paginate_by = 30
 
     def get(self, request, *args, **kwargs):
+        """Gets list page view or csv response of students """
+
         response = super().get(request, *args, **kwargs)
         if self.kwargs.get('csv', False):
             students = self.get_queryset()
@@ -67,13 +68,17 @@ class FlexAssessmentListView(views.ListView):
 
 
 class FinalGradeListView(views.ListView):
+    """Extends ListView for student grades with default and override scores"""
+
     allowed_view_role = Instructor
     model = models.UserProfile
     context_object_name = 'student_list'
     template_name = 'instructor/final_grade_list.html'
-    paginate_by = 10
+    paginate_by = 30
 
     def get(self, request, *args, **kwargs):
+        """Gets list page view or csv response of final grades"""
+
         response = super().get(request, *args, **kwargs)
         if self.kwargs.get('csv', False):
             students = self.get_queryset()
@@ -88,6 +93,8 @@ class FinalGradeListView(views.ListView):
             return response
 
     def post(self, request, *args, **kwargs):
+        """Sets override grades for students on Canvas"""
+
         course_id = self.kwargs['course_id']
 
         if self.kwargs.get('submit', False):
@@ -135,8 +142,8 @@ class FinalGradeListView(views.ListView):
 
 
 class AssessmentGroupView(views.FormView):
-    """Extends Django generic FormView and authentication mixins for
-    matching assessments in the app to assignment groups on Canvas
+    """Extends FormView for matching assessments in the app
+    to assignment groups on Canvas
     """
 
     allowed_view_role = Instructor
@@ -149,7 +156,8 @@ class AssessmentGroupView(views.FormView):
             kwargs={'course_id': self.kwargs['course_id']})
 
     def get_form_kwargs(self):
-        """Adds course_id and assessment as keyword arguments for making form fields
+        """Adds course_id, FlexCanvas instance, and assessments as keyword
+        arguments for making form fields
 
         Returns
         -------
@@ -158,17 +166,20 @@ class AssessmentGroupView(views.FormView):
         """
 
         kwargs = super(AssessmentGroupView, self).get_form_kwargs()
+
         course_id = self.kwargs['course_id']
+
         kwargs['course_id'] = course_id
+        kwargs['canvas'] = FlexCanvas(self.request)
         kwargs['assessments'] = models.Assessment.objects.filter(
             course_id=course_id)
-        kwargs['request'] = self.request
 
         return kwargs
 
     def form_valid(self, form):
-        """Validates matched groups are unique and adds
-        AssignmentGroup as Foreign Key to Assessment
+        """Validates matched groups are unique and adds AssignmentGroup as
+        Foreign Key to Assessment. Changes group weights on Canvas to
+        match default allocations. Unmatched group weights are set to zero.
 
         Parameters
         ----------
@@ -208,6 +219,10 @@ class AssessmentGroupView(views.FormView):
         return response
 
     def _update_assessments_and_groups(self, form):
+        """Adds assignment group to assessment and updates
+        Canvas group weights
+        """
+
         course_id = self.kwargs['course_id']
 
         canvas_course = FlexCanvas(self.request).get_course(course_id)
@@ -270,6 +285,8 @@ class InstructorFormView(views.FormView):
         return context
 
     def get(self, request, *args, **kwargs):
+        """Gets form page or csv response of assessments"""
+
         response = super().get(request, *args, **kwargs)
         if self.kwargs.get('csv', False):
             course_id = self.kwargs['course_id']
@@ -281,7 +298,8 @@ class InstructorFormView(views.FormView):
             return response
 
     def post(self, request, *args, **kwargs):
-        """Defines the formset and date form for validation"""
+        """Defines the formset and date form for validation.
+        Sets Canvas course setting to hide final grades to True"""
 
         course_id = self.kwargs['course_id']
         date_form = DateForm(request.POST,
@@ -361,6 +379,11 @@ class OverrideStudentFormView(views.FormView):
     form_class = StudentBaseForm
 
     def get_success_url(self):
+        if self.kwargs.get('previous', '') == 'final':
+            return reverse_lazy(
+                'instructor:final_grades',
+                kwargs={'course_id': self.kwargs['course_id']})
+
         return reverse_lazy(
             'instructor:percentage_list',
             kwargs={'course_id': self.kwargs['course_id']})
@@ -381,6 +404,10 @@ class OverrideStudentFormView(views.FormView):
         student_name = models.UserProfile.objects.get(
             pk=self.kwargs['pk']).display_name
         context['student_name'] = student_name
+
+        previous = self.kwargs.get('previous', '')
+        context['previous'] = previous
+
         return context
 
     def get_form_kwargs(self):

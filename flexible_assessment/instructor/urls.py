@@ -30,7 +30,13 @@ urlpatterns = [
     path(
         '<int:course_id>/percentages/<slug:pk>/',
         views.OverrideStudentFormView.as_view(),
-        name='override_student_form'),
+        {'previous': 'percentage'},
+        name='override_student_form_percentage'),
+    path(
+        '<int:course_id>/percentages/<slug:pk>/final',
+        views.OverrideStudentFormView.as_view(),
+        {'previous': 'final'},
+        name='override_student_form_final'),
     path(
         '<int:course_id>/final/match/',
         views.AssessmentGroupView.as_view(),

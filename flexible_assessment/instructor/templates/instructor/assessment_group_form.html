@@ -7,7 +7,7 @@
 
 {% block nav_item_final %}active{% endblock nav_item_final %} 
 {% block content %}
-<h2 class="mt-3 mb-3">Match Assessments to Canvas Assignment Groups</h2>
+
 <form action="" method="post">
 	{% csrf_token %}
 
@@ -18,29 +18,34 @@
 		{{ hidden_field }}
 	{% endfor %}
 
-	<div class="col-8">
-		<table class="table mb-0">
-			<caption>Match the assessment to the Canvas assignment group</caption>
-			<thead>
-				<tr>
-					<td class="text-center align-middle"><span style="font-weight: bold;">Flexible Assessment</span> (with default %)</td>
-					<th class="text-center align-middle">Canvas Assignment Group</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for field in form.visible_fields %}
-				<tr>
-					<td class="text-center align-middle">{{ field.label }}</td>
-					<td class="align-middle">{% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
-				</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-        <div class="row">
-            <p>Note: All matched groups will have their group weight changed on Canvas to the default %. All unmatched groups will be set to 0%</p>
+	<div class="d-flex align-items-center justify-content-center">
+		<div class="col-9 mt-5">
+            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                <h3 class="card-header">Match Assessments to Canvas Assignment Groups</h3>
+                <div class="card-body pt-2 pb-3">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <td class="text-center align-middle" style="font-size: 110%;"><span style="font-weight: bold;">Flexible Assessment</span> (with default %)</td>
+                                <th class="text-center align-middle" style="font-size: 110%;">Canvas Assignment Group</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for field in form.visible_fields %}
+                            <tr>
+                                <td class="text-center align-middle">{{ field.label }}</td>
+                                <td class="align-middle">{% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <p class="fw-light m-0">Match the assessment to the Canvas assignment group</p>
+                        <button class="btn btn-primary float-end" type="submit">Continue <i class="bi bi-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <button class="btn btn-primary float-end" type="submit">Continue <i class="bi bi-chevron-right"></i></button>
-
     </div>
 </form>
 

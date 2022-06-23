@@ -126,7 +126,7 @@ def get_averages(groups, course):
 
 def get_group_weight(groups, id):
     try:
-        return groups[str(id)]['group_weight']
+        return int(round(groups[str(id)]['group_weight']))
     except BaseException:
         return ''
 

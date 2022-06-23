@@ -16,9 +16,15 @@ def comment_filter(comment_set, course_id):
     return comment_set.get(course__id=course_id)
 
 
+@register.filter
+def to_str(value):
+    return str(value)+'%' if value is not None else None
+
+
 @register.simple_tag()
 def get_score(groups, group_id, student):
-    return grader.get_score(groups, group_id, student)
+    score = grader.get_score(groups, group_id, student)
+    return str(score)+'%' if score is not None else None
 
 
 @register.simple_tag()
