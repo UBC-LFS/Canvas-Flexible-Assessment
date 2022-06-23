@@ -7,7 +7,8 @@ def update_students(request, course):
     students_canvas = FlexCanvas(request)\
         .get_course(course.id)\
         .get_users(enrollment_type='student')
-    students_db = models.UserProfile.objects.filter(role=models.Roles.STUDENT)
+    students_db = models.UserProfile.objects.filter(role=models.Roles.STUDENT,
+                                                    usercourse__course=course)
 
     students_canvas_ids = [student.__getattribute__(
         'id') for student in students_canvas]
@@ -19,6 +20,8 @@ def update_students(request, course):
             not in students_db_ids,
             students_canvas))
     students_to_delete = students_db.exclude(user_id__in=students_canvas_ids)
+    print(students_to_add)
+    print(students_to_delete)
 
     for student in students_to_add:
         canvas_fields = {}
