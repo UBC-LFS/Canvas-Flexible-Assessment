@@ -18,92 +18,94 @@
 	{% for hidden_field in date_form.hidden_fields %}
 		{% bootstrap_field hidden_field %}
 	{% endfor %}
-	<div class="d-flex align-items-center justify-content-center" id="form_set">
-		<div class="col-9 mt-5">
-            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <h3 class="mb-0">Assessments</h3>
-                    <div class="dropdown-center">
-                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown">Actions</button>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item" href="#">
-                                    <i class="bi bi-upload"></i> Import</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {% if not course.close %}disabled{% endif %}"
-                                    href="{% url 'instructor:assessments_export' course.id %}">
-                                    <i class="bi bi-download"></i> Export</a>
-                            </li>
-                        </ul>
+    <div class="mt-5 mb-5">
+        <div class="d-flex align-items-center justify-content-center" id="form_set">
+            <div class="col-9">
+                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h3 class="mb-0">Assessments</h3>
+                        <div class="dropdown-center">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown">Actions</button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-upload"></i> Import</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {% if not course.close %}disabled{% endif %}"
+                                        href="{% url 'instructor:assessments_export' course.id %}">
+                                        <i class="bi bi-download"></i> Export</a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-                <div class="card-body pt-2 pb-3">
-                    <table class='table table-striped' style="table-layout: fixed">
-                        <thead>
-                            <tr>
-                                <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Title</th>
-                                <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
-                                <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
-                                <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
-                                <th class="text-center align-middle" style="width: 10%; font-size: 110%;">Remove</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for form in formset.forms %}
-                                {% for hidden in form.hidden_fields %}
-                                    {{ hidden }}
-                                {% endfor %}
-                                <tr height="60px">
-                                    {% for field in form.visible_fields %}
-                                        <td class="{{ field.label }} text-center align-middle">
-                                            {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
-                                        </td>
-                                    {% endfor %}
-                                    <td class="text-center align-middle"><button class="btn btn-outline-danger btn-sm delete"
-                                            type="button"><i class="bi bi-trash3"></i></button></td>
+                    <div class="card-body pt-2 pb-3">
+                        <table class='table table-striped' style="table-layout: fixed">
+                            <thead>
+                                <tr>
+                                    <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Title</th>
+                                    <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
+                                    <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
+                                    <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
+                                    <th class="text-center align-middle" style="width: 12%; font-size: 110%;">Remove</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <button class="btn btn-outline-primary" type="button" id="add"><i class="bi bi-plus-lg"></i>
-                            Assessment</button>
-                        <h5 class="align-middle">Total: <span id="total"></span></h5>
+                            </thead>
+                            <tbody>
+                                {% for form in formset.forms %}
+                                    {% for hidden in form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                    <tr height="60px">
+                                        {% for field in form.visible_fields %}
+                                            <td class="{{ field.label }} text-center align-middle">
+                                                {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                                            </td>
+                                        {% endfor %}
+                                        <td class="text-center align-middle"><button class="btn btn-outline-danger btn-sm delete"
+                                                type="button"><i class="bi bi-trash3"></i></button></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <button class="btn btn-outline-primary" type="button" id="add"><i class="bi bi-plus-lg"></i>
+                                Assessment</button>
+                            <h5 class="align-middle m-0">Total: <span id="total"></span></h5>
+                        </div>
+                        <p class="fw-light m-0">Total default allocations should add up to 100%</p>
                     </div>
-                    <p class="fw-light m-0">Total default allocations should add up to 100%</p>
-                </div>
-            </div>
-		</div>
-	</div>
-
-	{% bootstrap_form_errors date_form type='non_fields' %}
-	<div class="d-flex align-items-center justify-content-center pt-4" id="date_form">
-        <div class="col-9">
-            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                <h4 class="card-header">Flexible assessment availability</h4>
-                <div class="card-body pt-2 pb-3">
-                    <table class='table table-borderless mb-2'>
-                        <tr>
-                            <th class="pb-0" style="font-size: 110%;">Open Date</th>
-                            <th class="pb-0" style="font-size: 110%;">Close Date</th>
-                        </tr>
-                        <tr>
-                            <td>{% bootstrap_field date_form.open show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
-                            <td>{% bootstrap_field date_form.close show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
-                        </tr>
-                    </table>
-                    <p class="fw-light m-0">Open and close dates for flexible assessment</p>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="d-flex align-items-center justify-content-center pt-4">
-        <div class="d-flex justify-content-between col-9">
-            <a href="{% url 'instructor:instructor_home' course.id %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
-            <div class="d-grid col-2">
-                <button class="btn btn-primary" type="submit">{% if course.close %} Update {% else %} Save {% endif %}</button>
+
+        {% bootstrap_form_errors date_form type='non_fields' %}
+        <div class="d-flex align-items-center justify-content-center pt-4" id="date_form">
+            <div class="col-9">
+                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                    <h4 class="card-header">Flexible assessment availability</h4>
+                    <div class="card-body pt-2 pb-3">
+                        <table class='table table-borderless mb-2'>
+                            <tr>
+                                <th class="pb-0" style="font-size: 110%;">Open Date</th>
+                                <th class="pb-0" style="font-size: 110%;">Close Date</th>
+                            </tr>
+                            <tr>
+                                <td>{% bootstrap_field date_form.open show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
+                                <td>{% bootstrap_field date_form.close show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
+                            </tr>
+                        </table>
+                        <p class="fw-light m-0">Open and close dates for flexible assessment</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-center pt-4">
+            <div class="d-flex justify-content-between col-9">
+                <a href="{% url 'instructor:instructor_home' course.id %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+                <div class="d-grid col-2">
+                    <button class="btn btn-primary" type="submit">{% if course.close %} Update {% else %} Save {% endif %}</button>
+                </div>
             </div>
         </div>
     </div>
@@ -171,12 +173,15 @@
 
 		var tr = $(this).closest('tr');
 		var input = tr.prev('input:hidden')
+        console.log(initial)
+        console.log(tr.index())
 
-		input.remove();
-		tr.remove();
-
-		$('#id_assessment-INITIAL_FORMS').val(parseInt(initial) - 1);
+        if (tr.index() < initial*2)
+            $('#id_assessment-INITIAL_FORMS').val(parseInt(initial) - 1);
 		$('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) - 1);
+
+        input.remove();
+		tr.remove();
 
 		var filtered = $('input').filter(function () {
 			return this.id.match(/id_assessment-\d+-/);

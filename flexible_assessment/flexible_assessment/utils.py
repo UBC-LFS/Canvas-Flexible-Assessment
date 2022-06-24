@@ -20,8 +20,6 @@ def update_students(request, course):
             not in students_db_ids,
             students_canvas))
     students_to_delete = students_db.exclude(user_id__in=students_canvas_ids)
-    print(students_to_add)
-    print(students_to_delete)
 
     for student in students_to_add:
         canvas_fields = {}

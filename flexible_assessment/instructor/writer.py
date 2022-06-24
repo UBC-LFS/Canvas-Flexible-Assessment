@@ -12,10 +12,11 @@ class CSVWriter:
 
     def __init__(self, csv_title, course):
         self._response = HttpResponse(content_type='text/csv')
-        self._response['Content-Disposition'] = 'attachment; filename='
-        '"{}_{}_{}.csv"'.format(csv_title,
-                                course.title.replace(' ', '-'),
-                                timezone.localtime().strftime("%Y-%m-%dT%H%M"))
+        self._response['Content-Disposition'] = 'attachment; filename=' \
+            + '{}_{}_{}.csv'.format(csv_title,
+                                    course.title.replace(' ', '-'),
+                                    timezone.localtime()
+                                    .strftime("%Y-%m-%dT%H%M"))
 
         self._writer = csv.writer(self._response, delimiter=",")
 

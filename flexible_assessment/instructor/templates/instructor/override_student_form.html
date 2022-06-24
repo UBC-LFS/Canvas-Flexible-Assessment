@@ -20,62 +20,64 @@
 		{% bootstrap_field hidden_field %}
 	{% endfor %}
 
-    <div class="d-flex align-items-center justify-content-center">
-        <div class="col-9 mt-5">
-            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                <div class="card-header">
-                    <h3>Assessments</h3>
-                    <h5>Student: {{ student_name }}</h5>
-                </div>
-                <div class="card-body pt-2 pb-3">
-                    <table class="table table-striped mb-2" style="table-layout: fixed;">
-                        <thead>
-                            <tr>
-                                <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Title</th>
-                                <th class="text-center align-middle" style="font-size: 110%;">Desired %</th>
-                                <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
-                                <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
-                                <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for field in form.visible_fields %}
-                                {% if field.name != "comment" %}
-                                    <tr height="60px">
-                                        <td class="text-center align-middle">{{ field.label }}</td>
-                                        <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
-                                            {% bootstrap_field field show_label=False placeholder='' wrapper_class='mb-3; vertical-align: middle;' %}
-                                        </td>
-                                        {% get_default_min_max field.name as default_min_max %}
-                                        <td class="text-center align-middle">{{ default_min_max.0 }}</td>
-                                        <td class="text-center align-middle">{{ default_min_max.1 }}</td>
-                                        <td class="text-center align-middle">{{ default_min_max.2 }}</td>
-                                    </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th class="text-center align-middle">Total</th>
-                                <th class="text-center align-middle"><span id="total"></span></th>
-                                <td colspan="3"></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    <p class="fw-light m-0">All assessments should be given desired % and total flex adds up to 100%</p>
+    <div class="mt-5 mb-5">
+        <div class="d-flex align-items-center justify-content-center">
+            <div class="col-9">
+                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                    <div class="card-header">
+                        <h3>Assessments</h3>
+                        <h5>Student: {{ student_name }}</h5>
+                    </div>
+                    <div class="card-body pt-2 pb-3">
+                        <table class="table table-striped mb-2" style="table-layout: fixed;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Title</th>
+                                    <th class="text-center align-middle" style="font-size: 110%;">Desired %</th>
+                                    <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
+                                    <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
+                                    <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for field in form.visible_fields %}
+                                    {% if field.name != "comment" %}
+                                        <tr height="60px">
+                                            <td class="text-center align-middle">{{ field.label }}</td>
+                                            <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
+                                                {% bootstrap_field field show_label=False placeholder='' wrapper_class='mb-3; vertical-align: middle;' %}
+                                            </td>
+                                            {% get_default_min_max field.name as default_min_max %}
+                                            <td class="text-center align-middle">{{ default_min_max.0 }}</td>
+                                            <td class="text-center align-middle">{{ default_min_max.1 }}</td>
+                                            <td class="text-center align-middle">{{ default_min_max.2 }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="text-center align-middle">Total</th>
+                                    <th class="text-center align-middle"><span id="total"></span></th>
+                                    <td colspan="3"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <p class="fw-light m-0">All assessments should be given desired % and total flex adds up to 100%</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="d-flex align-items-center justify-content-center mt-4">
-        <div class="d-flex justify-content-between col-9">
-            {% if previous == 'final' %}
-                <a href="{% url 'instructor:final_grades' course.id %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
-            {% else %}
-                <a href="{% url 'instructor:percentage_list' course.id %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
-            {% endif %}
-            <button class="btn btn-primary" type="submit">Submit</button>
+        <div class="d-flex align-items-center justify-content-center mt-4">
+            <div class="d-flex justify-content-between col-9">
+                {% if previous == 'final' %}
+                    <a href="{% url 'instructor:final_grades' course.id %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+                {% else %}
+                    <a href="{% url 'instructor:percentage_list' course.id %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+                {% endif %}
+                <button class="btn btn-primary" type="submit">Submit</button>
+            </div>
         </div>
     </div>
 </form>
