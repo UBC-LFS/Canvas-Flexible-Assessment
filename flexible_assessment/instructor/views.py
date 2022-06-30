@@ -63,8 +63,9 @@ class FlexAssessmentListView(views.ListView):
         course_id = self.kwargs['course_id']
         if not user_id:
             raise PermissionDenied
-        return models.UserProfile.objects.filter(
+        queryset = models.UserProfile.objects.filter(
             role=models.Roles.STUDENT, usercourse__course__id=course_id)
+        return queryset
 
 
 class FinalGradeListView(views.ListView):
@@ -114,7 +115,11 @@ class FinalGradeListView(views.ListView):
             groups, enrollments = canvas.get_groups_and_enrollments(course_id)
 
             for student_id, enrollment_id in enrollments.items():
-                student = models.UserProfile.objects.get(pk=student_id)
+                student = models.UserProfile.objects\
+                    .filter(pk=student_id)\
+                    .first()
+                if not student:
+                    continue
                 override = grader.get_override_total(groups, student, course) \
                     or grader.get_default_total(groups, student)
 

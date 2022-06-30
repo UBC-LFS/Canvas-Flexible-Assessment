@@ -13,12 +13,12 @@
                     <a class="btn btn-outline-primary btn-sm" href="{% url 'instructor:percentage_list_export' course.id %}"><i class="bi bi-download"></i> Export</a>
                 </div>
                 <div class="card-body pt-2 pb-3">
-                    <table class="table table-striped mb-4" style="table-layout: fixed;">
+                    <table id='example' class="table table-striped mb-4" style="table-layout: fixed;">
                         <thead>
                             <tr>
                                 <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
                                 {% for assessment in course.assessment_set.all %}
-                                    <th class="text-center align-middle" style="font-size: 110%;">{{ assessment.title }}</th>
+                                    <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }}</th>
                                 {% endfor %}
                                 <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Comment</th>
                             </tr>
@@ -70,4 +70,15 @@
     </div>
 </div>
 
+<script>
+    $(document).ready(function () {
+        var colspan = $('.assessment').length;
+
+        $('#example').DataTable({
+            columnDefs: [
+                { orderable: false, targets: colspan+1 }
+            ]            
+        });
+    });
+</script>
 {% endblock %}

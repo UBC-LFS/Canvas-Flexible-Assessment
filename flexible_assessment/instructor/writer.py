@@ -89,7 +89,7 @@ def grades_csv(course, students, groups):
         override_total = grader.get_override_total(groups, student, course)
         default_total = grader.get_default_total(groups, student)
 
-        if override_total != '':
+        if override_total is not None:
             values.append(round(override_total, 2))
             values.append(round(default_total, 2))
             diff = override_total - default_total

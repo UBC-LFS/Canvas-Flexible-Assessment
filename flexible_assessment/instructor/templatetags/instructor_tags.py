@@ -32,7 +32,7 @@ def get_override_default(groups, student, course):
     default = grader.get_default_total(groups, student)
     default_str = str(default) + '%'
     override = grader.get_override_total(groups, student, course)
-    if override:
+    if override is not None:
         override_str = str(override) + '%'
         return ('overriden', override_str, default_str)
     else:

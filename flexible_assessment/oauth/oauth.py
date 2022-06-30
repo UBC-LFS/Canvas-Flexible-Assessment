@@ -96,4 +96,6 @@ def refresh_oauth_token(request):
 
 def error_redirect(request, error_message):
     messages.error(request, error_message)
-    return HttpResponseRedirect(reverse('instructor:instructor_home'))
+    course_id = request.session.pop('course_id', '')
+    return HttpResponseRedirect(reverse('instructor:instructor_home',
+                                        kwargs={'course_id': course_id}))

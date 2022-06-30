@@ -61,7 +61,7 @@ def get_override_total(groups, student, course):
     """
 
     if not _valid_flex(student, course):
-        return ''
+        return None
 
     scores = []
     flex_set = []
@@ -101,20 +101,25 @@ def get_averages(groups, course):
 
     students = UserProfile.objects.filter(
         role=Roles.STUDENT, usercourse__course=course)
-    overrides = [get_override_total(groups, student, course)
-                 for student in students]
-    defaults = [get_default_total(groups, student)
-                for student in students]
 
-    override_default = zip(overrides, defaults)
+    overrides = []
+    defaults = []
     diffs = []
-    for override, default_total in override_default:
-        if override != '':
+
+    for student in students:
+        default_total = get_default_total(groups, student)
+        defaults.append(default_total)
+
+        override = get_override_total(groups, student, course)
+        if override is not None:
+            overrides.append(override)
             diffs.append(override - default_total)
-    overrides_valid = list(filter(lambda ov: ov != '', overrides))
+        else:
+            overrides.append(default_total)
+            diffs.append(0)
 
     averages = []
-    for curr_list in [overrides_valid, defaults, diffs]:
+    for curr_list in [overrides, defaults, diffs]:
         averages.append(
             round(
                 sum(curr_list) /
