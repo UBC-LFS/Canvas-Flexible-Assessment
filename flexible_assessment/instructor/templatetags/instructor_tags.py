@@ -1,5 +1,5 @@
 from django import template
-from flexible_assessment.models import Assessment
+from flexible_assessment.models import Assessment, Roles
 
 from .. import grader
 
@@ -19,6 +19,16 @@ def comment_filter(comment_set, course_id):
 @register.filter
 def to_str(value):
     return str(value)+'%' if value is not None else None
+
+
+@register.simple_tag()
+def get_valid_flex_num(course):
+    user_courses = course.usercourse_set.filter(
+            user__role=Roles.STUDENT)
+    students = [user_course.user for user_course in user_courses]
+    valid_num = sum([grader.valid_flex(student, course)
+                    for student in students])
+    return '{}/{}'.format(valid_num, len(students))
 
 
 @register.simple_tag()

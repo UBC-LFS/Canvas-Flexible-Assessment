@@ -26,7 +26,7 @@
                         <h3 class="mb-0">Assessments</h3>
                         <div class="dropdown-center">
                             <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
-                                data-bs-toggle="dropdown">Actions</button>
+                                data-bs-toggle="dropdown" style="border-radius: 1em;">Actions</button>
                             <ul class="dropdown-menu">
                                 <li>
                                     <a class="dropdown-item" href="#">
@@ -73,13 +73,19 @@
                                 Assessment</button>
                             <h5 class="align-middle m-0">Total: <span id="total"></span></h5>
                         </div>
-                        <p class="fw-light m-0">Total default allocations should add up to 100%</p>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <p class="fw-light m-0">Total default allocations should add up to 100%</p>
+                            <div class="form-switch">
+                                {% for field in options_form.visible_fields %}
+                                    {% bootstrap_field field wrapper_class='mb-3; vertical-align: middle;' %}
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {% bootstrap_form_errors date_form type='non_fields' %}
         <div class="d-flex align-items-center justify-content-center pt-4" id="date_form">
             <div class="col-9">
                 <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
@@ -95,16 +101,18 @@
                                 <td>{% bootstrap_field date_form.close show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
                             </tr>
                         </table>
+                        {% bootstrap_form_errors date_form type='non_fields' %}
                         <p class="fw-light m-0">Open and close dates for flexible assessment</p>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="d-flex align-items-center justify-content-center pt-4">
             <div class="d-flex justify-content-between col-9">
-                <a href="{% url 'instructor:instructor_home' course.id %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+                <a href="{% url 'instructor:instructor_home' course.id %}" style="border-radius: 1em;" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
                 <div class="d-grid col-2">
-                    <button class="btn btn-primary" type="submit">{% if course.close %} Update {% else %} Save {% endif %}</button>
+                    <button class="btn btn-primary" style="border-radius: 1em;" type="submit">{% if course.close %} Update {% else %} Save {% endif %}</button>
                 </div>
             </div>
         </div>
@@ -123,6 +131,14 @@
 	</tr>
 </table>
 
+{% if messages %}
+<ul class="messages" hidden>
+    {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 
 <script>
 	check_total();
@@ -130,6 +146,19 @@
 	$(document).on('change', '.Default', function () {
 		check_total();
 	});
+
+    $(document).ready(function () {
+        var errors = [];
+        $('.warning').each(function(_, error) {
+            errors.push(error.textContent);
+        });
+        var error_str = errors.join('\n');
+        if (error_str)
+            if (confirm(error_str +  '\n Are you sure you want to reset these student allocations?')){
+                $('#id_options-ignore_conflicts').val('true');
+                $('form').submit();
+            }
+    });
 
 	$('#add').click(function () {
 		var form_idx = $('#id_assessment-TOTAL_FORMS').val();

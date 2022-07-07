@@ -35,7 +35,7 @@ def get_default_total(groups, student):
     return round(overall, 2)
 
 
-def _valid_flex(student, course):
+def valid_flex(student, course):
     null_flex_assessments = student.flexassessment_set.filter(
         assessment__course=course, flex__isnull=True)
     flex_assessments_with_flex = student.flexassessment_set.filter(
@@ -60,7 +60,7 @@ def get_override_total(groups, student, course):
         Course object
     """
 
-    if not _valid_flex(student, course):
+    if not valid_flex(student, course):
         return None
 
     scores = []

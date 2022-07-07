@@ -11,7 +11,10 @@ from flexible_assessment.view_roles import Instructor
 
 from . import grader
 from . import writer
-from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
+from .forms import (AssessmentFormSet,
+                    AssessmentGroupForm,
+                    DateForm,
+                    OptionsForm,
                     StudentBaseForm)
 
 
@@ -40,7 +43,6 @@ class FlexAssessmentListView(views.ListView):
     model = models.UserProfile
     context_object_name = 'student_list'
     template_name = 'instructor/percentage_list.html'
-    paginate_by = 30
 
     def get(self, request, *args, **kwargs):
         """Gets list page view or csv response of students """
@@ -59,10 +61,7 @@ class FlexAssessmentListView(views.ListView):
     def get_queryset(self):
         """QuerySet is students for current course"""
 
-        user_id = self.request.session.get('user_id', '')
         course_id = self.kwargs['course_id']
-        if not user_id:
-            raise PermissionDenied
         queryset = models.UserProfile.objects.filter(
             role=models.Roles.STUDENT, usercourse__course__id=course_id)
         return queryset
@@ -75,7 +74,6 @@ class FinalGradeListView(views.ListView):
     model = models.UserProfile
     context_object_name = 'student_list'
     template_name = 'instructor/final_grade_list.html'
-    paginate_by = 30
 
     def get(self, request, *args, **kwargs):
         """Gets list page view or csv response of final grades"""
@@ -138,10 +136,7 @@ class FinalGradeListView(views.ListView):
         return context
 
     def get_queryset(self):
-        user_id = self.request.session.get('user_id', '')
         course_id = self.kwargs['course_id']
-        if not user_id:
-            raise PermissionDenied
         return models.UserProfile.objects.filter(
             role=models.Roles.STUDENT, usercourse__course__id=course_id)
 
@@ -271,18 +266,30 @@ class InstructorFormView(views.FormView):
         context : context
             Request context
         """
-
         context = super(InstructorFormView, self).get_context_data(**kwargs)
         course = context['course']
+
+        course_settings = FlexCanvas(self.request) \
+            .get_course(course.id) \
+            .get_settings()
+
+        if not course.open:
+            hide_total = True
+        else:
+            hide_total = course_settings['hide_final_grades']
 
         if self.request.POST:
             context['date_form'] = DateForm(
                 self.request.POST, instance=course, prefix='date')
+            context['options_form'] = OptionsForm(
+                self.request.POST, prefix='options', hide_total=hide_total)
             context['formset'] = AssessmentFormSet(
                 self.request.POST, prefix='assessment')
         else:
             context['date_form'] = DateForm(
                 instance=course, prefix='date')
+            context['options_form'] = OptionsForm(
+                prefix='options', hide_total=hide_total)
             context['formset'] = AssessmentFormSet(
                 queryset=models.Assessment.objects.filter(
                     course=course), prefix='assessment')
@@ -312,20 +319,21 @@ class InstructorFormView(views.FormView):
                              prefix='date')
 
         formset = AssessmentFormSet(request.POST, prefix='assessment')
+        options_form = OptionsForm(request.POST, prefix='options')
 
-        if formset.is_valid() and date_form.is_valid():
-            FlexCanvas(request)\
-                .get_course(course_id)\
-                .update_settings(hide_final_grades=True)
-
-            return self.forms_valid(formset, date_form)
+        if formset.is_valid() \
+                and date_form.is_valid() \
+                and options_form.is_valid():
+            return self.forms_valid(formset, date_form, options_form)
 
         elif not formset.is_valid():
             return self.form_invalid(formset)
-        else:
+        elif not date_form.is_valid():
             return self.form_invalid(date_form)
+        else:
+            return self.form_invalid(options_form)
 
-    def forms_valid(self, formset, date_form):
+    def forms_valid(self, formset, date_form, options_form):
         """Validates and saves assignment formset and date form
 
         Parameters
@@ -344,23 +352,50 @@ class InstructorFormView(views.FormView):
 
         date_form.save()
 
+        options_form.clean()
+
+        hide_total = options_form.cleaned_data['hide_total']
+        ignore_conflicts = options_form.cleaned_data['ignore_conflicts']
+
         formset.clean()
 
         course_id = self.kwargs['course_id']
         course = models.Course.objects.get(pk=course_id)
 
         assessment_ids = []
+        conflicts = False
         for form in formset.forms:
             assessment = form.save(commit=False)
+            assessment_ids.append(assessment.id)
             assessment.course = course
+
+            fas_out_of_range = self._check_valid_flex(assessment)
+            if fas_out_of_range and ignore_conflicts:
+                models.FlexAssessment.objects \
+                    .bulk_update(fas_out_of_range, ['flex'])
+            elif fas_out_of_range and not ignore_conflicts:
+                messages.warning(
+                    self.request,
+                    '{} flex allocations are out of range for {}'
+                        .format(len(fas_out_of_range), assessment.title))
+                conflicts = True
+                continue
+
             assessment.save()
             self._set_flex_assessments(course, assessment)
-            assessment_ids.append(assessment.id)
+
+        if conflicts:
+            response = super(InstructorFormView, self).form_invalid(formset)
+            return response
 
         to_delete = course.assessment_set.all().exclude(id__in=assessment_ids)
         to_delete.delete()
 
         response = HttpResponseRedirect(self.get_success_url())
+
+        FlexCanvas(self.request)\
+            .get_course(course_id)\
+            .update_settings(hide_final_grades=hide_total)
 
         return response
 
@@ -376,6 +411,22 @@ class InstructorFormView(views.FormView):
             if not models.FlexAssessment.objects.filter(
                 user=user, assessment=assessment).exists()]
         models.FlexAssessment.objects.bulk_create(flex_assessments)
+
+    def _check_valid_flex(self, assessment):
+        flex_assessments = list(
+            filter(
+                lambda fa: fa.flex is not None,
+                assessment.flexassessment_set.all()))
+        min = assessment.min
+        max = assessment.max
+
+        fas_out_of_range = []
+        for flex_assessment in flex_assessments:
+            if flex_assessment.flex < min or flex_assessment.flex > max:
+                flex_assessment.flex = None
+                fas_out_of_range.append(flex_assessment)
+
+        return fas_out_of_range
 
 
 class OverrideStudentFormView(views.FormView):

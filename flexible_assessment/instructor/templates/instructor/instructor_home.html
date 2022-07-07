@@ -2,8 +2,44 @@
 
 {% block nav_item_home %}active{% endblock nav_item_home %} 
 {% block content %}
-<h1>{{ course.title }}</h1>
-<h3>Hello {{ display_name }}</h3>
+<div class="pt-5 pb-4">
+    <div class="container">
+        <h1>{{ course.title }}</h1>
+    </div>
+</div>
+<div class="pb-5">
+    <div class="d-flex align-items-center justify-content-center">
+        <div class="col-10">
+            <h2>Hello {{ display_name }}</h2>
+            <p>Welcome to Flexible Assessment - the system that allows students to choose how their final grades will be weighted within ranges defined by the instructor!</p>
+            <h2>Steps to use this tool</h2>
+            <ol>
+                <li class="p-2 fs-5"><h4>Setup</h4>
+                    <ol class="fs-6 lh-lg" type="a">
+                        <li>Go to the <b>Course Setup</b> page and enter assessments as they appear on your syllabus.</li>
+                        <li>For each assessment you will have to add the <i>default</i>, <i>minimum</i> and <i>maximum</i> weights you will accept.</li>
+                        <li>Add <i>open</i> and <i>close</i> dates for when students can enter their desired percentages.</li>
+                        <li>Clicking Save completes the setup. You can view the assessments and availability date under <b>Assessments</b>.</li>
+                    </ol>
+                </li>
+                <li class="p-2 fs-5"><h4>Review</h4>
+                    <ol class="fs-6 lh-lg" type="a">
+                        <li>Your students enter their desired percentages and comments that you can review on the <b>Percentages</b> page as the term progresses.</li>
+                        <li>Students who do not enter desired percentages will use the default values.</li>
+                    </ol>
+                <li class="p-2 fs-5"><h4>Final Grades</h4>
+                    <ol class="fs-6 lh-lg" type="a">
+                        <li>Go to Assignments on Canvas and create your Assignment Groups (e.g. Assignments, Quizzes, Midterm, etc.) and within Canvas add the graded assessments to their respective groups if you haven't done so already.</li>
+                        <li>On Canvas go to <i>Grades > Settings > Advanced</i> and check <i>Allow final grade override</i>. This allows the app to upload the recalculated grades to Canvas.</li>
+                        <li>After all assessments have been graded, go to the <b>Final Grades</b> page and match your Assignment Groups on Canvas to your assessments in the app. This informs the app which assessments are being graded.</li>
+                        <li>You can view a summary of final grades for the students and submit these grades to Canvas and/or export it as a CSV.</li>
+                    </ol>
+                </li>
+            </ol>
+            <p>The Flexible Assessment approach is based on research done by Candice Rideout that you can read here. Please contact <a href = "mailto: it@landfood.ubc.ca">it@landfood.ubc.ca</a> for more information.</p>
+        </div>
+    </div>
+</div>
 
 {% if messages %}
 <ul class="messages" hidden>

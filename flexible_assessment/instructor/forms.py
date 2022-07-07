@@ -47,6 +47,20 @@ class StudentBaseForm(forms.Form):
                     .format(flex_total)))
 
 
+class OptionsForm(forms.Form):
+    hide_total = forms.BooleanField(
+        required=False,
+        label='Hide final grade on Canvas for students')
+    ignore_conflicts = forms.BooleanField(
+        required=False,
+        widget=forms.HiddenInput())
+
+    def __init__(self, *args, **kwargs):
+        hide_total = kwargs.pop('hide_total', False)
+        super(OptionsForm, self).__init__(*args, **kwargs)
+        self.initial['hide_total'] = hide_total
+
+
 class DateForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(DateForm, self).__init__(*args, **kwargs)

@@ -10,10 +10,10 @@
             <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                 <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
                     <h3 class="mb-0">Student Allocations</h3>
-                    <a class="btn btn-outline-primary btn-sm" href="{% url 'instructor:percentage_list_export' course.id %}"><i class="bi bi-download"></i> Export</a>
+                    <a class="btn btn-outline-primary btn-sm" style="border-radius: 1em;" href="{% url 'instructor:percentage_list_export' course.id %}"><i class="bi bi-download"></i> Export</a>
                 </div>
                 <div class="card-body pt-2 pb-3">
-                    <table id='example' class="table table-striped mb-4" style="table-layout: fixed;">
+                    <table id='percentage' class="table table-striped mb-4 nowrap" width="100%">
                         <thead>
                             <tr>
                                 <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
@@ -40,30 +40,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <p class="fw-light m-0">Click on a student to edit their desired %</p>
-                        <div class="d-flex justify-content-center pagination me-2">
-                            <span class="step-links">
-                                {% if page_obj.has_previous %}
-                                    <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}"><i
-                                        class="bi bi-chevron-compact-left"></i></a>
-                                {% else %}
-                                    <a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-left"></i></a>
-                                {% endif %}
-                        
-                                <span class="current">
-                                    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-                                </span>
-                        
-                                {% if page_obj.has_next %}
-                                    <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.next_page_number }}"><i
-                                            class="bi bi-chevron-compact-right"></i></a>
-                                {% else %}
-                                    <a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-right"></i></a>
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
+                    <p class="fw-light m-0">Click on a student to edit their desired %</p>
                 </div>
             </div>
         </div>
@@ -74,7 +51,11 @@
     $(document).ready(function () {
         var colspan = $('.assessment').length;
 
-        $('#example').DataTable({
+        var width = Math.floor(50/colspan);
+        $('.assessment').css('width', width+'%');
+        
+        var table = $('#percentage').DataTable({
+            scrollX: true,
             columnDefs: [
                 { orderable: false, targets: colspan+1 }
             ]            

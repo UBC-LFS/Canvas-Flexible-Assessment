@@ -1,4 +1,3 @@
-from django.core.exceptions import PermissionDenied
 from django.forms import ValidationError
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -45,9 +44,6 @@ class StudentFormView(views.FormView):
         user_id = self.request.session.get('user_id', '')
         course_id = self.kwargs['course_id']
 
-        if not user_id or not course_id:
-            raise PermissionDenied
-
         kwargs['user_id'] = user_id
         kwargs['course_id'] = course_id
 
@@ -56,9 +52,6 @@ class StudentFormView(views.FormView):
     def form_valid(self, form):
         user_id = self.request.session.get('user_id', '')
         course_id = self.kwargs['course_id']
-
-        if not user_id or not course_id:
-            raise PermissionDenied
 
         course = models.Course.objects.get(pk=course_id)
         open_datetime = course.open

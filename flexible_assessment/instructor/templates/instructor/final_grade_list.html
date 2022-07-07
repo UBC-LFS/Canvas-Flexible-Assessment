@@ -10,19 +10,19 @@
             <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                 <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
                     <h3 class="mb-0">Final Grades</h3>
-                    <a class="btn btn-outline-primary btn-sm" href="{% url 'instructor:final_grades_export' course.id %}"><i class="bi bi-download"></i> Export</a>
+                    <a class="btn btn-outline-primary btn-sm" style="border-radius: 1em;" href="{% url 'instructor:final_grades_export' course.id %}"><i class="bi bi-download"></i> Export</a>
                 </div>
                 <div class="card-body pt-2 pb-3">
-                    <table class="table table-striped mb-3" style="table-layout: fixed;">
+                    <table id="final" class="table table-striped mb-3 nowrap" width="100%">
                         <thead>
                             <tr>
                                 <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
                                 {% for assessment in course.assessment_set.all %}
                                     <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }} <br> ({% get_group_weight groups assessment.group.id %}%)</th>
                                 {% endfor %}
-                                <th class="text-center align-middle" style="font-size: 110%;">Override Final Grade</th>
-                                <th class="text-center align-middle" style="font-size: 110%;">Default Total</th>
-                                <th class="text-center align-middle" style="font-size: 110%;">Difference</th>
+                                <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Override Total</th>
+                                <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Default Total</th>
+                                <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Difference</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -51,30 +51,7 @@
                             </tr>
                         </tfoot>
                     </table>
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <p class="fw-light m-0">Click on a student to edit their desired %</p>
-                        <div class="d-flex justify-content-center pagination me-2">
-                            <span class="step-links">
-                                {% if page_obj.has_previous %}
-                                    <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.previous_page_number }}"><i
-                                            class="bi bi-chevron-compact-left"></i></a>
-                                {% else %}
-                                    <a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-left"></i></a>
-                                {% endif %}
-
-                                <span class="current">
-                                    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-                                </span>
-
-                                {% if page_obj.has_next %}
-                                    <a class="btn btn-outline-primary btn-sm" href="?page={{ page_obj.next_page_number }}"><i
-                                            class="bi bi-chevron-compact-right"></i></a>
-                                {% else %}
-                                    <a class="btn btn-outline-primary btn-sm disabled"><i class="bi bi-chevron-compact-right"></i></a>
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
+                    <p class="fw-light m-0">Click on a student to edit their desired %</p>
                     <div class="d-flex align-items-center justify-content-center">
                         <form id="grade-submit" method="post" action="{% url 'instructor:final_grades_submit' course.id %}">
                             {% csrf_token %}
@@ -100,10 +77,42 @@
 	var colspan = $('.assessment').length;
 	$('.empty').attr('colspan', colspan);
 
-	add_differences();
 
-    $('.used-default').css('color', 'gray');
-    $('.used-default').css('font-style', 'italic');
+    var width = Math.floor(75/colspan);
+    $('.assessment').css('width', width+'%');
+
+    var table = $('#final').DataTable({
+        scrollX: true
+    });
+
+    function format_table() {
+		$('.difference').each(function () {
+			var default_str = $(this).parentsUntil('tbody').find('.default').html();
+			var override = $(this).parentsUntil('tbody').find('.overriden');
+
+			if (override.length) {
+                var override_str = override.html();
+				var diff = parseFloat(override_str) - parseFloat(default_str);
+				var prefix = diff > 0 ? '+' : '';
+				$(this).text(prefix + diff.toFixed(2) + '%');
+			} else {
+                $(this).text('0.00%');
+                $(this).addClass('used-default');
+			};
+            
+		});
+        $('.used-default').css('color', 'gray');
+        $('.used-default').css('font-style', 'italic');
+
+	};
+
+    $('.dataTables_scrollBody').css('overflow-y', 'hidden');
+    table.draw();
+    
+	format_table();
+
+    table.on('draw', format_table);
+
 
     $('#submit-button').click(function(e) {
         if (confirm('Are you sure you want to submit override grades to Canvas?')) {
@@ -118,24 +127,7 @@
     var error_str = errors.join(', ');
     if (error_str)
         alert(error_str);
-
-	function add_differences() {
-		$('.difference').each(function () {
-			var default_str = $(this).parentsUntil('tbody').find('.default').html();
-			var override = $(this).parentsUntil('tbody').find('.overriden');
-
-			if (override.length) {
-                var override_str = override.html();
-				var diff = parseFloat(override_str) - parseFloat(default_str);
-				var prefix = diff > 0 ? '+' : '';
-				$(this).text(prefix + diff.toFixed(2) + '%');
-			} else {
-                $(this).text('0.00%');
-                $(this).addClass('used-default');
-			};
-		});
-	};
-
+    
 
 </script>
 
