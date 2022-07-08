@@ -362,40 +362,45 @@ class InstructorFormView(views.FormView):
         course_id = self.kwargs['course_id']
         course = models.Course.objects.get(pk=course_id)
 
-        assessment_ids = []
-        conflicts = False
+        assessments = []
+        conflict_students = set()
         for form in formset.forms:
             assessment = form.save(commit=False)
-            assessment_ids.append(assessment.id)
+            assessments.append(assessment)
             assessment.course = course
 
-            fas_out_of_range = self._check_valid_flex(assessment)
-            if fas_out_of_range and ignore_conflicts:
-                models.FlexAssessment.objects \
-                    .bulk_update(fas_out_of_range, ['flex'])
-            elif fas_out_of_range and not ignore_conflicts:
+            curr_conflict_students = self._check_valid_flex(assessment)
+            conflict_students = conflict_students.union(curr_conflict_students)
+
+            if curr_conflict_students and not ignore_conflicts:
                 messages.warning(
                     self.request,
                     '{} flex allocations are out of range for {}'
-                        .format(len(fas_out_of_range), assessment.title))
-                conflicts = True
-                continue
+                        .format(len(curr_conflict_students), assessment.title))
 
-            assessment.save()
-            self._set_flex_assessments(course, assessment)
-
-        if conflicts:
+        if conflict_students and not ignore_conflicts:
             response = super(InstructorFormView, self).form_invalid(formset)
             return response
 
-        to_delete = course.assessment_set.all().exclude(id__in=assessment_ids)
-        to_delete.delete()
+        for assessment in assessments:
+            assessment.save()
+            self._set_flex_assessments(course, assessment)
 
-        response = HttpResponseRedirect(self.get_success_url())
+        for student in conflict_students:
+            fas_to_reset = student.flexassessment_set \
+                .filter(assessment__course=course)
+            fas_to_reset.update(flex=None)
+            student.usercomment_set.filter(course=course).update(comment="")
+
+        assessments_to_delete = course.assessment_set \
+            .exclude(id__in=[assessment.id for assessment in assessments])
+        assessments_to_delete.delete()
 
         FlexCanvas(self.request)\
             .get_course(course_id)\
             .update_settings(hide_final_grades=hide_total)
+
+        response = HttpResponseRedirect(self.get_success_url())
 
         return response
 
@@ -413,20 +418,15 @@ class InstructorFormView(views.FormView):
         models.FlexAssessment.objects.bulk_create(flex_assessments)
 
     def _check_valid_flex(self, assessment):
-        flex_assessments = list(
-            filter(
-                lambda fa: fa.flex is not None,
-                assessment.flexassessment_set.all()))
-        min = assessment.min
-        max = assessment.max
+        flex_assessments = assessment.flexassessment_set \
+            .exclude(flex__isnull=True)
 
-        fas_out_of_range = []
-        for flex_assessment in flex_assessments:
-            if flex_assessment.flex < min or flex_assessment.flex > max:
-                flex_assessment.flex = None
-                fas_out_of_range.append(flex_assessment)
+        conflict_fas = flex_assessments.filter(flex__lte=assessment.min) \
+            | flex_assessments.filter(flex__gte=assessment.max)
 
-        return fas_out_of_range
+        conflict_students = {fa.user for fa in conflict_fas}
+
+        return conflict_students
 
 
 class OverrideStudentFormView(views.FormView):

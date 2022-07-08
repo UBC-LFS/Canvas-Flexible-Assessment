@@ -241,8 +241,8 @@ class Assessment(models.Model):
     def __str__(self):
         return self.title
 
-    class Meta:
-        ordering = ["title"]
+    # class Meta:
+    #     ordering = ["title"]
 
 
 class FlexAssessment(models.Model):
@@ -264,8 +264,8 @@ class FlexAssessment(models.Model):
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     flex = models.IntegerField(null=True, blank=True)
 
-    class Meta:
-        ordering = ["assessment__title"]
+    # class Meta:
+    #     ordering = ["assessment__title"]
 
 
 class UserComment(models.Model):

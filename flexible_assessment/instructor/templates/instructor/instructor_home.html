@@ -1,42 +1,79 @@
 {% extends "instructor/instructor_base.html" %}
+{% load instructor_tags %}
 
 {% block nav_item_home %}active{% endblock nav_item_home %} 
 {% block content %}
-<div class="pt-5 pb-4">
+<div class="pt-5 pb-5">
     <div class="container">
         <h1>{{ course.title }}</h1>
+        <h3>Hello {{ display_name }}</h3>
     </div>
 </div>
 <div class="pb-5">
-    <div class="d-flex align-items-center justify-content-center">
+    {% if course.close %}
+        <div class="d-flex align-items-center justify-content-center">
+            <div class="col-10">
+                <div class="d-flex justify-content-around row">
+                    <div class="col-5">
+                        <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                            <div class="card-header d-flex align-items-center justify-content-between">
+                                <h3 class="mb-0">Response Rate</h3>
+                            </div>
+                            <div class="card-body p-4 text-center">
+                                {% get_response_rate course as response_rate %}
+                                <h2>{{ response_rate.0 }}</h2>
+                                <h5 style="color: gray;"><i>{{ response_rate.1 }}</i></h5>
+                                <h3 class="mb-0">Students</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                            <div class="card-header d-flex align-items-center justify-content-between">
+                                <h3 class="mb-0">Assessment Allocations</h3>
+                            </div>
+                            <div id="container_data" class="card-body"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <div class="d-flex align-items-center justify-content-center pt-5">
         <div class="col-10">
-            <h2>Hello {{ display_name }}</h2>
-            <p>Welcome to Flexible Assessment - the system that allows students to choose how their final grades will be weighted within ranges defined by the instructor!</p>
-            <h2>Steps to use this tool</h2>
-            <ol>
-                <li class="p-2 fs-5"><h4>Setup</h4>
-                    <ol class="fs-6 lh-lg" type="a">
-                        <li>Go to the <b>Course Setup</b> page and enter assessments as they appear on your syllabus.</li>
-                        <li>For each assessment you will have to add the <i>default</i>, <i>minimum</i> and <i>maximum</i> weights you will accept.</li>
-                        <li>Add <i>open</i> and <i>close</i> dates for when students can enter their desired percentages.</li>
-                        <li>Clicking Save completes the setup. You can view the assessments and availability date under <b>Assessments</b>.</li>
+            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h3 class="mb-0">Using Flexible Assessment</h3>
+                </div>
+                <div class="card-body p-4">
+                    <p>Welcome to Flexible Assessment - the application that allows students to choose how their final grades will be weighted within ranges defined by the instructor!</p>
+                    <h3>Steps to use this tool</h3>
+                    <ol>
+                        <li class="p-2 fs-5"><h4>Setup</h4>
+                            <ol class="fs-6 lh-lg" type="a">
+                                <li>Go to the <b>Course Setup</b> page and enter assessments as they appear on your syllabus.</li>
+                                <li>For each assessment you will have to add the <i>default</i>, <i>minimum</i> and <i>maximum</i> weights you will accept.</li>
+                                <li>Add <i>open</i> and <i>close</i> dates for when students can enter their desired percentages.</li>
+                                <li>Clicking Save completes the setup. You can view the assessments and availability dates under <b>Assessments</b>.</li>
+                            </ol>
+                        </li>
+                        <li class="p-2 fs-5"><h4>Review</h4>
+                            <ol class="fs-6 lh-lg" type="a">
+                                <li>Your students enter their desired percentages and comments that you can review on the <b>Percentages</b> page as the term progresses.</li>
+                                <li>Students who do not enter desired percentages will use the default values.</li>
+                            </ol>
+                        <li class="p-2 fs-5"><h4>Final Grades</h4>
+                            <ol class="fs-6 lh-lg" type="a">
+                                <li>Go to Assignments on Canvas and create your Assignment Groups (e.g. Assignments, Quizzes, Midterm, etc.) and within Canvas add the graded assessments to their respective groups if you haven't done so already.</li>
+                                <li>On Canvas go to <i>Grades > Settings > Advanced</i> and check <i>Allow final grade override</i>. This allows the app to upload the recalculated grades to Canvas.</li>
+                                <li>After all assessments have been graded, go to the <b>Final Grades</b> page and match your Assignment Groups on Canvas to your assessments in the app. This informs the app which assessments are being graded.</li>
+                                <li>You can view a summary of final grades for the students and submit these grades to Canvas and/or export it as a CSV.</li>
+                            </ol>
+                        </li>
                     </ol>
-                </li>
-                <li class="p-2 fs-5"><h4>Review</h4>
-                    <ol class="fs-6 lh-lg" type="a">
-                        <li>Your students enter their desired percentages and comments that you can review on the <b>Percentages</b> page as the term progresses.</li>
-                        <li>Students who do not enter desired percentages will use the default values.</li>
-                    </ol>
-                <li class="p-2 fs-5"><h4>Final Grades</h4>
-                    <ol class="fs-6 lh-lg" type="a">
-                        <li>Go to Assignments on Canvas and create your Assignment Groups (e.g. Assignments, Quizzes, Midterm, etc.) and within Canvas add the graded assessments to their respective groups if you haven't done so already.</li>
-                        <li>On Canvas go to <i>Grades > Settings > Advanced</i> and check <i>Allow final grade override</i>. This allows the app to upload the recalculated grades to Canvas.</li>
-                        <li>After all assessments have been graded, go to the <b>Final Grades</b> page and match your Assignment Groups on Canvas to your assessments in the app. This informs the app which assessments are being graded.</li>
-                        <li>You can view a summary of final grades for the students and submit these grades to Canvas and/or export it as a CSV.</li>
-                    </ol>
-                </li>
-            </ol>
-            <p>The Flexible Assessment approach is based on research done by Candice Rideout that you can read here. Please contact <a href = "mailto: it@landfood.ubc.ca">it@landfood.ubc.ca</a> for more information.</p>
+                    <p>The Flexible Assessment approach is based on research done by Candice Rideout that you can read here. Please contact <a href = "mailto: it@landfood.ubc.ca">it@landfood.ubc.ca</a> for more information.</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -48,10 +85,16 @@
     {% endfor %}
 </ul>
 {% endif %}
-
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
 <script>
-    $(function() {
+    {% get_flex_average course as average_chart %}
+    Highcharts.chart('container_data', {{ average_chart|safe }});
+
+    $(document).ready(function () {
         var errors = [];
         $('.error').each(function(_, error) {
             errors.push(error.textContent);
@@ -59,6 +102,7 @@
         var error_str = errors.join(', ');
         if (error_str)
             alert(error_str);
+        
     })
 </script>
 

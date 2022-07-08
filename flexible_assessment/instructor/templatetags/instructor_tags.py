@@ -1,3 +1,4 @@
+import json
 from django import template
 from flexible_assessment.models import Assessment, Roles
 
@@ -22,13 +23,74 @@ def to_str(value):
 
 
 @register.simple_tag()
-def get_valid_flex_num(course):
+def get_response_rate(course):
     user_courses = course.usercourse_set.filter(
             user__role=Roles.STUDENT)
     students = [user_course.user for user_course in user_courses]
     valid_num = sum([grader.valid_flex(student, course)
                     for student in students])
-    return '{}/{}'.format(valid_num, len(students))
+    if len(students) > 0:
+        percentage = round(valid_num/len(students)*100, 2)
+    else:
+        percentage = 0
+    return ('{} / {}'.format(valid_num, len(students)),
+            '{}%'.format(percentage))
+
+
+@register.simple_tag()
+def get_flex_average(course):
+    assessments = course.assessment_set.all()
+    series = []
+    for assessment in assessments:
+        fas = assessment.flexassessment_set.exclude(flex__isnull=True)
+        if len(fas) > 0:
+            student_average = round(sum([fa.flex for fa in fas])/len(fas), 2)
+        else:
+            student_average = assessment.default
+        series.append({
+            'name': assessment.title,
+            'data': [assessment.default, student_average]
+        })
+
+    assessment_chart_data = {
+            'chart': {
+                'type': 'column',
+                'height': '80%'
+            },
+            'title': {
+                'text': "",
+                'floating': True
+            },
+            'xAxis': {
+                'categories': ['Default', 'Student Average'],
+            },
+            'yAxis': {
+                'visible': False
+            },
+            'plotOptions': {
+                'column': {
+                    'stacking': 'percent',
+                    'dataLabels': {
+                        'enabled': True,
+                        'format': '{y}%'
+                    },
+                }
+            },
+            'colors': ['#009999', '#99CC33', '#FF9900', '#9999CC',
+                       '#66CCCC', '#339966', '#CCCC33'],
+            'tooltip': {
+                'headerFormat': '<b>{point.x}</b><br/>',
+                'pointFormat': '{series.name}: {point.y}%'
+            },
+            'exporting': {
+                'enabled': False
+            },
+            'credits': {
+                'enabled': False
+            },
+            'series': series,
+        }
+    return json.dumps(assessment_chart_data)
 
 
 @register.simple_tag()

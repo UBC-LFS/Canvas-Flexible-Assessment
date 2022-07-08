@@ -52,8 +52,7 @@ class OptionsForm(forms.Form):
         required=False,
         label='Hide final grade on Canvas for students')
     ignore_conflicts = forms.BooleanField(
-        required=False,
-        widget=forms.HiddenInput())
+        required=False)
 
     def __init__(self, *args, **kwargs):
         hide_total = kwargs.pop('hide_total', False)

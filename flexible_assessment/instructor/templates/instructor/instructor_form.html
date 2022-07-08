@@ -77,7 +77,11 @@
                             <p class="fw-light m-0">Total default allocations should add up to 100%</p>
                             <div class="form-switch">
                                 {% for field in options_form.visible_fields %}
-                                    {% bootstrap_field field wrapper_class='mb-3; vertical-align: middle;' %}
+                                    {% if field.name == "ignore_conflicts" %}
+                                        {{ field.as_hidden }}
+                                    {% else %} 
+                                        {% bootstrap_field field wrapper_class='mb-3; vertical-align: middle;' %}
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                         </div>
@@ -122,11 +126,11 @@
 <table id="empty_form" style="display:none">
 	<tr height="60px">
 		{% for field in formset.empty_form.visible_fields %}
-			<td class="{{ field.label }}" style="text-align: center; vertical-align: middle;">
+			<td class="{{ field.label }} text-center align-middle">
 				{% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
 			</td>
 		{% endfor %}
-		<td style="text-align: center;vertical-align: middle;"><button class="btn btn-outline-danger btn-sm delete"
+		<td class="text-center align-middle"><button class="btn btn-outline-danger btn-sm delete"
 				type="button"><i class="bi bi-trash3"></i></button></td>
 	</tr>
 </table>
@@ -156,6 +160,7 @@
         if (error_str)
             if (confirm(error_str +  '\n Are you sure you want to reset these student allocations?')){
                 $('#id_options-ignore_conflicts').val('true');
+                console.log($('#id_options-ignore_conflicts'));
                 $('form').submit();
             }
     });
@@ -201,8 +206,6 @@
 
 		var tr = $(this).closest('tr');
 		var input = tr.prev('input:hidden')
-        console.log(initial)
-        console.log(tr.index())
 
         if (tr.index() < initial*2)
             $('#id_assessment-INITIAL_FORMS').val(parseInt(initial) - 1);

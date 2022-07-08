@@ -17,9 +17,11 @@
 		<!-- <div class="d-flex container-fluid justify-content-center"><h3 style="color: gray">Work in Progress</h3></div> -->
 		<div class="row min-vh-100">
 			<div class="col-sm-2 shadow-sm">
-				<a class="text-dark text-decoration-none" href="{% url 'student:student_home' course.id %}">
-					<h4 class="mt-3 mb-3 text-center text-break">Flexible Assessment</h4>
-				</a>
+                <div class="pt-5 pb-3">
+                    <a class="text-dark text-decoration-none" href="{% url 'student:student_home' course.id %}">
+                        <h4 class="text-center text-break m-0">Flexible Assessment</h4>
+                    </a>
+                </div>
 				<hr>
 				{% block sidebar %}
 				<nav class="nav nav-pills flex-column">
