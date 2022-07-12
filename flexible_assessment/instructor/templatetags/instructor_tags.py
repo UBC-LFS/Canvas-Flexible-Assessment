@@ -1,4 +1,3 @@
-import json
 from django import template
 from flexible_assessment.models import Assessment, Roles
 
@@ -38,7 +37,7 @@ def get_response_rate(course):
 
 
 @register.simple_tag()
-def get_flex_average(course):
+def get_average_allocations(course):
     assessments = course.assessment_set.all()
     series = []
     for assessment in assessments:
@@ -52,45 +51,7 @@ def get_flex_average(course):
             'data': [assessment.default, student_average]
         })
 
-    assessment_chart_data = {
-            'chart': {
-                'type': 'column',
-                'height': '80%'
-            },
-            'title': {
-                'text': "",
-                'floating': True
-            },
-            'xAxis': {
-                'categories': ['Default', 'Student Average'],
-            },
-            'yAxis': {
-                'visible': False
-            },
-            'plotOptions': {
-                'column': {
-                    'stacking': 'percent',
-                    'dataLabels': {
-                        'enabled': True,
-                        'format': '{y}%'
-                    },
-                }
-            },
-            'colors': ['#009999', '#99CC33', '#FF9900', '#9999CC',
-                       '#66CCCC', '#339966', '#CCCC33'],
-            'tooltip': {
-                'headerFormat': '<b>{point.x}</b><br/>',
-                'pointFormat': '{series.name}: {point.y}%'
-            },
-            'exporting': {
-                'enabled': False
-            },
-            'credits': {
-                'enabled': False
-            },
-            'series': series,
-        }
-    return json.dumps(assessment_chart_data)
+    return series
 
 
 @register.simple_tag()
@@ -100,15 +61,18 @@ def get_score(groups, group_id, student):
 
 
 @register.simple_tag()
-def get_override_default(groups, student, course):
+def get_student_grades(groups, student, course):
     default = grader.get_default_total(groups, student)
     default_str = str(default) + '%'
     override = grader.get_override_total(groups, student, course)
     if override is not None:
         override_str = str(override) + '%'
-        return ('overriden', override_str, default_str)
+        diff = round(override - default, 2)
+        prefix = '+' if diff > 0 else ''
+        diff_str = prefix + str(diff) + '%'
+        return ('overriden', override_str, default_str, diff_str)
     else:
-        return ('used-default', default_str, default_str)
+        return ('used-default', default_str, default_str, '0.00%')
 
 
 @register.simple_tag()

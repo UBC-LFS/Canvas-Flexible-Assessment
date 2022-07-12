@@ -4,6 +4,8 @@ import flexible_assessment.models as models
 
 
 def update_students(request, course):
+    """Updates student list in database to match that of the Canvas course."""
+
     students_canvas = FlexCanvas(request)\
         .get_course(course.id)\
         .get_users(enrollment_type='student')
@@ -61,7 +63,16 @@ def set_user_course_enrollment(user, course):
         user_course.save()
 
 
+def set_user_comment(user, course):
+    if not user.usercomment_set.filter(course__id=course.id).exists() \
+            and user.role == models.Roles.STUDENT:
+        user_comment = models.UserComment(user=user, course=course)
+        user_comment.save()
+
+
 def set_user_course(canvas_fields, role):
+    """Creates relevant database objects if they do not exist for a user."""
+
     user_id = canvas_fields['user_id']
     login_id = canvas_fields['login_id']
     display_name = canvas_fields['user_display_name']
@@ -73,10 +84,3 @@ def set_user_course(canvas_fields, role):
 
     set_user_course_enrollment(user, course)
     set_user_comment(user, course)
-
-
-def set_user_comment(user, course):
-    if not user.usercomment_set.filter(course__id=course.id).exists() \
-            and user.role == models.Roles.STUDENT:
-        user_comment = models.UserComment(user=user, course=course)
-        user_comment.save()

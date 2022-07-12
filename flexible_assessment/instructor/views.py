@@ -1,21 +1,21 @@
+from threading import Thread
+
 import flexible_assessment.class_views as views
 import flexible_assessment.models as models
 import flexible_assessment.utils as utils
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
-from instructor.canvas_api import FlexCanvas
 from flexible_assessment.view_roles import Instructor
 
-from . import grader
-from . import writer
-from .forms import (AssessmentFormSet,
-                    AssessmentGroupForm,
-                    DateForm,
-                    OptionsForm,
-                    StudentBaseForm)
+from instructor.canvas_api import FlexCanvas
+
+from . import grader, writer
+from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
+                    OptionsForm, StudentBaseForm)
 
 
 class InstructorHome(views.TemplateView):
@@ -109,19 +109,17 @@ class FinalGradeListView(views.ListView):
                         'instructor:final_grades',
                         kwargs={'course_id': course_id}))
 
-            course = models.Course.objects.get(pk=course_id)
-            groups, enrollments = canvas.get_groups_and_enrollments(course_id)
+            success = self._submit_final_grades(course_id, canvas)
 
-            for student_id, enrollment_id in enrollments.items():
-                student = models.UserProfile.objects\
-                    .filter(pk=student_id)\
-                    .first()
-                if not student:
-                    continue
-                override = grader.get_override_total(groups, student, course) \
-                    or grader.get_default_total(groups, student)
-
-                canvas.set_override(enrollment_id, override)
+            if not success:
+                messages.error(
+                    request,
+                    "Something went wrong when submitting grades!"
+                    "Please try again.")
+                return HttpResponseRedirect(
+                    reverse(
+                        'instructor:final_grades',
+                        kwargs={'course_id': course_id}))
 
         return HttpResponseRedirect(
             reverse('instructor:instructor_home',
@@ -139,6 +137,35 @@ class FinalGradeListView(views.ListView):
         course_id = self.kwargs['course_id']
         return models.UserProfile.objects.filter(
             role=models.Roles.STUDENT, usercourse__course__id=course_id)
+
+    def _submit_final_grades(self, course_id, canvas):
+        course = models.Course.objects.get(pk=course_id)
+        groups, enrollments = canvas.get_groups_and_enrollments(course_id)
+
+        threads = []
+        incomplete = [False]
+        for student_id, enrollment_id in enrollments.items():
+            student = models.UserProfile.objects\
+                .filter(pk=student_id)\
+                .first()
+            if not student:
+                continue
+            override = grader.get_override_total(groups, student, course) \
+                or grader.get_default_total(groups, student)
+
+            t = Thread(target=canvas.set_override,
+                       args=(enrollment_id, override, incomplete))
+            threads.append(t)
+
+            if len(threads) >= 64:
+                [t.start() for t in threads]
+                [t.join() for t in threads]
+                threads = []
+
+        [t.start() for t in threads]
+        [t.join() for t in threads]
+
+        return not incomplete[0]
 
 
 class AssessmentGroupView(views.FormView):
@@ -278,21 +305,22 @@ class InstructorFormView(views.FormView):
         else:
             hide_total = course_settings['hide_final_grades']
 
+        context['date_form'] = DateForm(
+            self.request.POST or None, instance=course, prefix='date')
+        context['options_form'] = OptionsForm(
+            self.request.POST or None, prefix='options', hide_total=hide_total)
+
         if self.request.POST:
-            context['date_form'] = DateForm(
-                self.request.POST, instance=course, prefix='date')
-            context['options_form'] = OptionsForm(
-                self.request.POST, prefix='options', hide_total=hide_total)
             context['formset'] = AssessmentFormSet(
                 self.request.POST, prefix='assessment')
         else:
-            context['date_form'] = DateForm(
-                instance=course, prefix='date')
-            context['options_form'] = OptionsForm(
-                prefix='options', hide_total=hide_total)
+            qs = models.Assessment.objects.filter(
+                    course=course)
+            ids = qs.values_list('id', flat=True)
+            original_order = Case(*[When(id=id, then=pos)
+                                    for pos, id in enumerate(ids)])
             context['formset'] = AssessmentFormSet(
-                queryset=models.Assessment.objects.filter(
-                    course=course), prefix='assessment')
+                queryset=qs.order_by(original_order), prefix='assessment')
 
         return context
 
@@ -379,36 +407,37 @@ class InstructorFormView(views.FormView):
                         .format(len(curr_conflict_students), assessment.title))
 
         if conflict_students and not ignore_conflicts:
-            response = super(InstructorFormView, self).form_invalid(formset)
-            return response
+            return super(InstructorFormView, self).form_invalid(formset)
 
+        assessment_created = False
         for assessment in assessments:
             assessment.save()
-            self._set_flex_assessments(course, assessment)
-
-        for student in conflict_students:
-            fas_to_reset = student.flexassessment_set \
-                .filter(assessment__course=course)
-            fas_to_reset.update(flex=None)
-            student.usercomment_set.filter(course=course).update(comment="")
-
-        assessments_to_delete = course.assessment_set \
-            .exclude(id__in=[assessment.id for assessment in assessments])
-        assessments_to_delete.delete()
+            curr_assessment_created = self._set_flex_assessments(course,
+                                                                 assessment)
+            if curr_assessment_created:
+                assessment_created = curr_assessment_created
 
         FlexCanvas(self.request)\
             .get_course(course_id)\
             .update_settings(hide_final_grades=hide_total)
 
-        response = HttpResponseRedirect(self.get_success_url())
+        assessments_to_delete = course.assessment_set \
+            .exclude(id__in=[assessment.id for assessment in assessments])
 
-        return response
+        if assessment_created or assessments_to_delete:
+            if assessments_to_delete:
+                assessments_to_delete.delete()
+            self._reset_all_students(course)
+        else:
+            self._reset_conflict_students(course, conflict_students)
+
+        return HttpResponseRedirect(self.get_success_url())
 
     def _set_flex_assessments(self, course, assessment):
         """Creates flex assessment objects for new assessments in the course"""
 
         user_courses = course.usercourse_set.filter(
-            user__role=models.Roles.STUDENT)
+            user__role=models.Roles.STUDENT).select_related('user')
         users = [user_course.user for user_course in user_courses]
         flex_assessments = [
             models.FlexAssessment(user=user, assessment=assessment)
@@ -416,17 +445,31 @@ class InstructorFormView(views.FormView):
             if not models.FlexAssessment.objects.filter(
                 user=user, assessment=assessment).exists()]
         models.FlexAssessment.objects.bulk_create(flex_assessments)
+        return True if flex_assessments else False
 
     def _check_valid_flex(self, assessment):
         flex_assessments = assessment.flexassessment_set \
             .exclude(flex__isnull=True)
 
-        conflict_fas = flex_assessments.filter(flex__lte=assessment.min) \
-            | flex_assessments.filter(flex__gte=assessment.max)
+        conflict_fas = flex_assessments.filter(flex__lt=assessment.min) \
+            | flex_assessments.filter(flex__gt=assessment.max)
+        conflict_fas = conflict_fas.select_related('user')
 
         conflict_students = {fa.user for fa in conflict_fas}
 
         return conflict_students
+
+    def _reset_conflict_students(self, course, conflict_students):
+        for student in conflict_students:
+            fas_to_reset = student.flexassessment_set \
+                .filter(assessment__course=course)
+            fas_to_reset.update(flex=None)
+            student.usercomment_set.filter(course=course).update(comment="")
+
+    def _reset_all_students(self, course):
+        fas_to_reset = models.FlexAssessment.objects \
+            .filter(assessment__course=course)
+        fas_to_reset.update(flex=None)
 
 
 class OverrideStudentFormView(views.FormView):

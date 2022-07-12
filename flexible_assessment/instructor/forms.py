@@ -61,6 +61,8 @@ class OptionsForm(forms.Form):
 
 
 class DateForm(ModelForm):
+    """Form that sets flexible assessment availability for students."""
+
     def __init__(self, *args, **kwargs):
         super(DateForm, self).__init__(*args, **kwargs)
         if self.instance.open:

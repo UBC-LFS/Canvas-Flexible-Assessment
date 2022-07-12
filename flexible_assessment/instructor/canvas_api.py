@@ -3,6 +3,8 @@ from django.core.exceptions import PermissionDenied
 from canvasapi import Canvas
 from django.conf import settings
 from oauth.oauth import get_oauth_token
+from canvasapi.exceptions import CanvasException
+import time
 
 
 class FlexCanvas(Canvas):
@@ -21,17 +23,27 @@ class FlexCanvas(Canvas):
 
         return query_response['data']['course']['allowFinalGradeOverride']
 
-    def set_override(self, enrollment_id, override):
+    def set_override(self, enrollment_id, override, incomplete, attempt=1):
         mutation = """mutation OverrideFinalScore($enrollment_id: ID!, $override: Float) {
                     setOverrideScore(input: { enrollmentId: $enrollment_id,
                                               overrideScore: $override }) {
                         grades {
                             overrideScore
                             } } }"""
-
-        self.graphql(mutation,
-                     variables={"enrollment_id": enrollment_id,
-                                "override": override})
+        try:
+            if not incomplete[0]:
+                self.graphql(mutation,
+                             variables={"enrollment_id": enrollment_id,
+                                        "override": override})
+        except CanvasException:
+            if attempt >= 5:
+                time.sleep(1)
+                self.set_override(enrollment_id,
+                                  override,
+                                  incomplete,
+                                  attempt+1)
+            else:
+                incomplete[0] = True
 
     def get_groups_and_enrollments(self, course_id):
         query = """query AssignmentGroupQuery($course_id: ID) {
