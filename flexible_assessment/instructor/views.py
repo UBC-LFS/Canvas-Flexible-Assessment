@@ -8,18 +8,16 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
 from django.http import HttpResponseRedirect
-from django.urls import reverse, reverse_lazy
-from flexible_assessment.view_roles import Instructor
+from django.urls import reverse
 
 from instructor.canvas_api import FlexCanvas
 
 from . import grader, writer
 from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
-                    OptionsForm, StudentBaseForm)
+                    OptionsForm, StudentAssessmentBaseForm)
 
 
-class InstructorHome(views.TemplateView):
-    allowed_view_role = Instructor
+class InstructorHome(views.InstructorTemplateView):
     template_name = 'instructor/instructor_home.html'
 
     def get(self, request, *args, **kwargs):
@@ -30,66 +28,34 @@ class InstructorHome(views.TemplateView):
             utils.update_students(request, course)
         return response
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['display_name'] = self.request.session.get('display_name', '')
-        return context
 
-
-class FlexAssessmentListView(views.ListView):
+class FlexAssessmentListView(views.ExportView, views.InstructorListView):
     """Extends ListView for student flex allocations"""
 
-    allowed_view_role = Instructor
-    model = models.UserProfile
-    context_object_name = 'student_list'
     template_name = 'instructor/percentage_list.html'
 
-    def get(self, request, *args, **kwargs):
-        """Gets list page view or csv response of students """
-
-        response = super().get(request, *args, **kwargs)
-        if self.kwargs.get('csv', False):
-            students = self.get_queryset()
-            course_id = self.kwargs['course_id']
-            course = models.Course.objects.get(pk=course_id)
-
-            csv_response = writer.students_csv(course, students)
-            return csv_response
-        else:
-            return response
-
-    def get_queryset(self):
-        """QuerySet is students for current course"""
-
+    def export_list(self):
+        students = self.get_queryset()
         course_id = self.kwargs['course_id']
-        queryset = models.UserProfile.objects.filter(
-            role=models.Roles.STUDENT, usercourse__course__id=course_id)
-        return queryset
+        course = models.Course.objects.get(pk=course_id)
+
+        csv_response = writer.students_csv(course, students)
+        return csv_response
 
 
-class FinalGradeListView(views.ListView):
+class FinalGradeListView(views.ExportView, views.InstructorListView):
     """Extends ListView for student grades with default and override scores"""
 
-    allowed_view_role = Instructor
-    model = models.UserProfile
-    context_object_name = 'student_list'
     template_name = 'instructor/final_grade_list.html'
 
-    def get(self, request, *args, **kwargs):
-        """Gets list page view or csv response of final grades"""
+    def export_list(self):
+        students = self.get_queryset()
+        course_id = self.kwargs['course_id']
+        course = models.Course.objects.get(pk=course_id)
+        groups = self.get_context_data().get('groups')
 
-        response = super().get(request, *args, **kwargs)
-        if self.kwargs.get('csv', False):
-            students = self.get_queryset()
-            course_id = self.kwargs['course_id']
-            course = models.Course.objects.get(pk=course_id)
-            groups = self.get_context_data().get('groups')
-
-            csv_response = writer.grades_csv(course, students, groups)
-            return csv_response
-
-        else:
-            return response
+        csv_response = writer.grades_csv(course, students, groups)
+        return csv_response
 
     def post(self, request, *args, **kwargs):
         """Sets override grades for students on Canvas"""
@@ -126,17 +92,12 @@ class FinalGradeListView(views.ListView):
                     kwargs={'course_id': course_id}))
 
     def get_context_data(self, **kwargs):
-        context = super(FinalGradeListView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         course_id = self.kwargs['course_id']
         groups, _ = FlexCanvas(self.request)\
             .get_groups_and_enrollments(course_id)
         context['groups'] = groups
         return context
-
-    def get_queryset(self):
-        course_id = self.kwargs['course_id']
-        return models.UserProfile.objects.filter(
-            role=models.Roles.STUDENT, usercourse__course__id=course_id)
 
     def _submit_final_grades(self, course_id, canvas):
         course = models.Course.objects.get(pk=course_id)
@@ -144,6 +105,7 @@ class FinalGradeListView(views.ListView):
 
         threads = []
         incomplete = [False]
+        batch_size = 64
         for student_id, enrollment_id in enrollments.items():
             student = models.UserProfile.objects\
                 .filter(pk=student_id)\
@@ -157,7 +119,7 @@ class FinalGradeListView(views.ListView):
                        args=(enrollment_id, override, incomplete))
             threads.append(t)
 
-            if len(threads) >= 64:
+            if len(threads) >= batch_size:
                 [t.start() for t in threads]
                 [t.join() for t in threads]
                 threads = []
@@ -168,19 +130,14 @@ class FinalGradeListView(views.ListView):
         return not incomplete[0]
 
 
-class AssessmentGroupView(views.FormView):
+class AssessmentGroupView(views.InstructorFormView):
     """Extends FormView for matching assessments in the app
     to assignment groups on Canvas
     """
 
-    allowed_view_role = Instructor
     template_name = 'instructor/assessment_group_form.html'
     form_class = AssessmentGroupForm
-
-    def get_success_url(self):
-        return reverse_lazy(
-            'instructor:final_grades',
-            kwargs={'course_id': self.kwargs['course_id']})
+    success_reverse_name = 'instructor:final_grades'
 
     def get_form_kwargs(self):
         """Adds course_id, FlexCanvas instance, and assessments as keyword
@@ -192,7 +149,7 @@ class AssessmentGroupView(views.FormView):
             Form keyword arguments
         """
 
-        kwargs = super(AssessmentGroupView, self).get_form_kwargs()
+        kwargs = super().get_form_kwargs()
 
         course_id = self.kwargs['course_id']
 
@@ -237,12 +194,12 @@ class AssessmentGroupView(views.FormView):
                     'Matched groups must be unique'))
 
         if form.errors:
-            response = super(AssessmentGroupView, self).form_invalid(form)
+            response = super().form_invalid(form)
             return response
 
         self._update_assessments_and_groups(form)
 
-        response = super(AssessmentGroupView, self).form_valid(form)
+        response = super().form_valid(form)
         return response
 
     def _update_assessments_and_groups(self, form):
@@ -275,15 +232,10 @@ class AssessmentGroupView(views.FormView):
             canvas_course.get_assignment_group(id).edit(group_weight=0)
 
 
-class InstructorFormView(views.FormView):
-    allowed_view_role = Instructor
+class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
     template_name = 'instructor/instructor_form.html'
     form_class = BaseModelFormSet
-
-    def get_success_url(self):
-        return reverse_lazy(
-            'instructor:instructor_home',
-            kwargs={'course_id': self.kwargs['course_id']})
+    success_reverse_name = 'instructor:instructor_home'
 
     def get_context_data(self, **kwargs):
         """Populates assignment formset and date form according to POST or GET request
@@ -293,7 +245,7 @@ class InstructorFormView(views.FormView):
         context : context
             Request context
         """
-        context = super(InstructorFormView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         course = context['course']
 
         course_settings = FlexCanvas(self.request) \
@@ -324,18 +276,12 @@ class InstructorFormView(views.FormView):
 
         return context
 
-    def get(self, request, *args, **kwargs):
-        """Gets form page or csv response of assessments"""
+    def export_list(self):
+        course_id = self.kwargs['course_id']
+        course = models.Course.objects.get(pk=course_id)
 
-        response = super().get(request, *args, **kwargs)
-        if self.kwargs.get('csv', False):
-            course_id = self.kwargs['course_id']
-            course = models.Course.objects.get(pk=course_id)
-
-            csv_response = writer.assessments_csv(course)
-            return csv_response
-        else:
-            return response
+        csv_response = writer.assessments_csv(course)
+        return csv_response
 
     def post(self, request, *args, **kwargs):
         """Defines the formset and date form for validation.
@@ -407,7 +353,7 @@ class InstructorFormView(views.FormView):
                         .format(len(curr_conflict_students), assessment.title))
 
         if conflict_students and not ignore_conflicts:
-            return super(InstructorFormView, self).form_invalid(formset)
+            return super().form_invalid(formset)
 
         assessment_created = False
         for assessment in assessments:
@@ -472,20 +418,17 @@ class InstructorFormView(views.FormView):
         fas_to_reset.update(flex=None)
 
 
-class OverrideStudentFormView(views.FormView):
-    allowed_view_role = Instructor
+class OverrideStudentAssessmentView(views.InstructorFormView):
     template_name = 'instructor/override_student_form.html'
-    form_class = StudentBaseForm
+    form_class = StudentAssessmentBaseForm
 
     def get_success_url(self):
         if self.kwargs.get('previous', '') == 'final':
-            return reverse_lazy(
-                'instructor:final_grades',
-                kwargs={'course_id': self.kwargs['course_id']})
+            self.success_reverse_name = 'instructor:final_grades'
+        else:
+            self.success_reverse_name = 'instructor:percentage_list',
 
-        return reverse_lazy(
-            'instructor:percentage_list',
-            kwargs={'course_id': self.kwargs['course_id']})
+        return super().get_success_url()
 
     def get_context_data(self, **kwargs):
         """Adds the student name whose allocations are being overriden to the context
@@ -496,10 +439,7 @@ class OverrideStudentFormView(views.FormView):
             Request context
         """
 
-        context = super(
-            OverrideStudentFormView,
-            self).get_context_data(
-            **kwargs)
+        context = super().get_context_data(**kwargs)
         student_name = models.UserProfile.objects.get(
             pk=self.kwargs['pk']).display_name
         context['student_name'] = student_name
@@ -518,7 +458,7 @@ class OverrideStudentFormView(views.FormView):
             Form keyword arguments
         """
 
-        kwargs = super(OverrideStudentFormView, self).get_form_kwargs()
+        kwargs = super().get_form_kwargs()
         user_id = self.kwargs['pk']
         course_id = self.kwargs['course_id']
 
@@ -563,7 +503,7 @@ class OverrideStudentFormView(views.FormView):
                     'Flex should be greater than or equal to min'))
 
         if form.errors:
-            response = super(OverrideStudentFormView, self).form_invalid(form)
+            response = super().form_invalid(form)
             return response
 
         for assessment_id, flex in assessment_fields:
@@ -573,9 +513,9 @@ class OverrideStudentFormView(views.FormView):
             flex_assessment.flex = flex
             flex_assessment.save()
 
-        response = super(OverrideStudentFormView, self).form_valid(form)
+        response = super().form_valid(form)
         return response
 
 
-class ImportAssessmentsView(views.FormView):
+class ImportAssessmentsView(views.InstructorFormView):
     pass

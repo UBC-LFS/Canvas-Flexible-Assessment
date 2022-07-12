@@ -1,10 +1,10 @@
 from django import forms
 from django.utils import timezone
 from flexible_assessment.models import Course, UserComment
-from instructor.forms import StudentBaseForm
+from instructor.forms import StudentAssessmentBaseForm
 
 
-class StudentForm(StudentBaseForm):
+class StudentAssessmentForm(StudentAssessmentBaseForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user_comment = UserComment.objects.filter(

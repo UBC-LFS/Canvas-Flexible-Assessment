@@ -6,7 +6,7 @@ from flexible_assessment.models import (Assessment, AssignmentGroup, Course,
                                         FlexAssessment)
 
 
-class StudentBaseForm(forms.Form):
+class StudentAssessmentBaseForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.user_id = kwargs.pop('user_id')
         self.course_id = kwargs.pop('course_id')
@@ -56,7 +56,7 @@ class OptionsForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         hide_total = kwargs.pop('hide_total', False)
-        super(OptionsForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.initial['hide_total'] = hide_total
 
 
@@ -64,7 +64,7 @@ class DateForm(ModelForm):
     """Form that sets flexible assessment availability for students."""
 
     def __init__(self, *args, **kwargs):
-        super(DateForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.instance.open:
             self.initial['open'] = self.instance.open
         else:

@@ -11,11 +11,11 @@ urlpatterns = [
         name='instructor_home'),
     path(
         '<int:course_id>/form/',
-        views.InstructorFormView.as_view(),
+        views.InstructorAssessmentView.as_view(),
         name='instructor_form'),
     path(
         '<int:course_id>/form/csv',
-        views.InstructorFormView.as_view(),
+        views.InstructorAssessmentView.as_view(),
         {'csv': True},
         name='assessments_export'),
     path(
@@ -29,12 +29,12 @@ urlpatterns = [
         name='percentage_list_export'),
     path(
         '<int:course_id>/percentages/<slug:pk>/',
-        views.OverrideStudentFormView.as_view(),
+        views.OverrideStudentAssessmentView.as_view(),
         {'previous': 'percentage'},
         name='override_student_form_percentage'),
     path(
         '<int:course_id>/percentages/<slug:pk>/final',
-        views.OverrideStudentFormView.as_view(),
+        views.OverrideStudentAssessmentView.as_view(),
         {'previous': 'final'},
         name='override_student_form_final'),
     path(

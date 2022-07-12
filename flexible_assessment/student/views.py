@@ -1,35 +1,23 @@
 from django.forms import ValidationError
-from django.urls import reverse_lazy
 from django.utils import timezone
 
 import flexible_assessment.class_views as views
 import flexible_assessment.models as models
-from flexible_assessment.view_roles import Student
 
-from .forms import StudentForm
+from .forms import StudentAssessmentForm
 
 
-class StudentHome(views.TemplateView):
-    allowed_view_role = Student
+class StudentHome(views.StudentTemplateView):
     template_name = 'student/student_home.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['display_name'] = self.request.session.get('display_name', '')
-        return context
 
-
-class StudentFormView(views.FormView):
+class StudentAssessmentView(views.StudentFormView):
     """Extends Django generic FormView and authentication mixins
     for student form."""
 
-    allowed_view_role = Student
     template_name = 'student/student_form.html'
-    form_class = StudentForm
-
-    def get_success_url(self):
-        return reverse_lazy('student:student_home',
-                            kwargs={'course_id': self.kwargs['course_id']})
+    form_class = StudentAssessmentForm
+    success_reverse_name = 'student:student_home'
 
     def get_form_kwargs(self):
         """Adds course_id as keyword arguments for making form fields
@@ -40,7 +28,7 @@ class StudentFormView(views.FormView):
             Form keyword arguments
         """
 
-        kwargs = super(StudentFormView, self).get_form_kwargs()
+        kwargs = super().get_form_kwargs()
         user_id = self.request.session.get('user_id', '')
         course_id = self.kwargs['course_id']
 
@@ -77,7 +65,7 @@ class StudentFormView(views.FormView):
                     'Flex should be greater than or equal to min'))
 
         if form.errors:
-            response = super(StudentFormView, self).form_invalid(form)
+            response = super().form_invalid(form)
             return response
 
         for assessment_id, flex in assessment_fields:
@@ -92,5 +80,5 @@ class StudentFormView(views.FormView):
         user_comment.comment = comment
         user_comment.save()
 
-        response = super(StudentFormView, self).form_valid(form)
+        response = super().form_valid(form)
         return response
