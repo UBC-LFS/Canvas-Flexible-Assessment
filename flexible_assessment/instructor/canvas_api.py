@@ -36,7 +36,7 @@ class FlexCanvas(Canvas):
                              variables={"enrollment_id": enrollment_id,
                                         "override": override})
         except CanvasException:
-            if attempt >= 5:
+            if attempt <= 5:
                 time.sleep(1)
                 self.set_override(enrollment_id,
                                   override,
