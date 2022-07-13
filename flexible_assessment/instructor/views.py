@@ -561,12 +561,6 @@ class ImportAssessmentView(views.InstructorFormView):
     template_name = 'instructor/assessment_upload.html'
     form_class = AssessmentFileForm
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form'] = AssessmentFileForm(self.request.POST or None,
-                                             self.request.FILES or None)
-        return context
-
     def get_success_url(self):
         fields_str = json.dumps(self.fields, separators=(',', ':'))
         return reverse_lazy('instructor:instructor_form',
