@@ -28,7 +28,7 @@
                         <tbody>
                             {% for student in student_list %}
                                 <tr>
-                                    <td class="text-center align-middle text-break"><a href="{% url 'instructor:override_student_form_final' course.id student.user_id %}">{{ student.display_name }}</a></td>
+                                    <td class="text-center align-middle text-break"><a href="{% url 'instructor:override_student_form_final' course.id student.user_id %}?previous=final">{{ student.display_name }}</a></td>
                                     {% for assessment in course.assessment_set.all %}
                                         {% get_score groups assessment.group.id student as score %}
                                         <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>

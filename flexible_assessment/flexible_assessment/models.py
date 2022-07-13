@@ -11,42 +11,8 @@ class UserProfileManager(BaseUserManager):
 
     Methods
     -------
-    create_user(user_id, login_id, display_name, role, password=None)
-        Creates regular user
     create_superuser(user_id, login_id, display_name, role, password=None)
         Creates superuser"""
-
-    def create_user(self, user_id, login_id,
-                    display_name, role, password=None):
-        """Regular User creation
-
-        Parameters
-        ----------
-        user_id : int
-            Unique id for Canvas user used for identification
-        login_id : str
-            Used as canvas login/username (CWL)
-        display_name : str
-            Name of user
-        role : int
-            Used as identification for role of user in course
-            (see models.Roles class)
-
-        Returns
-        -------
-        user : UserProfile
-            Regular user instance"""
-
-        user = self.model(
-            user_id=user_id,
-            login_id=login_id,
-            display_name=display_name,
-            role=role
-        )
-
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
 
     def create_superuser(self, user_id, login_id,
                          display_name, role, password=None):
@@ -241,9 +207,6 @@ class Assessment(models.Model):
     def __str__(self):
         return self.title
 
-    # class Meta:
-    #     ordering = ["title"]
-
 
 class FlexAssessment(models.Model):
     """Table containing students grade allocation for assessment
@@ -263,9 +226,6 @@ class FlexAssessment(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     flex = models.IntegerField(null=True, blank=True)
-
-    # class Meta:
-    #     ordering = ["assessment__title"]
 
 
 class UserComment(models.Model):

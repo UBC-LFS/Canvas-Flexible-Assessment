@@ -1,3 +1,6 @@
+import csv
+from io import TextIOWrapper
+import json
 from threading import Thread
 
 import flexible_assessment.class_views as views
@@ -8,13 +11,14 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
 from django.http import HttpResponseRedirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 
 from instructor.canvas_api import FlexCanvas
 
 from . import grader, writer
-from .forms import (AssessmentFormSet, AssessmentGroupForm, DateForm,
-                    OptionsForm, StudentAssessmentBaseForm)
+from .forms import (AssessmentFileForm, AssessmentGroupForm, DateForm,
+                    OptionsForm, StudentAssessmentBaseForm,
+                    get_assessment_formset)
 
 
 class InstructorHome(views.InstructorTemplateView):
@@ -263,16 +267,33 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             self.request.POST or None, prefix='options', hide_total=hide_total)
 
         if self.request.POST:
+            AssessmentFormSet = get_assessment_formset()
             context['formset'] = AssessmentFormSet(
                 self.request.POST, prefix='assessment')
+
+        elif self.request.GET.get('initial', False):
+            fields_str = self.request.GET.get('initial', '')
+            initial = self._to_initial_dict(fields_str)
+
+            AssessmentFormSet = get_assessment_formset(extra=len(initial))
+            context['formset'] = AssessmentFormSet(
+                queryset=models.Assessment.objects.none(),
+                initial=initial,
+                prefix='assessment')
+            context['populated'] = True
+
         else:
             qs = models.Assessment.objects.filter(
                     course=course)
-            ids = qs.values_list('id', flat=True)
-            original_order = Case(*[When(id=id, then=pos)
-                                    for pos, id in enumerate(ids)])
+            if len(qs) > 0:
+                ids = qs.values_list('id', flat=True)
+                original_order = Case(*[When(id=id, then=pos)
+                                        for pos, id in enumerate(ids)])
+                qs = qs.order_by(original_order)
+
+            AssessmentFormSet = get_assessment_formset()
             context['formset'] = AssessmentFormSet(
-                queryset=qs.order_by(original_order), prefix='assessment')
+                queryset=qs, prefix='assessment')
 
         return context
 
@@ -291,6 +312,8 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         date_form = DateForm(request.POST,
                              instance=models.Course.objects.get(pk=course_id),
                              prefix='date')
+
+        AssessmentFormSet = get_assessment_formset()
 
         formset = AssessmentFormSet(request.POST, prefix='assessment')
         options_form = OptionsForm(request.POST, prefix='options')
@@ -417,16 +440,32 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             .filter(assessment__course=course)
         fas_to_reset.update(flex=None)
 
+    def _to_initial_dict(self, fields_str):
+        if not fields_str:
+            return []
+
+        fields = json.loads(fields_str)
+        initial = []
+        names = ('title', 'default', 'min', 'max')
+        for values in fields:
+            assessment_fields = {}
+            for name, value in zip(names, values):
+                assessment_fields[name] = value
+            initial.append(assessment_fields)
+
+        return initial
+
 
 class OverrideStudentAssessmentView(views.InstructorFormView):
     template_name = 'instructor/override_student_form.html'
     form_class = StudentAssessmentBaseForm
 
     def get_success_url(self):
-        if self.kwargs.get('previous', '') == 'final':
+        previous = self.request.GET.get('previous', '')
+        if previous == 'final':
             self.success_reverse_name = 'instructor:final_grades'
         else:
-            self.success_reverse_name = 'instructor:percentage_list',
+            self.success_reverse_name = 'instructor:percentage_list'
 
         return super().get_success_url()
 
@@ -444,7 +483,8 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
             pk=self.kwargs['pk']).display_name
         context['student_name'] = student_name
 
-        previous = self.kwargs.get('previous', '')
+        previous = self.request.GET.get('previous', '')
+
         context['previous'] = previous
 
         return context
@@ -517,5 +557,48 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         return response
 
 
-class ImportAssessmentsView(views.InstructorFormView):
-    pass
+class ImportAssessmentView(views.InstructorFormView):
+    template_name = 'instructor/assessment_upload.html'
+    form_class = AssessmentFileForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = AssessmentFileForm(self.request.POST or None,
+                                             self.request.FILES or None)
+        return context
+
+    def get_success_url(self):
+        fields_str = json.dumps(self.fields, separators=(',', ':'))
+        return reverse_lazy('instructor:instructor_form',
+                            kwargs={'course_id': self.kwargs['course_id']}) \
+            + '?initial={}'.format(fields_str)
+
+    def form_valid(self, form):
+        file_header = self.request.FILES.get('assessments', None)
+        if file_header is None:
+            return super().form_invalid(form)
+        encoded_file = TextIOWrapper(file_header.file,
+                                     encoding=self.request.encoding)
+
+        with encoded_file as csv_file:
+            data = []
+            reader = csv.reader(csv_file)
+            headers = next(reader, None)
+            if headers != ['Assessment', 'Default', 'Minimum', 'Maximum']:
+                return super().form_invalid(form)
+
+            for row in reader:
+                if len(row) != 4:
+                    return super().form_invalid(form)
+                try:
+                    int(row[1])
+                    int(row[2])
+                    int(row[3])
+                except ValueError:
+                    return super().form_invalid(form)
+
+                data.append(row)
+
+        self.fields = data
+
+        return super().form_valid(form)

@@ -30,12 +30,10 @@ urlpatterns = [
     path(
         '<int:course_id>/percentages/<slug:pk>/',
         views.OverrideStudentAssessmentView.as_view(),
-        {'previous': 'percentage'},
         name='override_student_form_percentage'),
     path(
         '<int:course_id>/percentages/<slug:pk>/final',
         views.OverrideStudentAssessmentView.as_view(),
-        {'previous': 'final'},
         name='override_student_form_final'),
     path(
         '<int:course_id>/final/match/',
@@ -55,4 +53,9 @@ urlpatterns = [
         views.FinalGradeListView.as_view(),
         {'submit': True},
         name='final_grades_submit'),
+    path(
+        '<int:course_id>/form/upload',
+        views.ImportAssessmentView.as_view(),
+        name='file_upload'
+    )
 ]

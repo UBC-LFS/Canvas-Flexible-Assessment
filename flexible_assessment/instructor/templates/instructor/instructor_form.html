@@ -29,7 +29,7 @@
                                 data-bs-toggle="dropdown" style="border-radius: 1em;">Actions</button>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a class="dropdown-item" href="#">
+                                    <a class="dropdown-item" href="{% url 'instructor:file_upload' course.id %}">
                                         <i class="bi bi-upload"></i> Import</a>
                                 </li>
                                 <li>
@@ -41,7 +41,7 @@
                         </div>
                     </div>
                     <div class="card-body pt-2 pb-3">
-                        <table class='table table-striped' style="table-layout: fixed">
+                        <table id="assessments" class='table table-striped {% if populated %}populated{% endif %}' style="table-layout: fixed">
                             <thead>
                                 <tr>
                                     <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Title</th>
@@ -152,17 +152,19 @@
 	});
 
     $(document).ready(function () {
-        var errors = [];
-        $('.warning').each(function(_, error) {
-            errors.push(error.textContent);
+        var warnings = [];
+        $('.warning').each(function(_, warning) {
+            warnings.push(warning.textContent);
         });
-        var error_str = errors.join('\n');
-        if (error_str)
-            if (confirm(error_str +  '\n Are you sure you want to reset these student allocations?')){
+        var warning_str = warnings.join('\n');
+        if (warning_str)
+            if (confirm(warning_str +  '\n Are you sure you want to reset these student allocations?')){
                 $('#id_options-ignore_conflicts').val('true');
                 console.log($('#id_options-ignore_conflicts'));
                 $('form').submit();
             }
+        if ($('#assessments').hasClass('populated'))
+            alert('Assessments have been added to the form, click {% if course.close %}Update to save{% else %}Save to confirm{% endif %}.')
     });
 
 	$('#add').click(function () {

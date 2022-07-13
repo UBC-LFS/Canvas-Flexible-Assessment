@@ -191,11 +191,17 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                         'Minimum must be lower than maximum'))
 
 
-AssessmentFormSet = modelformset_factory(
-    Assessment, fields=('title', 'default', 'min', 'max'),
-    extra=0,
-    widgets={'title': forms.TextInput(attrs={'size': 15}),
-             'default': forms.NumberInput(attrs={'size': 3}),
-             'min': forms.NumberInput(attrs={'size': 3}),
-             'max': forms.NumberInput(attrs={'size': 3})},
-    formset=AssessmentBaseFormSet)
+class AssessmentFileForm(forms.Form):
+    file = forms.FileField(required=False)
+
+
+def get_assessment_formset(extra=0):
+    AssessmentFormSet = modelformset_factory(
+        Assessment, fields=('title', 'default', 'min', 'max'),
+        extra=extra,
+        widgets={'title': forms.TextInput(attrs={'size': 15}),
+                 'default': forms.NumberInput(attrs={'size': 3}),
+                 'min': forms.NumberInput(attrs={'size': 3}),
+                 'max': forms.NumberInput(attrs={'size': 3})},
+        formset=AssessmentBaseFormSet)
+    return AssessmentFormSet

@@ -71,7 +71,7 @@ def grades_csv(course, students, groups):
                 assessment.group.id)) for assessment in assessments]
 
     fields = ['Student'] + titles + \
-        ['Override Final Grade', 'Default Total', 'Difference']
+        ['Override Total', 'Default Total', 'Difference']
 
     csv_writer.writerow(fields)
 
@@ -114,7 +114,7 @@ def assessments_csv(course):
 
     assessments = [
         assessment for assessment in course.assessment_set.all()]
-    fields = ('Assessment', 'Default', 'Min', 'Max')
+    fields = ('Assessment', 'Default', 'Minimum', 'Maximum')
 
     csv_writer.writerow(fields)
 

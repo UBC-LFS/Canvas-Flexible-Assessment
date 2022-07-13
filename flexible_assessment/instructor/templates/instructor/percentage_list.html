@@ -27,7 +27,7 @@
                             {% for student in student_list %}
                                 <tr>
                                     <td class="text-center align-middle text-break"><a
-                                            href="{% url 'instructor:override_student_form_percentage' course.id student.user_id %}">{{ student.display_name }}</a></td>
+                                            href="{% url 'instructor:override_student_form_percentage' course.id student.user_id %}?previous=percentages">{{ student.display_name }}</a></td>
                                     {% for assessment in course.assessment_set.all %}
                                         {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
                                             <td class="text-center align-middle">{{ flex_assessment.flex|to_str|default_if_none:"-" }}</td>
