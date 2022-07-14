@@ -109,7 +109,7 @@ class FlexCanvas(Canvas):
         group_weight: groupWeight
         grade_list: gradesConnection {
           grades: nodes {
-            currentScore
+            current_score: currentScore
             enrollment {
               user {
                 user_id: _id
@@ -150,7 +150,7 @@ class FlexCanvas(Canvas):
 
                 user_enrollment_dict[user_id] = enrollment_id
 
-                score = grade_flattened['currentScore']
+                score = grade_flattened['current_score']
                 updated_grades.append((user_id, score))
 
             group_data['grade_list']['grades'] = updated_grades
