@@ -7,6 +7,8 @@ from . import grader
 
 
 class CSVWriter:
+    """CSV writer for exporting tables and forms to a csv response"""
+
     _writer = None
     _response = None
 
@@ -30,14 +32,16 @@ class CSVWriter:
 
 
 def students_csv(course, students):
+    """Creates csv response for percentage list"""
+
     csv_writer = CSVWriter('Students', course)
 
     assessments = [
         assessment for assessment in course.assessment_set.all()]
-    fields = ['Student'] + \
+    header = ['Student'] + \
         [assessment.title for assessment in assessments] + ['Comment']
 
-    csv_writer.writerow(fields)
+    csv_writer.writerow(header)
 
     for student in students:
         values = []
@@ -58,6 +62,8 @@ def students_csv(course, students):
 
 
 def grades_csv(course, students, groups):
+    """Creates csv response for final grade list"""
+
     csv_writer = CSVWriter('Grades', course)
 
     assessments = [
@@ -70,10 +76,10 @@ def grades_csv(course, students, groups):
                 groups,
                 assessment.group.id)) for assessment in assessments]
 
-    fields = ['Student'] + titles + \
+    header = ['Student'] + titles + \
         ['Override Total', 'Default Total', 'Difference']
 
-    csv_writer.writerow(fields)
+    csv_writer.writerow(header)
 
     for student in students:
         values = []
@@ -110,13 +116,15 @@ def grades_csv(course, students, groups):
 
 
 def assessments_csv(course):
+    """Creates csv response for course assessments"""
+
     csv_writer = CSVWriter('Assessments', course)
 
     assessments = [
         assessment for assessment in course.assessment_set.all()]
-    fields = ('Assessment', 'Default', 'Minimum', 'Maximum')
+    header = ('Assessment', 'Default', 'Minimum', 'Maximum')
 
-    csv_writer.writerow(fields)
+    csv_writer.writerow(header)
 
     for assessment in assessments:
         values = (assessment.title, assessment.default,

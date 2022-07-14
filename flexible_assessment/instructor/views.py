@@ -1,6 +1,6 @@
 import csv
-from io import TextIOWrapper
 import json
+from io import TextIOWrapper
 from threading import Thread
 
 import flexible_assessment.class_views as views
@@ -11,7 +11,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
 from django.http import HttpResponseRedirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 
 from instructor.canvas_api import FlexCanvas
 
@@ -34,7 +34,7 @@ class InstructorHome(views.InstructorTemplateView):
 
 
 class FlexAssessmentListView(views.ExportView, views.InstructorListView):
-    """Extends ListView for student flex allocations"""
+    """ListView for student flexible allocations"""
 
     template_name = 'instructor/percentage_list.html'
 
@@ -48,7 +48,7 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
 
 
 class FinalGradeListView(views.ExportView, views.InstructorListView):
-    """Extends ListView for student grades with default and override scores"""
+    """ListView for student final grades with default and override scores"""
 
     template_name = 'instructor/final_grade_list.html'
 
@@ -96,6 +96,14 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                     kwargs={'course_id': course_id}))
 
     def get_context_data(self, **kwargs):
+        """Adds Canvas Assignment Groups to context for rendering grades
+
+        Returns
+        -------
+        context : context
+            Request context
+        """
+
         context = super().get_context_data(**kwargs)
         course_id = self.kwargs['course_id']
         groups, _ = FlexCanvas(self.request)\
@@ -104,6 +112,8 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         return context
 
     def _submit_final_grades(self, course_id, canvas):
+        """Uploads final override grades in batches to Canvas"""
+
         course = models.Course.objects.get(pk=course_id)
         groups, enrollments = canvas.get_groups_and_enrollments(course_id)
 
@@ -135,7 +145,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
 
 
 class AssessmentGroupView(views.InstructorFormView):
-    """Extends FormView for matching assessments in the app
+    """FormView for matching assessments in the app
     to assignment groups on Canvas
     """
 
@@ -171,8 +181,8 @@ class AssessmentGroupView(views.InstructorFormView):
 
         Parameters
         ----------
-        form : form
-            Contains Django form fields and submitted field data
+        form : AssessmentGroupForm
+            Matched flexible assessments and Canvas assignment groups
 
         Returns
         -------
@@ -237,12 +247,15 @@ class AssessmentGroupView(views.InstructorFormView):
 
 
 class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
+    """FormView for instructor setup of flexible assessment for a course"""
+
     template_name = 'instructor/instructor_form.html'
     form_class = BaseModelFormSet
     success_reverse_name = 'instructor:instructor_home'
 
     def get_context_data(self, **kwargs):
-        """Populates assignment formset and date form according to POST or GET request
+        """Populates and adds assessment formset, date form, and options
+        form to context
 
         Returns
         -------
@@ -305,8 +318,9 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         return csv_response
 
     def post(self, request, *args, **kwargs):
-        """Defines the formset and date form for validation.
-        Sets Canvas course setting to hide final grades to True"""
+        """Defines the assessment formset, date form, and options form
+        for validation
+        """
 
         course_id = self.kwargs['course_id']
         date_form = DateForm(request.POST,
@@ -331,14 +345,18 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             return self.form_invalid(options_form)
 
     def forms_valid(self, formset, date_form, options_form):
-        """Validates and saves assignment formset and date form
+        """Validates and saves assessment formset and date form and creates
+        or removes related flexible assessments, and updates relevant Canvas
+        course settings using options form
 
         Parameters
         ----------
-        formset : formset
+        formset : AssessmentFormSet
             Contains assignment forms and their submitted form data
-        date_form : form
+        date_form : DateForm
             Contains flex assessment open and close datetime
+        options_form : OptionsForm
+            Contains options for the course setup
 
         Returns
         -------
@@ -417,6 +435,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         return True if flex_assessments else False
 
     def _check_valid_flex(self, assessment):
+        """Returns students with flex allocations
+        out of allowed assessment range i.e. have conflicts
+        """
+
         flex_assessments = assessment.flexassessment_set \
             .exclude(flex__isnull=True)
 
@@ -429,6 +451,8 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         return conflict_students
 
     def _reset_conflict_students(self, course, conflict_students):
+        """Resets flex allocations and comments for students with conflicts"""
+
         for student in conflict_students:
             fas_to_reset = student.flexassessment_set \
                 .filter(assessment__course=course)
@@ -436,11 +460,26 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             student.usercomment_set.filter(course=course).update(comment="")
 
     def _reset_all_students(self, course):
+        """Resets flex allocations for all students in the course"""
+
         fas_to_reset = models.FlexAssessment.objects \
             .filter(assessment__course=course)
         fas_to_reset.update(flex=None)
 
     def _to_initial_dict(self, fields_str):
+        """Converts assessment data for formset initial data
+
+        Parameters
+        ----------
+        fields_str : str
+            Assessment data as string
+
+        Returns
+        -------
+        initial : dict
+            Assessment formset initial data
+        """
+
         if not fields_str:
             return []
 
@@ -457,6 +496,8 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
 
 class OverrideStudentAssessmentView(views.InstructorFormView):
+    """FormView for instructor overriding student flexible allocations"""
+
     template_name = 'instructor/override_student_form.html'
     form_class = StudentAssessmentBaseForm
 
@@ -470,7 +511,8 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         return super().get_success_url()
 
     def get_context_data(self, **kwargs):
-        """Adds the student name whose allocations are being overriden to the context
+        """Adds the student name whose allocations are being overriden
+        and previous page to the context
 
         Returns
         -------
@@ -490,7 +532,7 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         return context
 
     def get_form_kwargs(self):
-        """Adds course_id as keyword argument for making form fields
+        """Adds user id and course id as keyword argument for making form fields
 
         Returns
         -------
@@ -516,8 +558,8 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
 
         Parameters
         ----------
-        form : form
-            Contains Django form fields and submitted field data
+        form : StudentAssessmentBaseForm
+            Flexible allocation data for assessments in course
 
         Returns
         -------
@@ -558,16 +600,37 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
 
 
 class ImportAssessmentView(views.InstructorFormView):
+    """FormView for importing assessments"""
+
     template_name = 'instructor/assessment_upload.html'
     form_class = AssessmentFileForm
+    success_reverse_name = 'instructor:instructor_form'
 
     def get_success_url(self):
+        """Appends imported assessment data to url as parameter"""
+
         fields_str = json.dumps(self.fields, separators=(',', ':'))
-        return reverse_lazy('instructor:instructor_form',
-                            kwargs={'course_id': self.kwargs['course_id']}) \
+        success_url = super().get_success_url() \
             + '?initial={}'.format(fields_str)
 
+        return success_url
+
     def form_valid(self, form):
+        """Validates import assessments form,
+        sets url parameter for form data to be used on success callback
+
+        Parameters
+        ----------
+        form : AssessmentFileForm
+            Contains uploaded assessment data file
+
+        Returns
+        -------
+        response : Union[HttpResponseRedirect, TemplateResponse]
+            HttpResponseRedirect if form is valid,
+            TemplateResponse if error
+        """
+
         file_header = self.request.FILES.get('assessments', None)
         if file_header is None:
             return super().form_invalid(form)

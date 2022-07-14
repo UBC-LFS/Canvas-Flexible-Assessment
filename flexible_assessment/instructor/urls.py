@@ -19,6 +19,10 @@ urlpatterns = [
         {'csv': True},
         name='assessments_export'),
     path(
+        '<int:course_id>/form/upload',
+        views.ImportAssessmentView.as_view(),
+        name='file_upload'),
+    path(
         '<int:course_id>/percentages/',
         views.FlexAssessmentListView.as_view(),
         name='percentage_list'),
@@ -52,10 +56,5 @@ urlpatterns = [
         '<int:course_id>/final/list/submit/',
         views.FinalGradeListView.as_view(),
         {'submit': True},
-        name='final_grades_submit'),
-    path(
-        '<int:course_id>/form/upload',
-        views.ImportAssessmentView.as_view(),
-        name='file_upload'
-    )
+        name='final_grades_submit')
 ]

@@ -10,6 +10,11 @@ def get_default_total(groups, student):
         Assignment groups retrieved from Canvas API
     student : UserProfile
         Student object
+
+    Returns
+    -------
+    float
+        Default final grade for student
     """
 
     student_id = student.user_id
@@ -30,7 +35,7 @@ def get_default_total(groups, student):
 
     for score, weight in score_weight:
         overall += score * weight / 100
-    overall = overall / sum(weights) * 100 if sum(weights) != 0 else 0
+    overall = overall / sum(weights) * 100.0 if sum(weights) != 0.0 else 0.0
 
     return round(overall, 2)
 
@@ -48,7 +53,7 @@ def valid_flex(student, course):
 def get_override_total(groups, student, course):
     """Calculates override grade for student using assignment groups
     and applying flex allocations. If any flex assessment is null or
-    do not all sum to 100%, then an empty string ('') is returned.
+    do not all sum to 100%, then None is returned.
 
     Parameters
     ----------
@@ -58,6 +63,12 @@ def get_override_total(groups, student, course):
         Student object
     course : Course
         Course object
+
+    Returns
+    -------
+    Union[float, None]
+        Override final grade for student or None if
+        student does not have a valid flex allocation
     """
 
     if not valid_flex(student, course):
@@ -82,7 +93,7 @@ def get_override_total(groups, student, course):
     for score, weight in score_weight:
         overall += score * weight / 100
 
-    overall = overall / sum(flex_set) * 100 if sum(flex_set) != 0 else 0
+    overall = overall / sum(flex_set) * 100.0 if sum(flex_set) != 0.0 else 0.0
 
     return round(overall, 2)
 
@@ -97,6 +108,12 @@ def get_averages(groups, course):
         Assignment groups retrieved from Canvas API
     course : Course
         Course object
+
+    Returns
+    -------
+    averages : list
+        List of average override grade, average default grade,
+        and average difference
     """
 
     students = UserProfile.objects.filter(
@@ -122,17 +139,18 @@ def get_averages(groups, course):
     for curr_list in [overrides, defaults, diffs]:
         averages.append(
             round(
-                sum(curr_list) /
-                len(curr_list),
+                sum(curr_list) / len(curr_list),
                 2) if len(curr_list) != 0 else 0)
 
     return averages
 
 
 def get_group_weight(groups, id):
+    """Gets Canvas assignment group weight"""
+
     try:
         return int(round(groups[str(id)]['group_weight']))
-    except BaseException:
+    except Exception:
         return ''
 
 

@@ -12,15 +12,14 @@ class StudentHome(views.StudentTemplateView):
 
 
 class StudentAssessmentView(views.StudentFormView):
-    """Extends Django generic FormView and authentication mixins
-    for student form."""
+    """FormView for student flexible allocations"""
 
     template_name = 'student/student_form.html'
     form_class = StudentAssessmentForm
     success_reverse_name = 'student:student_home'
 
     def get_form_kwargs(self):
-        """Adds course_id as keyword arguments for making form fields
+        """Adds user id and course id as keyword arguments for making form fields
 
         Returns
         -------
@@ -38,6 +37,22 @@ class StudentAssessmentView(views.StudentFormView):
         return kwargs
 
     def form_valid(self, form):
+        """Validates form by checking if flex allocation is within range
+        and form is submitted within allowed flexible assessment time frame,
+        updates flex assessments for student
+
+        Parameters
+        ----------
+        form : StudentAssessmentForm
+            Flexible allocation data for assessments in course
+
+        Returns
+        -------
+        response : Union[HttpResponseRedirect, TemplateResponse]
+            HttpResponseRedirect if form is valid,
+            TemplateResponse if error in form
+        """
+
         user_id = self.request.session.get('user_id', '')
         course_id = self.kwargs['course_id']
 

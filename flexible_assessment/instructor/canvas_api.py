@@ -8,12 +8,35 @@ import time
 
 
 class FlexCanvas(Canvas):
+    """Extends Canvas class for handling a Canvas course within
+    a Flexible Assessment context
+    """
+
     def __init__(self, request):
+        """Creates FlexCanvas instance using Canvas OAuth
+        token of instructor using the application
+        """
+
         base_url = settings.CANVAS_DOMAIN
         access_token = get_oauth_token(request)
         super().__init__(base_url, access_token)
 
     def is_allow_override(self, course_id):
+        """Checks if Canvas couse with given id has 'allow final grade override'
+        enabled
+
+        Parameters
+        ----------
+        course_id : int
+            Canvas course ID
+
+        Returns
+        -------
+        bool
+            True indicates final grade override is enabled,
+            False indicates it is disabled
+        """
+
         query = """query AllowOverrideQuery($course_id: ID) {
                 course(id: $course_id) {
                     allowFinalGradeOverride
@@ -24,6 +47,22 @@ class FlexCanvas(Canvas):
         return query_response['data']['course']['allowFinalGradeOverride']
 
     def set_override(self, enrollment_id, override, incomplete, attempt=1):
+        """"Sets final grade override for student with given enrollment ID
+
+        Parameters
+        ----------
+        enrollment_id : str
+            Canvas enrollment ID for student in the course
+        override : float
+            Final grade override for the student
+        incomplete : list
+            Mutable datatype representing status of submitting final grade,
+            contains single element of bool type, True represents a grade
+            was not able to be submitted
+        attempt : int
+            Represents the current attempt of submitting a student grade
+        """
+
         mutation = """mutation OverrideFinalScore($enrollment_id: ID!, $override: Float) {
                     setOverrideScore(input: { enrollmentId: $enrollment_id,
                                               overrideScore: $override }) {
@@ -46,6 +85,21 @@ class FlexCanvas(Canvas):
                 incomplete[0] = True
 
     def get_groups_and_enrollments(self, course_id):
+        """Gets Canvas assignment groups and student enrollment data
+
+        Parameters
+        ----------
+        course_id : int
+            Canvas course ID
+
+        Returns
+        -------
+        group_dict : dict
+            Contains assignment group and grades data
+        user_enrollment_dict : dict
+            Contains enrollment ID for each user
+        """
+
         query = """query AssignmentGroupQuery($course_id: ID) {
   course(id: $course_id) {
     assignment_groups: assignmentGroupsConnection {
