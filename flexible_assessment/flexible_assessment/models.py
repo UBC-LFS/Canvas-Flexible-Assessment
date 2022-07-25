@@ -35,12 +35,14 @@ class UserProfileManager(BaseUserManager):
         user : UserProfile
             Superuser instance"""
 
-        user = self.create_user(
-            user_id,
-            login_id,
-            display_name,
-            role,
-            password=password)
+        user = self.model(
+            user_id=user_id,
+            login_id=login_id,
+            display_name=display_name,
+            role=role
+        )
+
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
