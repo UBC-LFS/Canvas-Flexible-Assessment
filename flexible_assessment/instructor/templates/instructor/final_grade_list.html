@@ -18,7 +18,7 @@
                             <tr>
                                 <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
                                 {% for assessment in course.assessment_set.all %}
-                                    <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }} <br> ({% get_group_weight groups assessment.group.id %}%)</th>
+                                    <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }} <br> ({% get_group_weight groups assessment.group %}%)</th>
                                 {% endfor %}
                                 <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Override Total</th>
                                 <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Default Total</th>
@@ -30,7 +30,7 @@
                                 <tr>
                                     <td class="text-center align-middle text-break"><a href="{% url 'instructor:override_student_form_final' course.id student.user_id %}?previous=final">{{ student.display_name }}</a></td>
                                     {% for assessment in course.assessment_set.all %}
-                                        {% get_score groups assessment.group.id student as score %}
+                                        {% get_score groups assessment.group student as score %}
                                         <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>
                                     {% endfor %}
                                     {% get_student_grades groups student course as grades %}

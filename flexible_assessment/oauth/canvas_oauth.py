@@ -1,10 +1,10 @@
 from datetime import timedelta
 
 import requests
+from django.conf import settings
 from django.utils import timezone
 
 from oauth.exceptions import InvalidOAuthReturnError
-from django.conf import settings
 
 
 def get_oauth_login_url(client_id, redirect_uri, response_type='code',

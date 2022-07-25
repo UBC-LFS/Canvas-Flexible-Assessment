@@ -81,7 +81,7 @@ def get_override_total(groups, student, course):
         flex = assessment.flexassessment_set.filter(user=student)\
             .first()\
             .flex
-        score = get_score(groups, assessment.group.id, student)
+        score = get_score(groups, assessment.group, student)
 
         if score is not None:
             scores.append(score)

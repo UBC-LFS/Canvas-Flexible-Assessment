@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
+
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse_lazy
 from django.views import generic
-from django.core.exceptions import ImproperlyConfigured
-from flexible_assessment.view_roles import Instructor, Student
 
+from flexible_assessment.view_roles import Instructor, Student
 
 from .models import Course, Roles, UserProfile
 
@@ -29,6 +30,9 @@ class GenericView(LoginRequiredMixin, UserPassesTestMixin):
     ----------
     allowed_view_role : ViewRole
         Used for defining the test function for UserPassesTesMixin
+    raise_exception : bool
+        From LoginRequiredMixin, set to True so that exception is
+        thrown if user is not logged in
     """
 
     allowed_view_role = None

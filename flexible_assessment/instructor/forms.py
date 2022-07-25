@@ -2,8 +2,7 @@ from django import forms
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.forms import BaseModelFormSet, ModelForm, modelformset_factory
 from django.utils import timezone
-from flexible_assessment.models import (Assessment, AssignmentGroup, Course,
-                                        FlexAssessment)
+from flexible_assessment.models import Assessment, Course, FlexAssessment
 
 
 class StudentAssessmentBaseForm(forms.Form):
@@ -61,7 +60,7 @@ class OptionsForm(forms.Form):
 
 
 class DateForm(ModelForm):
-    """Form that sets flexible assessment availability for students."""
+    """Form to set flexible assessment availability for students."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -95,46 +94,32 @@ class DateForm(ModelForm):
 
 
 class AssessmentGroupForm(forms.Form):
+    """Form for matching assessments to Canvas assignment groups. Each course
+    assessment is a field and Canvas assignment groups are the options.
+    """
+
     def __init__(self, *args, **kwargs):
-        course_id = kwargs.pop('course_id')
-        canvas = kwargs.pop('canvas')
+        canvas_course = kwargs.pop('canvas_course')
         assessments = kwargs.pop('assessments')
         super().__init__(*args, **kwargs)
 
-        canvas_course = canvas.get_course(course_id)
-        model_course = Course.objects.filter(pk=course_id).first()
-
-        asgn_groups_create = []
-        asgn_groups_update = []
+        choices = [(None, '---------')]
+        id_map = {}
         for canvas_group in canvas_course.get_assignment_groups():
             id = canvas_group.__getattribute__('id')
             name = canvas_group.__getattribute__('name')
-            asgn_group = AssignmentGroup.objects.filter(pk=id)
-            if not asgn_group.exists():
-                asgn_groups_create.append(
-                    AssignmentGroup(
-                        id=id,
-                        name=name,
-                        course=model_course))
-            else:
-                asgn_groups_update.append(
-                    AssignmentGroup(
-                        id=id,
-                        name=name,
-                        course=model_course))
-        AssignmentGroup.objects.bulk_create(asgn_groups_create)
-        AssignmentGroup.objects.bulk_update(
-            asgn_groups_update,
-            ['name', 'course'])
+            choices.append((id, name))
+            id_map[id] = len(choices) - 1
 
         assessment_fields = {}
         for assessment in assessments:
             if assessment.group is not None:
-                initial = assessment.group
+                index = id_map[assessment.group]
             else:
-                initial = None
-            assessment_fields[assessment.id.hex] = forms.ModelChoiceField(
-                AssignmentGroup.objects.filter(course_id=course_id),
+                index = 0
+            initial = choices[index][0]
+            assessment_fields[assessment.id.hex] = forms.ChoiceField(
+                choices=choices,
                 label='{} ({}%)'.format(assessment.title, assessment.default),
                 initial=initial)
 

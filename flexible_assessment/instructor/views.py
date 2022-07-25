@@ -167,17 +167,20 @@ class AssessmentGroupView(views.InstructorFormView):
 
         course_id = self.kwargs['course_id']
 
-        kwargs['course_id'] = course_id
-        kwargs['canvas'] = FlexCanvas(self.request)
+        canvas_course = FlexCanvas(self.request).get_course(course_id)
+
+        kwargs['canvas_course'] = canvas_course
         kwargs['assessments'] = models.Assessment.objects.filter(
             course_id=course_id)
 
         return kwargs
 
     def form_valid(self, form):
-        """Validates matched groups are unique and adds AssignmentGroup as
-        Foreign Key to Assessment. Changes group weights on Canvas to
-        match default allocations. Unmatched group weights are set to zero.
+        """Validates that each assessment is matched to one Canvas assignment group
+        and each Canvas assignment group is matched to zero or one assessments.
+        Adds AssignmentGroup from form as Foreign Key to Assessment. Changes
+        group weights on Canvas to match default allocations and unmatched
+        group weights are set to zero.
 
         Parameters
         ----------
@@ -225,16 +228,16 @@ class AssessmentGroupView(views.InstructorFormView):
 
         canvas_course = FlexCanvas(self.request).get_course(course_id)
 
-        for id, group in form.cleaned_data.items():
-            assessment = models.Assessment.objects.filter(pk=id).first()
-            assessment.group = group
+        for assessment_id, group_id in form.cleaned_data.items():
+            assessment = models.Assessment.objects.get(pk=assessment_id)
+            assessment.group = int(group_id)
             assessment.save()
 
             canvas_course.get_assignment_group(
-                group.id).edit(
+                group_id).edit(
                 group_weight=assessment.default)
 
-        matched_group_ids = [group.id for group in form.cleaned_data.values()]
+        matched_group_ids = [int(id) for id in form.cleaned_data.values()]
         canvas_group_ids = [
             group.id for group in canvas_course.get_assignment_groups()]
 

@@ -1,10 +1,11 @@
-from collections.abc import MutableMapping
-from django.core.exceptions import PermissionDenied
-from canvasapi import Canvas
-from django.conf import settings
-from oauth.oauth import get_oauth_token
-from canvasapi.exceptions import CanvasException
 import time
+from collections.abc import MutableMapping
+
+from canvasapi import Canvas
+from canvasapi.exceptions import CanvasException
+from django.conf import settings
+from django.core.exceptions import PermissionDenied
+from oauth.oauth import get_oauth_token
 
 
 class FlexCanvas(Canvas):

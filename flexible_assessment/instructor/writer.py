@@ -74,7 +74,7 @@ def grades_csv(course, students, groups):
             assessment.title,
             grader.get_group_weight(
                 groups,
-                assessment.group.id)) for assessment in assessments]
+                assessment.group)) for assessment in assessments]
 
     header = ['Student'] + titles + \
         ['Override Total', 'Default Total', 'Difference']
@@ -89,7 +89,7 @@ def grades_csv(course, students, groups):
                 student.login_id))
 
         for assessment in assessments:
-            score = grader.get_score(groups, assessment.group.id, student)
+            score = grader.get_score(groups, assessment.group, student)
             values.append(score)
 
         override_total = grader.get_override_total(groups, student, course)

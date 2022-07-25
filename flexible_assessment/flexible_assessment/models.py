@@ -148,27 +148,6 @@ class UserCourse(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 
-class AssignmentGroup(models.Model):
-    """Table for assignment groups in a Canvas course
-
-    Attributes
-    ----------
-    id : int
-        Unique id for the Canvas course assignment group
-    name : str
-        Name of the assignment group
-    course : ForeignKey -> Course
-        Foreign Key with Course
-    """
-
-    id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=100)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
-
-
 class Assessment(models.Model):
     """Table of assessment entries
 
@@ -189,8 +168,8 @@ class Assessment(models.Model):
         Should be in [0, 100]
     course : ForeignKey -> Course
         Foreign Key with Course
-    group : ForeignKey -> AssignmentGroup
-        Foreign Key with AssignmentGroup
+    group : int
+        Canvas assignment group id
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -199,10 +178,7 @@ class Assessment(models.Model):
     min = models.IntegerField()
     max = models.IntegerField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    group = models.ForeignKey(
-        AssignmentGroup,
-        on_delete=models.CASCADE,
-        null=True)
+    group = models.IntegerField(null=True)
 
     def __str__(self):
         return self.title

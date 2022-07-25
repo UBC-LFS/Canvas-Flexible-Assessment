@@ -1,8 +1,7 @@
-from django.forms import ValidationError
-from django.utils import timezone
-
 import flexible_assessment.class_views as views
 import flexible_assessment.models as models
+from django.forms import ValidationError
+from django.utils import timezone
 
 from .forms import StudentAssessmentForm
 

@@ -1,13 +1,12 @@
-from django.urls import reverse
-from django.http.response import HttpResponseRedirect
-from django.utils.crypto import get_random_string
 from django.conf import settings
 from django.contrib import messages
+from django.http.response import HttpResponseRedirect
+from django.urls import reverse
+from django.utils.crypto import get_random_string
 
 from oauth import canvas_oauth
+from oauth.exceptions import InvalidOAuthStateError, MissingTokenError
 from oauth.models import CanvasOAuth2Token
-from oauth.exceptions import (
-    MissingTokenError, InvalidOAuthStateError)
 
 
 def get_oauth_token(request):
