@@ -31,7 +31,8 @@ class UserProfileManager(BaseUserManager):
         Returns
         -------
         user : UserProfile
-            Regular user instance"""
+            Regular user instance
+	"""
 
         user = self.model(
             user_id=user_id,
@@ -61,7 +62,8 @@ class UserProfileManager(BaseUserManager):
         Returns
         -------
         user : UserProfile
-            Superuser instance"""
+            Superuser instance
+	"""
 
         user = self.create_user(
             user_id,

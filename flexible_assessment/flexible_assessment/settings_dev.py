@@ -10,6 +10,7 @@ PASSWORD = os.getenv('PASSWORD')
 HOST = os.getenv('HOST')
 PORT = os.getenv('PORT')
 DJANGO_SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+INTERNAL_IP = os.getenv('INTERNAL_IP')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,7 +26,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-INTERNAL_IPS = ['127.0.0.1']
+INTERNAL_IPS = [INTERNAL_IP, '127.0.0.1']
 
 # Application definition
 
