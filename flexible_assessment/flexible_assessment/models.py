@@ -14,10 +14,9 @@ class UserProfileManager(BaseUserManager):
     create_superuser(user_id, login_id, display_name, role, password=None)
         Creates superuser"""
 
-    def create_superuser(self, user_id, login_id,
-                         display_name, role, password=None):
-        """Superuser creation
-
+    def create_user(self, user_id, login_id,
+                    display_name, role, password=None):
+        """Regular User creation
         Parameters
         ----------
         user_id : int
@@ -29,11 +28,10 @@ class UserProfileManager(BaseUserManager):
         role : int
             Used as identification for role of user in course
             (see models.Roles class)
-
         Returns
         -------
         user : UserProfile
-            Superuser instance"""
+            Regular user instance"""
 
         user = self.model(
             user_id=user_id,
@@ -43,6 +41,34 @@ class UserProfileManager(BaseUserManager):
         )
 
         user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, user_id, login_id,
+                         display_name, role, password=None):
+        """Superuser creation
+        Parameters
+        ----------
+        user_id : int
+            Unique id for Canvas user used for identification
+        login_id : str
+            Used as canvas login/username (CWL)
+        display_name : str
+            Name of user
+        role : int
+            Used as identification for role of user in course
+            (see models.Roles class)
+        Returns
+        -------
+        user : UserProfile
+            Superuser instance"""
+
+        user = self.create_user(
+            user_id,
+            login_id,
+            display_name,
+            role,
+            password=password)
         user.save(using=self._db)
         return user
 
@@ -85,7 +111,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['login_id', 'display_name', 'role']
 
     def __str__(self):
-        return self.login_id + ', ' + self.display_name
+        return '{}, {}'.format(self.login_id, self.display_name)
 
     @property
     def is_superuser(self):
@@ -149,6 +175,9 @@ class UserCourse(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return '{}, {}'.format(self.user.display_name, self.course.title)
+
 
 class Assessment(models.Model):
     """Table of assessment entries
@@ -183,7 +212,7 @@ class Assessment(models.Model):
     group = models.IntegerField(null=True)
 
     def __str__(self):
-        return self.title
+        return '{}, {}'.format(self.title, self.course.title)
 
 
 class FlexAssessment(models.Model):
@@ -205,6 +234,9 @@ class FlexAssessment(models.Model):
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     flex = models.IntegerField(null=True, blank=True)
 
+    def __str__(self):
+        return '{}, {}'.format(self.user.display_name, self.assessment.title)
+
 
 class UserComment(models.Model):
     """Table containing students comment for grade allocation in the course
@@ -222,3 +254,7 @@ class UserComment(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     comment = models.TextField(max_length=100, default="", blank=True)
+
+    def __str__(self):
+        return '{}, {} comment'.format(self.user.display_name,
+                                       self.course.title)
