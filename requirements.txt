@@ -4,3 +4,4 @@ PyLTI1p3==1.11.0
 python-dotenv==0.20.0
 requests==2.22.0
 django-bootstrap5==21.3
+psycopg2==2.9.3
