@@ -10,8 +10,8 @@ class CanvasOAuth2Token(models.Model):
         related_name='oauth2_token',
     )
 
-    access_token = models.TextField()
-    refresh_token = models.TextField()
+    access_token = models.BinaryField()
+    refresh_token = models.BinaryField()
     expires = models.DateTimeField()
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)

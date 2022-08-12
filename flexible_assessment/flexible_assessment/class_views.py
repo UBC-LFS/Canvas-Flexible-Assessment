@@ -17,7 +17,7 @@ class ExportView(ABC):
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
-        if self.kwargs.get('csv', False):
+        if self.kwargs.get('csv', False) or self.kwargs.get('log', False):
             return self.export_list()
         else:
             return response

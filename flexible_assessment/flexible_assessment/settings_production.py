@@ -11,18 +11,14 @@ HOST = os.getenv('HOST')
 PORT = os.getenv('PORT')
 DJANGO_SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 INTERNAL_IP = os.getenv('INTERNAL_IP')
+ENCRYPT_SALT = os.getenv('ENCRYPT_SALT')
+ENCRYPT_PASSWORD = os.getenv('ENCRYPT_PASSWORD')
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = DJANGO_SECRET_KEY
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -62,7 +58,7 @@ CANVAS_OAUTH_CLIENT_SECRET = os.getenv('CANVAS_OAUTH_CLIENT_SECRET')
 
 CANVAS_OAUTH_AUTHORIZE_URL = '{}/login/oauth2/auth'.format(CANVAS_DOMAIN)
 CANVAS_OAUTH_ACCESS_TOKEN_URL = '{}/login/oauth2/token'.format(CANVAS_DOMAIN)
-# TODO: GraphQL Scope not present in Canvas
+# GraphQL Scope not present in Canvas
 CANVAS_OAUTH_SCOPES = [
     'url:GET|/api/v1/courses/:id',
     'url:GET|/api/v1/courses/:course_id/assignment_groups',
@@ -96,8 +92,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'flexible_assessment.wsgi.application'
 
 SESSION_COOKIE_NAME = 'sessionid'
-SESSION_COOKIE_SAMESITE = 'None'  # should be set as 'None' for Django >= 3.1
-# should be True in case of HTTPS usage (production)
+SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
@@ -166,3 +161,43 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'flexible_assessment.auth.SettingsBackend',
 ]
+
+LOG_FILE = os.path.join(BASE_DIR, 'log', 'info.log')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '[{course}] - {asctime} - {message} | {user}',
+            'style': '{'
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_FILE,
+            'formatter': 'simple',
+            'backupCount': 10,
+            'maxBytes': 5242880,
+        },
+    },
+    'loggers': {
+        'flexible_assessment': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+        },
+        'instructor': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+        },
+        'student': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+        }
+    }
+}

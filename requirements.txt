@@ -1,7 +1,8 @@
 canvasapi==2.2.0
+cryptography==37.0.2
 Django==4.0.4
+django-bootstrap5==21.3
+psycopg2==2.9.3
 PyLTI1p3==1.11.0
 python-dotenv==0.20.0
 requests==2.22.0
-django-bootstrap5==21.3
-psycopg2==2.9.3

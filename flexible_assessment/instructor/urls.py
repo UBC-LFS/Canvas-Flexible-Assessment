@@ -32,6 +32,11 @@ urlpatterns = [
         {'csv': True},
         name='percentage_list_export'),
     path(
+        '<int:course_id>/percentages/log/',
+        views.FlexAssessmentListView.as_view(),
+        {'log': True},
+        name='log_export'),
+    path(
         '<int:course_id>/percentages/<slug:pk>/',
         views.OverrideStudentAssessmentView.as_view(),
         name='override_student_form_percentage'),

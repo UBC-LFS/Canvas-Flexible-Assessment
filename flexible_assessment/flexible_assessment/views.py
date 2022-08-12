@@ -1,3 +1,4 @@
+import logging
 import pprint
 
 from django.http import HttpResponseRedirect, JsonResponse
@@ -6,6 +7,8 @@ from django.views.decorators.http import require_POST
 from pylti1p3.contrib.django import DjangoMessageLaunch, DjangoOIDCLogin
 
 from . import auth, lti, models, utils
+
+logger = logging.getLogger(__name__)
 
 
 def login(request):
@@ -36,6 +39,9 @@ def launch(request):
     if 'TeacherEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.TEACHER)
         auth.authenticate_login(request, canvas_fields)
+        logger.info('Instructor login',
+                    extra={'course': canvas_fields['course_name'],
+                           'user': canvas_fields['user_display_name']})
         return HttpResponseRedirect(
             reverse('instructor:instructor_home',
                     kwargs={'course_id': course_id}) + '?login_redirect=True')
@@ -43,6 +49,9 @@ def launch(request):
     elif 'TaEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.TA)
         auth.authenticate_login(request, canvas_fields)
+        logger.info('TA login',
+                    extra={'course': canvas_fields['course_name'],
+                           'user': canvas_fields['user_display_name']})
         return HttpResponseRedirect(
             reverse('instructor:instructor_home',
                     kwargs={'course_id': course_id}) + '?login_redirect=True')
@@ -50,6 +59,9 @@ def launch(request):
     elif 'StudentEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.STUDENT)
         auth.authenticate_login(request, canvas_fields)
+        logger.info('Student login',
+                    extra={'course': canvas_fields['course_name'],
+                           'user': canvas_fields['user_display_name']})
         return HttpResponseRedirect(
             reverse('student:student_home',
                     kwargs={'course_id': course_id}))

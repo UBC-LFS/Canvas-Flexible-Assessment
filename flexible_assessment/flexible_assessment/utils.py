@@ -1,6 +1,10 @@
+import logging
+
 from instructor.canvas_api import FlexCanvas
 
 import flexible_assessment.models as models
+
+logger = logging.getLogger(__name__)
 
 
 def update_students(request, course):
@@ -9,8 +13,12 @@ def update_students(request, course):
     students_canvas = FlexCanvas(request)\
         .get_course(course.id)\
         .get_users(enrollment_type='student')
+    students_canvas = list(students_canvas)
     students_db = models.UserProfile.objects.filter(role=models.Roles.STUDENT,
                                                     usercourse__course=course)
+
+    log_extra = {'course': course.title,
+                 'user': request.session['display_name']}
 
     students_canvas_ids = [student.__getattribute__(
         'id') for student in students_canvas]
@@ -32,7 +40,15 @@ def update_students(request, course):
         canvas_fields['course_name'] = course.title
         set_user_course(canvas_fields, models.Roles.STUDENT)
 
-    students_to_delete.delete()
+        logger.info('User added %s',
+                    canvas_fields['user_display_name'], extra=log_extra)
+
+    if students_to_delete:
+        logger.info('Users deleted: %s',
+                    ', '.join(students_to_delete.values_list(
+                        'display_name', flat=True)),
+                    extra=log_extra)
+        students_to_delete.delete()
 
 
 def set_user_profile(user_id, login_id, display_name, role):

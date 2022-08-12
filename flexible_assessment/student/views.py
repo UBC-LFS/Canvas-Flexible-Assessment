@@ -1,9 +1,13 @@
+import logging
+
 import flexible_assessment.class_views as views
 import flexible_assessment.models as models
 from django.forms import ValidationError
 from django.utils import timezone
 
 from .forms import StudentAssessmentForm
+
+logger = logging.getLogger(__name__)
 
 
 class StudentHome(views.StudentTemplateView):
@@ -82,17 +86,40 @@ class StudentAssessmentView(views.StudentFormView):
             response = super().form_invalid(form)
             return response
 
+        log_extra = {'course': course.title,
+                     'user': self.request.session['display_name']}
+
         for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
             flex_assessment = assessment.flexassessment_set.filter(
                 user__user_id=user_id).first()
+            old_flex = flex_assessment.flex
             flex_assessment.flex = flex
             flex_assessment.save()
 
+            if old_flex is None:
+                logger.info('Set %s flex for %s to %s%%',
+                            flex_assessment.user.display_name,
+                            assessment.title,
+                            flex,
+                            extra=log_extra)
+            elif old_flex != flex:
+                logger.info('Updated %s flex for %s '
+                            'from %s%% to %s%%',
+                            flex_assessment.user.display_name,
+                            assessment.title,
+                            old_flex,
+                            flex,
+                            extra=log_extra)
+
         user_comment = models.UserComment.objects.filter(
             user__user_id=user_id, course__id=course_id).first()
+        old_comment = user_comment.comment
         user_comment.comment = comment
         user_comment.save()
+
+        if old_comment != comment:
+            logger.info('Updated comment to \'%s\'', comment, extra=log_extra)
 
         response = super().form_valid(form)
         return response

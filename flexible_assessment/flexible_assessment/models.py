@@ -32,7 +32,7 @@ class UserProfileManager(BaseUserManager):
         -------
         user : UserProfile
             Regular user instance
-	"""
+        """
 
         user = self.model(
             user_id=user_id,
@@ -63,7 +63,7 @@ class UserProfileManager(BaseUserManager):
         -------
         user : UserProfile
             Superuser instance
-	"""
+        """
 
         user = self.create_user(
             user_id,
