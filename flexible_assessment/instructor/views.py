@@ -3,11 +3,12 @@ import json
 import logging
 from io import TextIOWrapper
 from threading import Thread
-from zoneinfo import ZoneInfo
 
 import flexible_assessment.class_views as views
 import flexible_assessment.models as models
 import flexible_assessment.utils as utils
+import pytz
+
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When
@@ -456,8 +457,9 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
     def _set_flex_availability(self, date_form, course):
         old_dts = tuple(map(
-            lambda dt: dt.astimezone(
-                ZoneInfo('US/Pacific')) if dt is not None else 'None',
+            lambda dt: dt.replace(
+                tzinfo=pytz.timezone('US/Pacific'))
+            if dt is not None else 'None',
             (course.open, course.close)))
 
         date_form.save()
