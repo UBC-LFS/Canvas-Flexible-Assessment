@@ -12,8 +12,8 @@ class ViewRole(ABC):
         pass
 
     @classmethod
-    def permission_test(self, user):
-        return user.role in self.permitted_roles
+    def permission_test(cls, user):
+        return user.role in cls.permitted_roles
 
 
 class Instructor(ViewRole):

@@ -425,9 +425,36 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         course_id = self.kwargs['course_id']
         course = models.Course.objects.get(pk=course_id)
 
-        log_extra = {'course': course.title,
-                     'user': self.request.session['display_name']}
+        self._set_flex_availability(date_form, course)
 
+        options_form.clean()
+
+        hide_total = options_form.cleaned_data['hide_total']
+        ignore_conflicts = options_form.cleaned_data['ignore_conflicts']
+
+        formset.clean()
+
+        assessments, conflict_students = self._save_assessments(
+            formset.forms, course, ignore_conflicts)
+
+        if conflict_students and not ignore_conflicts:
+            return super().form_invalid(formset)
+
+        assessment_created = self._create_assessments(course, assessments)
+        assessment_deleted = self._delete_assessments(course, assessments)
+
+        if assessment_created or assessment_deleted:
+            self._reset_all_students(course)
+        else:
+            self._reset_conflict_students(course, conflict_students)
+
+        FlexCanvas(self.request)\
+            .get_course(course_id)\
+            .update_settings(hide_final_grades=hide_total)
+
+        return HttpResponseRedirect(self.get_success_url())
+
+    def _set_flex_availability(self, date_form, course):
         old_dts = tuple(map(
             lambda dt: dt.astimezone(
                 ZoneInfo('US/Pacific')) if dt is not None else 'None',
@@ -443,23 +470,18 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                         'from %s - %s to %s - %s',
                         *old_dts,
                         *new_dts,
-                        extra=log_extra)
+                        extra={'course': course.title,
+                               'user': self.request.session['display_name']})
 
-        options_form.clean()
-
-        hide_total = options_form.cleaned_data['hide_total']
-        ignore_conflicts = options_form.cleaned_data['ignore_conflicts']
-
-        formset.clean()
-
+    def _save_assessments(self, forms, course, ignore_conflicts):
         assessments = []
         conflict_students = set()
-        for form in formset.forms:
+        for form in forms:
             assessment = form.save(commit=False)
             assessments.append(assessment)
             assessment.course = course
 
-            curr_conflict_students = self._check_valid_flex(assessment)
+            curr_conflict_students = assessment.check_valid_flex()
             conflict_students = conflict_students.union(curr_conflict_students)
 
             if curr_conflict_students and not ignore_conflicts:
@@ -468,17 +490,21 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                     '{} flex allocations are out of range for {}'
                         .format(len(curr_conflict_students), assessment.title))
 
-        if conflict_students and not ignore_conflicts:
-            return super().form_invalid(formset)
+        return assessments, conflict_students
 
+    def _create_assessments(self, course, assessments):
+        log_extra = {'course': course.title,
+                     'user': self.request.session['display_name']}
         assessment_created = False
+
         for assessment in assessments:
             old_assessment = models.Assessment.objects \
                 .filter(pk=assessment.id).first()
 
             assessment.save()
-            curr_assessment_created = self._set_flex_assessments(course,
-                                                                 assessment)
+
+            curr_assessment_created = course.set_flex_assessments(assessment)
+
             if curr_assessment_created:
                 assessment_created = curr_assessment_created
                 logger.info('%s created (default %s%%, min %s%%, max %s%%)',
@@ -502,66 +528,29 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                                 *log_allocations,
                                 extra=log_extra)
 
-        FlexCanvas(self.request)\
-            .get_course(course_id)\
-            .update_settings(hide_final_grades=hide_total)
+        return assessment_created
 
+    def _delete_assessments(self, course, assessments):
         assessments_to_delete = course.assessment_set \
             .exclude(id__in=[assessment.id for assessment in assessments])
 
-        if assessment_created or assessments_to_delete:
-            if assessments_to_delete:
-                logger.info('Deleted assessments: %s',
-                            ', '.join(assessments_to_delete.values_list(
-                                'title', flat=True)),
-                            extra=log_extra)
-                assessments_to_delete.delete()
+        assessment_deleted = False
 
-            self._reset_all_students(course)
-        else:
-            self._reset_conflict_students(course, conflict_students)
+        if assessments_to_delete:
+            assessment_deleted = True
+            logger.info('Deleted assessments: %s',
+                        ', '.join(assessments_to_delete.values_list(
+                            'title', flat=True)),
+                        extra={'course': course.title,
+                               'user': self.request.session['display_name']})
+            assessments_to_delete.delete()
 
-        return HttpResponseRedirect(self.get_success_url())
-
-    def _set_flex_assessments(self, course, assessment):
-        """Creates flex assessment objects for new assessments in the course"""
-
-        user_courses = course.usercourse_set.filter(
-            user__role=models.Roles.STUDENT).select_related('user')
-        users = [user_course.user for user_course in user_courses]
-        flex_assessments = [
-            models.FlexAssessment(user=user, assessment=assessment)
-            for user in users
-            if not models.FlexAssessment.objects.filter(
-                user=user, assessment=assessment).exists()]
-        models.FlexAssessment.objects.bulk_create(flex_assessments)
-        return True if flex_assessments else False
-
-    def _check_valid_flex(self, assessment):
-        """Returns students with flex allocations
-        out of allowed assessment range i.e. have conflicts
-        """
-
-        flex_assessments = assessment.flexassessment_set \
-            .exclude(flex__isnull=True)
-
-        conflict_fas = flex_assessments.filter(flex__lt=assessment.min) \
-            | flex_assessments.filter(flex__gt=assessment.max)
-        conflict_fas = conflict_fas.select_related('user')
-
-        conflict_students = {fa.user for fa in conflict_fas}
-
-        return conflict_students
+        return assessment_deleted
 
     def _reset_conflict_students(self, course, conflict_students):
-        """Resets flex allocations and comments for students with conflicts"""
+        course.reset_students(conflict_students)
 
         for student in conflict_students:
-            fas_to_reset = student.flexassessment_set \
-                .filter(assessment__course=course)
-            fas_to_reset.update(flex=None)
-            student.usercomment_set.filter(course=course).update(comment="")
-
             logger.info('Reset flex allocations and comment for %s '
                         'due to out of range allocations',
                         student.display_name,
@@ -569,11 +558,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                                'user': self.request.session['display_name']})
 
     def _reset_all_students(self, course):
-        """Resets flex allocations for all students in the course"""
-
-        fas_to_reset = models.FlexAssessment.objects \
-            .filter(assessment__course=course)
-        fas_to_reset.update(flex=None)
+        course.reset_all_students()
 
         logger.info('Reset all student flex allocations and comments '
                     'due to new or deleted assessment(s)',

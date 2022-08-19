@@ -1,6 +1,7 @@
 .env
 *.pyc
 __pycache__
-/flexible_assessment/configs/*
 .vscode/
-/flexible_assessment/log/*
+configs/
+log/
+docs/

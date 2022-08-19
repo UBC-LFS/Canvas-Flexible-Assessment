@@ -4,11 +4,11 @@ from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
-NAME = os.getenv('NAME')
-USER = os.getenv('USERNAME')
-PASSWORD = os.getenv('PASSWORD')
-HOST = os.getenv('HOST')
-PORT = os.getenv('PORT')
+NAME = os.getenv('DB_NAME')
+USER = os.getenv('DB_USERNAME')
+PASSWORD = os.getenv('DB_PASSWORD')
+HOST = os.getenv('DB_HOST')
+PORT = os.getenv('DB_PORT')
 DJANGO_SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 INTERNAL_IP = os.getenv('INTERNAL_IP')
 ENCRYPT_SALT = os.getenv('ENCRYPT_SALT')

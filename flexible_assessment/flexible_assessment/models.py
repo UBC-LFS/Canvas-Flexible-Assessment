@@ -152,6 +152,39 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
+    def set_flex_assessments(self, assessment):
+        """Creates flex assessment objects for new assessments in the course"""
+
+        user_courses = self.usercourse_set.filter(
+            user__role=Roles.STUDENT).select_related('user')
+        users = [user_course.user for user_course in user_courses]
+        flex_assessments = [
+            FlexAssessment(user=user, assessment=assessment)
+            for user in users
+            if not FlexAssessment.objects.filter(
+                user=user, assessment=assessment).exists()]
+        FlexAssessment.objects.bulk_create(flex_assessments)
+
+        return True if flex_assessments else False
+
+    def reset_students(self, students):
+        """Resets flex allocations and comments for students"""
+
+        for student in students:
+            fas_to_reset = student.flexassessment_set \
+                .filter(assessment__course=self)
+            fas_to_reset.update(flex=None)
+            student.usercomment_set.filter(course=self).update(comment="")
+
+    def reset_all_students(self):
+        """Resets flex allocations for all students in the course"""
+
+        fas_to_reset = FlexAssessment.objects.filter(assessment__course=self)
+        fas_to_reset.update(flex=None)
+
+        comments_to_reset = UserComment.objects.filter(course=self)
+        comments_to_reset.update(comment="")
+
 
 class UserCourse(models.Model):
     """Table linking users and courses for many-to-many relationship,
@@ -215,6 +248,21 @@ class Assessment(models.Model):
 
     def __str__(self):
         return '{}, {}'.format(self.title, self.course.title)
+
+    def check_valid_flex(self):
+        """Returns students with flex allocations
+        out of allowed assessment range i.e. have conflicts
+        """
+
+        flex_assessments = self.flexassessment_set.exclude(flex__isnull=True)
+
+        conflict_fas = flex_assessments.filter(flex__lt=self.min) \
+            | flex_assessments.filter(flex__gt=self.max)
+        conflict_fas = conflict_fas.select_related('user')
+
+        conflict_students = {fa.user for fa in conflict_fas}
+
+        return conflict_students
 
 
 class FlexAssessment(models.Model):
