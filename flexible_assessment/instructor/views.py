@@ -457,8 +457,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
     def _set_flex_availability(self, date_form, course):
         old_dts = tuple(map(
-            lambda dt: dt.replace(
-                tzinfo=pytz.timezone('US/Pacific'))
+            lambda dt: dt.astimezone(pytz.timezone('America/Vancouver'))
             if dt is not None else 'None',
             (course.open, course.close)))
 
