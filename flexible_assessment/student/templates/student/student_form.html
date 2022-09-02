@@ -36,7 +36,7 @@
                             </thead>
                             <tbody>
                                 {% for field in form.visible_fields %}
-                                    {% if field.name != "comment" %}
+                                    {% if field.name != "comment" and field.name != "agreement" %}
                                         <tr height="60px">
                                             <td class="text-center align-middle">{{ field.label }}</td>
                                             <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
@@ -58,7 +58,8 @@
                                 </tr>
                             </tfoot>
                         </table>
-                        <p class="fw-light m-0">All assessments should be given desired % and total flex adds up to 100%</p>
+                        <p class="fw-light mt-0 mb-1">All assessments should be given desired % and total flex adds up to 100%</p>
+                        {% bootstrap_field form.agreement wrapper_class='mb-0 mt-2' %}
                     </div>
                 </div>
             </div>
@@ -101,14 +102,18 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 <script>
-    pre_disabled = $(':submit').attr('disabled')
-    check_total();
+    var pre_disabled = $(':submit').attr('disabled')
+    check_valid();
 
     $(document).on('change', '.flex', function () {
-        check_total();
+        check_valid();
     });
 
-    function check_total() {
+    $(document).on('change', '#id_agreement', function () {
+        check_valid();
+    });
+
+    function check_valid() {
         var total = 0;
         $(".flex").each(function () {
             curr = parseFloat($(this).find("input").val());
@@ -119,17 +124,19 @@
 
         var total_str = total.toString();
         $('#total').text(total_str + "%");
+
+        var checked = $('#id_agreement').is(':checked');
+
         if (total == 100.00) {
             $('#total').css('color', 'green');
-            if (!pre_disabled) {
-                $(":submit").removeAttr("disabled");
-            };
         } else {
             $('#total').css('color', 'red');
-            if (!pre_disabled) {
-                $(':submit').attr("disabled", true);
-            };
         };
+        if (total == 100.00 && checked && !pre_disabled) {
+            $(":submit").removeAttr("disabled");
+        } else {
+            $(":submit").attr("disabled", true);
+        }
     };
 
 </script>

@@ -1,4 +1,5 @@
 import csv
+import os
 import re
 from abc import ABC, abstractmethod
 
@@ -62,12 +63,18 @@ class LogWriter(Writer):
 def course_log(course):
     log_writer = LogWriter('Log', course)
 
-    with open(settings.LOG_FILE) as f:
-        lines = f.readlines()
-        for line in lines:
-            res = re.search(r'\[(.*?)\]', line)
-            if res.group(1) == course.title:
-                log_writer.write(line)
+    try:
+        log_file_names = sorted(os.listdir(settings.LOG_DIR))
+    except FileNotFoundError:
+        return log_writer.get_response()
+
+    for log_file_name in log_file_names:
+        with open(os.path.join(settings.LOG_DIR, log_file_name)) as f:
+            lines = f.readlines()
+            for line in lines:
+                res = re.search(r'\[(.*?)\]', line)
+                if res.group(1) == str(course):
+                    log_writer.write(line)
 
     return log_writer.get_response()
 

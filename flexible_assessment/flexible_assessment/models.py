@@ -150,7 +150,7 @@ class Course(models.Model):
     close = models.DateTimeField(null=True)
 
     def __str__(self):
-        return self.title
+        return "{} - {}".format(self.title, self.id)
 
     def set_flex_assessments(self, assessment):
         """Creates flex assessment objects for new assessments in the course"""

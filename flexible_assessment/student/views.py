@@ -71,6 +71,10 @@ class StudentAssessmentView(views.StudentFormView):
                 'Form is not open yet'))
 
         comment = form.cleaned_data.pop('comment')
+        agreement = form.cleaned_data.pop('agreement')
+
+        if not agreement:
+            form.add_error(None, ValidationError('Required to agree'))
 
         assessment_fields = list(form.cleaned_data.items())
         for assessment_id, flex in assessment_fields:
@@ -86,7 +90,7 @@ class StudentAssessmentView(views.StudentFormView):
             response = super().form_invalid(form)
             return response
 
-        log_extra = {'course': course.title,
+        log_extra = {'course': str(course),
                      'user': self.request.session['display_name']}
 
         for assessment_id, flex in assessment_fields:

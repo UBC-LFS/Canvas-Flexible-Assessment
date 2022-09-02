@@ -35,7 +35,7 @@ class StudentAssessmentBaseForm(forms.Form):
     def clean(self):
         flex_fields = dict(
             filter(
-                lambda field: field[0] not in ['comment'],
+                lambda field: field[0] not in ['comment', 'agreement'],
                 self.cleaned_data.items()))
 
         flex_total = sum(flex_fields.values())

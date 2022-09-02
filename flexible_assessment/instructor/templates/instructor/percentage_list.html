@@ -10,9 +10,19 @@
             <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                 <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
                     <h3 class="mb-0">Student Allocations</h3>
-                    <div>
-                        <!-- <a class="btn btn-outline-primary btn-sm m-1" style="border-radius: 1em;" href="{% url 'instructor:log_export' course.id %}"><i class="bi bi-download"></i> Export Log</a> -->
-                        <a class="btn btn-outline-primary btn-sm m-1" style="border-radius: 1em;" href="{% url 'instructor:percentage_list_export' course.id %}"><i class="bi bi-download"></i> Export Percentages</a>
+                    <div class="dropdown-center">
+                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" style="border-radius: 1em;">Export</button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'instructor:percentage_list_export' course.id %}">
+                                    <i class="bi bi-download"></i> Percentages</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {% if not course.close %}disabled{% endif %}" href="{% url 'instructor:log_export' course.id %}">
+                                    <i class="bi bi-download"></i> Change Log</a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
                 <div class="card-body pt-2 pb-3">

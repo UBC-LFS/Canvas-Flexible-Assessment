@@ -52,13 +52,13 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
             response = writer.students_csv(course, students)
 
             logger.info('Percentage view exported',
-                        extra={'course': course.title,
+                        extra={'course': str(course),
                                'user': self.request.session['display_name']})
         elif self.kwargs.get('log', ''):
             response = writer.course_log(course)
 
             logger.info('Course log exported',
-                        extra={'course': course.title,
+                        extra={'course': str(course),
                                'user': self.request.session['display_name']})
 
         return response
@@ -78,7 +78,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         csv_response = writer.grades_csv(course, students, groups)
 
         logger.info('Final list view exported',
-                    extra={'course': course.title,
+                    extra={'course': str(course),
                            'user': self.request.session['display_name']})
 
         return csv_response
@@ -89,7 +89,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         course_id = self.kwargs['course_id']
         course = models.Course.objects.get(pk=course_id)
 
-        log_extra = {'course': course.title,
+        log_extra = {'course': str(course),
                      'user': request.session['display_name']}
 
         if self.kwargs.get('submit', False):
@@ -155,7 +155,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         def _set_override(student_name, enrollment_id, override, incomplete):
             canvas.set_override(enrollment_id, override, incomplete)
             logger.info('Submitted %s final grade to Canvas', student_name,
-                        extra={'course': course.title,
+                        extra={'course': str(course),
                                'user': self.request.session['display_name']})
 
         course = models.Course.objects.get(pk=course_id)
@@ -471,7 +471,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                         'from %s - %s to %s - %s',
                         *old_dts,
                         *new_dts,
-                        extra={'course': course.title,
+                        extra={'course': str(course),
                                'user': self.request.session['display_name']})
 
     def _save_assessments(self, forms, course, ignore_conflicts):
@@ -494,7 +494,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         return assessments, conflict_students
 
     def _create_assessments(self, course, assessments):
-        log_extra = {'course': course.title,
+        log_extra = {'course': str(course),
                      'user': self.request.session['display_name']}
         assessment_created = False
 
@@ -542,7 +542,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             logger.info('Deleted assessments: %s',
                         ', '.join(assessments_to_delete.values_list(
                             'title', flat=True)),
-                        extra={'course': course.title,
+                        extra={'course': str(course),
                                'user': self.request.session['display_name']})
             assessments_to_delete.delete()
 
@@ -555,7 +555,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             logger.info('Reset flex allocations and comment for %s '
                         'due to out of range allocations',
                         student.display_name,
-                        extra={'course': course.title,
+                        extra={'course': str(course),
                                'user': self.request.session['display_name']})
 
     def _reset_all_students(self, course):
@@ -563,7 +563,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         logger.info('Reset all student flex allocations and comments '
                     'due to new or deleted assessment(s)',
-                    extra={'course': course.title,
+                    extra={'course': str(course),
                            'user': self.request.session['display_name']})
 
     def _to_initial_dict(self, fields_str):
@@ -689,7 +689,7 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
             response = super().form_invalid(form)
             return response
 
-        log_extra = {'course': course.title,
+        log_extra = {'course': str(course),
                      'user': self.request.session['display_name']}
 
         for assessment_id, flex in assessment_fields:
@@ -782,7 +782,7 @@ class ImportAssessmentView(views.InstructorFormView):
         course = models.Course.objects.get(pk=course_id)
 
         logger.info('Successfully imported assessments (not yet saved)',
-                    extra={'course': course.title,
+                    extra={'course': str(course),
                            'user': self.request.session['display_name']})
 
         return super().form_valid(form)

@@ -10,12 +10,14 @@ class StudentAssessmentForm(StudentAssessmentBaseForm):
         user_comment = UserComment.objects.filter(
             user__user_id=self.user_id, course__id=self.course_id).first()
 
-        comment_field = {}
+        fields = {}
+
         if user_comment.comment:
             initial_comment = user_comment.comment
         else:
             initial_comment = None
-        comment_field['comment'] = forms.CharField(
+
+        fields['comment'] = forms.CharField(
             max_length=100,
             initial=initial_comment,
             widget=forms.Textarea(
@@ -24,7 +26,12 @@ class StudentAssessmentForm(StudentAssessmentBaseForm):
                 }),
             required=False)
 
-        self.fields.update(comment_field)
+        fields['agreement'] = forms.BooleanField(
+            required=True,
+            label='I agree that my final grade will '
+            'be calculated as indicated above')
+
+        self.fields.update(fields)
         self.set_field_status()
 
     def set_field_status(self):

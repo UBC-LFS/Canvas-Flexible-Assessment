@@ -41,7 +41,7 @@
                             </thead>
                             <tbody>
                                 {% for field in form.visible_fields %}
-                                    {% if field.name != "comment" %}
+                                    {% if field.name != "comment" and field.name != "agreement" %}
                                         <tr height="60px">
                                             <td class="text-center align-middle">{{ field.label }}</td>
                                             <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
@@ -84,13 +84,13 @@
 
 
 <script>
-	check_total();
+	check_valid();
 
 	$(document).on('change', '.flex', function () {
-		check_total();
+		check_valid();
 	});
 
-	function check_total() {
+	function check_valid() {
 		var total = 0;
 		$(".flex").each(function () {
 			curr = parseFloat($(this).find("input").val());

@@ -39,9 +39,12 @@ def launch(request):
     if 'TeacherEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.TEACHER)
         auth.authenticate_login(request, canvas_fields)
+
+        course = models.Course.objects.get(pk=course_id)
         logger.info('Instructor login',
-                    extra={'course': canvas_fields['course_name'],
+                    extra={'course': str(course),
                            'user': canvas_fields['user_display_name']})
+
         return HttpResponseRedirect(
             reverse('instructor:instructor_home',
                     kwargs={'course_id': course_id}) + '?login_redirect=True')
@@ -49,9 +52,12 @@ def launch(request):
     elif 'TaEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.TA)
         auth.authenticate_login(request, canvas_fields)
+
+        course = models.Course.objects.get(pk=course_id)
         logger.info('TA login',
-                    extra={'course': canvas_fields['course_name'],
+                    extra={'course': str(course),
                            'user': canvas_fields['user_display_name']})
+
         return HttpResponseRedirect(
             reverse('instructor:instructor_home',
                     kwargs={'course_id': course_id}) + '?login_redirect=True')
@@ -59,9 +65,12 @@ def launch(request):
     elif 'StudentEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.STUDENT)
         auth.authenticate_login(request, canvas_fields)
+
+        course = models.Course.objects.get(pk=course_id)
         logger.info('Student login',
-                    extra={'course': canvas_fields['course_name'],
+                    extra={'course': str(course),
                            'user': canvas_fields['user_display_name']})
+
         return HttpResponseRedirect(
             reverse('student:student_home',
                     kwargs={'course_id': course_id}))

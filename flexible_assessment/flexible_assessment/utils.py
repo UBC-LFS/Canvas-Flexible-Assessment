@@ -17,7 +17,7 @@ def update_students(request, course):
     students_db = models.UserProfile.objects.filter(role=models.Roles.STUDENT,
                                                     usercourse__course=course)
 
-    log_extra = {'course': course.title,
+    log_extra = {'course': str(course),
                  'user': request.session['display_name']}
 
     students_canvas_ids = [student.__getattribute__(

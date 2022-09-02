@@ -1,9 +1,11 @@
 import os
 from datetime import timedelta
+from dotenv import load_dotenv, find_dotenv
 
-from dotenv import load_dotenv
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-load_dotenv()
+load_dotenv(find_dotenv(os.path.join(BASE_DIR, '..', '.env')))
+
 NAME = os.getenv('DB_NAME')
 USER = os.getenv('DB_USERNAME')
 PASSWORD = os.getenv('DB_PASSWORD')
@@ -13,8 +15,6 @@ DJANGO_SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 INTERNAL_IP = os.getenv('INTERNAL_IP')
 ENCRYPT_SALT = os.getenv('ENCRYPT_SALT')
 ENCRYPT_PASSWORD = os.getenv('ENCRYPT_PASSWORD')
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = DJANGO_SECRET_KEY
 
@@ -65,7 +65,7 @@ CANVAS_OAUTH_SCOPES = [
     'url:PUT|/api/v1/courses/:course_id/assignment_groups/:assignment_group_id']
 CANVAS_OAUTH_TOKEN_EXPIRATION_BUFFER = timedelta()
 
-LTI_CONFIG = 'flexible_assessment.dev.json'
+LTI_CONFIG = 'flexible_assessment.json'
 
 ROOT_URLCONF = 'flexible_assessment.urls'
 
@@ -92,8 +92,10 @@ WSGI_APPLICATION = 'flexible_assessment.wsgi.application'
 
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_AGE = 15
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -147,7 +149,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -159,7 +162,7 @@ AUTHENTICATION_BACKENDS = [
     'flexible_assessment.auth.SettingsBackend',
 ]
 
-LOG_FILE = os.path.join(BASE_DIR, 'log', 'info.log')
+LOG_DIR = os.path.join(BASE_DIR, 'log')
 
 LOGGING = {
     'version': 1,
@@ -177,7 +180,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': LOG_FILE,
+            'filename': os.path.join(LOG_DIR, 'info.log'),
             'formatter': 'simple',
             'backupCount': 10,
             'maxBytes': 5242880,
