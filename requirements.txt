@@ -7,3 +7,6 @@ PyLTI1p3==1.11.0
 python-dotenv==0.20.0
 pytz==2022.1
 requests==2.22.0
+django-extensions==3.1.5
+Werkzeug==2.1.2 
+pyOpenSSL==22.0.0
