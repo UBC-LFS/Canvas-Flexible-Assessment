@@ -504,10 +504,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
             assessment.save()
 
-            curr_assessment_created = course.set_flex_assessments(assessment)
+            course.set_flex_assessments(assessment)
 
-            if curr_assessment_created:
-                assessment_created = curr_assessment_created
+            if not old_assessment:
+                assessment_created = True
                 logger.info('%s created (default %s%%, min %s%%, max %s%%)',
                             assessment.title,
                             assessment.default,

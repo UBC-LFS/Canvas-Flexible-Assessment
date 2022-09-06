@@ -34,7 +34,7 @@ def update_students(request, course):
     for student in students_to_add:
         canvas_fields = {}
         canvas_fields['user_id'] = student.__getattribute__('id')
-        canvas_fields['login_id'] = student.__getattribute__('login_id')
+        canvas_fields['login_id'] = student.__getattribute__('sis_user_id')
         canvas_fields['user_display_name'] = student.__getattribute__('name')
         canvas_fields['course_id'] = course.id
         canvas_fields['course_name'] = course.title

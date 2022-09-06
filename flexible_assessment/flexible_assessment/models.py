@@ -165,8 +165,6 @@ class Course(models.Model):
                 user=user, assessment=assessment).exists()]
         FlexAssessment.objects.bulk_create(flex_assessments)
 
-        return True if flex_assessments else False
-
     def reset_students(self, students):
         """Resets flex allocations and comments for students"""
 
