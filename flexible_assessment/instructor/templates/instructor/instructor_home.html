@@ -91,52 +91,54 @@
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
 <script>
-    {% get_average_allocations course as average_allocations %}
-    var series = {{ average_allocations|safe }};
+    {% if course.close %}
+        {% get_average_allocations course as average_allocations %}
+        var series = {{ average_allocations|safe }};
 
-    var options = {
-        chart: {
-            type: 'column',
-            height: '80%'
-        },
-        title: {
-            text: "",
-            floating: true
-        },
-        xAxis: {
-            categories: ['Default', 'Student Average'],
-        },
-        yAxis: {
-            visible: false
-        },
-        plotOptions: {
-            column: {
-                stacking: 'percent',
-                dataLabels: {
-                    enabled: true,
-                    format: '{y}%',
-                    style: {
-                        fontSize: '12px'
+        var options = {
+            chart: {
+                type: 'column',
+                height: '80%'
+            },
+            title: {
+                text: "",
+                floating: true
+            },
+            xAxis: {
+                categories: ['Default', 'Student Average'],
+            },
+            yAxis: {
+                visible: false
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'percent',
+                    dataLabels: {
+                        enabled: true,
+                        format: '{y}%',
+                        style: {
+                            fontSize: '12px'
+                        }
                     }
                 }
-            }
-        },
-        colors: ['#009999', '#99CC33', '#FF9900', '#9999CC',
-                    '#66CCCC', '#339966', '#CCCC33'],
-        tooltip: {
-            headerFormat: '<b>{point.x}</b><br/>',
-            pointFormat: '{series.name}: {point.y}%'
-        },
-        exporting: {
-            enabled: false
-        },
-        credits: {
-            enabled: false
-        },
-        series: series,
-    };
+            },
+            colors: ['#009999', '#99CC33', '#FF9900', '#9999CC',
+                        '#66CCCC', '#339966', '#CCCC33'],
+            tooltip: {
+                headerFormat: '<b>{point.x}</b><br/>',
+                pointFormat: '{series.name}: {point.y}%'
+            },
+            exporting: {
+                enabled: false
+            },
+            credits: {
+                enabled: false
+            },
+            series: series,
+        };
 
-    Highcharts.chart('container_data', options);
+        Highcharts.chart('container_data', options);
+    {% endif %}
 
     $(document).ready(function () {
         var errors = [];
