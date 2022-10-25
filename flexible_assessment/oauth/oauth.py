@@ -63,7 +63,7 @@ def handle_missing_or_invalid_token(request):
 
 
 def oauth_callback(request):
-    error = request.GET.get('error')
+    error = request.GET.get('error_description')
     if error:
         return error_redirect(request, error)
     code = request.GET.get('code')
