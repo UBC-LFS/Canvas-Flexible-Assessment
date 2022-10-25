@@ -110,7 +110,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     objects = UserProfileManager()
 
     USERNAME_FIELD = 'user_id'
-    REQUIRED_FIELDS = ['login_id', 'display_name', 'role']
+    REQUIRED_FIELDS = ['display_name', 'role']
 
     def __str__(self):
         return '{}, {}'.format(self.login_id, self.display_name)
