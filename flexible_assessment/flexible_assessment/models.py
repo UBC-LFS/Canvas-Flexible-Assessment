@@ -103,7 +103,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     """
 
     user_id = models.IntegerField(primary_key=True)
-    login_id = models.CharField(max_length=100)
+    login_id = models.CharField(max_length=100, null=True)
     display_name = models.CharField(max_length=255)
     role = models.IntegerField(choices=Roles.choices)
 
