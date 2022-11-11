@@ -32,12 +32,10 @@ class SettingsBackend(BaseBackend):
         """
 
         user_id = request.session.get('user_id', '')
-        login_id = request.session.get('login_id', '')
 
-        if user_id and login_id:
+        if user_id:
             try:
                 user = UserProfile.objects.get(pk=user_id)
-                # if user.login_id == login_id:
                 return user
             except UserProfile.DoesNotExist:
                 return None
