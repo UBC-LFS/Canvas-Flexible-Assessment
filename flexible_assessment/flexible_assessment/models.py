@@ -15,7 +15,7 @@ class UserProfileManager(BaseUserManager):
         Creates superuser"""
 
     def create_user(self, user_id, login_id,
-                    display_name, role, password=None):
+                    display_name, password=None):
         """Regular User creation
         Parameters
         ----------
@@ -25,9 +25,6 @@ class UserProfileManager(BaseUserManager):
             Used as canvas login/username (CWL)
         display_name : str
             Name of user
-        role : int
-            Used as identification for role of user in course
-            (see models.Roles class)
         Returns
         -------
         user : UserProfile
@@ -37,8 +34,7 @@ class UserProfileManager(BaseUserManager):
         user = self.model(
             user_id=user_id,
             login_id=login_id,
-            display_name=display_name,
-            role=role
+            display_name=display_name
         )
 
         user.set_password(password)
@@ -46,7 +42,7 @@ class UserProfileManager(BaseUserManager):
         return user
 
     def create_superuser(self, user_id, login_id,
-                         display_name, role, password=None):
+                         display_name, password=None):
         """Superuser creation
         Parameters
         ----------
@@ -56,9 +52,6 @@ class UserProfileManager(BaseUserManager):
             Used as canvas login/username (CWL)
         display_name : str
             Name of user
-        role : int
-            Used as identification for role of user in course
-            (see models.Roles class)
         Returns
         -------
         user : UserProfile
@@ -69,7 +62,6 @@ class UserProfileManager(BaseUserManager):
             user_id,
             login_id,
             display_name,
-            role,
             password=password)
         user.save(using=self._db)
         return user
@@ -95,9 +87,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         Used as canvas login/username (CWL)
     display_name : str
         Name of user
-    role : int
-        Used as identification for role of user in course
-        (see models.Roles class)
     objects : UserProfileManager
         Instance of user manager class extending the BaseUserManager
     """
@@ -105,23 +94,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     user_id = models.IntegerField(primary_key=True)
     login_id = models.CharField(max_length=100, null=True, blank=True)
     display_name = models.CharField(max_length=255)
-    role = models.IntegerField(choices=Roles.choices)
 
     objects = UserProfileManager()
 
     USERNAME_FIELD = 'user_id'
-    REQUIRED_FIELDS = ['login_id', 'display_name', 'role']
+    REQUIRED_FIELDS = ['login_id', 'display_name']
 
     def __str__(self):
         return '{}, {}'.format(self.login_id, self.display_name)
-
-    @property
-    def is_superuser(self):
-        return self.role == Roles.ADMIN
-
-    @property
-    def is_staff(self):
-        return self.role == Roles.ADMIN
 
     class Meta:
         ordering = ['display_name']
@@ -156,7 +136,7 @@ class Course(models.Model):
         """Creates flex assessment objects for new assessments in the course"""
 
         user_courses = self.usercourse_set.filter(
-            user__role=Roles.STUDENT).select_related('user')
+            role=Roles.STUDENT).select_related('user')
         users = [user_course.user for user_course in user_courses]
         flex_assessments = [
             FlexAssessment(user=user, assessment=assessment)
@@ -194,6 +174,9 @@ class UserCourse(models.Model):
         Foreign key with UserProfile
     course : ForeignKey -> Course
         Foreign Key with Course
+    role : int
+        Used as identification for role of user in course
+        (see models.Roles class)
     """
 
     class Meta:
@@ -207,6 +190,7 @@ class UserCourse(models.Model):
 
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    role = models.IntegerField(choices=Roles.choices)
 
     def __str__(self):
         return '{}, {}'.format(self.user.display_name, self.course.title)

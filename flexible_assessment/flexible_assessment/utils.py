@@ -14,8 +14,9 @@ def update_students(request, course):
         .get_course(course.id)\
         .get_users(enrollment_type='student')
     students_canvas = list(students_canvas)
-    students_db = models.UserProfile.objects.filter(role=models.Roles.STUDENT,
-                                                    usercourse__course=course)
+    students_db = models.UserProfile.objects. \
+        filter(usercourse__role=models.Roles.STUDENT,
+               usercourse__course=course)
 
     log_extra = {'course': str(course),
                  'user': request.session['display_name']}
@@ -51,11 +52,11 @@ def update_students(request, course):
         students_to_delete.delete()
 
 
-def set_user_profile(user_id, login_id, display_name, role):
+def set_user_profile(user_id, login_id, display_name):
     user_set = models.UserProfile.objects.filter(pk=user_id)
     if not user_set.exists():
         user = models.UserProfile.objects.create_user(
-            user_id, login_id, display_name, role)
+            user_id, login_id, display_name)
     else:
         user = user_set.first()
     return user
@@ -71,17 +72,16 @@ def set_course(course_id, course_name):
     return course
 
 
-def set_user_course_enrollment(user, course):
+def set_user_course_enrollment(user, course, role):
     user_course_set = models.UserCourse.objects.filter(
         user_id=user.user_id, course_id=course.id)
     if not user_course_set.exists():
-        user_course = models.UserCourse(user=user, course=course)
+        user_course = models.UserCourse(user=user, course=course, role=role)
         user_course.save()
 
 
 def set_user_comment(user, course):
-    if not user.usercomment_set.filter(course__id=course.id).exists() \
-            and user.role == models.Roles.STUDENT:
+    if not user.usercomment_set.filter(course__id=course.id).exists():
         user_comment = models.UserComment(user=user, course=course)
         user_comment.save()
 
@@ -95,8 +95,9 @@ def set_user_course(canvas_fields, role):
     course_id = canvas_fields['course_id']
     course_name = canvas_fields['course_name']
 
-    user = set_user_profile(user_id, login_id, display_name, role)
+    user = set_user_profile(user_id, login_id, display_name)
     course = set_course(course_id, course_name)
 
-    set_user_course_enrollment(user, course)
-    set_user_comment(user, course)
+    set_user_course_enrollment(user, course, role)
+    if role == models.Roles.STUDENT:
+        set_user_comment(user, course)
