@@ -55,8 +55,8 @@ CANVAS_DOMAIN = os.getenv('CANVAS_DOMAIN')
 CANVAS_OAUTH_CLIENT_ID = os.getenv('CANVAS_OAUTH_CLIENT_ID')
 CANVAS_OAUTH_CLIENT_SECRET = os.getenv('CANVAS_OAUTH_CLIENT_SECRET')
 
-CANVAS_OAUTH_AUTHORIZE_URL = '{}/login/oauth2/auth'.format(CANVAS_DOMAIN)
-CANVAS_OAUTH_ACCESS_TOKEN_URL = '{}/login/oauth2/token'.format(CANVAS_DOMAIN)
+CANVAS_OAUTH_AUTHORIZE_URL = '{}login/oauth2/auth'.format(CANVAS_DOMAIN)
+CANVAS_OAUTH_ACCESS_TOKEN_URL = '{}login/oauth2/token'.format(CANVAS_DOMAIN)
 # GraphQL Scope not present in Canvas
 CANVAS_OAUTH_SCOPES = [
     'url:GET|/api/v1/courses/:id',
