@@ -15,7 +15,7 @@ class UserProfileManager(BaseUserManager):
         Creates superuser"""
 
     def create_user(self, user_id, login_id,
-                    display_name, password=None):
+                    display_name, superuser=False, password=None):
         """Regular User creation
         Parameters
         ----------
@@ -34,7 +34,8 @@ class UserProfileManager(BaseUserManager):
         user = self.model(
             user_id=user_id,
             login_id=login_id,
-            display_name=display_name
+            display_name=display_name,
+            superuser=superuser
         )
 
         user.set_password(password)
@@ -42,7 +43,7 @@ class UserProfileManager(BaseUserManager):
         return user
 
     def create_superuser(self, user_id, login_id,
-                         display_name, password=None):
+                         display_name, superuser=True, password=None):
         """Superuser creation
         Parameters
         ----------
@@ -62,6 +63,7 @@ class UserProfileManager(BaseUserManager):
             user_id,
             login_id,
             display_name,
+            superuser=superuser,
             password=password)
         user.save(using=self._db)
         return user
@@ -94,6 +96,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     user_id = models.IntegerField(primary_key=True)
     login_id = models.CharField(max_length=100, null=True, blank=True)
     display_name = models.CharField(max_length=255)
+    superuser = models.BooleanField(default=False)
 
     objects = UserProfileManager()
 
@@ -102,6 +105,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return '{}, {}'.format(self.login_id, self.display_name)
+
+    @property
+    def is_superuser(self):
+        return self.superuser
+
+    @property
+    def is_staff(self):
+        return self.superuser 
 
     class Meta:
         ordering = ['display_name']
@@ -193,7 +204,7 @@ class UserCourse(models.Model):
     role = models.IntegerField(choices=Roles.choices)
 
     def __str__(self):
-        return '{}, {}'.format(self.user.display_name, self.course.title)
+        return '{}, {}, {}'.format(self.user.display_name, self.course.title, self.role)
 
 
 class Assessment(models.Model):
