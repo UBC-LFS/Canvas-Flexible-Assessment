@@ -36,7 +36,7 @@ def launch(request):
                                         '/spec/lti/claim/custom']
     course_id = canvas_fields['course_id']
 
-    if 'TeacherEnrollment' in canvas_fields['role']:
+    if 'TeacherEnrollment' or 'ISS' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.TEACHER)
         auth.authenticate_login(request, canvas_fields)
 
