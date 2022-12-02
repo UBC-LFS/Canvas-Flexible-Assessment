@@ -47,7 +47,9 @@ class GenericView(LoginRequiredMixin, UserPassesTestMixin):
         if not self.allowed_view_role:
             raise ImproperlyConfigured(
                 "GenericView requires definition of 'allowed_view_role'")
-        return self.allowed_view_role.permission_test(self.request.user)
+        course = Course.objects.get(pk=self.kwargs['course_id'])
+        return self.allowed_view_role.permission_test(self.request.user,
+                                                      course)
 
 
 class TemplateView(GenericView, generic.TemplateView):
@@ -79,7 +81,7 @@ class InstructorListView(ListView):
 
         course_id = self.kwargs['course_id']
         queryset = UserProfile.objects.filter(
-            role=Roles.STUDENT, usercourse__course__id=course_id)
+            usercourse__role=Roles.STUDENT, usercourse__course__id=course_id)
         return queryset
 
 

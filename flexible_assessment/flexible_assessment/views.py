@@ -36,7 +36,20 @@ def launch(request):
                                         '/spec/lti/claim/custom']
     course_id = canvas_fields['course_id']
 
-    if 'TeacherEnrollment' or 'ISS' in canvas_fields['role']:
+    if 'ISS' in canvas_fields['role']:
+        utils.set_user_course(canvas_fields, models.Roles.ADMIN)
+        auth.authenticate_login(request, canvas_fields)
+
+        course = models.Course.objects.get(pk=course_id)
+        logger.info('Admin login',
+                    extra={'course': str(course),
+                           'user': canvas_fields['user_display_name']})
+
+        return HttpResponseRedirect(
+            reverse('instructor:instructor_home',
+                    kwargs={'course_id': course_id}) + '?login_redirect=True')
+
+    elif 'TeacherEnrollment' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.TEACHER)
         auth.authenticate_login(request, canvas_fields)
 

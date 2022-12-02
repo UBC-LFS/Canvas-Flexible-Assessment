@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from .models import Roles
+from .models import Roles, UserCourse
 
 
 class ViewRole(ABC):
@@ -12,8 +12,10 @@ class ViewRole(ABC):
         pass
 
     @classmethod
-    def permission_test(cls, user):
-        return user.role in cls.permitted_roles
+    def permission_test(cls, user, course):
+        user_course_set = UserCourse.objects.filter(user_id=user.user_id,
+                                                    course_id=course.id)
+        return user_course_set.first().role in cls.permitted_roles
 
 
 class Instructor(ViewRole):

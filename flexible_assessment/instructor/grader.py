@@ -117,7 +117,7 @@ def get_averages(groups, course):
     """
 
     students = UserProfile.objects.filter(
-        role=Roles.STUDENT, usercourse__course=course)
+        usercourse__role=Roles.STUDENT, usercourse__course=course)
 
     overrides = []
     defaults = []

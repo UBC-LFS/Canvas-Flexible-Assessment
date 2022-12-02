@@ -9,7 +9,7 @@ def add_flex_assessments(sender, instance, created, **kwargs):
     """Creates flex assessments for new user linked to course"""
 
     user = instance.user
-    if created and user.role == Roles.STUDENT:
+    if created and instance.role == Roles.STUDENT:
         assessments = instance.course.assessment_set.all()
         flex_assessments = [
             FlexAssessment(
