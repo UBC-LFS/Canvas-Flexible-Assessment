@@ -1,20 +1,19 @@
 import os
 from datetime import timedelta
-from dotenv import load_dotenv, find_dotenv
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-load_dotenv(find_dotenv(os.path.join(BASE_DIR, '..', '.env')))
+ENGINE = os.environ['DB_ENGINE']
+NAME = os.environ['DB_NAME']
+USER = os.environ['DB_USERNAME']
+PASSWORD = os.environ['DB_PASSWORD']
+HOST = os.environ['DB_HOST']
+PORT = os.environ['DB_PORT']
 
-NAME = os.getenv('DB_NAME')
-USER = os.getenv('DB_USERNAME')
-PASSWORD = os.getenv('DB_PASSWORD')
-HOST = os.getenv('DB_HOST')
-PORT = os.getenv('DB_PORT')
-DJANGO_SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-INTERNAL_IP = os.getenv('INTERNAL_IP')
-ENCRYPT_SALT = os.getenv('ENCRYPT_SALT')
-ENCRYPT_PASSWORD = os.getenv('ENCRYPT_PASSWORD')
+DJANGO_SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+INTERNAL_IP = os.environ['INTERNAL_IP']
+ENCRYPT_SALT = os.environ['ENCRYPT_SALT']
+ENCRYPT_PASSWORD = os.environ['ENCRYPT_PASSWORD']
 
 SECRET_KEY = DJANGO_SECRET_KEY
 
@@ -102,7 +101,7 @@ SECURE_SSL_REDIRECT = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': ENGINE,
         'NAME': NAME,
         'USER': USER,
         'PASSWORD': PASSWORD,
