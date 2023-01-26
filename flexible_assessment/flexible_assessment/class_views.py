@@ -56,6 +56,10 @@ class TemplateView(GenericView, generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['display_name'] = self.request.session.get('display_name', '')
+        if (context['display_name'] == ''):
+            context['display_name'] = UserProfile.objects.get(pk=self.request.session['_auth_user_id']).display_name
+            self.request.session['display_name'] = context['display_name']
+
         return context
 
 
