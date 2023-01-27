@@ -1,0 +1,73 @@
+[{
+    "model": "flexible_assessment.usercourse",
+    "pk": 1,
+    "fields": {
+        "user_id": 1,
+        "course_id": 1,
+        "role": 4
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
+    "pk": 2,
+    "fields": {
+        "user_id": 2,
+        "course_id": 1,
+        "role": 4
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
+    "pk": 3,
+    "fields": {
+        "user_id": 3,
+        "course_id": 1,
+        "role": 4
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
+    "pk": 4,
+    "fields": {
+        "user_id": 4,
+        "course_id": 1,
+        "role": 4
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
+    "pk": 51,
+    "fields": {
+        "user_id": 51,
+        "course_id": 1,
+        "role": 3
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
+    "pk": 100,
+    "fields": {
+        "user_id": 101,
+        "course_id": 1,
+        "role": 2
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
+    "pk": 101,
+    "fields": {
+        "user_id": 101,
+        "course_id": 2,
+        "role": 2
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
+    "pk": 1000,
+    "fields": {
+        "user_id": 0,
+        "course_id": 1,
+        "role": 1
+    }
+}
+]

@@ -1,0 +1,144 @@
+[{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 1,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440001",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 2,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440002",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 3,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440003",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 4,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440004",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 5,
+    "fields": {
+        "user": 2,
+        "assessment": "123e4567-e89b-12d3-a456-426655440001",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 6,
+    "fields": {
+        "user": 2,
+        "assessment": "123e4567-e89b-12d3-a456-426655440002",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 7,
+    "fields": {
+        "user": 2,
+        "assessment": "123e4567-e89b-12d3-a456-426655440003",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 8,
+    "fields": {
+        "user": 2,
+        "assessment": "123e4567-e89b-12d3-a456-426655440004",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 9,
+    "fields": {
+        "user": 3,
+        "assessment": "123e4567-e89b-12d3-a456-426655440001",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 10,
+    "fields": {
+        "user": 3,
+        "assessment": "123e4567-e89b-12d3-a456-426655440002",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 11,
+    "fields": {
+        "user": 3,
+        "assessment": "123e4567-e89b-12d3-a456-426655440003",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 12,
+    "fields": {
+        "user": 3,
+        "assessment": "123e4567-e89b-12d3-a456-426655440004",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 13,
+    "fields": {
+        "user": 4,
+        "assessment": "123e4567-e89b-12d3-a456-426655440001",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 14,
+    "fields": {
+        "user": 4,
+        "assessment": "123e4567-e89b-12d3-a456-426655440002",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 15,
+    "fields": {
+        "user": 4,
+        "assessment": "123e4567-e89b-12d3-a456-426655440003",
+        "flex": 25
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 16,
+    "fields": {
+        "user": 4,
+        "assessment": "123e4567-e89b-12d3-a456-426655440004",
+        "flex": 25
+    }
+}]

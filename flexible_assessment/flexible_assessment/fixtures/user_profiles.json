@@ -1,0 +1,106 @@
+[
+    {
+        "model": "flexible_assessment.userprofile",
+        "pk": 0,
+        "fields": {
+            "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
+            "last_login": null,
+            "login_id": "admin",
+            "display_name": "admin",
+            "superuser": true,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "flexible_assessment.userprofile",
+        "pk": 1,
+        "fields": {
+            "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
+            "last_login": null,
+            "login_id": "test_student1",
+            "display_name": "test_student1",
+            "superuser": false,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "flexible_assessment.userprofile",
+        "pk": 2,
+        "fields": {
+            "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
+            "last_login": null,
+            "login_id": "test_student2",
+            "display_name": "test_student2",
+            "superuser": false,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "flexible_assessment.userprofile",
+        "pk": 3,
+        "fields": {
+            "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
+            "last_login": null,
+            "login_id": "test_student3",
+            "display_name": "test_student3",
+            "superuser": false,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "flexible_assessment.userprofile",
+        "pk": 4,
+        "fields": {
+            "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
+            "last_login": null,
+            "login_id": "test_student4",
+            "display_name": "test_student4",
+            "superuser": false,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "flexible_assessment.userprofile",
+        "pk": 5,
+        "fields": {
+            "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
+            "last_login": null,
+            "login_id": "test_student5",
+            "display_name": "test_student5",
+            "superuser": false,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "flexible_assessment.userprofile",
+        "pk": 51,
+        "fields": {
+            "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
+            "last_login": null,
+            "login_id": "test_ta1",
+            "display_name": "test_ta1",
+            "superuser": false,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "flexible_assessment.userprofile",
+        "pk": 101,
+        "fields": {
+            "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
+            "last_login": null,
+            "login_id": "test_instructor1",
+            "display_name": "test_instructor1",
+            "superuser": false,
+            "groups": [],
+            "user_permissions": []
+        }
+    }
+]
