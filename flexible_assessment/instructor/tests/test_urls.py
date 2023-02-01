@@ -143,6 +143,12 @@ class TestUrls(TestCase):
         response = self.client.get(url)
         self.assertEquals(response.status_code, 403)
     
+    def test_instructor_tries_access_nonexistant_course(self):
+        course_id = self.login_instructor("test_instructor1", "test_course1")
+        instructor_home_url = reverse('instructor:instructor_home', args=[999])
+        response = self.client.get(instructor_home_url)
+        self.assertEquals(response.status_code, 404)
+    
     # # TODO: They should probably be routed to course_setup page instead of being able to access these pages
     # def test_accessing_urls_when_course_setup_not_complete(self):
     #     course_id = self.login_instructor("test_instructor1", "test_course2")
@@ -151,11 +157,4 @@ class TestUrls(TestCase):
         
     #     self.assertEquals(response.status_code, 302)
     
-    # # TODO: Determine what should happen when they do this
-    # # Currently you get a "Course matching query does not exist"
-    # def test_instructor_tries_access_nonexistant_course(self):
-    #     course_id = self.login_instructor("test_instructor1", "test_course1")
-    #     instructor_home_url = reverse('instructor:instructor_home', args=[999])
-    #     response = self.client.get(instructor_home_url)
-    #     self.assertEquals(response.status_code, 500)
         

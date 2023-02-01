@@ -70,17 +70,12 @@ class TestUrls(TestCase):
         
         response = self.client.get(student_home_url)
         self.assertEquals(response.status_code, 403)
-        
     
-    # # TODO, fix this instead of having a 500 error
-    # def test_student_tries_access_nonexistant_course(self):
-    #     user, course = self.get_user_and_course_object("test_student1", "test_course1")
-    #     self.client.force_login(user)
-    #     student_home_url = reverse('student:student_home', args=[99999])
-    #     print("STUDENT_HOME_URL: " + student_home_url)
-        
-    #     try:
-    #         response = self.client.get(student_home_url)
-    #     except:
-    #         print("ERROR EXPECTED when trying to access nonexistant course (currently)")
+    def test_student_tries_access_nonexistant_course(self):
+        user, course = self.get_user_and_course_object("test_student1", "test_course1")
+        self.client.force_login(user)
+        student_home_url = reverse('student:student_home', args=[99999])
+
+        response = self.client.get(student_home_url)
+        self.assertEquals(response.status_code, 404)
     

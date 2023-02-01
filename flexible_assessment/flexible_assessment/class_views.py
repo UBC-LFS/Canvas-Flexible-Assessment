@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse_lazy
 from django.views import generic
+from django.shortcuts import get_object_or_404
 
 from flexible_assessment.view_roles import Instructor, Student
 
@@ -47,7 +48,7 @@ class GenericView(LoginRequiredMixin, UserPassesTestMixin):
         if not self.allowed_view_role:
             raise ImproperlyConfigured(
                 "GenericView requires definition of 'allowed_view_role'")
-        course = Course.objects.get(pk=self.kwargs['course_id'])
+        course = get_object_or_404(Course, pk=self.kwargs['course_id'])
         return self.allowed_view_role.permission_test(self.request.user,
                                                       course)
 
