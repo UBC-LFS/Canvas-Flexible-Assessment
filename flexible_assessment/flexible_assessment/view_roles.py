@@ -15,7 +15,9 @@ class ViewRole(ABC):
     def permission_test(cls, user, course):
         user_course_set = UserCourse.objects.filter(user_id=user.user_id,
                                                     course_id=course.id)
-        return user_course_set.first().role in cls.permitted_roles
+        
+        first = user_course_set.first()
+        return first.role in cls.permitted_roles if first else False
 
 
 class Instructor(ViewRole):

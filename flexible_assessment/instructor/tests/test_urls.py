@@ -131,3 +131,31 @@ class TestUrls(TestCase):
     @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
     def test_final_grades_submit_url_valid_for_instructor(self, mock_flex_canvas):
         self.url_valid_for_instructor('final_grades_submit')
+    
+    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
+    def test_final_grades_submit_url_invalid_for_students(self, mock_flex_canvas):
+        self.url_invalid_for_student('final_grades_submit')
+    
+    def test_instructor_tries_access_course_id_they_are_not_instructing(self):
+        course_id = self.login_instructor("test_instructor1", "test_course1")
+        url = reverse('instructor:instructor_home', args=[1000])
+        
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 403)
+    
+    # # TODO: They should probably be routed to course_setup page instead of being able to access these pages
+    # def test_accessing_urls_when_course_setup_not_complete(self):
+    #     course_id = self.login_instructor("test_instructor1", "test_course2")
+    #     url = reverse('instructor:file_upload', args=[course_id])
+    #     response = self.client.get(url)
+        
+    #     self.assertEquals(response.status_code, 302)
+    
+    # # TODO: Determine what should happen when they do this
+    # # Currently you get a "Course matching query does not exist"
+    # def test_instructor_tries_access_nonexistant_course(self):
+    #     course_id = self.login_instructor("test_instructor1", "test_course1")
+    #     instructor_home_url = reverse('instructor:instructor_home', args=[999])
+    #     response = self.client.get(instructor_home_url)
+    #     self.assertEquals(response.status_code, 500)
+        
