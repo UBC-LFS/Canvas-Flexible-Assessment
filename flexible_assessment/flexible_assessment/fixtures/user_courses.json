@@ -36,6 +36,24 @@
 },
 {
     "model": "flexible_assessment.usercourse",
+    "pk": 5,
+    "fields": {
+        "user_id": 1,
+        "course_id": 2,
+        "role": 4
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
+    "pk": 6,
+    "fields": {
+        "user_id": 1,
+        "course_id": 3,
+        "role": 4
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
     "pk": 51,
     "fields": {
         "user_id": 51,
@@ -58,6 +76,15 @@
     "fields": {
         "user_id": 101,
         "course_id": 2,
+        "role": 2
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
+    "pk": 102,
+    "fields": {
+        "user_id": 101,
+        "course_id": 3,
         "role": 2
     }
 },

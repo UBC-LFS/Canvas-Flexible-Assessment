@@ -3,7 +3,7 @@
     "pk": "123e4567-e89b-12d3-a456-426655440001",
     "fields": {
         "title": "assignment1",
-        "default": 20,
+        "default": 25,
         "max": 30,
         "min": 10,
         "course": 1,
@@ -15,7 +15,7 @@
     "pk": "123e4567-e89b-12d3-a456-426655440002",
     "fields": {
         "title": "assignment2",
-        "default": 20,
+        "default": 25,
         "max": 30,
         "min": 10,
         "course": 1,
@@ -27,7 +27,7 @@
     "pk": "123e4567-e89b-12d3-a456-426655440003",
     "fields": {
         "title": "assignment3",
-        "default": 20,
+        "default": 25,
         "max": 30,
         "min": 10,
         "course": 1,
@@ -39,7 +39,7 @@
     "pk": "123e4567-e89b-12d3-a456-426655440004",
     "fields": {
         "title": "assignment4",
-        "default": 20,
+        "default": 25,
         "max": 30,
         "min": 10,
         "course": 1,
