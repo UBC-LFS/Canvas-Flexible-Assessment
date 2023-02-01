@@ -11,12 +11,11 @@ class StudentAssessmentForm(StudentAssessmentBaseForm):
             user__user_id=self.user_id, course__id=self.course_id).first()
 
         fields = {}
-
-        if user_comment.comment:
+        if user_comment:
             initial_comment = user_comment.comment
         else:
             initial_comment = None
-
+            
         fields['comment'] = forms.CharField(
             max_length=100,
             initial=initial_comment,
