@@ -31,7 +31,7 @@ class StudentAssessmentView(views.StudentFormView):
         """
 
         kwargs = super().get_form_kwargs()
-        user_id = self.request.session.get('user_id', '')
+        user_id = self.request.session.get('user_id', models.UserProfile.objects.get(pk=self.request.session['_auth_user_id']).user_id)
         course_id = self.kwargs['course_id']
 
         kwargs['user_id'] = user_id
