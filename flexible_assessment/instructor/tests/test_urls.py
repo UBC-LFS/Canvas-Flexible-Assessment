@@ -149,6 +149,12 @@ class TestUrls(TestCase):
         response = self.client.get(instructor_home_url)
         self.assertEquals(response.status_code, 404)
     
+    def test_instructor_tries_override_student_nonexistant_student(self):
+        course_id = self.login_instructor("test_instructor1", "test_course1")
+        url = reverse('instructor:override_student_form_percentage', args=[course_id, 9999])
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 404)
+    
     # # TODO: They should probably be routed to course_setup page instead of being able to access these pages
     # def test_accessing_urls_when_course_setup_not_complete(self):
     #     course_id = self.login_instructor("test_instructor1", "test_course2")

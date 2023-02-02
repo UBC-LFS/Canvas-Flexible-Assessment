@@ -15,6 +15,7 @@ from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.shortcuts import get_object_or_404
 
 from instructor.canvas_api import FlexCanvas
 
@@ -621,8 +622,7 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         """
 
         context = super().get_context_data(**kwargs)
-        student_name = models.UserProfile.objects.get(
-            pk=self.kwargs['pk']).display_name
+        student_name = get_object_or_404(models.UserProfile, pk=self.kwargs['pk']).display_name
         context['student_name'] = student_name
 
         previous = self.request.GET.get('previous', '')
