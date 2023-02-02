@@ -37,11 +37,11 @@ urlpatterns = [
         {'log': True},
         name='log_export'),
     path(
-        '<int:course_id>/percentages/<slug:pk>/',
+        '<int:course_id>/percentages/<int:pk>/',
         views.OverrideStudentAssessmentView.as_view(),
         name='override_student_form_percentage'),
     path(
-        '<int:course_id>/percentages/<slug:pk>/final',
+        '<int:course_id>/percentages/<int:pk>/final',
         views.OverrideStudentAssessmentView.as_view(),
         name='override_student_form_final'),
     path(
