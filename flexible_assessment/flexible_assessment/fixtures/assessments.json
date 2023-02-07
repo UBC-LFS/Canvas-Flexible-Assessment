@@ -3,7 +3,7 @@
     "pk": "123e4567-e89b-12d3-a456-426655440001",
     "fields": {
         "title": "assignment1",
-        "default": 25,
+        "default": 20,
         "max": 30,
         "min": 10,
         "course": 1,
@@ -15,7 +15,7 @@
     "pk": "123e4567-e89b-12d3-a456-426655440002",
     "fields": {
         "title": "assignment2",
-        "default": 25,
+        "default": 30,
         "max": 30,
         "min": 10,
         "course": 1,

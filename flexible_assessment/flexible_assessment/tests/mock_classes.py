@@ -6,22 +6,37 @@ class MockAssignmentGroup(object):
         self.grade_list = [
             {'grades': 12}
         ]
+    
+    def edit(self, group_weight):
+        self.group_weight = group_weight
         
 class MockCanvasCourse(object):
+    name = "MOCK COURSE"
+    groups = [MockAssignmentGroup("test_group1", 1),
+                       MockAssignmentGroup("test_group2", 2),
+                       MockAssignmentGroup("test_group3", 3),
+                       MockAssignmentGroup("test_group4", 4)]
     def get_settings(self):
         response = {'hide_final_grades': True}
         return response
 
     def get_assignment_groups(self):
-        groups = [MockAssignmentGroup("test_group1", 1),
-                       MockAssignmentGroup("test_group2", 2),
-                       MockAssignmentGroup("test_group3", 3),
-                       MockAssignmentGroup("test_group4", 4)]
-        return groups
+        return self.groups
     
+    def get_assignment_group(self, group_id):
+        # Find and return the mock assignment group that matches the group_id, or None if not found
+        group =  next(filter(lambda group: str(group.id) == group_id, self.groups), None)
+        return group
+
+    def update_settings(self, hide_final_grades):
+        return
+        
+        
 class MockCanvas(object):
+    canvas_course = MockCanvasCourse()
+    
     def get_course(course, use_sis_id=False, **kwargs):
-        return MockCanvasCourse()
+        return MockCanvas.canvas_course
     
 class MockFlexCanvas(MockCanvas):
     def __init__(self, request):
