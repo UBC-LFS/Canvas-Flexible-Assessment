@@ -161,19 +161,18 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                         field, ValidationError(
                             '{} must be within 0.0 and 100.0'.format(
                                 labels[field])))
-
-            if default and min and max:
-                if min > default:
-                    form.add_error('min', ValidationError(
-                        'Minimum must be lower than default'))
-                if default > max:
-                    form.add_error('max', ValidationError(
-                        'Maximum must be higher than default'))
-                if min > max:
-                    form.add_error('max', ValidationError(
-                        'Maximum must be higher than minimum'))
-                    form.add_error('min', ValidationError(
-                        'Minimum must be lower than maximum'))
+            
+            if min > default:
+                form.add_error('min', ValidationError(
+                    'Minimum must be lower than default'))
+            if default > max:
+                form.add_error('max', ValidationError(
+                    'Maximum must be higher than default'))
+            if min > max:
+                form.add_error('max', ValidationError(
+                    'Maximum must be higher than minimum'))
+                form.add_error('min', ValidationError(
+                    'Minimum must be lower than maximum'))
 
 
 class AssessmentFileForm(forms.Form):
