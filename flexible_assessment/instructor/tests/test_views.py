@@ -125,10 +125,10 @@ class TestViews(TestCase):
         course_id = 1
         
         # id matches uuids in fixtures/assessments.json
-        forms = [{"title": "TITLE 1", "default": 25, "min": 10, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440001'}, 
-                 {"title": "TITLE 2", "default": 25, "min": 10, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440002'},
-                 {"title": "TITLE 3", "default": 25, "min": 10, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440003'}, 
-                 {"title": "TITLE 4", "default": 25, "min": 10, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440004'}]
+        forms = [{"title": "TITLE 1", "default": 0, "min": 0, "max": 50, "id": '123e4567-e89b-12d3-a456-426655440001'}, 
+                 {"title": "TITLE 2", "default": 50, "min": 50, "max": 50, "id": '123e4567-e89b-12d3-a456-426655440002'},
+                 {"title": "TITLE 3", "default": 1, "min": 0, "max": 50, "id": '123e4567-e89b-12d3-a456-426655440003'}, 
+                 {"title": "TITLE 4", "default": 49, "min": 0, "max": 50, "id": '123e4567-e89b-12d3-a456-426655440004'}]
         
         payload = self.build_formset_data(forms=forms, global_param=100)
         
@@ -145,4 +145,77 @@ class TestViews(TestCase):
         self.assertEqual(type(response), HttpResponseRedirect)
         self.assertEqual(response.url, reverse("instructor:instructor_home", args=[course_id]))
 
+    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
+    def test_InstructorAssessmentView_invalid_does_not_add_to_100(self, mock_flex_canvas):
+        course_id = 1
         
+        # id matches uuids in fixtures/assessments.json
+        forms = [{"title": "TITLE 1", "default": 24, "min": 10, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440001'}, 
+                 {"title": "TITLE 2", "default": 25, "min": 10, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440002'},
+                 {"title": "TITLE 3", "default": 25, "min": 10, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440003'}, 
+                 {"title": "TITLE 4", "default": 25, "min": 10, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440004'}]
+        
+        payload = self.build_formset_data(forms=forms, global_param=100)
+        
+        # add date- infront of open/close because DateForm has prefix='date' inside post
+        payload['date-open'] = '2023-01-01T01:00'
+        payload['date-close'] = '3000-01-01T00:59'
+
+        # Get instructor_home first to set up display_name session data 
+        instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
+        response = self.client.get(instructor_home_url)
+        response = self.client.post(reverse("instructor:instructor_form", args=[course_id]), data=payload)
+        
+        self.assertEqual(type(response), TemplateResponse)
+        self.assertContains(response, 'Default assessments should add up to 100%')
+        self.assertContains(response, 'currently it is 99%')
+
+    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
+    def test_InstructorAssessmentView_invalid_out_of_range(self, mock_flex_canvas):
+        course_id = 1
+        
+        # id matches uuids in fixtures/assessments.json
+        forms = [{"title": "TITLE 1", "default": 31, "min": 0, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440001'}, 
+                 {"title": "TITLE 2", "default": 25, "min": 10, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440002'},
+                 {"title": "TITLE 3", "default": 25, "min": 10, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440003'}, 
+                 {"title": "TITLE 4", "default": 19, "min": 20, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440004'}]
+        
+        payload = self.build_formset_data(forms=forms, global_param=100)
+        
+        # add date- infront of open/close because DateForm has prefix='date' inside post
+        payload['date-open'] = '2023-01-01T01:00'
+        payload['date-close'] = '3000-01-01T00:59'
+
+        # Get instructor_home first to set up display_name session data 
+        instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
+        response = self.client.get(instructor_home_url)
+        response = self.client.post(reverse("instructor:instructor_form", args=[course_id]), data=payload)
+        
+
+        self.assertEqual(type(response), TemplateResponse)
+        self.assertContains(response, 'Minimum must be lower than default')
+        self.assertContains(response, 'Maximum must be higher than default')
+        
+    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
+    def test_InstructorAssessmentView_invalid_min_max_ranges(self, mock_flex_canvas):
+        course_id = 1
+        
+        # id matches uuids in fixtures/assessments.json
+        forms = [{"title": "TITLE 1", "default": -21, "min": -35, "max": -1, "id": '123e4567-e89b-12d3-a456-426655440001'}, 
+                 {"title": "TITLE 2", "default": 101, "min": 101, "max": 102, "id": '123e4567-e89b-12d3-a456-426655440002'},
+                 {"title": "TITLE 3", "default": 0, "min": 0, "max": 30, "id": '123e4567-e89b-12d3-a456-426655440003'}, 
+                 {"title": "TITLE 4", "default": 20, "min": 20, "max": 50, "id": '123e4567-e89b-12d3-a456-426655440004'}]
+        
+        payload = self.build_formset_data(forms=forms, global_param=100)
+        
+        # add date- infront of open/close because DateForm has prefix='date' inside post
+        payload['date-open'] = '2023-01-01T01:00'
+        payload['date-close'] = '3000-01-01T00:59'
+
+        # Get instructor_home first to set up display_name session data 
+        instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
+        response = self.client.get(instructor_home_url)
+        response = self.client.post(reverse("instructor:instructor_form", args=[course_id]), data=payload)
+        
+        self.assertEqual(type(response), TemplateResponse)
+        self.assertContains(response, 'must be within 0.0 and 100.0', count=6)
