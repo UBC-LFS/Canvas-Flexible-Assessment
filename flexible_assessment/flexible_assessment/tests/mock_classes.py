@@ -3,19 +3,22 @@ class MockAssignmentGroup(object):
         self.name = name
         self.id = id
         self.group_weight = 25
-        self.grade_list = [
-            {'grades': 12}
-        ]
+        self.grade_list = {'grades': [('1', 50), ('2', 25), ('3', 30), ('4', 50)]}
     
     def edit(self, group_weight):
         self.group_weight = group_weight
+    
+    def asdict(self):
+        return {'group_weight': self.group_weight,
+                'grade_list': self.grade_list}
         
 class MockCanvasCourse(object):
     name = "MOCK COURSE"
     groups = [MockAssignmentGroup("test_group1", 1),
-                       MockAssignmentGroup("test_group2", 2),
-                       MockAssignmentGroup("test_group3", 3),
-                       MockAssignmentGroup("test_group4", 4)]
+                MockAssignmentGroup("test_group2", 2),
+                MockAssignmentGroup("test_group3", 3),
+                MockAssignmentGroup("test_group4", 4)]
+    
     def get_settings(self):
         response = {'hide_final_grades': True}
         return response
@@ -31,7 +34,6 @@ class MockCanvasCourse(object):
     def update_settings(self, hide_final_grades):
         return
         
-        
 class MockCanvas(object):
     canvas_course = MockCanvasCourse()
     
@@ -43,9 +45,9 @@ class MockFlexCanvas(MockCanvas):
         super().__init__()
     
     def get_groups_and_enrollments(course_id):
-        groups_dict = {'1': {
-            'grade_list': 
-                {'grades':
-                    [(1, 50), (2, 25), (3, 30), (4, 50)]}
-        }}
+        groups_dict = {'1': MockAssignmentGroup("test_group1", 1).asdict(),
+                       '2': MockAssignmentGroup("test_group2", 2).asdict(),
+                       '3': MockAssignmentGroup("test_group3", 3).asdict(),
+                       '4': MockAssignmentGroup("test_group4", 4).asdict()}
+        
         return groups_dict, []

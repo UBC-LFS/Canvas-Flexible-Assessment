@@ -19,7 +19,7 @@
         "max": 30,
         "min": 10,
         "course": 1,
-        "group": 1
+        "group": 2
     }
 },
 {
@@ -31,7 +31,7 @@
         "max": 30,
         "min": 10,
         "course": 1,
-        "group": 1
+        "group": 3
     }
 },
 {
@@ -43,7 +43,7 @@
         "max": 30,
         "min": 10,
         "course": 1,
-        "group": 1
+        "group": 4
     }
 }
 ]
