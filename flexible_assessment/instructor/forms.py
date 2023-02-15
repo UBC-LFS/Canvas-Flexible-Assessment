@@ -113,10 +113,14 @@ class AssessmentGroupForm(forms.Form):
 
         assessment_fields = {}
         for assessment in assessments:
-            if assessment.group is not None:
+            if assessment.group is not None and assessment.group in id_map:
                 index = id_map[assessment.group]
             else:
                 index = 0
+                # This occurs if the assessment group was previously matched to a canvas group that was deleted. Reset the group to None
+                if assessment.group is not None:
+                    assessment.group = None
+                    assessment.save()
             initial = choices[index][0]
             assessment_fields[assessment.id.hex] = forms.ChoiceField(
                 choices=choices,
