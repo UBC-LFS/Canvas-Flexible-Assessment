@@ -103,7 +103,9 @@
             $('#submit-button').prepend('<span class="spinner-border spinner-border-sm me-2"> </span>');
             $('#submit-button').prop('disabled', true);
             $('form#grade-submit').submit();
-        };
+        } else {
+            return false;
+        }
     });
 
     $(document).ready(function () {
