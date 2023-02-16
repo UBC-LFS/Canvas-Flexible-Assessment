@@ -4,6 +4,8 @@ import flexible_assessment.class_views as views
 import flexible_assessment.models as models
 from django.forms import ValidationError
 from django.utils import timezone
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 from .forms import StudentAssessmentForm
 
@@ -12,6 +14,38 @@ logger = logging.getLogger(__name__)
 
 class StudentHome(views.StudentTemplateView):
     template_name = 'student/student_home.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = self.request.session.get('user_id', models.UserProfile.objects.get(pk=self.request.session['_auth_user_id']).user_id)
+        course = context.get('course')
+        # Add custom context data
+        flex_assessments = models.FlexAssessment.objects.filter(
+            user__user_id=user_id, assessment__course_id=course.id)
+        
+        context["flexes"] = flex_assessments
+        return context
+    
+    def dispatch(self, request, *args, **kwargs):
+        super_dispatch = super().dispatch(request, *args, **kwargs)
+        context = self.get_context_data(**kwargs)
+        course = context.get('course')
+        flexes = context.get('flexes')
+        if self.should_redirect(course, flexes.count()):
+            # Redirect to StudentAssessmentView
+            return HttpResponseRedirect(reverse('student:student_form', args=[course.id]))
+        else:
+            return super_dispatch
+    
+    def should_redirect(self, course, num_flexes):
+        # A user should be redirected if the course flexes is set up, but they have set it up, and they have not been redirected already
+        if not self.request.session.get('has_been_redirected', False):
+            # Set the session flag to indicate that the user has been redirected
+            self.request.session['has_been_redirected'] = True
+
+            return course.close and num_flexes == 0 
+
+        return False
 
 
 class StudentAssessmentView(views.StudentFormView):

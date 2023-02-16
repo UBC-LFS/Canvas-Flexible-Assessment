@@ -1,4 +1,10 @@
 {% extends "student/student_base.html" %}
+{% load student_tags %}
+{% load django_bootstrap5 %}
+
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
 
 {% block nav_item_home %}active{% endblock nav_item_home %} 
 {% block content %}
@@ -7,5 +13,60 @@
         <h1>{{ course.title }}</h1>
         <h3>Hello {{ display_name }}</h3>
     </div>
+</div>
+<div class="pb-5">
+    {% if not course.close %}
+    <div class="d-flex align-items-center justify-content-center">
+        <div class="col-10">
+            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h3 class="mb-0">Flexible Assessment</h3>
+                </div>
+                <div class="card-body p-4">
+                    <p>
+                        Welcome to Flexible Assessment, the system that allows students to decide how their final grade will be weighted. 
+                        Your instructor is not using this tool at the moment, but you will find instructions here after your instructor announces they are using it.
+                    </p>                    
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="d-flex align-items-center justify-content-center">
+        <div class="col-9">
+            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                <h3 class="card-header">Your Weights</h3>
+                <div class="card-body pt-2 pb-3">
+                    <p class="fw-light mt-0 mb-1">The deadline to make changes is <span style="font-weight:bold;">{{ course.close }}</span></p>
+                    <table class="table table-striped mb-2" style="table-layout: fixed;">
+                        <thead>
+                            <tr>
+                                <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Title</th>
+                                <th class="text-center align-middle" style="font-size: 110%;">Chosen %</th>
+                                <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
+                                <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
+                                <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for flex in flexes %}
+                                <tr height="60px">
+                                    <td class="text-center align-middle">{{ flex.assessment.title }}</td>
+                                    <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
+                                        <b>{{ flex.flex }}</b>
+                                    </td>
+                                    {% get_default_min_max flex.assessment.id.hex as default_min_max %}
+                                    <td class="text-center align-middle">{{ default_min_max.0 }}</td>
+                                    <td class="text-center align-middle">{{ default_min_max.1 }}</td>
+                                    <td class="text-center align-middle">{{ default_min_max.2 }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}   
 </div>
 {% endblock %}

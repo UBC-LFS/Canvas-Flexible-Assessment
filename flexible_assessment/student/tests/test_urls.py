@@ -40,6 +40,14 @@ class TestUrls(TestCase):
         response = self.client.get(student_home_url)
         self.assertEquals(response.status_code, 403)
     
+    def test_student_form_url_invalid_for_instructor(self):
+        [user, course] = self.get_user_and_course_object("test_instructor1", "test_course1")
+        self.client.force_login(user)
+        student_home_url = reverse('student:student_form', args=[course.id])
+        
+        response = self.client.get(student_home_url)
+        self.assertEquals(response.status_code, 403)
+    
     def test_student_form_url_valid_for_student(self):
         [user, course] = self.get_user_and_course_object("test_student1", "test_course1")
         self.client.force_login(user)
