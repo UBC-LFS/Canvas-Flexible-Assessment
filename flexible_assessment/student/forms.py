@@ -38,6 +38,6 @@ class StudentAssessmentForm(StudentAssessmentBaseForm):
         open_datetime = course.open
         close_datetime = course.close
         now = timezone.now()
-        if now > close_datetime or now < open_datetime:
+        if course.close != None and (now > close_datetime or now < open_datetime):
             for field in self.fields.values():
                 field.disabled = True

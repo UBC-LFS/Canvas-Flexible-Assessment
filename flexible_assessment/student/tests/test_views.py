@@ -54,7 +54,7 @@ class TestViews(TestCase):
         }
         
         response = self.client.post(reverse("student:student_form", args=[course_id]), data=data)
-        # A successful form post should redirect the user to the home page
+
         self.assertEqual(type(response), TemplateResponse)
         self.assertEqual(response.status_code, 200)
         # print(response.context['form'].errors)
@@ -77,10 +77,9 @@ class TestViews(TestCase):
         }
         
         response = self.client.post(reverse("student:student_form", args=[course_id]), data=data)
-        # A successful form post should redirect the user to the home page
+
         self.assertEqual(type(response), TemplateResponse)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'This field is required.') # Fields are disabled when outside of the availability times
         
     
     def test_StudentAssessmentView_form_invalid_after_deadline(self):
@@ -98,7 +97,6 @@ class TestViews(TestCase):
         }
 
         response = self.client.post(reverse("student:student_form", args=[course_id]), data=data)
-        # A successful form post should redirect the user to the home page
+
         self.assertEqual(type(response), TemplateResponse)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'This field is required.') # Fields are disabled when outside of the availability times

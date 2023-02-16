@@ -22,7 +22,6 @@ class StudentHome(views.StudentTemplateView):
         # Add custom context data
         flex_assessments = models.FlexAssessment.objects.filter(
             user__user_id=user_id, assessment__course_id=course.id)
-        
         context["flexes"] = flex_assessments
         return context
     
@@ -39,13 +38,14 @@ class StudentHome(views.StudentTemplateView):
     
     def should_redirect(self, course, flexes):
         # A user should be redirected if the course flexes is set up, but they have set it up, and they have not been redirected already
-        if not self.request.session.get('has_been_redirected', False):
+        if not self.request.session.get('has_been_redirected', False) and course.close != None:
             # Set the session flag to indicate that the user has been redirected
             self.request.session['has_been_redirected'] = True
             is_none_in_flexes = any(f.flex is None for f in flexes)
             now = timezone.now()
             is_past_deadline = now > course.close or now < course.open
-            return course.close and is_none_in_flexes and not is_past_deadline
+            
+            return is_none_in_flexes and not is_past_deadline
 
         return False
 

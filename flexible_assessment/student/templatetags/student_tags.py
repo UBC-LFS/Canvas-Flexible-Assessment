@@ -8,6 +8,8 @@ register = template.Library()
 @register.simple_tag()
 def not_open(course):
     if course:
+        if course.close == None:
+            return True
         open = course.open
         close = course.close
         now = timezone.now()
