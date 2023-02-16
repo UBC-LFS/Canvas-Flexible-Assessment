@@ -30,7 +30,7 @@ class StudentAssessmentBaseForm(forms.Form):
                 max_digits=5,
                 decimal_places=2,
                 label=fa.assessment.title,
-                widget=forms.NumberInput(attrs={'size': 4})
+                widget=forms.NumberInput(attrs={'size': 5})
                 )
 
         self.fields.update(flex_fields)
