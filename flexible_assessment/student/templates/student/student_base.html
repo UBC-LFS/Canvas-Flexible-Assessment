@@ -9,6 +9,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
 	{% load static %}
+	{% load student_tags %}
 	<link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
@@ -25,7 +26,8 @@
 				{% block sidebar %}
 				<nav class="nav nav-pills flex-column">
 					<a class="nav-link {% block nav_item_home %}{% endblock nav_item_home %}" href="{% url 'student:student_home' course.id %}"><i class="bi bi-house me-2"></i> Home</a>
-					{% if course.close %}
+					{% not_open course as no %}
+					{% if course.close and not no %}
 						<a class="nav-link {% block nav_item_assessments %}{% endblock nav_item_assessments %}" href="{% url 'student:student_form' course.id %}"><i class="bi bi-journals me-2"></i> Assessments</a>
 					{% endif %}
 				</nav>

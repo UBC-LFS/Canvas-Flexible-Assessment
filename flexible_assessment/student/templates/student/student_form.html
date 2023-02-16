@@ -18,6 +18,15 @@
         {% bootstrap_field hidden_field %}
     {% endfor %}
 
+    {% not_open course as no %}
+    {% if no %}
+    <div class="pt-5 pb-5">
+        <div class="container">
+            <h1>Past the deadline</h1>
+            <h3>Sorry but the deadline has past so you can no longer make changes</h3>
+        </div>
+    </div>
+    {% else %}
     <div class="mt-5 mb-5">
         <div class="d-flex align-items-center justify-content-center">
             <div class="col-9">
@@ -87,7 +96,6 @@
             <p class="fs-6">{{ course.open }} - {{ course.close }}</p>
         </div>
 
-        {% not_open course as no %}
         <div class="d-flex align-items-center justify-content-center">
             <div class="d-flex justify-content-between col-9">
                 <a href="{% url 'student:student_home' course.id %}" style="border-radius: 1em;" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
@@ -97,6 +105,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </form>
 
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>

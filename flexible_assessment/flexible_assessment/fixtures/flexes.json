@@ -141,4 +141,41 @@
         "assessment": "123e4567-e89b-12d3-a456-426655440004",
         "flex": 25
     }
-}]
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 17,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440005",
+        "flex": null
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 18,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440006",
+        "flex": null
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 19,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440007",
+        "flex": null
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 20,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440008",
+        "flex": null
+    }
+}
+]

@@ -20,3 +20,7 @@ def not_open(course):
 def get_default_min_max(id):
     assessment = Assessment.objects.filter(pk=id).first()
     return (assessment.default, assessment.min, assessment.max)
+
+@register.simple_tag()
+def is_any_flex_none(flexes):
+    return any(f.flex is None for f in flexes)

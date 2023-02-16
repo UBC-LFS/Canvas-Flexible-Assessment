@@ -38,6 +38,11 @@
                 <h3 class="card-header">Your Weights</h3>
                 <div class="card-body pt-2 pb-3">
                     <p class="fw-light mt-0 mb-1">The deadline to make changes is <span style="font-weight:bold;">{{ course.close }}</span></p>
+                    {% not_open course as no %}
+                    {% is_any_flex_none flexes as has_none %}
+                    {% if has_none and not no %}
+                    <p class="fw-light mt-0 mb-1">Please navigate to <i>Assessments</i> to make your choices. The default % will be applied if any are None. </p>
+                    {% endif %}
                     <table class="table table-striped mb-2" style="table-layout: fixed;">
                         <thead>
                             <tr>
