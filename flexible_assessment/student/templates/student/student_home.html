@@ -37,11 +37,14 @@
             <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                 <h3 class="card-header">Your Weights</h3>
                 <div class="card-body pt-2 pb-3">
-                    <p class="fw-light mt-0 mb-1">The deadline to make changes is <span style="font-weight:bold;">{{ course.close }}</span></p>
                     {% not_open course as no %}
                     {% is_any_flex_none flexes as has_none %}
+                    {% if not no %}
+                    <p class="fw-light mt-0 mb-1">The deadline to make changes is <span style="font-weight:bold;">{{ course.close }}</span></p>
+                    {% endif %}
+
                     {% if has_none and not no %}
-                    <p class="fw-light mt-0 mb-1">Please navigate to <i>Assessments</i> to make your choices. The default % will be applied if any are None. </p>
+                    <p class="fw-light mt-0 mb-1">Please navigate to <i>Assessments</i> to make your choices. The default % will be applied if any are left blank. </p>
                     {% endif %}
                     <table class="table table-striped mb-2" style="table-layout: fixed;">
                         <thead>
@@ -58,7 +61,7 @@
                                 <tr height="60px">
                                     <td class="text-center align-middle">{{ flex.assessment.title }}</td>
                                     <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
-                                        <b>{{ flex.flex }}</b>
+                                        <b>{{ flex.flex|default:"Default" }}</b>
                                     </td>
                                     {% get_default_min_max flex.assessment.id.hex as default_min_max %}
                                     <td class="text-center align-middle">{{ default_min_max.0 }}</td>
