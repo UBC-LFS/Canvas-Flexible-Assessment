@@ -48,9 +48,8 @@ class TestForms(TestCase):
         
         form = StudentAssessmentForm(user_id=1, course_id=1, data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['__all__'][0], "Total flex has to add up to 100%, currently it is (70)%")
+        self.assertEqual(form.errors['__all__'][0], "Total flex has to add up to 100%, currently it is (82.2)%")
         self.assertEqual(form.errors[assessments[0].id.hex][0], "Ensure this value is greater than or equal to 0.")
-        self.assertEqual(form.errors[assessments[1].id.hex][0], "Enter a whole number.")
         self.assertEqual(form.errors[assessments[2].id.hex][0], "Ensure this value is less than or equal to 100.")
         
     def test_student_form_invalid_did_not_agree(self):

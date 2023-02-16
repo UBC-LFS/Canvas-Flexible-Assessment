@@ -216,13 +216,13 @@ class Assessment(models.Model):
         Assigns random uuid as primary key for assessment identification
     title : str
         Title of assessment
-    default : int
+    default : float (2 decimal places)
         Default grade allocation for assessment given by Instructor
         Should be in [0, 100]
-    max : int
+    max : float (2 decimal places)
         Max grade allocation that can be set by student
         Should be in [0, 100]
-    min : int
+    min : float (2 decimal places)
         Min grade allocation that can be set by student
         Should be in [0, 100]
     course : ForeignKey -> Course
@@ -233,9 +233,9 @@ class Assessment(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.CharField(max_length=100)
-    default = models.IntegerField()
-    min = models.IntegerField()
-    max = models.IntegerField()
+    default = models.DecimalField(max_digits=5, decimal_places=2)
+    min = models.DecimalField(max_digits=5, decimal_places=2)
+    max = models.DecimalField(max_digits=5, decimal_places=2)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     group = models.IntegerField(null=True)
 
@@ -268,14 +268,14 @@ class FlexAssessment(models.Model):
         Foreign Key with UserProfile
     assessment : ForeignKey -> Assessment
         Foreign Key with Assessment
-    flex : int
+    flex : float (2 decimal places)
         Student's grade allocation for assessment
-        Should be in [0, 100]
+        Should be in [0.00, 100.00]
     """
 
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
-    flex = models.IntegerField(null=True, blank=True)
+    flex = models.DecimalField(null=True, blank=True, max_digits=5, decimal_places=2)
 
     def __str__(self):
         return '{}, {}'.format(self.user.display_name, self.assessment.title)

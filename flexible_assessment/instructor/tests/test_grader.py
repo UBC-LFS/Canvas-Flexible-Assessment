@@ -89,7 +89,7 @@ class TestGrader(TestCase):
         student_ids = [str(student.user_id) for student in students]
         
         # Course_id 1 has 4 assignment groups
-        groups_dict = self.build_group_dict(student_ids, [[70, 25.5, 100/3, 200/3], [80, 36.7, 50.4534, 200/3], [90, 75, 100, 200/3], [100, 0, 1.112, 200/3]],
+        groups_dict = self.build_group_dict(student_ids, [[70, 25.5, round(100/3, 2), round(200/3, 2)], [80, 36.7, round(50.4534, 2), round(200/3, 2)], [90, 75, 100, round(200/3, 2)], [100, 0, 1.11, round(200/3, 2)]],
                                             weights=[50, 0, 10, 40])
         
         self.assertEqual(grader.get_default_total(groups_dict, students[0]), 84.00)
@@ -123,7 +123,7 @@ class TestGrader(TestCase):
         student_ids = [str(student.user_id) for student in students]
         
         # Course_id 1 has 4 assignment groups
-        groups_dict = self.build_group_dict(student_ids, [[70, 25.5, 100/3, 200/3], [80, 36.7, 50.4534, 200/3], [90, 75, 100, 200/3], [100, 0, 1.112, 200/3]],
+        groups_dict = self.build_group_dict(student_ids, [[70, 25.5, round(100/3, 2), round(200/3, 2)], [80, 36.7, round(50.4534, 2), round(200/3, 2)], [90, 75, 100, round(200/3, 2)], [100, 0, 1.11, round(200/3, 2)]],
                                             weights=[50, 0, 10, 40])
     
         # There are 4 assessments in course of id 1
@@ -149,7 +149,7 @@ class TestGrader(TestCase):
         student_ids = [str(student.user_id) for student in students]
         
         # Course_id 1 has 4 assignment groups
-        groups_dict = self.build_group_dict(student_ids, [[70, 25.5, 100/3, 200/3], [80, 36.7, 50.4534, 200/3], [90, 75, 100, 200/3], [100, 0, 1.112, 200/3]],
+        groups_dict = self.build_group_dict(student_ids, [[70, 25.5, round(100/3, 2), round(200/3, 2)], [80, 36.7, round(50.4534, 2), round(200/3, 2)], [90, 75, 100, round(200/3, 2)], [100, 0, 1.11, round(200/3, 2)]],
                                             weights=[50, 0, 10, 40])
     
         # There are 4 assessments in course of id 1
@@ -174,7 +174,7 @@ class TestGrader(TestCase):
         student_ids = [str(student.user_id) for student in students]
         
         # Course_id 1 has 4 assignment groups
-        groups_dict = self.build_group_dict(student_ids, [[70, 25.5, 100/3, 200/3], [80, 36.7, 50.4534, 200/3], [90, 75, 100, 200/3], [100, 0, 1.112, 200/3]],
+        groups_dict = self.build_group_dict(student_ids, [[70, 25.5, round(100/3, 2), round(200/3, 2)], [80, 36.7, round(50.4534, 2), round(200/3, 2)], [90, 75, 100, round(200/3, 2)], [100, 0, 1.11, round(200/3, 2)]],
                                             weights=[0, 40, 15, 45])
         
         self.assertEqual(grader.get_group_weight(groups_dict, '1'), 0)
@@ -188,13 +188,13 @@ class TestGrader(TestCase):
         student_ids = [str(student.user_id) for student in students]
         
         # Course_id 1 has 4 assignment groups
-        groups_dict = self.build_group_dict(student_ids, [[70, 25.5, 100/3, 200/3], [80, 36.7, 50.4534, 200/3], [90, 75, 100, 200/3], [100, 0, 1.112, 200/3]],
+        groups_dict = self.build_group_dict(student_ids, [[70, 25.5, round(100/3, 2), round(200/3, 2)], [80, 36.7, round(50.4534, 2), round(200/3, 2)], [90, 75, 100, round(200/3, 2)], [100, 0, 1.11, round(200/3, 2)]],
                                             weights=[0, 40, 15, 45])
         
         self.assertEqual(grader.get_score(groups_dict, 1, students[0]), 70)
         self.assertEqual(grader.get_score(groups_dict, 2, students[1]), 36.7)
         self.assertEqual(grader.get_score(groups_dict, 3, students[2]), 100)
-        self.assertEqual(grader.get_score(groups_dict, 4, students[3]), 200/3)
+        self.assertEqual(grader.get_score(groups_dict, 4, students[3]), 66.67)
         
         
     

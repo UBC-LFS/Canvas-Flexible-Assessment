@@ -20,15 +20,18 @@ class StudentAssessmentBaseForm(forms.Form):
         flex_fields = {}
         for fa in flex_assessments:
             if fa.flex is not None:
-                initial_flex = int(fa.flex)
+                initial_flex = fa.flex
             else:
                 initial_flex = None
-            flex_fields[fa.assessment.id.hex] = forms.IntegerField(
+            flex_fields[fa.assessment.id.hex] = forms.DecimalField(
                 initial=initial_flex,
                 max_value=100,
                 min_value=0,
+                max_digits=5,
+                decimal_places=2,
                 label=fa.assessment.title,
-                widget=forms.NumberInput(attrs={'size': 3}))
+                widget=forms.NumberInput(attrs={'size': 4})
+                )
 
         self.fields.update(flex_fields)
 
@@ -188,8 +191,8 @@ def get_assessment_formset(extra=0):
         Assessment, fields=('title', 'default', 'min', 'max'),
         extra=extra,
         widgets={'title': forms.TextInput(attrs={'size': 15}),
-                 'default': forms.NumberInput(attrs={'size': 3, 'min': 0, 'max': 100}),
-                 'min': forms.NumberInput(attrs={'size': 3, 'min': 0, 'max': 100}),
-                 'max': forms.NumberInput(attrs={'size': 3, 'min': 0, 'max': 100})},
+                 'default': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100}),
+                 'min': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100}),
+                 'max': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100})},
         formset=AssessmentBaseFormSet)
     return AssessmentFormSet

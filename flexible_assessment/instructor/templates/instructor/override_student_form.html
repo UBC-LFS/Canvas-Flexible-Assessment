@@ -98,7 +98,7 @@
 				total += curr;
 			};
 		});
-
+        total = total.toFixed(2);
 		total_str = total.toString();
 		$('#total').text(total_str + "%");
 		if (total == 100.00) {
