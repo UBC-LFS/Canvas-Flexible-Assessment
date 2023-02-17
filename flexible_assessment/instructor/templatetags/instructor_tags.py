@@ -47,7 +47,7 @@ def get_average_allocations(course):
             student_average = assessment.default
         series.append({
             'name': assessment.title,
-            'data': [assessment.default, student_average]
+            'data': [float(assessment.default), float(student_average)]
         })
 
     return series
