@@ -216,13 +216,13 @@ class Assessment(models.Model):
         Assigns random uuid as primary key for assessment identification
     title : str
         Title of assessment
-    default : float (2 decimal places)
+    default : decimal (2 decimal places)
         Default grade allocation for assessment given by Instructor
         Should be in [0, 100]
-    max : float (2 decimal places)
+    max : decimal (2 decimal places)
         Max grade allocation that can be set by student
         Should be in [0, 100]
-    min : float (2 decimal places)
+    min : decimal (2 decimal places)
         Min grade allocation that can be set by student
         Should be in [0, 100]
     course : ForeignKey -> Course
@@ -268,7 +268,7 @@ class FlexAssessment(models.Model):
         Foreign Key with UserProfile
     assessment : ForeignKey -> Assessment
         Foreign Key with Assessment
-    flex : float (2 decimal places)
+    flex : decimal (2 decimal places)
         Student's grade allocation for assessment
         Should be in [0.00, 100.00]
     """
