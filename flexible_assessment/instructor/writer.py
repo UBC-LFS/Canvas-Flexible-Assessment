@@ -27,7 +27,6 @@ class Writer(ABC):
 class CSVWriter(Writer):
     """Writer for exporting tables and forms to a csv response"""
 
-
     def __init__(self, filename, course):
         super().__init__('text/csv')
         self._response['Content-Disposition'] = 'attachment; filename=' \
@@ -43,7 +42,6 @@ class CSVWriter(Writer):
 
 class LogWriter(Writer):
     """Writer for exporting logs to a plain text file response"""
-
 
     def __init__(self, filename, course):
         super().__init__('text/plain')

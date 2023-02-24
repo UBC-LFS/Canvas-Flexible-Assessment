@@ -219,3 +219,69 @@ class TestViews(TestCase):
         
         self.assertEqual(type(response), TemplateResponse)
         self.assertContains(response, 'must be within 0.0 and 100.0', count=6)
+    
+    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
+    def test_FinalGradeListView_correct_csv(self, mock_flex_canvas):
+        course_id = 1
+
+        instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
+        response = self.client.get(instructor_home_url)
+        response = self.client.get(reverse("instructor:final_grades_export", args=[course_id]))
+
+        self.assertContains(response, 'Override Total', count=1)
+        self.assertContains(response, 'Default Total', count=1)
+        self.assertContains(response, 'Difference', count=2)
+        self.assertContains(response, 'Average Override', count=1)
+        self.assertContains(response, 'Average Default', count=1)
+        self.assertContains(response, 'Average Difference', count=1)
+    
+    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
+    def test_InstructorAssessmentView_correct_csv(self, mock_flex_canvas):
+        course_id = 1
+
+        instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
+        response = self.client.get(instructor_home_url)
+        response = self.client.get(reverse("instructor:assessments_export", args=[course_id]))
+
+        self.assertContains(response, 'Assessment', count=1)
+        self.assertContains(response, 'Default', count=1)
+        self.assertContains(response, 'Minimum', count=1)
+        self.assertContains(response, 'Maximum', count=1)
+    
+    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
+    def test_FlexAssessmentListView_correct_csv(self, mock_flex_canvas):
+        course_id = 1
+
+        instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
+        response = self.client.get(instructor_home_url)
+        response = self.client.get(reverse("instructor:percentage_list_export", args=[course_id]))
+        
+        self.assertContains(response, 'Student', count=1)
+        self.assertContains(response, 'Comment', count=1)
+    
+    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
+    def test_csv_exports_chained(self, mock_flex_canvas):
+        course_id = 1
+
+        instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
+        response = self.client.get(instructor_home_url)
+        response = self.client.get(reverse("instructor:final_grades_export", args=[course_id]))
+
+        self.assertContains(response, 'Override Total', count=1)
+        self.assertContains(response, 'Default Total', count=1)
+        self.assertContains(response, 'Difference', count=2)
+        self.assertContains(response, 'Average Override', count=1)
+        self.assertContains(response, 'Average Default', count=1)
+        self.assertContains(response, 'Average Difference', count=1)
+        
+        response = self.client.get(reverse("instructor:assessments_export", args=[course_id]))
+
+        self.assertContains(response, 'Assessment', count=1)
+        self.assertContains(response, 'Default', count=1)
+        self.assertContains(response, 'Minimum', count=1)
+        self.assertContains(response, 'Maximum', count=1)
+        
+        response = self.client.get(reverse("instructor:percentage_list_export", args=[course_id]))
+        
+        self.assertContains(response, 'Student', count=1)
+        self.assertContains(response, 'Comment', count=1)
