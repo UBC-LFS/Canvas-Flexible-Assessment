@@ -11,11 +11,11 @@ from . import grader
 
 
 class Writer(ABC):
-    @property
+    
     @abstractmethod
-    def _response(self):
-        pass
-
+    def __init__(self, response_type):
+        self._response = HttpResponse(content_type=response_type)
+    
     @abstractmethod
     def write(self):
         pass
@@ -27,9 +27,9 @@ class Writer(ABC):
 class CSVWriter(Writer):
     """Writer for exporting tables and forms to a csv response"""
 
-    _response = HttpResponse(content_type='text/csv')
 
     def __init__(self, filename, course):
+        super().__init__('text/csv')
         self._response['Content-Disposition'] = 'attachment; filename=' \
             + '{}_{}_{}.csv'.format(filename,
                                     course.title.replace(' ', '-'),
@@ -41,13 +41,12 @@ class CSVWriter(Writer):
     def write(self, line):
         self._writer.writerow(line)
 
-
 class LogWriter(Writer):
     """Writer for exporting logs to a plain text file response"""
 
-    _response = HttpResponse(content_type='text/plain')
 
     def __init__(self, filename, course):
+        super().__init__('text/plain')
         self._response['Content-Disposition'] = 'attachment; filename=' \
             + '{}_{}_{}.txt'.format(filename,
                                     course.title.replace(' ', '-'),
