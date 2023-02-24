@@ -156,6 +156,7 @@ class AssessmentBaseFormSet(BaseModelFormSet):
             default = cleaned_data.get('default')
             min = cleaned_data.get('min')
             max = cleaned_data.get('max')
+            title = cleaned_data.get('title')
 
             allocations = [('default', default),
                            ('max', max),
@@ -168,7 +169,9 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                         field, ValidationError(
                             '{} must be within 0.0 and 100.0'.format(
                                 labels[field])))
-            
+            if '<' in title or '>' in title:
+                form.add_error('title', ValidationError(
+                    'Invalid special character in title'))
             if min > default:
                 form.add_error('min', ValidationError(
                     'Minimum must be lower than default'))
