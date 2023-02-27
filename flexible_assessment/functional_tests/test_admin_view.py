@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from flexible_assessment.models import UserProfile
 from django.urls import reverse
 from student.views import StudentHome, StudentAssessmentView
-from django.test import Client
+from django.test import Client, tag
 import time
 from flexible_assessment.tests.test_data import DATA
 from flexible_assessment.tests.mock_classes import *
@@ -22,6 +22,7 @@ class TestStudentViews(StaticLiveServerTestCase):
     def tearDown(self):
         self.browser.close()
     
+    @tag('slow', 'view')
     @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
     def test_start(self, mock_flex_canvas):
         session_id = self.client.session.session_key
@@ -32,5 +33,5 @@ class TestStudentViews(StaticLiveServerTestCase):
 
         self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
         
-        time.sleep(5)
+        time.sleep(500)
     
