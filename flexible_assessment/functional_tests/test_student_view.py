@@ -1,11 +1,9 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from flexible_assessment.models import UserProfile, FlexAssessment
+from flexible_assessment.models import UserProfile
 from django.urls import reverse
-from student.views import StudentHome, StudentAssessmentView
 from django.test import Client, tag
-import time
 from datetime import datetime, timedelta
 from flexible_assessment.tests.test_data import DATA
 
@@ -38,7 +36,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         self.browser.get(self.live_server_url + reverse('student:student_home', args=[4])) 
         
-        time.sleep(500)
+        input("Press Enter in this terminal to continue")
     
     @tag('slow')
     @mock_classes.use_mock_canvas

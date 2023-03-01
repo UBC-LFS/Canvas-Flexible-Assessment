@@ -1,10 +1,8 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from flexible_assessment.models import UserProfile
 from django.urls import reverse
 from django.test import Client, tag
-import time
 from flexible_assessment.tests.test_data import DATA
 import flexible_assessment.tests.mock_classes as mock_classes
 from unittest.mock import patch
@@ -32,5 +30,5 @@ class TestStudentViews(StaticLiveServerTestCase):
 
         self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
         
-        time.sleep(500)
+        input("Press Enter in this terminal to continue")
     
