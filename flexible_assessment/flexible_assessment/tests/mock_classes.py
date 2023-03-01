@@ -1,20 +1,33 @@
+from unittest.mock import patch
+
+def use_mock_canvas(func):
+    """ Decorate a function that replaces FlexCanvas with MockFlexCanvas and pass the instance of MockFlexCanvas to the function 
+        Note: Since this passes in MockClass.return_value, you must add this argument to your function signature"""
+    def wrapper(*args, **kwargs):
+        with patch("instructor.views.FlexCanvas") as MockClass:
+            MockClass.return_value = MockFlexCanvas()
+            func(*args, MockClass.return_value, **kwargs)
+    return wrapper
+
 class MockAssignmentGroup(object):
     def __init__(self, name, id):
         self.name = name
         self.id = id
-        self.group_weight = 25
+        self.group_weight = 25.2
         self.grade_list = {'grades': [('1', 50), ('2', 25), ('3', 30), ('4', 50)]}
     
     def edit(self, group_weight):
         self.group_weight = group_weight
     
     def asdict(self):
-        return {'group_weight': self.group_weight,
+        return {'group_weight': float(self.group_weight), # Convert so it returns as a float instead of Decimal
                 'grade_list': self.grade_list}
         
 class MockCanvasCourse(object):
     name = "MOCK COURSE"
-    groups = [MockAssignmentGroup("test_group1", 1),
+
+    def __init__(self):
+        self.groups = [MockAssignmentGroup("test_group1", 1),
                 MockAssignmentGroup("test_group2", 2),
                 MockAssignmentGroup("test_group3", 3),
                 MockAssignmentGroup("test_group4", 4)]
@@ -35,19 +48,19 @@ class MockCanvasCourse(object):
         return
         
 class MockCanvas(object):
-    canvas_course = MockCanvasCourse()
+    def __init__(self):
+        self.canvas_course = MockCanvasCourse()
     
-    def get_course(course, use_sis_id=False, **kwargs):
-        return MockCanvas.canvas_course
+    def get_course(self, course_id, use_sis_id=False, **kwargs):
+        return self.canvas_course
     
 class MockFlexCanvas(MockCanvas):
-    def __init__(self, request):
-        super().__init__()
+    """ This is used to mock FlexCanvas since FlexCanvas requires Canvas authentication to use the Canvas api"""
     
-    def get_groups_and_enrollments(course_id):
-        groups_dict = {'1': MockAssignmentGroup("test_group1", 1).asdict(),
-                       '2': MockAssignmentGroup("test_group2", 2).asdict(),
-                       '3': MockAssignmentGroup("test_group3", 3).asdict(),
-                       '4': MockAssignmentGroup("test_group4", 4).asdict()}
-        
-        return groups_dict, []
+    def __init__(self):
+        super().__init__()
+        self.groups_dict = {str(group.id): group for group in self.get_course(1).groups}
+
+    def get_groups_and_enrollments(self, course_id):
+        dict = {k: v.asdict() for k, v in self.groups_dict.items()}
+        return dict, []

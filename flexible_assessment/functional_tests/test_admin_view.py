@@ -3,11 +3,10 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from flexible_assessment.models import UserProfile
 from django.urls import reverse
-from student.views import StudentHome, StudentAssessmentView
 from django.test import Client, tag
 import time
 from flexible_assessment.tests.test_data import DATA
-from flexible_assessment.tests.mock_classes import *
+import flexible_assessment.tests.mock_classes as mock_classes
 from unittest.mock import patch
 
 class TestStudentViews(StaticLiveServerTestCase):
@@ -23,8 +22,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser.close()
     
     @tag('slow', 'view')
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_start(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_start(self, mocked_flex_canvas_instance):
         session_id = self.client.session.session_key
         self.client.session['display_name'] = "HEllo"
         self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 

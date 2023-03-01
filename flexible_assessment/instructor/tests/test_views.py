@@ -1,4 +1,4 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, tag
 from django.urls import reverse
 from django.template.response import TemplateResponse
 from flexible_assessment.models import Assessment, UserProfile
@@ -7,8 +7,7 @@ from instructor.views import *
 from flexible_assessment.tests.test_data import DATA
 import datetime
 
-from flexible_assessment.tests.mock_classes import *
-from unittest.mock import patch
+import flexible_assessment.tests.mock_classes as mock_classes
 
 class TestViews(TestCase):
     fixtures = DATA
@@ -20,8 +19,8 @@ class TestViews(TestCase):
     
     """ BEGIN TESTS FOR ASSESSMENT GROUP VIEW (instructor:group_form -> /final/match) """
     
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_AssessmentGroupView_valid_form(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_AssessmentGroupView_valid_form(self, mocked_flex_canvas_instance):
         course_id = 1
         assessments = Assessment.objects.filter(course_id=course_id)
         data = {
@@ -41,16 +40,16 @@ class TestViews(TestCase):
         self.assertEqual(type(response), HttpResponseRedirect)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("instructor:final_grades", args=[course_id]))
-        
+
         # Make sure the Canvas course group weights are now updated to match the default for each assessment
-        canvas_groups = MockFlexCanvas.canvas_course.get_assignment_groups()
+        canvas_groups = mocked_flex_canvas_instance.get_course(1).get_assignment_groups()
         for index, assessment in enumerate(assessments):
             # Indexes were matched when we set up the data
             self.assertEqual(assessment.default, canvas_groups[index].group_weight)
 
     
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_AssessmentGroupView_invalid_form(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_AssessmentGroupView_invalid_form(self, mocked_flex_canvas_instance):
         """ This form is invalid as some assessments are not matched and one is invalid"""
         course_id = 1
         assessments = Assessment.objects.filter(course_id=course_id)
@@ -72,8 +71,8 @@ class TestViews(TestCase):
         self.assertFalse(assessments[1].id.hex in errors.keys())
         self.assertFalse(assessments[2].id.hex in errors.keys())
     
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_AssessmentGroupView_invalid_form(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_AssessmentGroupView_invalid_form(self, mocked_flex_canvas_instance):
         """ This form is invalid as some assessments are duplicated"""
         course_id = 1
         assessments = Assessment.objects.filter(course_id=course_id)
@@ -120,8 +119,8 @@ class TestViews(TestCase):
 
     # End copied code
     
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_InstructorAssessmentView_valid_form(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_InstructorAssessmentView_valid_form(self, mocked_flex_canvas_instance):
         course_id = 1
         
         # id matches uuids in fixtures/assessments.json
@@ -145,8 +144,8 @@ class TestViews(TestCase):
         self.assertEqual(type(response), HttpResponseRedirect)
         self.assertEqual(response.url, reverse("instructor:instructor_home", args=[course_id]))
 
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_InstructorAssessmentView_invalid_does_not_add_to_100(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_InstructorAssessmentView_invalid_does_not_add_to_100(self, mocked_flex_canvas_instance):
         course_id = 1
         
         # id matches uuids in fixtures/assessments.json
@@ -170,8 +169,8 @@ class TestViews(TestCase):
         self.assertContains(response, 'Default assessments should add up to 100%')
         self.assertContains(response, 'currently it is 99%')
 
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_InstructorAssessmentView_invalid_out_of_range(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_InstructorAssessmentView_invalid_out_of_range(self, mocked_flex_canvas_instance):
         course_id = 1
         
         # id matches uuids in fixtures/assessments.json
@@ -196,8 +195,8 @@ class TestViews(TestCase):
         self.assertContains(response, 'Minimum must be lower than default')
         self.assertContains(response, 'Maximum must be higher than default')
         
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_InstructorAssessmentView_invalid_min_max_ranges(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_InstructorAssessmentView_invalid_min_max_ranges(self, mocked_flex_canvas_instance):
         course_id = 1
         
         # id matches uuids in fixtures/assessments.json
@@ -220,8 +219,8 @@ class TestViews(TestCase):
         self.assertEqual(type(response), TemplateResponse)
         self.assertContains(response, 'must be within 0.0 and 100.0', count=6)
     
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_FinalGradeListView_correct_csv(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_FinalGradeListView_correct_csv(self, mocked_flex_canvas_instance):
         course_id = 1
 
         instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
@@ -235,8 +234,8 @@ class TestViews(TestCase):
         self.assertContains(response, 'Average Default', count=1)
         self.assertContains(response, 'Average Difference', count=1)
     
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_InstructorAssessmentView_correct_csv(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_InstructorAssessmentView_correct_csv(self, mocked_flex_canvas_instance):
         course_id = 1
 
         instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
@@ -248,8 +247,8 @@ class TestViews(TestCase):
         self.assertContains(response, 'Minimum', count=1)
         self.assertContains(response, 'Maximum', count=1)
     
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_FlexAssessmentListView_correct_csv(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_FlexAssessmentListView_correct_csv(self, mocked_flex_canvas_instance):
         course_id = 1
 
         instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
@@ -259,8 +258,8 @@ class TestViews(TestCase):
         self.assertContains(response, 'Student', count=1)
         self.assertContains(response, 'Comment', count=1)
     
-    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
-    def test_csv_exports_chained(self, mock_flex_canvas):
+    @mock_classes.use_mock_canvas
+    def test_csv_exports_chained(self, mocked_flex_canvas_instance):
         course_id = 1
 
         instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
