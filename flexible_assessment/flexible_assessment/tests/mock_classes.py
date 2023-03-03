@@ -1,14 +1,25 @@
 from unittest.mock import patch
+from functools import wraps
 
-def use_mock_canvas(func):
+def use_mock_canvas(location="instructor.views.FlexCanvas"):
     """ Decorate a function that replaces FlexCanvas with MockFlexCanvas and pass the instance of MockFlexCanvas to the function 
-        Note: Since this passes in MockClass.return_value, you must add this argument to your function signature"""
-    def wrapper(*args, **kwargs):
-        with patch("instructor.views.FlexCanvas") as MockClass:
-            MockClass.return_value = MockFlexCanvas()
-            func(*args, MockClass.return_value, **kwargs)
-    return wrapper
+    Note: Since this passes in MockClass.return_value, you must add this argument to your function signature
+    See https://stackoverflow.com/a/42581103 for an explanation of this code"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            with patch(location) as MockClass:
+                MockClass.return_value = MockFlexCanvas()
+                func(*args, MockClass.return_value, **kwargs)
+        return wrapper
+    return decorator
 
+class MockUser(object):
+    def __init__(self, name, id):
+        self.name = name
+        self.id = id
+        self.sis_user_id = id
+        
 class MockAssignmentGroup(object):
     def __init__(self, name, id):
         self.name = name

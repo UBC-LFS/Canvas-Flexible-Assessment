@@ -28,7 +28,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.client_teacher.force_login(teacher)
     
     @tag('slow', 'view')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_view_page(self, mocked_flex_canvas_instance):
         session_id = self.client.session.session_key
         self.browser.get(self.live_server_url + reverse('student:student_home', args=[1])) 
@@ -39,7 +39,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         input("Press Enter in this terminal to continue")
     
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_student_first_time_input_flexes(self, mocked_flex_canvas_instance):
         """ In course 4 the teacher has set up flexes. The student should:
             1. Be redirected to student_form page
@@ -81,7 +81,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertIn('60', bodyText)
 
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_student_change_flexes(self, mocked_flex_canvas_instance):
         """ In course 1 the teacher has set up flexes and the student has already inputed choices. The student should:
             1. Start from the home page
@@ -137,7 +137,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertIn('24.98', bodyText)
         
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_student_course_not_setup(self, mocked_flex_canvas_instance):
         """ In course 2 the teacher has not set up flexes
             1. Student should be on the homepage and see a special message
@@ -161,7 +161,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertEqual(len(tabs), 1)
 
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_student_deadline_past(self, mocked_flex_canvas_instance):
         """ In course 5 the deadline has passed and the student has not made any choices
             1. Student should be on the homepage
@@ -189,7 +189,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertIn('Default', bodyText)
     
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_student_percentage_gets_reset(self, mocked_flex_canvas_instance):
         """ The student in course 4 chooses his flexes, but then the teacher changes the weights thus resetting their weights
             1. Student starts by choosing 10 % and 90 %
@@ -280,7 +280,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         
     
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_student_page_open_when_deadline_expires(self, mocked_flex_canvas_instance):
         """ The student in course 4 opens the assessments page before the deadline, but then the deadline expires before they can submit
             1. Student starts by choosing 40 % and 60 % but doesn't submit
@@ -341,7 +341,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertIn('Default', bodyText)
     
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_student_editing_when_min_max_changed(self, mocked_flex_canvas_instance):
         """ The student in course 4 is choosing their weights according to the current max, but then the teacher changes them so it is now invalid
             1. Student starts by choosing 10 % and 90 % but doesn't submit
@@ -410,7 +410,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertNotIn('form', self.browser.current_url)
 
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_student_editing_when_assessment_deleted(self, mocked_flex_canvas_instance):
         """ The student in course 4 is choosing their weights, but then a teacher deletes one of the assessments
             1. Student starts by choosing 10 % and 90 % but doesn't submit
@@ -484,7 +484,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertNotIn('form', self.browser.current_url)
 
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_student_editing_when_assessment_added(self, mocked_flex_canvas_instance):
         """ The student in course 4 is choosing their weights, but then a teacher adds another assessments
             1. Student starts by choosing 10 % and 90 % but doesn't submit

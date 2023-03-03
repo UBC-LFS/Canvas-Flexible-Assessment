@@ -58,22 +58,22 @@ class TestUrls(TestCase):
     def test_instructor_home_url_invalid_for_students(self):
         self.url_invalid_for_student('instructor_home')
         
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_instructor_form_url_valid_for_instructor(self, mocked_flex_canvas_instance):
         self.url_valid_for_instructor('instructor_form')
         
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_instructor_form_url_invalid_for_students(self, mocked_flex_canvas_instance):
         self.url_invalid_for_student('instructor_form')
     
     def test_instructor_home_url_valid_for_instructor(self):
         self.url_valid_for_instructor('instructor_home')
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_instructor_assessments_export_valid_for_instructor(self, mocked_flex_canvas_instance):
         self.url_valid_for_instructor('assessments_export')
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_instructor_assessments_export_invalid_for_students(self, mocked_flex_canvas_instance):
         self.url_invalid_for_student('assessments_export')
         
@@ -111,15 +111,15 @@ class TestUrls(TestCase):
         response = self.client.get(url)
         self.assertEquals(response.status_code, 200)
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_group_form_url_valid_for_instructor(self, mocked_flex_canvas_instance):
         self.url_valid_for_instructor('group_form')
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_final_grades_url_valid_for_instructor(self, mocked_flex_canvas_instance):
         self.url_valid_for_instructor('final_grades')
         
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_final_grades_export_url_valid_for_instructor(self, mocked_flex_canvas_instance):
         course_id = self.login_instructor("test_instructor1", "test_course1")
         # Get instructor_home first to set up display_name session data
@@ -128,11 +128,11 @@ class TestUrls(TestCase):
         
         self.url_valid_for_instructor('final_grades_export')
         
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_final_grades_submit_url_valid_for_instructor(self, mocked_flex_canvas_instance):
         self.url_valid_for_instructor('final_grades_submit')
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_final_grades_submit_url_invalid_for_students(self, mocked_flex_canvas_instance):
         self.url_invalid_for_student('final_grades_submit')
     

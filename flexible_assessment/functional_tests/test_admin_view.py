@@ -20,7 +20,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser.close()
     
     @tag('slow', 'view')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_start(self, mocked_flex_canvas_instance):
         session_id = self.client.session.session_key
         self.client.session['display_name'] = "HEllo"

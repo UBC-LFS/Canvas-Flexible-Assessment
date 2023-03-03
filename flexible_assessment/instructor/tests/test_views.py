@@ -19,7 +19,7 @@ class TestViews(TestCase):
     
     """ BEGIN TESTS FOR ASSESSMENT GROUP VIEW (instructor:group_form -> /final/match) """
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_AssessmentGroupView_valid_form(self, mocked_flex_canvas_instance):
         course_id = 1
         assessments = Assessment.objects.filter(course_id=course_id)
@@ -48,7 +48,7 @@ class TestViews(TestCase):
             self.assertEqual(assessment.default, canvas_groups[index].group_weight)
 
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_AssessmentGroupView_invalid_form(self, mocked_flex_canvas_instance):
         """ This form is invalid as some assessments are not matched and one is invalid"""
         course_id = 1
@@ -71,7 +71,7 @@ class TestViews(TestCase):
         self.assertFalse(assessments[1].id.hex in errors.keys())
         self.assertFalse(assessments[2].id.hex in errors.keys())
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_AssessmentGroupView_invalid_form(self, mocked_flex_canvas_instance):
         """ This form is invalid as some assessments are duplicated"""
         course_id = 1
@@ -119,7 +119,7 @@ class TestViews(TestCase):
 
     # End copied code
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_InstructorAssessmentView_valid_form(self, mocked_flex_canvas_instance):
         course_id = 1
         
@@ -144,7 +144,7 @@ class TestViews(TestCase):
         self.assertEqual(type(response), HttpResponseRedirect)
         self.assertEqual(response.url, reverse("instructor:instructor_home", args=[course_id]))
 
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_InstructorAssessmentView_invalid_does_not_add_to_100(self, mocked_flex_canvas_instance):
         course_id = 1
         
@@ -169,7 +169,7 @@ class TestViews(TestCase):
         self.assertContains(response, 'Default assessments should add up to 100%')
         self.assertContains(response, 'currently it is 99%')
 
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_InstructorAssessmentView_invalid_out_of_range(self, mocked_flex_canvas_instance):
         course_id = 1
         
@@ -195,7 +195,7 @@ class TestViews(TestCase):
         self.assertContains(response, 'Minimum must be lower than default')
         self.assertContains(response, 'Maximum must be higher than default')
         
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_InstructorAssessmentView_invalid_min_max_ranges(self, mocked_flex_canvas_instance):
         course_id = 1
         
@@ -219,7 +219,7 @@ class TestViews(TestCase):
         self.assertEqual(type(response), TemplateResponse)
         self.assertContains(response, 'must be within 0.0 and 100.0', count=6)
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_FinalGradeListView_correct_csv(self, mocked_flex_canvas_instance):
         course_id = 1
 
@@ -234,7 +234,7 @@ class TestViews(TestCase):
         self.assertContains(response, 'Average Default', count=1)
         self.assertContains(response, 'Average Difference', count=1)
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_InstructorAssessmentView_correct_csv(self, mocked_flex_canvas_instance):
         course_id = 1
 
@@ -247,7 +247,7 @@ class TestViews(TestCase):
         self.assertContains(response, 'Minimum', count=1)
         self.assertContains(response, 'Maximum', count=1)
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_FlexAssessmentListView_correct_csv(self, mocked_flex_canvas_instance):
         course_id = 1
 
@@ -258,7 +258,7 @@ class TestViews(TestCase):
         self.assertContains(response, 'Student', count=1)
         self.assertContains(response, 'Comment', count=1)
     
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_csv_exports_chained(self, mocked_flex_canvas_instance):
         course_id = 1
 

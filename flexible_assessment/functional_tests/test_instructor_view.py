@@ -25,7 +25,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser.close()
 
     @tag('slow', 'view')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_view_page(self, mocked_flex_canvas_instance):
         session_id = self.client.session.session_key
         self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
@@ -36,7 +36,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         input("Press Enter in this terminal to continue")
         
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_setup_course(self, mocked_flex_canvas_instance):
         """ In course 2 the teacher is setting up flexible assessment for the first time
             1. Navigate to Course Setup and create 3 assessments
@@ -104,7 +104,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertIn('+', bodyText)  # Check there is a difference in the totals now
     
     @tag('slow')
-    @mock_classes.use_mock_canvas
+    @mock_classes.use_mock_canvas()
     def test_final_grades_matched_then_canvas_group_deleted(self, mocked_flex_canvas_instance):
         """ In course 1 the teacher has matched the flexible assessments to the canvas assignment groups, but then deletes one of the canvas assignment groups
             1. Go to Final Match page and click continue
