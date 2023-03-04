@@ -149,7 +149,7 @@ def get_group_weight(groups, id):
     """Gets Canvas assignment group weight"""
 
     try:
-        return int(round(groups[str(id)]['group_weight']))
+        return round(groups[str(id)]['group_weight'], 2)
     except Exception:
         return ''
 
