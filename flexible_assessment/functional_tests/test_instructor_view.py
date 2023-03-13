@@ -28,6 +28,9 @@ class TestStudentViews(StaticLiveServerTestCase):
     @mock_classes.use_mock_canvas()
     def test_view_page(self, mocked_flex_canvas_instance):
         session_id = self.client.session.session_key
+        
+        mocked_flex_canvas_instance.groups_dict['2'].grade_list = {'grades': [('1', 50), ('2', 10), ('3', 50), ('4', 60)]}
+        
         self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
         self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
 
@@ -81,7 +84,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         # 3
         self.browser.find_element(By.LINK_TEXT, "Final Grades").click()
         select_tags = self.browser.find_elements(By.TAG_NAME, "select")
-        # time.sleep(500)
         Select(select_tags[0]).select_by_visible_text('test_group2')
         Select(select_tags[1]).select_by_visible_text('test_group4')
         Select(select_tags[2]).select_by_visible_text('test_group3')

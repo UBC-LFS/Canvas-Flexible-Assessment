@@ -9,7 +9,7 @@
 {% block nav_item_setup %}active{% endblock nav_item_setup %} 
 {% block nav_item_assessments %}active{% endblock nav_item_assessments %} 
 {% block content %}
-<form action="" method="post">
+<form action="" method="post" data-changed="false">
 	{% csrf_token %}
 
 	{{ formset.management_form }}
@@ -145,11 +145,28 @@
 
 
 <script>
-	check_valid();
+    // Add event listener for beforeunload event
+    window.addEventListener("beforeunload", function (event) {
+        // If the form has been changed, prompt the user to confirm leaving the page
+        if (document.forms[0].dataset.changed === "true") {
+            event.preventDefault();
+            event.returnValue = ""; // Required for Chrome
+        }
+    });
+
+    // Add event listener for form submission
+    document.forms[0].addEventListener("submit", function () {
+        // Reset the changed status when the form is submitted
+        document.forms[0].dataset.changed = "false";
+    });
 
 	$(document).on('change', '.Default', function () {
 		check_valid();
+        document.forms[0].dataset.changed = "true";
 	});
+    
+	check_valid();
+
 
     $(document).ready(function () {
         var warnings = [];
