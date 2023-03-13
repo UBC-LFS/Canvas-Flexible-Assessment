@@ -17,37 +17,37 @@
                         <thead>
                             <tr>
                                 <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
-                                {% for assessment in course.assessment_set.all %}
-                                    <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }} <br> ({% get_group_weight groups assessment.group %}%)</th>
-                                {% endfor %}
                                 <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Override Total</th>
                                 <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Default Total</th>
                                 <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Difference</th>
+                                {% for assessment in course.assessment_set.all %}
+                                    <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }} <br> ({% get_group_weight groups assessment.group %}%)</th>
+                                {% endfor %}
                             </tr>
                         </thead>
                         <tbody>
                             {% for student in student_list %}
                                 <tr>
                                     <td class="text-center align-middle text-break"><a href="{% url 'instructor:override_student_form_final' course.id student.user_id %}?previous=final">{{ student.display_name }}</a></td>
-                                    {% for assessment in course.assessment_set.all %}
-                                        {% get_score groups assessment.group student as score %}
-                                        <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>
-                                    {% endfor %}
                                     {% get_student_grades groups student course as grades %}
                                     <td class="text-center align-middle {{ grades.0 }}">{{ grades.1 }}</td>
                                     <td class="text-center align-middle default">{{ grades.2 }}</td>
                                     <td class="text-center align-middle {{ grades.0 }}">{{ grades.3 }}</td>
+                                    {% for assessment in course.assessment_set.all %}
+                                        {% get_score groups assessment.group student as score %}
+                                        <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>
+                                    {% endfor %}
                                 </tr>
                             {% endfor %}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td class="empty"></td>
                                 <th class="text-center align-middle">Averages</th>
                                 {% get_averages_str groups course as averages %}
                                 <td class="text-center align-middle">{{ averages.0 }}</td>
                                 <td class="text-center align-middle">{{ averages.1 }}</td>
                                 <td class="text-center align-middle">{{ averages.2 }}</td>
+                                <td class="empty"></td>
                             </tr>
                         </tfoot>
                     </table>

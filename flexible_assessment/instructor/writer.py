@@ -121,8 +121,7 @@ def grades_csv(course, students, groups):
                 groups,
                 assessment.group)) for assessment in assessments]
 
-    header = ['Student'] + titles + \
-        ['Override Total', 'Default Total', 'Difference']
+    header = ['Student'] + ['Override Total', 'Default Total', 'Difference'] + titles
 
     csv_writer.write(header)
 
@@ -132,10 +131,6 @@ def grades_csv(course, students, groups):
             '{}, {}'.format(
                 student.display_name,
                 student.login_id))
-
-        for assessment in assessments:
-            score = grader.get_score(groups, assessment.group, student)
-            values.append(score)
 
         override_total = grader.get_override_total(groups, student, course)
         default_total = grader.get_default_total(groups, student)
@@ -149,6 +144,11 @@ def grades_csv(course, students, groups):
             values.append(round(default_total, 2))
             values.append(round(default_total, 2))
             values.append('')
+            
+        for assessment in assessments:
+            score = grader.get_score(groups, assessment.group, student)
+            values.append(score)
+
 
         csv_writer.write(values)
 
