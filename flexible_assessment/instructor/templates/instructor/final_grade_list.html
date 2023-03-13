@@ -22,6 +22,7 @@
                                 <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Difference</th>
                                 {% for assessment in course.assessment_set.all %}
                                     <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }} <br> ({% get_group_weight groups assessment.group %}%)</th>
+                                    <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }} <br> (Chosen %)</th>
                                 {% endfor %}
                             </tr>
                         </thead>
@@ -36,6 +37,9 @@
                                     {% for assessment in course.assessment_set.all %}
                                         {% get_score groups assessment.group student as score %}
                                         <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>
+                                        {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
+                                            <td class="text-center align-middle">{{ flex_assessment.flex|to_str|default_if_none:"Default" }}</td>
+                                        {% endwith %}
                                     {% endfor %}
                                 </tr>
                             {% endfor %}
