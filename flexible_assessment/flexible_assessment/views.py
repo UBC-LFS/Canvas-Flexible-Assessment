@@ -10,7 +10,7 @@ from . import auth, lti, models, utils
 
 logger = logging.getLogger(__name__)
 
-
+# https://github.com/dmitry-viskov/pylti1.3-django-example/blob/master/game/game/views.py
 def login(request):
     tool_conf = lti.get_tool_conf()
     launch_data_storage = lti.get_launch_data_storage()
