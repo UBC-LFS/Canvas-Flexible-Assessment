@@ -1,5 +1,7 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from flexible_assessment.models import UserProfile
 from django.urls import reverse
@@ -13,7 +15,7 @@ class TestStudentViews(StaticLiveServerTestCase):
     fixtures = DATA
         
     def setUp(self):
-        self.browser = webdriver.Chrome("functional_tests/chromedriver.exe")
+        self.browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         user = UserProfile.objects.get(login_id="test_student1")
         self.client = Client()
         self.client.force_login(user)
@@ -22,7 +24,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser.close()
         
     def login_teacher(self):
-        self.browser_teacher =  webdriver.Chrome("functional_tests/chromedriver.exe")
+        self.browser_teacher =  webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         teacher = UserProfile.objects.get(login_id="test_instructor1")
         self.client_teacher = Client()
         self.client_teacher.force_login(teacher)
