@@ -62,7 +62,7 @@ class OptionsForm(forms.Form):
         self.initial['hide_total'] = hide_total
 
 
-class DateForm(ModelForm):
+class CourseSettingsForm(ModelForm):
     """Form to set flexible assessment availability for students."""
 
     def __init__(self, *args, **kwargs):
@@ -86,14 +86,21 @@ class DateForm(ModelForm):
 
     class Meta:
         model = Course
-        fields = ['open', 'close']
+        fields = ['open', 'close', 'welcome_instructions', 'comment_instructions']
         widgets = {
             'open': forms.DateTimeInput(
                 attrs={'type': 'datetime-local'},
                 format='%Y-%m-%dT%H:%M'),
             'close': forms.DateTimeInput(
                 attrs={'type': 'datetime-local'},
-                format='%Y-%m-%dT%H:%M')}
+                format='%Y-%m-%dT%H:%M'),
+            'welcome_instructions': forms.TextInput(
+                attrs={'rows':2,
+                       'placeholder': 'Example: Welcome to the course! Please read through the syllabus closely then assign weights to the assessments below.'}),
+            'comment_instructions': forms.TextInput(
+                attrs={'rows':2,
+                       'placeholder': 'Example: Please explain your choices above.'})
+            }
 
 
 class AssessmentGroupForm(forms.Form):

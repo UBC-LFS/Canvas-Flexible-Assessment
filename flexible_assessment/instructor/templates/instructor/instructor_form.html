@@ -17,8 +17,22 @@
 	{% for hidden_field in date_form.hidden_fields %}
 		{% bootstrap_field hidden_field %}
 	{% endfor %}
+    
     <div class="mt-5 mb-5">
-        <div class="d-flex align-items-center justify-content-center" id="form_set">
+
+        <div class="d-flex align-items-center justify-content-center" id="welcome_form">
+            <div class="col-9">
+                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                    <h3 class="card-header">Welcome Instructions</h3>
+                    <div class="card-body pt-2 pb-3">
+                        {% bootstrap_field date_form.welcome_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                        <p class="fw-light m-0 pt-2">This is an optional message that will appear at the top of the students' screens where they decide their weights.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-center pt-4" id="form_set">
             <div class="col-9">
                 <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                     <div class="card-header d-flex align-items-center justify-content-between">
@@ -88,6 +102,18 @@
                                 {% endfor %}
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-center pt-4" id="comment_form">
+            <div class="col-9">
+                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                    <h3 class="card-header">Comment Instructions</h3>
+                    <div class="card-body pt-2 pb-3">
+                        {% bootstrap_field date_form.comment_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                        <p class="fw-light m-0 pt-2">This is an optional message that will appear above the box where students put their comments.</p>
                     </div>
                 </div>
             </div>

@@ -133,12 +133,18 @@ class Course(models.Model):
     close : DateTime
         Due date for students to add or
         change grade allocation for assessments
+    welcome_instructions: Textfield
+        Displays for students at the top of Assessments page
+    comment_instructions: Textfield
+        Displays for students before their comment box
     """
 
     id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=100)
     open = models.DateTimeField(null=True)
     close = models.DateTimeField(null=True)
+    welcome_instructions = models.TextField(blank=True, null=True)
+    comment_instructions = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return "{} - {}".format(self.title, self.id)

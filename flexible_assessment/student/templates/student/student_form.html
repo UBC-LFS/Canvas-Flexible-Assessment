@@ -33,6 +33,9 @@
                 <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                     <h3 class="card-header">Assessments</h3>
                     <div class="card-body pt-2 pb-3">
+                        {% if course.welcome_instructions %}
+                        <p class="fw-light mt-0 mb-1">{{ course.welcome_instructions }}</p>
+                        {% endif %}
                         <table class="table table-striped mb-2" style="table-layout: fixed;">
                             <thead>
                                 <tr>
@@ -80,7 +83,9 @@
                     <h3 class="card-header">Comment</h3>
                     <div class="card-body pt-2 pb-3">
                         <div class="d-flex align-items-center justify-content-between fw-light mt-1">
-                            <p class="mb-0">Give a comment for your desired allocation</p>
+                        {% if course.comment_instructions %}
+                            <p class="mb-0">{{ course.comment_instructions }}</p>
+                        {% endif %}
                             <p class="mb-0" style="color: gray;"><i>Optional</i></p>
                         </div>
                         <p>{% bootstrap_field form.comment show_label=False wrapper_class='mb-0' %}</p>

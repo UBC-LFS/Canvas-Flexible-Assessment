@@ -20,7 +20,7 @@ from django.shortcuts import get_object_or_404
 from instructor.canvas_api import FlexCanvas
 
 from . import grader, writer
-from .forms import (AssessmentFileForm, AssessmentGroupForm, DateForm,
+from .forms import (AssessmentFileForm, AssessmentGroupForm, CourseSettingsForm,
                     OptionsForm, StudentAssessmentBaseForm,
                     get_assessment_formset)
 
@@ -333,7 +333,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         else:
             hide_total = course_settings['hide_final_grades']
 
-        context['date_form'] = DateForm(
+        context['date_form'] = CourseSettingsForm(
             self.request.POST or None, instance=course, prefix='date')
         context['options_form'] = OptionsForm(
             self.request.POST or None, prefix='options', hide_total=hide_total)
@@ -382,7 +382,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         """
 
         course_id = self.kwargs['course_id']
-        date_form = DateForm(request.POST,
+        date_form = CourseSettingsForm(request.POST,
                              instance=models.Course.objects.get(pk=course_id),
                              prefix='date')
 

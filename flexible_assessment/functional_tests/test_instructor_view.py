@@ -63,7 +63,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser.find_element(By.XPATH, '//button[contains(text(), "Assessment")]').click()
         
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
-        values = ["A1", "33", "30", "50", "A2", "33", "10", "50", "A3", "34", "0", "100"]
+        values = ["Welcome to the test course", "A1", "33", "30", "50", "A2", "33", "10", "50", "A3", "34", "0", "100"]
         for index, value in enumerate(values):
             inputs[index + 5].send_keys(value)
         
@@ -74,14 +74,17 @@ class TestStudentViews(StaticLiveServerTestCase):
         date_field.send_keys(Keys.TAB)
         date_field.send_keys("0245PM")
         
-        self.browser.find_element(By.XPATH, '//button[contains(text(), "Save")]').click()
+        self.browser.fullscreen_window()
+        update_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Save")]')
+        self.browser.execute_script("arguments[0].scrollIntoView();", update_button)
+        update_button.click()
         
         # 2
         mocked_flex_canvas_instance.canvas_course.groups.pop(0)
         mocked_flex_canvas_instance.groups_dict['2'].grade_list = {'grades': [('1', 40)]}
         mocked_flex_canvas_instance.groups_dict['3'].grade_list = {'grades': [('1', 60)]}
         mocked_flex_canvas_instance.groups_dict['4'].grade_list = {'grades': [('1', 80)]}
-        
+
         # 3
         self.browser.find_element(By.LINK_TEXT, "Final Grades").click()
         select_tags = self.browser.find_elements(By.TAG_NAME, "select")

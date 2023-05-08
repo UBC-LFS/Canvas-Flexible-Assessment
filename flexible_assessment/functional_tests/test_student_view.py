@@ -247,7 +247,11 @@ class TestStudentViews(StaticLiveServerTestCase):
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
         min_field.send_keys("20")
-        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]').click()
+        # Wait for the element to be clickable
+        self.browser_teacher.fullscreen_window()
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
+        update_button.click()
         
         alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
         alert.accept()
@@ -327,7 +331,10 @@ class TestStudentViews(StaticLiveServerTestCase):
         date_field = self.browser_teacher.find_element(By.NAME, 'date-close')
         yesterday = datetime.now() - timedelta(1)
         date_field.send_keys(datetime.strftime(yesterday, '%m-%d-%Y'))
-        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]').click()
+        self.browser_teacher.fullscreen_window()
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
+        update_button.click()
         
         # 3
         self.assertTrue(submit.is_enabled())
@@ -389,7 +396,10 @@ class TestStudentViews(StaticLiveServerTestCase):
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
         min_field.send_keys("20")
-        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]').click()
+        self.browser_teacher.fullscreen_window()
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
+        update_button.click()
         
         # 3
         submit.click()
@@ -407,6 +417,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.clear()
         comment_field.send_keys("Who changed the minimum from 10% to 20% :'(")
+        self.browser.fullscreen_window()
+        self.browser.execute_script("arguments[0].scrollIntoView();", submit)
         submit.click()
         
         self.assertNotIn('form', self.browser.current_url)
@@ -464,7 +476,10 @@ class TestStudentViews(StaticLiveServerTestCase):
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.click() # This is so the Update button is enabled
         
-        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]').click()
+        self.browser_teacher.fullscreen_window()
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
+        update_button.click()
         
         # 3
         self.assertTrue(submit.is_enabled())
@@ -545,7 +560,10 @@ class TestStudentViews(StaticLiveServerTestCase):
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.click() # This is so the Update button is enabled
         
-        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]').click()
+        self.browser_teacher.fullscreen_window()
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
+        update_button.click()
         
         # 3
         self.assertTrue(submit.is_enabled())
@@ -563,6 +581,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.clear()
         comment_field.send_keys("I spent 10 hours deciding my weights")
+        self.browser.fullscreen_window()
+        self.browser.execute_script("arguments[0].scrollIntoView();", submit)
         submit.click()
         
         self.assertNotIn('form', self.browser.current_url)
