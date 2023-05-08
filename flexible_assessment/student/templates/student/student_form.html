@@ -12,8 +12,6 @@
 <form action="" method="post">
     {% csrf_token %}
 
-    {% bootstrap_form_errors form type='non_fields' %}
-
     {% for hidden_field in form.hidden_fields %}
         {% bootstrap_field hidden_field %}
     {% endfor %}
@@ -36,6 +34,9 @@
                         {% if course.welcome_instructions %}
                         <p class="fw-light mt-0 mb-1">{{ course.welcome_instructions }}</p>
                         {% endif %}
+                        <div class="d-flex align-items-center justify-content-between">
+                            <p class="fw-light m-0">{% bootstrap_form_errors form type='non_fields' %}</p>
+                        </div>
                         <table class="table table-striped mb-2" style="table-layout: fixed;">
                             <thead>
                                 <tr>
@@ -146,11 +147,6 @@
         } else {
             $('#total').css('color', 'red');
         };
-        if (total == 100.00 && checked && !pre_disabled) {
-            $(":submit").removeAttr("disabled");
-        } else {
-            $(":submit").attr("disabled", true);
-        }
     };
 
 </script>

@@ -64,11 +64,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         inputs[1].send_keys("40")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("60")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("SELENIUM COMMENT")
@@ -124,9 +121,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         inputs[2].send_keys("25.02")
         inputs[3].send_keys("24.99")
         inputs[4].send_keys("24.98")
-        self.assertFalse(submit.is_enabled())
         inputs[5].click()
-        self.assertTrue(submit.is_enabled())
 
         submit.click()
 
@@ -214,13 +209,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("10")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("90")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("INITIAL COMMENT")
@@ -271,13 +262,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("20")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("80")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("NEW COMMENT")
@@ -308,13 +295,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("40")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("60")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("I am so happy to be able to choose my flexes :) I hope nothing goes wrong...")
@@ -372,13 +355,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("10")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("90")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("I am so glad to choose these weights, I spent so much time coming to this decision")
@@ -445,13 +424,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("10")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("90")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("Wow so many awesome assessments")
@@ -522,13 +497,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("10")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("90")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("I hope there are only two assessments, I get choice paralysis")
