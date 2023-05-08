@@ -13,7 +13,6 @@
 	{% csrf_token %}
 
 	{{ formset.management_form }}
-	{% bootstrap_formset_errors formset %}
 
 	{% for hidden_field in date_form.hidden_fields %}
 		{% bootstrap_field hidden_field %}
@@ -39,6 +38,9 @@
                                 </li>
                             </ul>
                         </div> -->
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <p class="fw-light m-0">{% bootstrap_formset_errors formset %}</p>
                     </div>
                     <div class="card-body pt-2 pb-3">
                         <table id="assessments" class='table table-striped {% if populated %}populated{% endif %}' style="table-layout: fixed">
@@ -75,6 +77,7 @@
                         </div>
                         <div class="d-flex align-items-center justify-content-between">
                             <p class="fw-light m-0">Total default allocations should add up to 100%</p>
+
                             <div class="form-switch">
                                 {% for field in options_form.visible_fields %}
                                     {% if field.name == "ignore_conflicts" %}
@@ -200,10 +203,8 @@
 		$('#total').text(total_str + "%");
 		if (total == 100.00) {
 			$('#total').css('color', 'green');
-			$(":submit").removeAttr("disabled");
 		} else {
 			$('#total').css('color', 'red');
-			$(':submit').attr("disabled", true);
 		};
 	};
 
