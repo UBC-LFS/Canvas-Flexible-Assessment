@@ -9,7 +9,7 @@
 {% block nav_item_setup %}active{% endblock nav_item_setup %} 
 {% block nav_item_assessments %}active{% endblock nav_item_assessments %} 
 {% block content %}
-<form action="" method="post" data-changed="false">
+<form action="" method="post" data-changed="false" onsubmit="return confirmSubmission(this);">
 	{% csrf_token %}
 
 	{{ formset.management_form }}
@@ -17,7 +17,8 @@
 	{% for hidden_field in date_form.hidden_fields %}
 		{% bootstrap_field hidden_field %}
 	{% endfor %}
-    
+    <input type="hidden" id="added-deleted-form" value="false">
+
     <div class="mt-5 mb-5">
 
         <div class="d-flex align-items-center justify-content-center" id="welcome_form">
@@ -183,17 +184,15 @@
         }
     });
 
-    // Add event listener for form submission
-    document.forms[0].addEventListener("submit", function () {
-        // Reset the changed status when the form is submitted
-        document.forms[0].dataset.changed = "false";
-    });
+    function confirmSubmission(form) {
+        console.log("CALLED CONFIRM SUBMISSION")
+        if ($('#added-deleted-form').val() === "true") {
+            return confirm("If you added or deleted an assessment, all student responses will be reset if you save these changes.");
+        } else {
+            return true;
+        }
+    }
 
-	$(document).on('change', '.Default', function () {
-		check_valid();
-        document.forms[0].dataset.changed = "true";
-	});
-    
 	check_valid();
 
 
@@ -235,6 +234,7 @@
 	};
 
     function add_row() {
+        $('#added-deleted-form').val('true');
         // Adds row from empty form to table with appropriate row id and increments number of total forms
 		var form_idx = $('#id_assessment-TOTAL_FORMS').val();
 		if ($('#form_set tbody').children().length == 0) {
@@ -246,9 +246,7 @@
     };
 
 	function delete_row() {
-        if (!confirm("Are you sure you want to delete this assessment? All student responses will be reset if you save these changes.")) {
-            return false
-        }
+        $('#added-deleted-form').val('true');
 		var initial = $('#id_assessment-INITIAL_FORMS').val();
 		var form_idx = $('#id_assessment-TOTAL_FORMS').val();
 

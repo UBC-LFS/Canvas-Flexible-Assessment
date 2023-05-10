@@ -96,7 +96,7 @@ class CourseSettingsForm(ModelForm):
                 format='%Y-%m-%dT%H:%M'),
             'welcome_instructions': forms.TextInput(
                 attrs={'rows':2,
-                       'placeholder': 'Example: Welcome to the course! Please read through the syllabus closely then assign weights to the assessments below.'}),
+                       'placeholder': 'Example: Welcome to the course! Please read through the syllabus closely then assign weights for the assessments below.'}),
             'comment_instructions': forms.TextInput(
                 attrs={'rows':2,
                        'placeholder': 'Example: Please explain your choices above.'})

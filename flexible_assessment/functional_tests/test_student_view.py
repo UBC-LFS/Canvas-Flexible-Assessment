@@ -2,6 +2,8 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from flexible_assessment.models import UserProfile
 from django.urls import reverse
@@ -19,12 +21,14 @@ class TestStudentViews(StaticLiveServerTestCase):
         user = UserProfile.objects.get(login_id="test_student1")
         self.client = Client()
         self.client.force_login(user)
+        self.login_teacher()
 
     def tearDown(self):
         self.browser.close()
+        self.browser_teacher.close()
         
     def login_teacher(self):
-        self.browser_teacher =  webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+        self.browser_teacher = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         teacher = UserProfile.objects.get(login_id="test_instructor1")
         self.client_teacher = Client()
         self.client_teacher.force_login(teacher)
@@ -226,7 +230,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertIn('90', bodyText)
         
         # 3
-        self.login_teacher()
         session_id_teacher = self.client_teacher.session.session_key
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
@@ -303,7 +306,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_field.send_keys("I am so happy to be able to choose my flexes :) I hope nothing goes wrong...")
         
         # 2
-        self.login_teacher()
         session_id_teacher = self.client_teacher.session.session_key
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
@@ -363,7 +365,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_field.send_keys("I am so glad to choose these weights, I spent so much time coming to this decision")
         
         # 2
-        self.login_teacher()
         session_id_teacher = self.client_teacher.session.session_key
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
@@ -432,7 +433,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_field.send_keys("Wow so many awesome assessments")
         
         # 2
-        self.login_teacher()
         session_id_teacher = self.client_teacher.session.session_key
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
@@ -441,8 +441,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser_teacher.find_element(By.LINK_TEXT, "Assessments").click()
         
         delete_button = self.browser_teacher.find_element(By.XPATH, '//*[@id="assessments"]/tbody/tr[2]/td[5]/button').click()
-        alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
-        alert.accept()
         
         default_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-default')
         default_field.clear()
@@ -455,6 +453,10 @@ class TestStudentViews(StaticLiveServerTestCase):
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
         update_button.click()
+        alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
+        alert.accept()
+        wait = WebDriverWait(self.browser_teacher, 5)
+        wait.until_not(EC.url_contains('form')) # Wait for changes to be made
         
         # 3
         self.assertTrue(submit.is_enabled())
@@ -505,7 +507,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_field.send_keys("I hope there are only two assessments, I get choice paralysis")
         
         # 2
-        self.login_teacher()
         session_id_teacher = self.client_teacher.session.session_key
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
@@ -535,11 +536,15 @@ class TestStudentViews(StaticLiveServerTestCase):
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
         update_button.click()
+        alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
+        alert.accept()
+        wait = WebDriverWait(self.browser_teacher, 5)
+        wait.until_not(EC.url_contains('form')) # Wait for changes to be made
         
         # 3
         self.assertTrue(submit.is_enabled())
         submit.click()
-        
+
         # 4
         bodyText = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('This field is required', bodyText)
