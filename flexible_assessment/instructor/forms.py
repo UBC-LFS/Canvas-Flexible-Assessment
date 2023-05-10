@@ -94,13 +94,13 @@ class CourseSettingsForm(ModelForm):
             'close': forms.DateTimeInput(
                 attrs={'type': 'datetime-local'},
                 format='%Y-%m-%dT%H:%M'),
-            'welcome_instructions': forms.TextInput(
+            'welcome_instructions': forms.Textarea(
                 attrs={'rows':2,
-                       'placeholder': 'Example: Welcome to the course! Please read through the syllabus closely then assign weights for the assessments below.'}),
-            'comment_instructions': forms.TextInput(
+                    'placeholder': 'Example: Welcome to Flexible Assessment, the system that allows students to decide how their final grades will be weighted. Please enter your desired weights in the fields below, agree to the terms, and click Submit.'}),
+            'comment_instructions': forms.Textarea(
                 attrs={'rows':2,
-                       'placeholder': 'Example: Please explain your choices above.'})
-            }
+                    'placeholder': 'Example: Please enter your reasons for the choices you made.'})
+        }
 
 
 class AssessmentGroupForm(forms.Form):

@@ -64,7 +64,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser.find_element(By.XPATH, '//button[contains(text(), "Assessment")]').click()
         
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
-        values = ["Welcome to the test course", "A1", "33", "30", "50", "A2", "33", "10", "50", "A3", "34", "0", "100"]
+        values = ["A1", "33", "30", "50", "A2", "33", "10", "50", "A3", "34", "0", "100"]
         for index, value in enumerate(values):
             inputs[index + 6].send_keys(value) # There are 6 hidden inputs we need to skip over
         
@@ -77,10 +77,10 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         self.browser.fullscreen_window()
         update_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Save")]')
-        self.browser.execute_script("arguments[0].scrollIntoView();", update_button)
-        update_button.click()
+        update_button.send_keys(Keys.ENTER)
         alert = self.browser.switch_to.alert # Accept the confirmation message that a student will be reset
         alert.accept()
+
         wait = WebDriverWait(self.browser, 5)
         wait.until_not(EC.url_contains('form')) # Wait for changes to be made
         

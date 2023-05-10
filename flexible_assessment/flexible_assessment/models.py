@@ -143,8 +143,8 @@ class Course(models.Model):
     title = models.CharField(max_length=100)
     open = models.DateTimeField(null=True)
     close = models.DateTimeField(null=True)
-    welcome_instructions = models.TextField(blank=True, null=True)
-    comment_instructions = models.TextField(blank=True, null=True)
+    welcome_instructions = models.TextField(blank=True, null=True, default="Welcome to Flexible Assessment, the system that allows students to decide how their final grades will be weighted. Please enter your desired weights in the fields below, agree to the terms, and click Submit.")
+    comment_instructions = models.TextField(blank=True, null=True, default="Please enter your reasons for the choices you made.")
 
     def __str__(self):
         return "{} - {}".format(self.title, self.id)
