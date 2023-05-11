@@ -99,7 +99,7 @@ def launch(request):
                     kwargs={'course_id': course_id}))
 
     else:
-        logger.info('ROLE NOT DEFINED',
+        logger.info(f"ROLE NOT DEFINED: {canvas_fields['role']}",
                     extra={'course': course_id,
                            'user': canvas_fields['user_display_name']})
         return HttpResponseServerError(f"Your role in course {course_id} is not defined. Please contact it@landfood.ubc.ca for assistance.")
