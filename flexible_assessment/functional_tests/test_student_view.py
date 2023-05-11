@@ -569,8 +569,70 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.clear()
         comment_field.send_keys("I spent 10 hours deciding my weights")
-        self.browser.fullscreen_window()
-        self.browser.execute_script("arguments[0].scrollIntoView();", submit)
-        submit.click()
+        submit.send_keys(Keys.ENTER)
         
         self.assertNotIn('form', self.browser.current_url)
+        
+    @tag('slow')
+    @mock_classes.use_mock_canvas()
+    def test_teacher_updates_instruction_comments(self, mocked_flex_canvas_instance):
+        """ The student in course 4 has set up their weights and sees the default comment that the instructor later updates
+            1. Student starts by choosing 10 % and 90 % and submits
+            2. Instructor changes the instructions
+            3. Student sees the new instructions
+        """
+        print("---------------------test_student_editing_when_assessment_deleted-------------------------------")
+                
+        session_id = self.client.session.session_key
+        self.browser.get(self.live_server_url + reverse('student:student_home', args=[4])) 
+        self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
+        
+        self.browser.get(self.live_server_url + reverse('student:student_home', args=[4])) 
+        
+        # 1
+        self.assertIn('form', self.browser.current_url)
+        submit = self.browser.find_element(By.TAG_NAME, 'button')
+        inputs = self.browser.find_elements(By.TAG_NAME, 'input')
+        
+        inputs[1].send_keys("10")
+        inputs[2].send_keys("90")
+        inputs[3].click()
+        
+        comment_field = self.browser.find_element(By.NAME, "comment")
+        comment_field.send_keys("I hope there are only two assessments, I get choice paralysis")
+        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
+        self.assertIn('Welcome to test course 4', page_text)
+        self.assertIn('Please explain why you made those choices', page_text)
+        submit.send_keys(Keys.ENTER)
+        
+        # 2
+        session_id_teacher = self.client_teacher.session.session_key
+        self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
+        self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
+        
+        self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
+        self.browser_teacher.find_element(By.LINK_TEXT, "Assessments").click()
+        
+        welcome_instructions = self.browser_teacher.find_element(By.NAME, 'date-welcome_instructions')
+        comment_instructions = self.browser_teacher.find_element(By.NAME, 'date-comment_instructions')
+        welcome_instructions.clear()
+        comment_instructions.clear()
+        welcome_instructions.send_keys("NEW WELCOME INSTRUCTIONS")
+        comment_instructions.send_keys("NEW COMMENT INSTRUCTIONS")
+        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
+        checkbox.send_keys(Keys.SPACE)
+        
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        update_button.send_keys(Keys.ENTER)
+        wait = WebDriverWait(self.browser_teacher, 5)
+        wait.until_not(EC.url_contains('form')) # Wait for changes to be made
+        
+        # 3
+        self.browser.find_element(By.LINK_TEXT, "Assessments").click()
+        
+        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
+        self.assertNotIn('Welcome to test course 4', page_text)
+        self.assertNotIn('Please explain why you made those choices', page_text)
+        
+        self.assertIn("NEW WELCOME INSTRUCTIONS", page_text)
+        self.assertIn("NEW COMMENT INSTRUCTIONS", page_text)
