@@ -5,6 +5,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from flexible_assessment.models import UserProfile
 from django.urls import reverse
 from django.test import Client, tag
@@ -127,7 +128,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         inputs[4].send_keys("24.98")
         inputs[5].click()
 
-        submit.click()
+        submit.send_keys(Keys.ENTER)
 
         # 5
         self.assertNotIn('form', self.browser.current_url)
@@ -241,11 +242,13 @@ class TestStudentViews(StaticLiveServerTestCase):
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
         min_field.send_keys("20")
-        # Wait for the element to be clickable
+        
+        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
+        checkbox.send_keys(Keys.SPACE)
+        
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
-        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
-        update_button.click()
+        update_button.send_keys(Keys.ENTER)
         
         alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
         alert.accept()
@@ -316,10 +319,13 @@ class TestStudentViews(StaticLiveServerTestCase):
         date_field = self.browser_teacher.find_element(By.NAME, 'date-close')
         yesterday = datetime.now() - timedelta(1)
         date_field.send_keys(datetime.strftime(yesterday, '%m-%d-%Y'))
+        
+        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
+        checkbox.send_keys(Keys.SPACE)
+        
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
-        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
-        update_button.click()
+        update_button.send_keys(Keys.ENTER)
         
         # 3
         self.assertTrue(submit.is_enabled())
@@ -372,14 +378,15 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.find_element(By.LINK_TEXT, "Assessments").click()
         
+        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
+        checkbox.send_keys(Keys.SPACE)
         
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
         min_field.send_keys("20")
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
-        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
-        update_button.click()
+        update_button.send_keys(Keys.ENTER)
         
         # 3
         submit.click()
@@ -448,6 +455,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.click() # This is so the Update button is enabled
+        
+        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
+        checkbox.send_keys(Keys.SPACE)
         
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
@@ -525,6 +535,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         default_field.send_keys('10')
         min_field.send_keys('10')
         max_field.send_keys('90')
+        
+        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
+        checkbox.send_keys(Keys.SPACE)
                 
         old_default_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-default')
         old_default_field.clear()
@@ -534,8 +547,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
-        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
-        update_button.click()
+        update_button.send_keys(Keys.ENTER)
         alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
         alert.accept()
         wait = WebDriverWait(self.browser_teacher, 5)

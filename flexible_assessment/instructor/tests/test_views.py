@@ -134,6 +134,7 @@ class TestViews(TestCase):
         # add date- infront of open/close because DateForm has prefix='date' inside post
         payload['date-open'] = '2023-01-01T01:00'
         payload['date-close'] = '3000-01-01T00:59'
+        payload['options-agreement'] = "true"
 
         # Get instructor_home first to set up display_name session data 
         instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
@@ -159,6 +160,7 @@ class TestViews(TestCase):
         # add date- infront of open/close because DateForm has prefix='date' inside post
         payload['date-open'] = '2023-01-01T01:00'
         payload['date-close'] = '3000-01-01T00:59'
+        payload['options-agreement'] = "true"
 
         # Get instructor_home first to set up display_name session data 
         instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
@@ -184,6 +186,7 @@ class TestViews(TestCase):
         # add date- infront of open/close because DateForm has prefix='date' inside post
         payload['date-open'] = '2023-01-01T01:00'
         payload['date-close'] = '3000-01-01T00:59'
+        payload['options-agreement'] = "true"
 
         # Get instructor_home first to set up display_name session data 
         instructor_home_url = reverse('instructor:instructor_home', args=[course_id])
@@ -210,6 +213,7 @@ class TestViews(TestCase):
         # add date- infront of open/close because DateForm has prefix='date' inside post
         payload['date-open'] = '2023-01-01T01:00'
         payload['date-close'] = '3000-01-01T00:59'
+        payload['options-agreement'] = "true"
 
         # Get instructor_home first to set up display_name session data 
         instructor_home_url = reverse('instructor:instructor_home', args=[course_id])

@@ -67,7 +67,10 @@ class TestStudentViews(StaticLiveServerTestCase):
         values = ["A1", "33", "30", "50", "A2", "33", "10", "50", "A3", "34", "0", "100"]
         for index, value in enumerate(values):
             inputs[index + 6].send_keys(value) # There are 6 hidden inputs we need to skip over
-        
+
+        checkbox = self.browser.find_element(By.NAME, "options-agreement")
+        checkbox.send_keys(Keys.SPACE)
+
         date_field = self.browser.find_element(By.NAME, 'date-close')
         
         tomorrow = datetime.now() + timedelta(1)
@@ -78,8 +81,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser.fullscreen_window()
         update_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Save")]')
         update_button.send_keys(Keys.ENTER)
-        alert = self.browser.switch_to.alert # Accept the confirmation message that a student will be reset
-        alert.accept()
 
         wait = WebDriverWait(self.browser, 5)
         wait.until_not(EC.url_contains('form')) # Wait for changes to be made

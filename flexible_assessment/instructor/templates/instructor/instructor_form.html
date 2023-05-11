@@ -94,13 +94,8 @@
                             <p class="fw-light m-0">Total default allocations should add up to 100%</p>
 
                             <div class="form-switch">
-                                {% for field in options_form.visible_fields %}
-                                    {% if field.name == "ignore_conflicts" %}
-                                        {{ field.as_hidden }}
-                                    {% else %} 
-                                        {% bootstrap_field field wrapper_class='mb-3; vertical-align: middle;' %}
-                                    {% endif %}
-                                {% endfor %}
+                                {{ options_form.ignore_conflicts.as_hidden }}
+                                {% bootstrap_field options_form.hide_total wrapper_class='mb-3; vertical-align: middle;' %}
                             </div>
                         </div>
                     </div>
@@ -142,14 +137,19 @@
             </div>
         </div>
 
-        <div class="d-flex align-items-center justify-content-center pt-4">
-            <div class="d-flex justify-content-between col-9">
+        <div class="d-flex flex-column align-items-center justify-content-center pt-4">
+            <div class="d-flex align-items-start mb-3">
+                {% bootstrap_field options_form.agreement %}
+            </div>
+            <div class="d-flex justify-content-between col-9 pb-4">
                 <a href="{% url 'instructor:instructor_home' course.id %}" style="border-radius: 1em;" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
                 <div class="d-grid col-2">
                     <button class="btn btn-primary" style="border-radius: 1em;" type="submit">{% if course.close %} Update {% else %} Save {% endif %}</button>
                 </div>
             </div>
         </div>
+        
+        
     </div>
 </form>
 
@@ -185,7 +185,9 @@
     });
 
     function confirmSubmission(form) {
-        if ($('#added-deleted-form').val() === "true") {
+        var courseClosed = {{ course.close|yesno:"true,false" }}; // Also check if this is the first time setting up the assessments
+
+        if ($('#added-deleted-form').val() === "true" && courseClosed) {
             if (confirm("If you added or deleted an assessment, all student responses will be reset if you save these changes.")) {
                 document.forms[0].dataset.changed = "false";
                 return true;
