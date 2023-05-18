@@ -38,11 +38,16 @@
                 <h3 class="card-header">Your Weights</h3>
                 <div class="card-body pt-2 pb-3">
                     {% not_open course as no %}
+                        <p class="fw-light mt-0 mb-1">The window to make changes is <span style="font-weight:bold;">{{course.open}} - {{ course.close }}</span></p>
+                    {% before_deadline course as before_deadline %}
+                    {% if before_deadline %}
+                        <p class="fw-light mt-0 mb-1">You are here before the open date. Check the times above for when you can change your chosen %.</p>
+                    {% endif %}
+
                     {% is_any_flex_none flexes as has_none %}
-                    <p class="fw-light mt-0 mb-1">The deadline to make changes is <span style="font-weight:bold;">{{ course.close }}</span></p>
 
                     {% if has_none and not no %}
-                    <p class="fw-light mt-0 mb-1">Please navigate to <i>Assessments</i> to make your choices. The default % will be applied if any are left blank. </p>
+                    <p class="fw-light mt-0 mb-1">Please navigate to <a href="{% url 'student:student_form' course.id %}">Assessments</a> to make your choices. The default % will be applied if any are left blank. </p>
                     {% endif %}
                     <table class="table table-striped mb-2" style="table-layout: fixed;">
                         <thead>

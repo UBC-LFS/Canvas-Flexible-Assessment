@@ -16,7 +16,17 @@ def not_open(course):
         return now > close or now < open
     else:
         return False
-
+    
+@register.simple_tag()
+def before_deadline(course):
+    if course:
+        if course.open == None:
+            return True
+        open = course.open
+        now = timezone.now()
+        return now < open
+    else:
+        return True
 
 @register.simple_tag()
 def get_default_min_max(id):
