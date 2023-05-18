@@ -25,7 +25,7 @@ class TestStudentViews(StaticLiveServerTestCase):
     def tearDown(self):
         self.browser.close()
 
-    @tag('slow', 'view')
+    @tag('slow', 'view', 'instructor_view')
     @mock_classes.use_mock_canvas()
     def test_view_page(self, mocked_flex_canvas_instance):
         session_id = self.client.session.session_key

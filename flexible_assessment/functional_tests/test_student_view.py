@@ -19,12 +19,13 @@ class TestStudentViews(StaticLiveServerTestCase):
         user = UserProfile.objects.get(login_id="test_student1")
         self.client = Client()
         self.client.force_login(user)
+        self.browser_teacher = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
 
     def tearDown(self):
         self.browser.close()
+        self.browser_teacher.close()
         
     def login_teacher(self):
-        self.browser_teacher =  webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         teacher = UserProfile.objects.get(login_id="test_instructor1")
         self.client_teacher = Client()
         self.client_teacher.force_login(teacher)
