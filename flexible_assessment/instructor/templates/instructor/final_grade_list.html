@@ -56,6 +56,14 @@
                         </tfoot>
                     </table>
                     <p class="fw-light m-0">Click on a student to edit their desired %</p>
+                    <div class="form-check d-flex justify-content-center">
+                        <label class="form-check-label" for="flexCheckDefault">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                            I have verified that the final grades are correct
+                        </label>
+                    </div>
+                    <p class="d-flex justify-content-center" id="checkbox-error-message" style="display:none !important; color:red;">Please accept the checkbox</p>
+                    
                     <div class="d-flex align-items-center justify-content-center">
                         <form id="grade-submit" method="post" action="{% url 'instructor:final_grades_submit' course.id %}">
                             {% csrf_token %}
@@ -103,6 +111,17 @@
     table.on('draw', format_table);
 
     $('#submit-button').click(function(e) {
+        var checkBox = document.getElementById("flexCheckDefault");
+        var errorMessage = document.getElementById("checkbox-error-message");
+        if (checkBox.checked == false){
+            e.preventDefault();
+            errorMessage.style.display = "block";
+            return false;
+        }
+        else {
+            errorMessage.style.display = "none !important";
+        }
+
         if (confirm('Are you sure you want to submit override grades to Canvas?')) {
             $('#submit-button').prepend('<span class="spinner-border spinner-border-sm me-2"> </span>');
             $('#submit-button').prop('disabled', true);
