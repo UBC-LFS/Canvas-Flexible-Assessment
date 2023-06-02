@@ -243,9 +243,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         min_field.clear()
         min_field.send_keys("20")
         
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
-        
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         update_button.send_keys(Keys.ENTER)
@@ -320,9 +317,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         yesterday = datetime.now() - timedelta(1)
         date_field.send_keys(datetime.strftime(yesterday, '%m-%d-%Y'))
         
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
-        
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         update_button.send_keys(Keys.ENTER)
@@ -377,9 +371,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.find_element(By.LINK_TEXT, "Assessments").click()
-        
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
         
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
@@ -455,9 +446,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.click() # This is so the Update button is enabled
-        
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
         
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
@@ -535,10 +523,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         default_field.send_keys('10')
         min_field.send_keys('10')
         max_field.send_keys('90')
-        
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
-                
+
         old_default_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-default')
         old_default_field.clear()
         old_default_field.send_keys('40')
@@ -619,8 +604,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_instructions.clear()
         welcome_instructions.send_keys("NEW WELCOME INSTRUCTIONS")
         comment_instructions.send_keys("NEW COMMENT INSTRUCTIONS")
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
         
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         update_button.send_keys(Keys.ENTER)

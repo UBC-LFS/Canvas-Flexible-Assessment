@@ -56,7 +56,6 @@
                         </tfoot>
                     </table>
                     <p class="fw-light m-0">Click on a student to edit their desired %</p>
-                    <p class="text-danger">Warning: Before you release final grades to students, make sure they have been calculated the way you are expecting. The Faculty of Land & Food Systems Learning Centre will not be held responsible for grade miscalculations as a result of user error or unexpected Canvas behaviour.</p>
                     <div class="d-flex align-items-center justify-content-center">
                         <form id="grade-submit" method="post" action="{% url 'instructor:final_grades_submit' course.id %}">
                             {% csrf_token %}
