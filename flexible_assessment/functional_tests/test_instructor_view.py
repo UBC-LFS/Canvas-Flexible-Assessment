@@ -6,11 +6,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select, WebDriverWait
-from flexible_assessment.models import UserProfile
+import flexible_assessment.models as models
 from django.urls import reverse
 from django.test import Client, tag
+from django.http import HttpResponseRedirect
 from datetime import datetime, timedelta
 from flexible_assessment.tests.test_data import DATA
+from unittest.mock import patch, MagicMock, ANY
 
 import flexible_assessment.tests.mock_classes as mock_classes
 
@@ -19,16 +21,76 @@ class TestStudentViews(StaticLiveServerTestCase):
         
     def setUp(self):
         self.browser =  webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
-        user = UserProfile.objects.get(login_id="test_instructor1")
+        user = models.UserProfile.objects.get(login_id="test_instructor1")
         self.client = Client()
         self.client.force_login(user)
+        self.launch_url = reverse('launch')
+        self.login_url = reverse('login')
 
     def tearDown(self):
         self.browser.close()
+    
+    def test_login_and_launch_success(self):
+        # Mock the lti module functions used in the login view
+        with patch('flexible_assessment.lti.get_tool_conf') as mock_get_tool_conf, \
+                patch('flexible_assessment.lti.get_launch_data_storage') as mock_get_launch_data_storage, \
+                patch('flexible_assessment.lti.get_launch_url', return_value=self.launch_url):
 
-    @tag('slow', 'view')
+            # Mock the DjangoOIDCLogin object and its methods
+            with patch('flexible_assessment.views.DjangoOIDCLogin') as mock_django_oidc_login:
+                oidc_login_instance = MagicMock()
+                oidc_login_instance.enable_check_cookies.return_value = oidc_login_instance
+                oidc_login_instance.redirect.return_value = HttpResponseRedirect(self.launch_url)
+                mock_django_oidc_login.return_value = oidc_login_instance
+
+                # Call the login function via client
+                print("LOGIN URL IS", self.login_url)
+                response = self.client.get(self.login_url)
+
+                self.assertEqual(response.status_code, 302)  # 302 indicates HttpResponseRedirect
+                print("RESPONSE URL IS", response.url)
+                self.assertTrue(response.url.startswith(self.launch_url))
+
+        
+        launch_data = {
+            'https://purl.imsglobal.org/spec/lti/claim/custom': {
+                'course_id': '12345',
+                'role': 'StudentEnrollment',
+                'user_display_name': 'Test User',
+                'user_id': '987664',
+                'login_id': '987664',
+                'course_name': 'Test Course'
+            }
+        }
+
+        # Create a MagicMock for an instance of DjangoMessageLaunch
+        message_launch_instance = MagicMock()
+        message_launch_instance.get_launch_data.return_value = launch_data
+        
+        # Begin patches
+        with patch('flexible_assessment.lti.get_tool_conf') as mock_get_tool_conf, \
+                patch('flexible_assessment.views.DjangoMessageLaunch', return_value=message_launch_instance), \
+                patch('flexible_assessment.models.Course.objects.get') as mock_course_get:
+                
+                response = self.client.post(response.url)
+       
+        session_id = self.client.session.session_key 
+        # Open the response URL in the Selenium browser
+        self.browser.get(self.live_server_url + response.url)
+        self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
+
+        self.browser.get(self.live_server_url + response.url) 
+        # Now you can add assertions about the page's contents,
+        # For example, you might check that the user's name appears on the page:
+        body_text = self.browser.find_element(By.TAG_NAME, 'body').text
+        self.assertIn('Test User', body_text)
+
+
+
+    @tag('slow', 'view', 'instructor_view')
     @mock_classes.use_mock_canvas()
     def test_view_page(self, mocked_flex_canvas_instance):
+        """ Note, this is designed to work with the fixture data for course 1. """
         session_id = self.client.session.session_key
         
         mocked_flex_canvas_instance.groups_dict['2'].grade_list = {'grades': [('1', 50), ('2', 10), ('3', 50), ('4', 60)]}
@@ -67,9 +129,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         values = ["A1", "33", "30", "50", "A2", "33", "10", "50", "A3", "34", "0", "100"]
         for index, value in enumerate(values):
             inputs[index + 6].send_keys(value) # There are 6 hidden inputs we need to skip over
-
-        checkbox = self.browser.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
 
         date_field = self.browser.find_element(By.NAME, 'date-close')
         
@@ -150,3 +209,90 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         self.assertIn('final/list', self.browser.current_url)
         
+        
+    @tag('slow', 'current')
+    @mock_classes.use_mock_canvas()
+    def test_reset_course(self, mocked_flex_canvas_instance):
+        """ In course 1 the teacher goes to the assessments view, and deleting all assessments will reset the course
+        1. Go to assessments view, make sure there are assessments, student responses, etc.
+        2. Delete all the assessments, and submit
+        3. Make sure all the data is deleted
+        4. Make sure other course data is not deleted
+        5. Make sure a student can log in and sets up data correctly
+        """
+        print("---------------------test_reset_course-------------------------------")
+        session_id = self.client.session.session_key
+        self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
+        self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
+        
+        self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
+
+        # 1
+        course = models.Course.objects.get(id=1)
+        old_course_id = course.id
+        old_course_title = course.title
+        userprofiles_before_length = models.UserProfile.objects.all().count()
+        course_count_before = models.Course.objects.all().count()
+        assessment_count_before = models.Assessment.objects.all().count()
+        expected_assessment_count = assessment_count_before - course.assessment_set.all().count()
+        comment_count_before = models.UserComment.objects.all().count()
+        expected_comment_count = comment_count_before - course.usercomment_set.all().count()
+        flexes_count_before = models.FlexAssessment.objects.all().count()
+        course_flexes_count = models.FlexAssessment.objects.filter(assessment__course__id=old_course_id).count()
+        expected_flex_count_after = flexes_count_before - course_flexes_count
+
+        # 2
+        self.browser.find_element(By.LINK_TEXT, "Assessments").click()
+        WebDriverWait(self.browser, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "delete"))
+        )
+        buttons = self.browser.find_elements(By.CLASS_NAME, 'delete')
+
+        # Iterate through each button and click it
+        for button in buttons:
+            if button.is_displayed():
+                button.send_keys(Keys.ENTER)
+    
+        update_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        update_button.send_keys(Keys.ENTER)
+        alert = self.browser.switch_to.alert
+        alert.accept()
+        wait = WebDriverWait(self.browser, 5)
+        wait.until_not(EC.url_contains('form')) # Wait for changes to be made
+        
+        # 3
+        course_after = models.Course.objects.get(id=1)
+        user_courses_after = course_after.usercourse_set.all()
+        assessments_after = course_after.assessment_set.all()
+        comments_after = course_after.usercomment_set.all()
+        userprofiles_after = models.UserProfile.objects.all()
+        flex_assessments_after = models.FlexAssessment.objects.all()
+        self.assertEqual(course_after.id, old_course_id) # Make sure course correctly reset
+        self.assertEqual(course_after.title, old_course_title)
+        self.assertEqual(course_after.welcome_instructions, models.Course._meta.get_field('welcome_instructions').default)
+        self.assertEqual(course_after.comment_instructions, models.Course._meta.get_field('comment_instructions').default)
+        self.assertEqual(course_after.open, None)
+        self.assertEqual(course_after.close, None)
+        self.assertEqual(course_after.id, 1)
+        self.assertEqual(user_courses_after.count(), 1) # only one user left (the instructor who made the deletion)
+
+        # 4
+        self.assertEqual(assessments_after.count(), 0)
+        self.assertEqual(comments_after.count(), 0)
+        self.assertEqual(userprofiles_after.count(), userprofiles_before_length) # no user profiles should be deleted
+        self.assertEqual(flex_assessments_after.filter(assessment__course__id=course_after.id).count(), 0)
+        self.assertEqual(models.FlexAssessment.objects.all().count(), expected_flex_count_after) # Other flexes should not be deleted
+        self.assertEqual(models.Course.objects.all().count(), course_count_before)
+        self.assertEqual(models.Assessment.objects.all().count(), expected_assessment_count)
+        self.assertEqual(models.UserComment.objects.all().count(), expected_comment_count)
+
+        # 5
+        user = models.UserProfile.objects.get(login_id="test_student1")
+        self.client = Client()
+        self.client.force_login(user)
+        self.browser.get(self.live_server_url + reverse('student:student_home', args=[1])) 
+        self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
+        
+        self.browser.get(self.live_server_url + reverse('student:student_home', args=[1]))
+        input("h")
+
