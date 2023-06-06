@@ -30,6 +30,27 @@ class TestStudentViews(StaticLiveServerTestCase):
     def tearDown(self):
         self.browser.close()
     
+    def launch_new_user(self, course_data):
+        client = Client()
+        launch_data = {'https://purl.imsglobal.org/spec/lti/claim/custom': course_data}
+
+        message_launch_instance = MagicMock()
+        message_launch_instance.get_launch_data.return_value = launch_data
+        
+        with patch('flexible_assessment.lti.get_tool_conf') as mock_get_tool_conf, \
+                patch('flexible_assessment.views.DjangoMessageLaunch', return_value=message_launch_instance), \
+                patch('flexible_assessment.models.Course.objects.get') as mock_course_get:
+
+                response = client.post(reverse('launch'))
+        
+        session_id = client.session.session_key
+        browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install())) 
+        browser.get(self.live_server_url + response.url)        
+        browser.add_cookie({'name': 'sessionid', 'value': session_id})
+        browser.get(self.live_server_url + response.url)
+        return browser
+    
+    @tag('slow')
     def test_login_and_launch_success(self):
         # Mock the lti module functions used in the login view
         with patch('flexible_assessment.lti.get_tool_conf') as mock_get_tool_conf, \
@@ -43,49 +64,23 @@ class TestStudentViews(StaticLiveServerTestCase):
                 oidc_login_instance.redirect.return_value = HttpResponseRedirect(self.launch_url)
                 mock_django_oidc_login.return_value = oidc_login_instance
 
-                # Call the login function via client
-                print("LOGIN URL IS", self.login_url)
                 response = self.client.get(self.login_url)
 
-                self.assertEqual(response.status_code, 302)  # 302 indicates HttpResponseRedirect
-                print("RESPONSE URL IS", response.url)
+                self.assertEqual(response.status_code, 302)
                 self.assertTrue(response.url.startswith(self.launch_url))
 
-        
-        launch_data = {
-            'https://purl.imsglobal.org/spec/lti/claim/custom': {
-                'course_id': '12345',
-                'role': 'StudentEnrollment',
-                'user_display_name': 'Test User',
-                'user_id': '987664',
-                'login_id': '987664',
-                'course_name': 'Test Course'
-            }
-        }
+                course_data = {
+                    'course_id': '12345',
+                    'role': 'StudentEnrollment',
+                    'user_display_name': 'Test User',
+                    'user_id': '987664',
+                    'login_id': '987664',
+                    'course_name': 'Test Course'
+                }
 
-        # Create a MagicMock for an instance of DjangoMessageLaunch
-        message_launch_instance = MagicMock()
-        message_launch_instance.get_launch_data.return_value = launch_data
-        
-        # Begin patches
-        with patch('flexible_assessment.lti.get_tool_conf') as mock_get_tool_conf, \
-                patch('flexible_assessment.views.DjangoMessageLaunch', return_value=message_launch_instance), \
-                patch('flexible_assessment.models.Course.objects.get') as mock_course_get:
-                
-                response = self.client.post(response.url)
-       
-        session_id = self.client.session.session_key 
-        # Open the response URL in the Selenium browser
-        self.browser.get(self.live_server_url + response.url)
-        self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
-
-        self.browser.get(self.live_server_url + response.url) 
-        # Now you can add assertions about the page's contents,
-        # For example, you might check that the user's name appears on the page:
+        self.browser = self.launch_new_user(course_data)
         body_text = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('Test User', body_text)
-
-
 
     @tag('slow', 'view', 'instructor_view')
     @mock_classes.use_mock_canvas()
@@ -210,7 +205,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertIn('final/list', self.browser.current_url)
         
         
-    @tag('slow', 'current')
+    @tag('slow')
     @mock_classes.use_mock_canvas()
     def test_reset_course(self, mocked_flex_canvas_instance):
         """ In course 1 the teacher goes to the assessments view, and deleting all assessments will reset the course
@@ -287,12 +282,33 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertEqual(models.UserComment.objects.all().count(), expected_comment_count)
 
         # 5
-        user = models.UserProfile.objects.get(login_id="test_student1")
-        self.client = Client()
-        self.client.force_login(user)
-        self.browser.get(self.live_server_url + reverse('student:student_home', args=[1])) 
-        self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
-        
-        self.browser.get(self.live_server_url + reverse('student:student_home', args=[1]))
-        input("h")
+        student_data = {
+            'course_id': course_after.id,
+            'role': 'StudentEnrollment',
+            'user_display_name': 'Test User',
+            'user_id': '987664',
+            'login_id': '987664',
+            'course_name': course_after.title
+        }
 
+        student_browser = self.launch_new_user(student_data) 
+        wait = WebDriverWait(student_browser, 5)
+        wait.until_not(EC.url_contains('launch')) # Wait for changes to be made
+        body_text = student_browser.find_element(By.TAG_NAME, 'body').text
+        self.assertIn(course_after.title, body_text)
+
+        # Try logging in old student
+        student1_data = {
+            'course_id': course_after.id,
+            'role': 'StudentEnrollment',
+            'user_display_name': 'test_student1',
+            'user_id': '1',
+            'login_id': '1',
+            'course_name': course_after.title
+        }
+        student_browser = self.launch_new_user(student1_data)
+        wait = WebDriverWait(student_browser, 5)
+        wait.until_not(EC.url_contains('launch')) # Wait for changes to be made
+        body_text = student_browser.find_element(By.TAG_NAME, 'body').text
+        self.assertIn(course_after.title, body_text)
+        student_browser.close()
