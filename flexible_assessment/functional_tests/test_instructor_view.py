@@ -13,6 +13,7 @@ from django.http import HttpResponseRedirect
 from datetime import datetime, timedelta
 from flexible_assessment.tests.test_data import DATA
 from unittest.mock import patch, MagicMock, ANY
+import instructor.views as views
 
 import flexible_assessment.tests.mock_classes as mock_classes
 
@@ -84,8 +85,10 @@ class TestStudentViews(StaticLiveServerTestCase):
 
     @tag('slow', 'view', 'instructor_view')
     @mock_classes.use_mock_canvas()
-    def test_view_page(self, mocked_flex_canvas_instance):
+    @patch.object(views.FinalGradeListView, '_submit_final_grades')
+    def test_view_page(self, mocked_flex_canvas_instance, mock_submit_final_grades):
         """ Note, this is designed to work with the fixture data for course 1. """
+        mock_submit_final_grades.return_value = True # When submitting final grades, just return True for that function
         session_id = self.client.session.session_key
         
         mocked_flex_canvas_instance.groups_dict['2'].grade_list = {'grades': [('1', 50), ('2', 10), ('3', 50), ('4', 60)]}

@@ -112,7 +112,6 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                         kwargs={'course_id': course_id}))
 
             success = self._submit_final_grades(course_id, canvas)
-
             if not success:
                 messages.error(
                     request,
@@ -129,6 +128,9 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
 
             logger.info('Completed final grades submission to Canvas',
                         extra=log_extra)
+
+        hide_total = request.POST.get('hide_total') == 'on'
+        canvas.get_course(course_id).update_settings(hide_final_grades=hide_total)
 
         return HttpResponseRedirect(
             reverse('instructor:instructor_home',
