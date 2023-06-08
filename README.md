@@ -2,7 +2,7 @@
 This is an external Django application running on Canvas
 
 # Testing Plan for New Changes
-Whenever **Canvas** is bolded, this is a step to be done inside Canvas, otherwise it is within Flexible Assessment.
+Whenever **Canvas** is bolded, this is a step to be done inside Canvas, otherwise it is within Flexible Assessment. I recommend you split tabs to quickly switch between Canvas and Flexible Assessment.
 ## Testing Canvas Integration
 1. You can reset a course by deleting all the assessments and hitting submit
 2. In **Canvas**, enable and open Flexible Assessment as an instructor
