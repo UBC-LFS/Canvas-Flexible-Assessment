@@ -7,7 +7,7 @@ Whenever **Canvas** is bolded, this is a step to be done inside Canvas, otherwis
 1. You can reset a course by deleting all the assessments and hitting submit
 2. In **Canvas**, enable and open Flexible Assessment as an instructor
 3. From **Canvas**, open Flexible Assessment as a student
-4. Go to _Course Setup_ and make sure 'Hide totals in student grades summary' correctly enables/disables the **Canvas** setting under _'More Options' > 'Hide totals in student grades summary'_
+4. Go to _Course Setup_, setup assessments and make sure 'Hide totals in student grades summary' correctly enables/disables the **Canvas** setting under _'More Options' > 'Hide totals in student grades summary'_
 5. Inside **Canvas**, create assignment groups with at least one assignment inside, grade some students
 6. Go to _Final Grades_, and match assignment groups
 7. Inside **Canvas**, check that the assignment group percentages now match those in Flexible Assessment
