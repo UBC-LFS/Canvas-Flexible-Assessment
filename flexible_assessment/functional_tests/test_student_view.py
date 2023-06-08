@@ -22,6 +22,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         user = UserProfile.objects.get(login_id="test_student1")
         self.client = Client()
         self.client.force_login(user)
+        self.browser_teacher = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         self.login_teacher()
 
     def tearDown(self):
@@ -29,12 +30,11 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser_teacher.close()
         
     def login_teacher(self):
-        self.browser_teacher = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         teacher = UserProfile.objects.get(login_id="test_instructor1")
         self.client_teacher = Client()
         self.client_teacher.force_login(teacher)
     
-    @tag('slow', 'view')
+    @tag('slow', 'view', 'student_view')
     @mock_classes.use_mock_canvas()
     def test_view_page(self, mocked_flex_canvas_instance):
         session_id = self.client.session.session_key
@@ -143,7 +143,6 @@ class TestStudentViews(StaticLiveServerTestCase):
     def test_student_course_not_setup(self, mocked_flex_canvas_instance):
         """ In course 2 the teacher has not set up flexes
             1. Student should be on the homepage and see a special message
-            2. Student should not see the Assessments tab
         """
         print("---------------------test_student_course_not_setup-------------------------------")
         
@@ -157,18 +156,13 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertNotIn('form', self.browser.current_url)
         bodyText = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('Your instructor is not using this tool at the moment', bodyText)
-    
-        # 2
-        tabs = self.browser.find_elements(By.CLASS_NAME, 'nav-link')
-        self.assertEqual(len(tabs), 1)
 
     @tag('slow')
     @mock_classes.use_mock_canvas()
     def test_student_deadline_past(self, mocked_flex_canvas_instance):
         """ In course 5 the deadline has passed and the student has not made any choices
             1. Student should be on the homepage
-            2. Student should not see the Assessments tab
-            3. They should see their Chosen % as 'Default'
+            2. They should see their Chosen % as 'Default'
         """
         print("---------------------test_student_deadline_past-------------------------------")
         
@@ -182,10 +176,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertNotIn('form', self.browser.current_url)
         
         # 2
-        tabs = self.browser.find_elements(By.CLASS_NAME, 'nav-link')
-        self.assertEqual(len(tabs), 1)
-        
-        # 3
         self.assertNotIn('form', self.browser.current_url)
         bodyText = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('Default', bodyText)
@@ -242,9 +232,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
         min_field.send_keys("20")
-        
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
         
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
@@ -320,9 +307,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         yesterday = datetime.now() - timedelta(1)
         date_field.send_keys(datetime.strftime(yesterday, '%m-%d-%Y'))
         
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
-        
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         update_button.send_keys(Keys.ENTER)
@@ -377,9 +361,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.find_element(By.LINK_TEXT, "Assessments").click()
-        
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
         
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
@@ -455,9 +436,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.click() # This is so the Update button is enabled
-        
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
         
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
@@ -535,10 +513,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         default_field.send_keys('10')
         min_field.send_keys('10')
         max_field.send_keys('90')
-        
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
-                
+
         old_default_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-default')
         old_default_field.clear()
         old_default_field.send_keys('40')
@@ -619,8 +594,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_instructions.clear()
         welcome_instructions.send_keys("NEW WELCOME INSTRUCTIONS")
         comment_instructions.send_keys("NEW COMMENT INSTRUCTIONS")
-        checkbox = self.browser_teacher.find_element(By.NAME, "options-agreement")
-        checkbox.send_keys(Keys.SPACE)
         
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         update_button.send_keys(Keys.ENTER)

@@ -1,5 +1,5 @@
 import flexible_assessment.models as models
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, Client, tag
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from unittest.mock import patch, MagicMock, ANY
@@ -10,6 +10,7 @@ class TestLogin(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.login_url = reverse('login')
+        self.client = Client()
     
     def test_login(self):
         url = reverse('login')

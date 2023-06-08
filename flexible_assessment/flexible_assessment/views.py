@@ -40,11 +40,13 @@ def launch(request):
     message_launch = DjangoMessageLaunch(
         request, tool_conf, launch_data_storage=launch_data_storage)
     message_launch_data = message_launch.get_launch_data()
-    pprint.pprint(message_launch_data)
-
     canvas_fields = message_launch_data['https://purl.imsglobal.org'
                                         '/spec/lti/claim/custom']
     course_id = canvas_fields['course_id']
+    logger.info('Inside Launch with request', extra={
+        'course': canvas_fields,
+        'user': canvas_fields['user_display_name'],
+    })
 
     if 'ISS' in canvas_fields['role']:
         utils.set_user_course(canvas_fields, models.Roles.ADMIN)
@@ -105,5 +107,5 @@ def launch(request):
         return HttpResponseServerError(f"Your role in course {course_id} is not defined. Please contact it@landfood.ubc.ca for assistance.")
 
 def get_jwks(request):
-    tool_conf = utils.get_tool_conf()
+    tool_conf = lti.get_tool_conf()
     return JsonResponse(tool_conf.get_jwks(), safe=False)

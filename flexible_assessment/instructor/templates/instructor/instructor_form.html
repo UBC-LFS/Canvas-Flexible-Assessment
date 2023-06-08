@@ -138,9 +138,6 @@
         </div>
 
         <div class="d-flex flex-column align-items-center justify-content-center pt-4">
-            <div class="d-flex align-items-start mb-3">
-                {% bootstrap_field options_form.agreement %}
-            </div>
             <div class="d-flex justify-content-between col-9 pb-4">
                 <a href="{% url 'instructor:instructor_home' course.id %}" style="border-radius: 1em;" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
                 <div class="d-grid col-2">
@@ -186,8 +183,16 @@
 
     function confirmSubmission(form) {
         var courseClosed = {{ course.close|yesno:"true,false" }}; // Also check if this is the first time setting up the assessments
-
-        if ($('#added-deleted-form').val() === "true" && courseClosed) {
+        var total = calculate_total();
+        if (total == 0) {
+            if (confirm("You total adds up to 0, if you click OK, your course and all of its data will be reset.")) {
+                form.action += "?reset=true";
+                document.forms[0].dataset.changed = "false";
+                return true;
+            }
+            return false;
+        }
+        else if ($('#added-deleted-form').val() === "true" && courseClosed) {
             if (confirm("If you added or deleted an assessment, all student responses will be reset if you save these changes.")) {
                 document.forms[0].dataset.changed = "false";
                 return true;
@@ -197,7 +202,7 @@
             document.forms[0].dataset.changed = "false";
             return true;
         }
-    }
+    };
 
 	check_valid();
 
@@ -221,8 +226,8 @@
     $(document).on('click', '#add', add_row);
 	$(document).on('click', '.delete', delete_row);
 
-	function check_valid() {
-		var total = 0;
+    function calculate_total() {
+        var total = 0;
 		$(".Default").each(function () {
 			curr = parseFloat($(this).find("input").val());
 			if (!isNaN(curr)) {
@@ -230,6 +235,11 @@
 			};
 		});
         total = total.toFixed(2);
+        return total;
+    }
+
+	function check_valid() {
+        total = calculate_total();
 		var total_str = total.toString();
 		$('#total').text(total_str + "%");
 		if (total == 100.00) {

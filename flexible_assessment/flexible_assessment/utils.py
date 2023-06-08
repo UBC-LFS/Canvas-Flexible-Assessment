@@ -64,6 +64,7 @@ def set_user_profile(user_id, login_id, display_name):
 def set_course(course_id, course_name):
     course_set = models.Course.objects.filter(pk=course_id)
     if not course_set.exists():
+        logger.info("New Course Created:", extra={'course': course_name, 'user': course_id})        
         course = models.Course(id=course_id, title=course_name)
         course.save()
     else:

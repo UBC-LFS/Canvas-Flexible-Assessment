@@ -284,7 +284,7 @@ class FlexAssessment(models.Model):
     flex = models.DecimalField(null=True, blank=True, max_digits=5, decimal_places=2)
 
     def __str__(self):
-        return '{}, {}'.format(self.user.display_name, self.assessment.title)
+        return '{}, {}, {}'.format(self.user.display_name, self.assessment.title, self.flex)
 
 
 class UserComment(models.Model):
