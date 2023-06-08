@@ -42,6 +42,8 @@
                     {% before_deadline course as before_deadline %}
                     {% if before_deadline %}
                         <p class="fw-light mt-0 mb-1">You are here before the open date. Check the times above for when you can change your chosen %.</p>
+                    {% elif no %}
+                        <p class="fw-light mt-0 mb-1">It is past the deadline to make changes.</p>
                     {% endif %}
 
                     {% is_any_flex_none flexes as has_none %}

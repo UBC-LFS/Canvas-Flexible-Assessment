@@ -51,6 +51,51 @@ class TestStudentViews(StaticLiveServerTestCase):
         browser.get(self.live_server_url + response.url)
         return browser
     
+    @tag('slow', 'view', 'instructor_view')
+    @mock_classes.use_mock_canvas()
+    @patch.object(views.FinalGradeListView, '_submit_final_grades')
+    def test_view_page(self, mocked_flex_canvas_instance, mock_submit_final_grades):
+        """ Note, this is designed to work with the fixture data for course 1. """
+        mock_submit_final_grades.return_value = True # When submitting final grades, just return True for that function
+        session_id = self.client.session.session_key
+        
+        mocked_flex_canvas_instance.groups_dict['2'].grade_list = {'grades': [('1', 50), ('2', 10), ('3', 50), ('4', 60)]}
+        
+        self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
+        self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
+
+        self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
+        
+        input("Press Enter in this terminal to continue")
+        
+
+    @tag('slow', 'view', 'double_view')
+    @mock_classes.use_mock_canvas()
+    def test_double_view(self, mocked_flex_canvas_instance):
+        """ See both instructor and student view, this is designed to work with course 1 """
+        print("---------------------test_double_view-------------------------------")
+        session_id = self.client.session.session_key
+        self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
+        self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
+        
+        self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
+        student_data = {
+            'course_id': 1,
+            'role': 'StudentEnrollment',
+            'user_display_name': 'Test User',
+            'user_id': '987664',
+            'login_id': '987664',
+            'course_name': 1,
+        }
+
+        student_browser = self.launch_new_user(student_data) 
+
+        while input("Input R to Relaunch the Student, Enter anything else to quit: ") == "R":
+            student_browser.close()
+            student_browser = self.launch_new_user(student_data) 
+            
+        student_browser.close()
+
     @tag('slow')
     def test_login_and_launch_success(self):
         # Mock the lti module functions used in the login view
@@ -83,23 +128,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         body_text = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('Test User', body_text)
 
-    @tag('slow', 'view', 'instructor_view')
-    @mock_classes.use_mock_canvas()
-    @patch.object(views.FinalGradeListView, '_submit_final_grades')
-    def test_view_page(self, mocked_flex_canvas_instance, mock_submit_final_grades):
-        """ Note, this is designed to work with the fixture data for course 1. """
-        mock_submit_final_grades.return_value = True # When submitting final grades, just return True for that function
-        session_id = self.client.session.session_key
-        
-        mocked_flex_canvas_instance.groups_dict['2'].grade_list = {'grades': [('1', 50), ('2', 10), ('3', 50), ('4', 60)]}
-        
-        self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
-        self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
-
-        self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[1])) 
-        
-        input("Press Enter in this terminal to continue")
-        
     @tag('slow')
     @mock_classes.use_mock_canvas()
     def test_setup_course(self, mocked_flex_canvas_instance):
