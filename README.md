@@ -2,9 +2,9 @@
 This is an external Django application running on Canvas
 
 # Testing Plan for New Changes
-Whenever **Canvas** is bolded, this is a step to be done inside Canvas, otherwise it is within Flexible Assessment. I recommend you split tabs to quickly switch between Canvas and Flexible Assessment.
+Whenever **Canvas** is bolded, this is a step to be done inside Canvas, otherwise it is within Flexible Assessment. I recommend you split tabs to quickly switch between Canvas and Flexible Assessment. Also open two separate browsers, one for the instructor, and one for the student (You can't use the same browser window due to cookies and authentication). **Note:** If you open Flexible Assessment first as an instructor, then Flexible Assessment from the Student View in a separate browser, you'll be able to see the Test Student in Flexible Assessment, Test Student gets cleared everytime you relaunch Flexible Assessment as an instructor since it keeps up to date with students added/removed in Canvas.
 ## Testing Canvas Integration
-1. You can reset a course by deleting all the assessments and hitting submit
+1. You can reset a course by deleting all the assessments and hitting submit, you should close and relaunch Flexible Assessment afterwards
 2. In **Canvas**, enable and open Flexible Assessment as an instructor
 3. From **Canvas**, open Flexible Assessment as a student
 4. Go to _Course Setup_, setup assessments and make sure 'Hide totals in student grades summary' correctly enables/disables the **Canvas** setting under _'More Options' > 'Hide totals in student grades summary'_
@@ -23,19 +23,18 @@ Whenever **Canvas** is bolded, this is a step to be done inside Canvas, otherwis
 17. Rematch different assignment groups then submit grades to Canvas again
 
 ## Testing Core Features inside Flexible Assessment
-As long as tests are maintained for new features created, the following checks are already unit tested. All of these steps are within Flexible Assessment. I recommend you open two separate browsers, one for the instructor, and one for the student view (You can't use the same browser window due to cookies and authentication).
+As long as tests are maintained for new features created, the following checks are already unit tested. All of these steps are within Flexible Assessment.
 
 1. Student: Check student view before instructor has setup a course
-2. Instructor: Setup assessments and place open date in the future
+2. Instructor: Setup assessments, try to make invalid choices such as default is lower than the minimum. Set the **Open date** to be in the future
 3. Student: Check that student view homepage has been updated, but they should not be able to make changes
-4. Instructor: Change Open date to a time in the past, also set Welcome Instructions and Comment Instructions
-5. Student: Choose assessment weights as a student, and try going back to update the chosen weights
-6. Instructor: Verify that student choices are received then set Close date to a time in the past
+4. Instructor: Change **Open date** to a time in the past, also set **Welcome Instructions** and **Comment Instructions**
+5. Student: Choose assessment weights as a student, submit, then go back to update the choices
+6. Instructor: Verify that student choices are received then set **Close date** to a time in the past
 7. Student: Student should no longer be able to make changes
-8. Instructor: Delete or add an assessment. Check that all student choices are reset, set Close date to the future
-9. Student: Make new choices
-10. Instructor: Change assessment ranges so that some student choices are now invalid. Verify that those students choices are reset, but valid ones remain.
-11. Instructor: Go to _Student Choices_ and manually change a student's choices
-12. Instructor: Go to _Final Grades_ and double check the exported csv is correct. Also check the _Change Log_.
+8. Instructor: Go to _Student Choices_ and manually change student's choices
+9. Instructor: Change assessment ranges so that some student choices are now invalid. Verify that those students choices are reset, but valid ones remain.
+10. Instructor: Delete or add an assessment. Check that all student choices are reset
+11. Instructor: Go to _Final Grades_ and double check the exported csv is correct. Also check the Change Log and Percentages export in _Student Choices_.
 
 
