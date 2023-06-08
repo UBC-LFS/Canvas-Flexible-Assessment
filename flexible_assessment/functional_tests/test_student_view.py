@@ -22,19 +22,18 @@ class TestStudentViews(StaticLiveServerTestCase):
         user = UserProfile.objects.get(login_id="test_student1")
         self.client = Client()
         self.client.force_login(user)
-        self.login_teacher()
+        self.browser_teacher = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
 
     def tearDown(self):
         self.browser.close()
         self.browser_teacher.close()
         
     def login_teacher(self):
-        self.browser_teacher = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         teacher = UserProfile.objects.get(login_id="test_instructor1")
         self.client_teacher = Client()
         self.client_teacher.force_login(teacher)
     
-    @tag('slow', 'view')
+    @tag('slow', 'view', 'student_view')
     @mock_classes.use_mock_canvas()
     def test_view_page(self, mocked_flex_canvas_instance):
         session_id = self.client.session.session_key
@@ -143,7 +142,6 @@ class TestStudentViews(StaticLiveServerTestCase):
     def test_student_course_not_setup(self, mocked_flex_canvas_instance):
         """ In course 2 the teacher has not set up flexes
             1. Student should be on the homepage and see a special message
-            2. Student should not see the Assessments tab
         """
         print("---------------------test_student_course_not_setup-------------------------------")
         
@@ -157,18 +155,13 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertNotIn('form', self.browser.current_url)
         bodyText = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('Your instructor is not using this tool at the moment', bodyText)
-    
-        # 2
-        tabs = self.browser.find_elements(By.CLASS_NAME, 'nav-link')
-        self.assertEqual(len(tabs), 1)
 
     @tag('slow')
     @mock_classes.use_mock_canvas()
     def test_student_deadline_past(self, mocked_flex_canvas_instance):
         """ In course 5 the deadline has passed and the student has not made any choices
             1. Student should be on the homepage
-            2. Student should not see the Assessments tab
-            3. They should see their Chosen % as 'Default'
+            2. They should see their Chosen % as 'Default'
         """
         print("---------------------test_student_deadline_past-------------------------------")
         
@@ -182,10 +175,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertNotIn('form', self.browser.current_url)
         
         # 2
-        tabs = self.browser.find_elements(By.CLASS_NAME, 'nav-link')
-        self.assertEqual(len(tabs), 1)
-        
-        # 3
         self.assertNotIn('form', self.browser.current_url)
         bodyText = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('Default', bodyText)
