@@ -107,5 +107,5 @@ def launch(request):
         return HttpResponseServerError(f"Your role in course {course_id} is not defined. Please contact it@landfood.ubc.ca for assistance.")
 
 def get_jwks(request):
-    tool_conf = utils.get_tool_conf()
+    tool_conf = lti.get_tool_conf()
     return JsonResponse(tool_conf.get_jwks(), safe=False)
