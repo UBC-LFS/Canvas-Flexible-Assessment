@@ -37,4 +37,5 @@ As long as tests are maintained for new features created, the following checks a
 10. Instructor: Delete or add an assessment. Check that all student choices are reset
 11. Instructor: Go to _Final Grades_ and double check the exported csv is correct. Also check the Change Log and Percentages export in _Student Choices_.
 
-
+# Test Canvas Issues
+Since Test Canvas resets every month, you might run into an oauth error mentioning a refresh token. Check the Flexible Assessment logs and verify that you see "Instructor Login". That means they made it to our server so the Canvas keys we received are correct. Our database has a CanvasOauth2Token table which contains tokens for the courses that got reset and is likely causing the issue. Access the postgres > flex database and use ```select * from oauth_canvasoauth2token;``` to see the old tokens that we have. Delete those tokens, restart the server and the issue should go away.
