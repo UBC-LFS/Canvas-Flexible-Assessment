@@ -11,6 +11,13 @@
 	{% load static %}
 	{% load student_tags %}
 	<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+	<style>
+		.disabled-link {
+		  pointer-events: none;
+		  color: gray;
+		  /* Additional styling to make it look disabled */
+		}
+	  </style>
 </head>
 
 <body>
@@ -27,7 +34,11 @@
 				<nav class="nav nav-pills flex-column">
 					<a class="nav-link {% block nav_item_home %}{% endblock nav_item_home %}" href="{% url 'student:student_home' course.id %}"><i class="bi bi-house me-2"></i> Home</a>
 					{% not_open course as no %}
-					{% if course.close and not no %}
+					{% if no %}
+						<div data-toggle="tooltip" title="It is outside the time frame to make changes.">
+							<a class="nav-link {% block nav_item_disabled_assessments %}{% endblock nav_item_disabled_assessments %} disabled-link" href="#"><i class="bi bi-journals me-2"></i> Assessments</a>
+						</div>
+					{% else %}
 						<a class="nav-link {% block nav_item_assessments %}{% endblock nav_item_assessments %}" href="{% url 'student:student_form' course.id %}"><i class="bi bi-journals me-2"></i> Assessments</a>
 					{% endif %}
 				</nav>
@@ -37,5 +48,12 @@
 		</div>
 	</div>
 </body>
+
+<script>
+	$(function () {
+	  $('[data-toggle="tooltip"]').tooltip()
+	})
+	</script>
+	
 
 </html>

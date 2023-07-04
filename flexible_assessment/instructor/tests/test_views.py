@@ -143,7 +143,7 @@ class TestViews(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(type(response), HttpResponseRedirect)
         self.assertEqual(response.url, reverse("instructor:instructor_home", args=[course_id]))
-
+    
     @mock_classes.use_mock_canvas()
     def test_InstructorAssessmentView_invalid_does_not_add_to_100(self, mocked_flex_canvas_instance):
         course_id = 1

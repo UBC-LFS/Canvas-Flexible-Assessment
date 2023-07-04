@@ -20,7 +20,7 @@ from django.shortcuts import get_object_or_404
 from instructor.canvas_api import FlexCanvas
 
 from . import grader, writer
-from .forms import (AssessmentFileForm, AssessmentGroupForm, DateForm,
+from .forms import (AssessmentFileForm, AssessmentGroupForm, CourseSettingsForm,
                     OptionsForm, StudentAssessmentBaseForm,
                     get_assessment_formset)
 
@@ -112,7 +112,6 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                         kwargs={'course_id': course_id}))
 
             success = self._submit_final_grades(course_id, canvas)
-
             if not success:
                 messages.error(
                     request,
@@ -129,6 +128,9 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
 
             logger.info('Completed final grades submission to Canvas',
                         extra=log_extra)
+
+        hide_total = request.POST.get('hide_total') == 'on'
+        canvas.get_course(course_id).update_settings(hide_final_grades=hide_total)
 
         return HttpResponseRedirect(
             reverse('instructor:instructor_home',
@@ -333,7 +335,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         else:
             hide_total = course_settings['hide_final_grades']
 
-        context['date_form'] = DateForm(
+        context['date_form'] = CourseSettingsForm(
             self.request.POST or None, instance=course, prefix='date')
         context['options_form'] = OptionsForm(
             self.request.POST or None, prefix='options', hide_total=hide_total)
@@ -380,9 +382,33 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         """Defines the assessment formset, date form, and options form
         for validation
         """
-
         course_id = self.kwargs['course_id']
-        date_form = DateForm(request.POST,
+        reset_param = request.GET.get('reset')
+        if reset_param == 'true':
+            course = models.Course.objects.get(pk=course_id)
+            user = models.UserProfile.objects.get(pk=self.request.session['_auth_user_id'])
+            old_user_course = models.UserCourse.objects.get(user=user, course=course)
+            
+            logger.info('RESETTING COURSE INITIATED BY %s',
+                        user.display_name,
+                        extra={'course': course.title,
+                               'user': self.request.session['display_name']})
+            
+            current_flexes = models.FlexAssessment.objects.filter(assessment__course=course.id)
+            logger.info('FLEXES RESET ARE %s',
+                        current_flexes,
+                        extra={'course': course.title,
+                                'user': self.request.session['display_name']})
+            
+            course_title = course.title
+            course.delete()
+            new_course = utils.set_course(course_id, course_title)
+            utils.set_user_course_enrollment(user, new_course, old_user_course.role)
+            
+            return HttpResponseRedirect(reverse('instructor:instructor_home',
+                                        kwargs={'course_id': course_id}))
+            
+        date_form = CourseSettingsForm(request.POST,
                              instance=models.Course.objects.get(pk=course_id),
                              prefix='date')
 
@@ -433,7 +459,6 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         hide_total = options_form.cleaned_data['hide_total']
         ignore_conflicts = options_form.cleaned_data['ignore_conflicts']
-
         formset.clean()
 
         assessments, conflict_students = self._save_assessments(
@@ -537,7 +562,6 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             .exclude(id__in=[assessment.id for assessment in assessments])
 
         assessment_deleted = False
-
         if assessments_to_delete:
             assessment_deleted = True
             logger.info('Deleted assessments: %s',

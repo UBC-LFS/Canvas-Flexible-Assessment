@@ -52,7 +52,7 @@ class StudentAssessmentBaseForm(forms.Form):
 class OptionsForm(forms.Form):
     hide_total = forms.BooleanField(
         required=False,
-        label='Hide final grade on Canvas for students')
+        label='Hide totals in student grades summary')
     ignore_conflicts = forms.BooleanField(
         required=False)
 
@@ -62,7 +62,7 @@ class OptionsForm(forms.Form):
         self.initial['hide_total'] = hide_total
 
 
-class DateForm(ModelForm):
+class CourseSettingsForm(ModelForm):
     """Form to set flexible assessment availability for students."""
 
     def __init__(self, *args, **kwargs):
@@ -86,14 +86,21 @@ class DateForm(ModelForm):
 
     class Meta:
         model = Course
-        fields = ['open', 'close']
+        fields = ['open', 'close', 'welcome_instructions', 'comment_instructions']
         widgets = {
             'open': forms.DateTimeInput(
                 attrs={'type': 'datetime-local'},
                 format='%Y-%m-%dT%H:%M'),
             'close': forms.DateTimeInput(
                 attrs={'type': 'datetime-local'},
-                format='%Y-%m-%dT%H:%M')}
+                format='%Y-%m-%dT%H:%M'),
+            'welcome_instructions': forms.Textarea(
+                attrs={'rows':2,
+                    'placeholder': 'Example: Welcome to Flexible Assessment, the system that allows students to decide how their final grades will be weighted. Please enter your desired weights in the fields below, agree to the terms, and click Submit.'}),
+            'comment_instructions': forms.Textarea(
+                attrs={'rows':2,
+                    'placeholder': 'Example: Please enter your reasons for the choices you made.'})
+        }
 
 
 class AssessmentGroupForm(forms.Form):

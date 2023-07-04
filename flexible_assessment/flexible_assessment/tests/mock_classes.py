@@ -54,6 +54,7 @@ class MockCanvasCourse(object):
         # Find and return the mock assignment group that matches the group_id, or None if not found
         group =  next(filter(lambda group: str(group.id) == group_id, self.groups), None)
         return group
+   
 
     def update_settings(self, hide_final_grades):
         return
@@ -74,4 +75,7 @@ class MockFlexCanvas(MockCanvas):
 
     def get_groups_and_enrollments(self, course_id):
         dict = {k: v.asdict() for k, v in self.groups_dict.items()}
-        return dict, []
+        return dict, []  
+
+    def is_allow_override(self, course_id):
+        return True

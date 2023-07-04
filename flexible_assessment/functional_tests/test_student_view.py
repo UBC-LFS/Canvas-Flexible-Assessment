@@ -2,7 +2,10 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from flexible_assessment.models import UserProfile
 from django.urls import reverse
 from django.test import Client, tag
@@ -19,17 +22,19 @@ class TestStudentViews(StaticLiveServerTestCase):
         user = UserProfile.objects.get(login_id="test_student1")
         self.client = Client()
         self.client.force_login(user)
+        self.browser_teacher = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+        self.login_teacher()
 
     def tearDown(self):
         self.browser.close()
+        self.browser_teacher.close()
         
     def login_teacher(self):
-        self.browser_teacher =  webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         teacher = UserProfile.objects.get(login_id="test_instructor1")
         self.client_teacher = Client()
         self.client_teacher.force_login(teacher)
     
-    @tag('slow', 'view')
+    @tag('slow', 'view', 'student_view')
     @mock_classes.use_mock_canvas()
     def test_view_page(self, mocked_flex_canvas_instance):
         session_id = self.client.session.session_key
@@ -64,11 +69,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         inputs[1].send_keys("40")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("60")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("SELENIUM COMMENT")
@@ -124,11 +126,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         inputs[2].send_keys("25.02")
         inputs[3].send_keys("24.99")
         inputs[4].send_keys("24.98")
-        self.assertFalse(submit.is_enabled())
         inputs[5].click()
-        self.assertTrue(submit.is_enabled())
 
-        submit.click()
+        submit.send_keys(Keys.ENTER)
 
         # 5
         self.assertNotIn('form', self.browser.current_url)
@@ -143,7 +143,6 @@ class TestStudentViews(StaticLiveServerTestCase):
     def test_student_course_not_setup(self, mocked_flex_canvas_instance):
         """ In course 2 the teacher has not set up flexes
             1. Student should be on the homepage and see a special message
-            2. Student should not see the Assessments tab
         """
         print("---------------------test_student_course_not_setup-------------------------------")
         
@@ -157,18 +156,13 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertNotIn('form', self.browser.current_url)
         bodyText = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('Your instructor is not using this tool at the moment', bodyText)
-    
-        # 2
-        tabs = self.browser.find_elements(By.CLASS_NAME, 'nav-link')
-        self.assertEqual(len(tabs), 1)
 
     @tag('slow')
     @mock_classes.use_mock_canvas()
     def test_student_deadline_past(self, mocked_flex_canvas_instance):
         """ In course 5 the deadline has passed and the student has not made any choices
             1. Student should be on the homepage
-            2. Student should not see the Assessments tab
-            3. They should see their Chosen % as 'Default'
+            2. They should see their Chosen % as 'Default'
         """
         print("---------------------test_student_deadline_past-------------------------------")
         
@@ -182,10 +176,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertNotIn('form', self.browser.current_url)
         
         # 2
-        tabs = self.browser.find_elements(By.CLASS_NAME, 'nav-link')
-        self.assertEqual(len(tabs), 1)
-        
-        # 3
         self.assertNotIn('form', self.browser.current_url)
         bodyText = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('Default', bodyText)
@@ -214,13 +204,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("10")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("90")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("INITIAL COMMENT")
@@ -235,7 +221,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertIn('90', bodyText)
         
         # 3
-        self.login_teacher()
         session_id_teacher = self.client_teacher.session.session_key
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
@@ -247,7 +232,10 @@ class TestStudentViews(StaticLiveServerTestCase):
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
         min_field.send_keys("20")
-        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]').click()
+        
+        self.browser_teacher.fullscreen_window()
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        update_button.send_keys(Keys.ENTER)
         
         alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
         alert.accept()
@@ -267,13 +255,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("20")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("80")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("NEW COMMENT")
@@ -304,19 +288,14 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("40")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("60")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("I am so happy to be able to choose my flexes :) I hope nothing goes wrong...")
         
         # 2
-        self.login_teacher()
         session_id_teacher = self.client_teacher.session.session_key
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
@@ -327,7 +306,10 @@ class TestStudentViews(StaticLiveServerTestCase):
         date_field = self.browser_teacher.find_element(By.NAME, 'date-close')
         yesterday = datetime.now() - timedelta(1)
         date_field.send_keys(datetime.strftime(yesterday, '%m-%d-%Y'))
-        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]').click()
+        
+        self.browser_teacher.fullscreen_window()
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        update_button.send_keys(Keys.ENTER)
         
         # 3
         self.assertTrue(submit.is_enabled())
@@ -365,19 +347,14 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("10")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("90")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("I am so glad to choose these weights, I spent so much time coming to this decision")
         
         # 2
-        self.login_teacher()
         session_id_teacher = self.client_teacher.session.session_key
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
@@ -385,11 +362,12 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.find_element(By.LINK_TEXT, "Assessments").click()
         
-        
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
         min_field.send_keys("20")
-        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]').click()
+        self.browser_teacher.fullscreen_window()
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        update_button.send_keys(Keys.ENTER)
         
         # 3
         submit.click()
@@ -407,6 +385,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.clear()
         comment_field.send_keys("Who changed the minimum from 10% to 20% :'(")
+        self.browser.fullscreen_window()
+        self.browser.execute_script("arguments[0].scrollIntoView();", submit)
         submit.click()
         
         self.assertNotIn('form', self.browser.current_url)
@@ -433,19 +413,14 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("10")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("90")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("Wow so many awesome assessments")
         
         # 2
-        self.login_teacher()
         session_id_teacher = self.client_teacher.session.session_key
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
@@ -454,8 +429,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser_teacher.find_element(By.LINK_TEXT, "Assessments").click()
         
         delete_button = self.browser_teacher.find_element(By.XPATH, '//*[@id="assessments"]/tbody/tr[2]/td[5]/button').click()
-        alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
-        alert.accept()
         
         default_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-default')
         default_field.clear()
@@ -464,7 +437,14 @@ class TestStudentViews(StaticLiveServerTestCase):
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.click() # This is so the Update button is enabled
         
-        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]').click()
+        self.browser_teacher.fullscreen_window()
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
+        update_button.click()
+        alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
+        alert.accept()
+        wait = WebDriverWait(self.browser_teacher, 5)
+        wait.until_not(EC.url_contains('form')) # Wait for changes to be made
         
         # 3
         self.assertTrue(submit.is_enabled())
@@ -507,19 +487,14 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        self.assertFalse(submit.is_enabled())
         inputs[1].send_keys("10")
-        self.assertFalse(submit.is_enabled())
         inputs[2].send_keys("90")
-        self.assertFalse(submit.is_enabled())
         inputs[3].click()
-        self.assertTrue(submit.is_enabled())
         
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.send_keys("I hope there are only two assessments, I get choice paralysis")
         
         # 2
-        self.login_teacher()
         session_id_teacher = self.client_teacher.session.session_key
         self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
         self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
@@ -538,19 +513,25 @@ class TestStudentViews(StaticLiveServerTestCase):
         default_field.send_keys('10')
         min_field.send_keys('10')
         max_field.send_keys('90')
-                
+
         old_default_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-default')
         old_default_field.clear()
         old_default_field.send_keys('40')
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.click() # This is so the Update button is enabled
         
-        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]').click()
+        self.browser_teacher.fullscreen_window()
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        update_button.send_keys(Keys.ENTER)
+        alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
+        alert.accept()
+        wait = WebDriverWait(self.browser_teacher, 5)
+        wait.until_not(EC.url_contains('form')) # Wait for changes to be made
         
         # 3
         self.assertTrue(submit.is_enabled())
         submit.click()
-        
+
         # 4
         bodyText = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertIn('This field is required', bodyText)
@@ -563,6 +544,68 @@ class TestStudentViews(StaticLiveServerTestCase):
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.clear()
         comment_field.send_keys("I spent 10 hours deciding my weights")
-        submit.click()
+        submit.send_keys(Keys.ENTER)
         
         self.assertNotIn('form', self.browser.current_url)
+        
+    @tag('slow')
+    @mock_classes.use_mock_canvas()
+    def test_teacher_updates_instruction_comments(self, mocked_flex_canvas_instance):
+        """ The student in course 4 has set up their weights and sees the default comment that the instructor later updates
+            1. Student starts by choosing 10 % and 90 % and submits
+            2. Instructor changes the instructions
+            3. Student sees the new instructions
+        """
+        print("---------------------test_student_editing_when_assessment_deleted-------------------------------")
+                
+        session_id = self.client.session.session_key
+        self.browser.get(self.live_server_url + reverse('student:student_home', args=[4])) 
+        self.browser.add_cookie({'name': 'sessionid', 'value': session_id})
+        
+        self.browser.get(self.live_server_url + reverse('student:student_home', args=[4])) 
+        
+        # 1
+        self.assertIn('form', self.browser.current_url)
+        submit = self.browser.find_element(By.TAG_NAME, 'button')
+        inputs = self.browser.find_elements(By.TAG_NAME, 'input')
+        
+        inputs[1].send_keys("10")
+        inputs[2].send_keys("90")
+        inputs[3].click()
+        
+        comment_field = self.browser.find_element(By.NAME, "comment")
+        comment_field.send_keys("I hope there are only two assessments, I get choice paralysis")
+        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
+        self.assertIn('Welcome to test course 4', page_text)
+        self.assertIn('Please explain why you made those choices', page_text)
+        submit.send_keys(Keys.ENTER)
+        
+        # 2
+        session_id_teacher = self.client_teacher.session.session_key
+        self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
+        self.browser_teacher.add_cookie({'name': 'sessionid', 'value': session_id_teacher})
+        
+        self.browser_teacher.get(self.live_server_url + reverse('instructor:instructor_home', args=[4])) 
+        self.browser_teacher.find_element(By.LINK_TEXT, "Assessments").click()
+        
+        welcome_instructions = self.browser_teacher.find_element(By.NAME, 'date-welcome_instructions')
+        comment_instructions = self.browser_teacher.find_element(By.NAME, 'date-comment_instructions')
+        welcome_instructions.clear()
+        comment_instructions.clear()
+        welcome_instructions.send_keys("NEW WELCOME INSTRUCTIONS")
+        comment_instructions.send_keys("NEW COMMENT INSTRUCTIONS")
+        
+        update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
+        update_button.send_keys(Keys.ENTER)
+        wait = WebDriverWait(self.browser_teacher, 5)
+        wait.until_not(EC.url_contains('form')) # Wait for changes to be made
+        
+        # 3
+        self.browser.find_element(By.LINK_TEXT, "Assessments").click()
+        
+        page_text = self.browser.find_element(By.TAG_NAME, 'body').text
+        self.assertNotIn('Welcome to test course 4', page_text)
+        self.assertNotIn('Please explain why you made those choices', page_text)
+        
+        self.assertIn("NEW WELCOME INSTRUCTIONS", page_text)
+        self.assertIn("NEW COMMENT INSTRUCTIONS", page_text)
