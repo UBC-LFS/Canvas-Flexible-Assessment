@@ -5,8 +5,7 @@
 {% block content %}
 <div class="pt-5 pb-5">
     <div class="container">
-        <h1>{{ course.title }}</h1>
-        <h3>Hello {{ display_name }}</h3>
+        <h1>Flexible Assessment</h1>
     </div>
 </div>
 <div class="pb-5">
@@ -39,15 +38,30 @@
             </div>
         </div>
     {% endif %}
+
+   <div class="pb-5 d-flex align-items-center justify-content-center">
+        <div class="col-10">
+            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                <div class="card-body p-4">
+                    <p>Welcome to Flexible Assessment, a Canvas integration that allows students to choose how their final grades will be weighted within ranges defined by the instructor.</p>
+                    <p>This system was created for a Teaching & Learning Enhancement Fund (TLEF) project to streamline the processes involved in Flexible Assessment, including: Collecting desired percentages from students, recalculating their final grades according to those percentages, and exporting the grades into the Canvas Grades page. It is based on a Flexible Assessment approach devised by Dr. Candice Rideout, a Professor of Teaching in the Faculty of Land & Food Systems that has been shown to increase student satisfaction and self-regulation <a href="#footnote-1">[1]</a>.</p>
+                    <p>For more information, see our <a href="https://github.com/UBC-LFS/Canvas-Flexible-Assessment/wiki/Instructor-Guide" target="_blank" rel="noopener noreferrer">About</a> page.</p>
+
+                    <hr>
+                    <p id="footnote-1">[1] Candice A. Rideout (2018) Students' choices and achievement in large undergraduate classes using a novel flexible assessment approach, Assessment & Evaluation in Higher Education, 43:1, 68-78, DOI: <a href="https://doi.org/10.1080/02602938.2017.1294144" target="_blank" rel="noopener noreferrer">10.1080/02602938.2017.1294144</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="d-flex align-items-center justify-content-center">
         <div class="col-10">
             <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h3 class="mb-0">Using Flexible Assessment</h3>
+                    <h3 class="mb-0">Instructions</h3>
                 </div>
                 <div class="card-body p-4">
-                    <p>Welcome to Flexible Assessment - the application that allows students to choose how their final grades will be weighted within ranges defined by the instructor!</p>
-                    <h3>Steps to use this tool</h3>
                     <ol>
                         <li class="p-2 fs-5"><h4>Setup</h4>
                             <ol class="fs-6 lh-lg" type="a">

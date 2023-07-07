@@ -18,9 +18,8 @@
 		<div class="row min-vh-100">
 			<div class="col-sm-2 shadow-sm">
                 <div class="pt-5 pb-3">
-                    <a class="text-dark text-decoration-none" href="{% url 'instructor:instructor_home' course.id %}">
-                        <h4 class="text-center text-break m-0">Flexible Assessment</h4>
-                    </a>
+                        <h4 class="text-center text-dark text-break m-0">Course: {{ course.title }}</h4>
+                        <h4 class="text-center text-dark text-break m-0">User: {{ display_name }}</h4>
                 </div>
                 <hr>
 				{% block sidebar %}
@@ -37,7 +36,7 @@
 							Setup</a>
 					{% endif %}
                     <hr>
-                    <a class="nav-link {% block nav_item_help %}{% endblock nav_item_help %}" href="https://github.com/UBC-LFS/Canvas-Flexible-Assessment/wiki/Instructor-Guide" target="_blank" rel="noopener noreferrer"><i class="bi bi-question-circle me-2"></i> Help & Support</a>
+                    <a class="nav-link {% block nav_item_help %}{% endblock nav_item_help %}" href="https://github.com/UBC-LFS/Canvas-Flexible-Assessment/wiki/Instructor-Guide" target="_blank" rel="noopener noreferrer"><i class="bi bi-question-circle me-2"></i> About</a>
 				</nav>
 				{% endblock %}
 			</div>
