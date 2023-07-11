@@ -40,20 +40,30 @@
     {% endif %}
 
 <div class="d-flex align-items-center justify-content-center pb-5">
-    <div class="col-10 d-flex">
-        <div class="card shadow-sm mr-3" style="border-radius: 1em; overflow:hidden;">
-            <div class="card-body" id="chart1"></div>
-        </div>
-        
-        <div class="card shadow-sm mr-3" style="border-radius: 1em; overflow:hidden;">
-            <div class="card-body" id="chart2"></div>
-        </div>
-        
-        <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-            <div class="card-body" id="chart3"></div>
-        </div>
+  <div class="col-10 flex card-body card-shadow-sm d-flex justify-content-center">
+    <div class="col-3">
+      <div class="card shadow-sm chart-container" id="chart1">
+        <div class="card-body"></div>
+      </div>
     </div>
+
+    <div class="col-3">
+      <div class="card shadow-sm chart-container" id="chart2">
+        <div class="card-body"></div>
+      </div>
+    </div>
+
+    <div class="col-3">
+      <div class="card shadow-sm chart-container" id="chart3">
+        <div class="card-body"></div>
+      </div>
+    </div>
+  </div>
 </div>
+
+
+
+
 
 
 
@@ -131,50 +141,24 @@
   var allocations = JSON.parse('{{ allocations|escapejs }}');
 
   // Function to render the pie chart
-  function renderPieChart(containerId, chart_data) {
-    Highcharts.chart(containerId, {
-      chart: {
-        plotBackgroundColor: null,
-        plotBorderWidth: null,
-        plotShadow: false,
-        type: 'pie'
-      },
-      title: {
-        text: 'Default allocations',
-        align: 'left'
-      },
-      tooltip: {
-        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-      },
-      accessibility: {
-        point: {
-          valueSuffix: '%'
-        }
-      },
-      plotOptions: {
-        pie: {
-          allowPointSelect: true,
-          cursor: 'pointer',
-          dataLabels: {
-            padding: 0,
-            enabled: true,
-            format: '<b>{point.name}</b>: {point.percentage:.2f} %'
-          }
-        }
-      },
-      series: [{
-        center: ['25%', '50%'],
-        name: 'Brands',
-        colorByPoint: true,
-        innerSize: '20%',
-        data: chart_data
-      }]
-    });
-  }
+  function renderPieChart(containerId, data, title) {
+        Highcharts.chart(containerId, {
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: title
+            },
+            series: [{
+                name: 'Allocations',
+                data: data
+            }]
+        });
+    }
 
-    renderPieChart('chart1', allocations.defaults);
-    renderPieChart('chart2', allocations.chose);
-    renderPieChart('chart3', allocations.all);
+    renderPieChart('chart1', allocations.defaults, "Defaults");
+    renderPieChart('chart2', allocations.chose, "Chosen");
+    renderPieChart('chart3', allocations.all, "All");
 {% endif %}
 
 
