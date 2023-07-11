@@ -3,6 +3,7 @@
 
 {% block nav_item_home %}active{% endblock nav_item_home %} 
 {% block content %}
+
 <div class="pt-5 pb-5">
     <div class="container">
         <h1>Flexible Assessment</h1>
@@ -18,12 +19,21 @@
                         <div class="card-header d-flex align-items-center justify-content-between">
                             <h3 class="mb-0">Response Rate</h3>
                         </div>
-                        <div class="card-body p-4 text-center">
-                            {% get_response_rate course as response_rate %}
-                            <h2>{{ response_rate.0 }}</h2>
-                            <h5 style="color: gray;"><i>{{ response_rate.1 }}</i></h5>
-                            <h3 class="mb-0">Students</h3>
-                        </div>
+                <div class="card-body p-4 text-center">
+                  {% get_response_rate course as ratio %}
+                  <h2>{{ ratio.0 }} / {{ ratio.1 }}</h2> <!-- Move the ratio display above the progress bar -->
+                  <div class="progress progress-lg"> <!-- Add progress-lg class for larger size -->
+                    <div class="progress-bar" role="progressbar" style="width: {{ ratio.2 }}%;" aria-valuenow="{{ ratio.2 }}" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                  </div>
+                  <h5 style="color: gray;" class="progress-label">{{ ratio.2 }}%</h5> <!-- Move the ratio display below the progress bar -->
+                  <div class="mt-2">
+                    <h3 class="mb-0">Students</h3>
+                  </div>
+                </div>
+
+
+
                     </div>
                 </div>
                 <div class="col-5">
