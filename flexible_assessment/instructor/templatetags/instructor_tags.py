@@ -32,8 +32,7 @@ def get_response_rate(course):
         percentage = round(valid_num/len(students)*100, 2)
     else:
         percentage = 0
-    return ('{} / {}'.format(valid_num, len(students)),
-            '{}%'.format(percentage))
+    return valid_num, len(students), percentage
 
 
 @register.simple_tag()
