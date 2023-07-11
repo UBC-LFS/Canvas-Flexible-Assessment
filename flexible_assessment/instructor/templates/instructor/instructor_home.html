@@ -31,13 +31,31 @@
                             <div class="card-header d-flex align-items-center justify-content-between">
                                 <h3 class="mb-0">Assessment Allocations</h3>
                             </div>
-                            <div id="container_data" class="card-body"></div>
+                            <div id="container" class="card-body"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     {% endif %}
+
+<div class="d-flex align-items-center justify-content-center pb-5">
+    <div class="col-10 d-flex">
+        <div class="card shadow-sm mr-3" style="border-radius: 1em; overflow:hidden;">
+            <div class="card-body" id="chart1"></div>
+        </div>
+        
+        <div class="card shadow-sm mr-3" style="border-radius: 1em; overflow:hidden;">
+            <div class="card-body" id="chart2"></div>
+        </div>
+        
+        <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+            <div class="card-body" id="chart3"></div>
+        </div>
+    </div>
+</div>
+
+
 
    <div class="pb-5 d-flex align-items-center justify-content-center">
         <div class="col-10">
@@ -85,7 +103,7 @@
                             </ol>
                         </li>
                     </ol>
-                    <p>The Flexible Assessment approach is based on research done by Candice Rideout that you can read <a href="https://doi.org/10.1080/02602938.2017.1294144">here</a>. Please contact <a href="mailto: it@landfood.ubc.ca">it@landfood.ubc.ca</a> for more information.</p>
+                    <p>Please contact <a href="mailto: it@landfood.ubc.ca">it@landfood.ubc.ca</a> for more information.</p>
                 </div>
             </div>
         </div>
@@ -98,61 +116,67 @@
     <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
     {% endfor %}
 </ul>
+
 {% endif %}
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
+
+{% get_allocations course as allocations %}
+
 <script>
-    {% if course.close %}
-        {% get_average_allocations course as average_allocations %}
-        var series = {{ average_allocations|safe }};
+{% if course.close %}
+  var allocations = JSON.parse('{{ allocations|escapejs }}');
 
-        var options = {
-            chart: {
-                type: 'column',
-                height: '80%'
-            },
-            title: {
-                text: "",
-                floating: true
-            },
-            xAxis: {
-                categories: ['Default', 'Student Average'],
-            },
-            yAxis: {
-                visible: false
-            },
-            plotOptions: {
-                column: {
-                    stacking: 'percent',
-                    dataLabels: {
-                        enabled: true,
-                        format: '{y}%',
-                        style: {
-                            fontSize: '12px'
-                        }
-                    }
-                }
-            },
-            colors: ['#009999', '#99CC33', '#FF9900', '#9999CC',
-                        '#66CCCC', '#339966', '#CCCC33'],
-            tooltip: {
-                headerFormat: '<b>{point.x}</b><br/>',
-                pointFormat: '{series.name}: {point.y}%'
-            },
-            exporting: {
-                enabled: false
-            },
-            credits: {
-                enabled: false
-            },
-            series: series,
-        };
+  // Function to render the pie chart
+  function renderPieChart(containerId, chart_data) {
+    Highcharts.chart(containerId, {
+      chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+      },
+      title: {
+        text: 'Default allocations',
+        align: 'left'
+      },
+      tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+      },
+      accessibility: {
+        point: {
+          valueSuffix: '%'
+        }
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: {
+            padding: 0,
+            enabled: true,
+            format: '<b>{point.name}</b>: {point.percentage:.2f} %'
+          }
+        }
+      },
+      series: [{
+        center: ['25%', '50%'],
+        name: 'Brands',
+        colorByPoint: true,
+        innerSize: '20%',
+        data: chart_data
+      }]
+    });
+  }
 
-        Highcharts.chart('container_data', options);
-    {% endif %}
+    renderPieChart('chart1', allocations.defaults);
+    renderPieChart('chart2', allocations.chose);
+    renderPieChart('chart3', allocations.all);
+{% endif %}
+
 
     $(document).ready(function () {
         var errors = [];

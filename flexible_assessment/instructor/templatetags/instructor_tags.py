@@ -1,5 +1,6 @@
 from django import template
 from flexible_assessment.models import Assessment, Roles
+import json
 
 from .. import grader
 
@@ -51,6 +52,41 @@ def get_average_allocations(course):
         })
 
     return series
+
+@register.simple_tag()
+def get_allocations(course):
+    """ Return a list with default allocations, allocations chosen, then all students """ 
+    assessments = course.assessment_set.all()
+    data = {"defaults": [], "chose": [], "all": []} # If none chosen, have chose be empty
+    for assessment in assessments:
+        all_flexes = assessment.flexassessment_set.all()
+        fas_chosen = all_flexes.exclude(flex__isnull=True)
+        if len(fas_chosen) > 0:
+            student_average = round(sum([fa.flex for fa in fas_chosen])/len(fas_chosen), 2)
+            data["chose"].append({
+                "name": assessment.title,
+                "y": float(student_average)
+            })
+            all_students = round(sum([fa.flex if fa.flex is not None else assessment.default for fa in all_flexes]) / len(fas_chosen), 2)
+            data["all"].append({
+                "name": assessment.title,
+                "y": float(all_students)
+            })
+
+        else:
+            # If none chosen, then it all students is just the default
+            data["all"].append({
+                "name": assessment.title,
+                "y": float(assessment.default)
+            })
+        
+        data["defaults"].append({
+            "name": assessment.title,
+            "y": float(assessment.default)
+        })
+
+    print("DATA IS", json.dumps(data))
+    return json.dumps(data)
 
 
 @register.simple_tag()
