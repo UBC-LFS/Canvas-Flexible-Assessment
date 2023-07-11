@@ -8,62 +8,60 @@
         <h1>Flexible Assessment</h1>
     </div>
 </div>
-<div class="pb-5">
-    {% if course.close %}
-        <div class="d-flex align-items-center justify-content-center pb-5">
-            <div class="col-10">
-                <div class="d-flex justify-content-around row">
-                    <div class="col-5">
-                        <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                            <div class="card-header d-flex align-items-center justify-content-between">
-                                <h3 class="mb-0">Response Rate</h3>
-                            </div>
-                            <div class="card-body p-4 text-center">
-                                {% get_response_rate course as response_rate %}
-                                <h2>{{ response_rate.0 }}</h2>
-                                <h5 style="color: gray;"><i>{{ response_rate.1 }}</i></h5>
-                                <h3 class="mb-0">Students</h3>
-                            </div>
+{% if course.close %}
+  <div class="pb-5">
+    <div class="d-flex align-items-center justify-content-center pb-5">
+        <div class="col-10">
+            <div class="d-flex justify-content-around row">
+                <div class="col-5">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h3 class="mb-0">Response Rate</h3>
+                        </div>
+                        <div class="card-body p-4 text-center">
+                            {% get_response_rate course as response_rate %}
+                            <h2>{{ response_rate.0 }}</h2>
+                            <h5 style="color: gray;"><i>{{ response_rate.1 }}</i></h5>
+                            <h3 class="mb-0">Students</h3>
                         </div>
                     </div>
-                    <div class="col-5">
-                        <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                            <div class="card-header d-flex align-items-center justify-content-between">
-                                <h3 class="mb-0">Assessment Allocations</h3>
-                            </div>
-                            <div id="container" class="card-body"></div>
+                </div>
+                <div class="col-5">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h3 class="mb-0">Assessment Allocations</h3>
                         </div>
+                        <div id="container" class="card-body"></div>
                     </div>
                 </div>
             </div>
         </div>
-    {% endif %}
-
-<div class="d-flex align-items-center justify-content-center pb-5">
-  <div class="col-10 flex card-body card-shadow-sm d-flex justify-content-center">
-    <div class="col-3">
-      <div class="card shadow-sm chart-container" id="chart1">
-        <div class="card-body"></div>
-      </div>
     </div>
 
-    <div class="col-3">
-      <div class="card shadow-sm chart-container" id="chart2">
-        <div class="card-body"></div>
-      </div>
-    </div>
+  <div class="d-flex align-items-center justify-content-center pb-5">
+    <div class="col-10">
+      <div class="card shadow-sm" style="border-radius: 1em;">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h3 class="mb-0">Assessment Allocations</h3>
+        </div>
+        <div id="container" class="card-body d-flex justify-content-between">
+          <!-- Chart 1 -->
+          <div class="card shadow-sm chart-container" id="chart1" style="flex: 1;">
+          </div>
 
-    <div class="col-3">
-      <div class="card shadow-sm chart-container" id="chart3">
-        <div class="card-body"></div>
+          <!-- Chart 2 -->
+          <div class="card shadow-sm chart-container" id="chart2" style="flex: 1;">
+          </div>
+
+          <!-- Chart 3 -->
+          <div class="card shadow-sm chart-container" id="chart3" style="flex: 1;">
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-
-
-
+{% endif %}
 
 
 
