@@ -147,7 +147,27 @@
             title: {
                 text: title
             },
+            tooltip: {
+              pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            accessibility: {
+              point: {
+                valueSuffix: '%'
+              }
+            },
+            plotOptions: {
+              pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                  padding: 0,
+                  enabled: true,
+                  format: '<b>{point.name}</b>: {point.percentage:.2f} %'
+                }
+              }
+            },
             series: [{
+                innerSize: '20%',
                 name: 'Allocations',
                 data: data
             }]
