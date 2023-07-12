@@ -19,27 +19,24 @@
                         <div class="card-header d-flex align-items-center justify-content-between">
                             <h3 class="mb-0">Response Rate</h3>
                         </div>
-                <div class="card-body p-4 text-center">
-                  {% get_response_rate course as ratio %}
-                  <h2>{{ ratio.0 }} / {{ ratio.1 }}</h2> <!-- Move the ratio display above the progress bar -->
-                  <div class="progress progress-lg"> <!-- Add progress-lg class for larger size -->
-                    <div class="progress-bar" role="progressbar" style="width: {{ ratio.2 }}%;" aria-valuenow="{{ ratio.2 }}" aria-valuemin="0" aria-valuemax="100">
-                    </div>
-                  </div>
-                  <h5 style="color: gray;" class="progress-label">{{ ratio.2 }}%</h5> <!-- Move the ratio display below the progress bar -->
-                  <div class="mt-2">
-                    <h3 class="mb-0">Students</h3>
-                  </div>
-                </div>
-
-
-
+                        <div class="card-body p-4 text-center">
+                        {% get_response_rate course as ratio %}
+                        <h2>{{ ratio.0 }} / {{ ratio.1 }}</h2> <!-- Move the ratio display above the progress bar -->
+                        <div class="progress progress-lg"> <!-- Add progress-lg class for larger size -->
+                            <div class="progress-bar" role="progressbar" style="width: {{ ratio.2 }}%;" aria-valuenow="{{ ratio.2 }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                        <h5 style="color: gray;" class="progress-label">{{ ratio.2 }}%</h5> <!-- Move the ratio display below the progress bar -->
+                        <div class="mt-2">
+                            <h3 class="mb-0">Students</h3>
+                        </div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-5">
                     <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                         <div class="card-header d-flex align-items-center justify-content-between">
-                            <h3 class="mb-0">Assessment Allocations</h3>
+                            <h3 class="mb-0">Allocation Difference</h3>
                         </div>
                         <div id="container" class="card-body"></div>
                     </div>
@@ -143,6 +140,7 @@
 
 
 {% get_allocations course as allocations %}
+{% get_flex_difference course as flex_differences %}
 
 <script>
 {% if course.close %}
@@ -187,6 +185,33 @@
     renderPieChart('chart1', allocations.defaults, "Defaults");
     renderPieChart('chart2', allocations.chose, "Students Who Chose");
     renderPieChart('chart3', allocations.all, "All Students");
+
+
+    var flex_differences = JSON.parse('{{ flex_differences|escapejs }}')
+
+    var categories = Object.keys(flex_differences);
+    var data = Object.values(flex_differences);
+
+    Highcharts.chart('container', {
+        chart: {
+            type: 'bar'
+        },
+        title: {
+            text: 'Difference Between Student Choices and Defaults'
+        },
+        xAxis: {
+                categories: categories
+            },
+            yAxis: {
+                title: {
+                    text: 'Difference (%)'
+                }
+            },
+        series: [{
+            name: 'Allocation Difference',
+            data: data
+        }]
+    });
 {% endif %}
 
 

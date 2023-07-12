@@ -84,9 +84,22 @@ def get_allocations(course):
             "y": float(assessment.default)
         })
 
-    print("DATA IS", json.dumps(data))
     return json.dumps(data)
 
+@register.simple_tag()
+def get_flex_difference(course):
+    """ For each assessment in the course, return the difference between the default flex and the student choices average """
+    assessments = course.assessment_set.all()
+    data = {} 
+    for assessment in assessments:
+        fas_chosen = assessment.flexassessment_set.exclude(flex__isnull=True)
+        if len(fas_chosen) > 0:
+            difference = round(sum([fa.flex - assessment.default for fa in fas_chosen])/len(fas_chosen), 2)
+            data[assessment.title] = float(difference)
+        else:
+            data[assessment.title] = 0
+    
+    return json.dumps(data)
 
 @register.simple_tag()
 def get_score(groups, group_id, student):
