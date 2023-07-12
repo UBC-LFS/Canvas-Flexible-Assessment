@@ -98,7 +98,7 @@
                     <ol>
                         <li class="p-2 fs-5"><h4>Setup</h4>
                             <ol class="fs-6 lh-lg" type="a">
-                                <li>Go to the <b>Course Setup</b> page and enter assessments as they appear on your syllabus.</li>
+                                <li>Go to the <b>Assessments</b> page and enter assessments as they appear on your syllabus.</li>
                                 <li>For each assessment you will have to add the <i>default</i>, <i>minimum</i> and <i>maximum</i> weights you will accept.</li>
                                 <li>Add <i>open</i> and <i>close</i> dates for when students can enter their desired percentages.</li>
                                 <li>Clicking Save completes the setup. You can view the assessments and availability dates under <b>Assessments</b>.</li>
@@ -137,6 +137,7 @@
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://code.highcharts.com/modules/pattern-fill.js"></script>
 
 
 {% get_allocations course as allocations %}
@@ -147,40 +148,89 @@
   var allocations = JSON.parse('{{ allocations|escapejs }}');
 
   // Function to render the pie chart
-  function renderPieChart(containerId, data, title) {
-        Highcharts.chart(containerId, {
-            chart: {
-                type: 'pie'
+function renderPieChart(containerId, data, title) {
+    // Define the pstterns to be used for pattern fill
+    var patterns = [
+        'url(#pattern0)',
+        'url(#pattern1)',
+        'url(#pattern2)',
+        // Add more patterns as needed
+    ];
+
+    // Create an array of pattern fill colors
+    var patternColors = [
+        '#0000FF', // Blue
+        '#FF0000', // Red
+        '#00FF00', // Green
+        // Add more pattern colors as needed
+    ];
+
+    // Create the pattern definitions for each pattern
+    var patternDefs = patterns.map(function (pattern, index) {
+        return {
+            id: 'pattern' + index,
+            path: {
+                d: 'M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11',
+                stroke: patternColors[index],
+                strokeWidth: 3,
             },
-            title: {
-                text: title
-            },
-            tooltip: {
-              pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-            },
-            accessibility: {
-              point: {
+            color: patternColors[index],
+            zIndex: 2
+        };
+    });
+
+    // Add the pattern definitions to the Highcharts patternFill plugin
+    Highcharts.setOptions({
+        defs: {
+            patterns: patternDefs
+        }
+    });
+
+    Highcharts.chart(containerId, {
+        chart: {
+            type: 'pie'
+        },
+        title: {
+            text: title
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        accessibility: {
+            point: {
                 valueSuffix: '%'
-              }
-            },
-            plotOptions: {
-              pie: {
+            }
+        },
+        plotOptions: {
+            pie: {
                 allowPointSelect: true,
                 cursor: 'pointer',
                 dataLabels: {
-                  padding: 0,
-                  enabled: true,
-                  format: '<b>{point.name}</b><br>{point.percentage:.2f} %'
+                    padding: 0,
+                    enabled: true,
+                    format: '<b>{point.name}</b><br>{point.percentage:.2f} %'
+                },
+                states: {
+                    hover: {
+                        brightness: 0,
+                        borderColor: 'black'
+                    }
+                },
+                point: {
+                    patternFill: {
+                        patterns: patterns
+                    }
                 }
-              }
-            },
-            series: [{
-                innerSize: '20%',
-                name: 'Allocations',
-                data: data
-            }]
-        });
-    }
+            }
+        },
+        series: [{
+            innerSize: '20%',
+            name: 'Allocations',
+            data: data
+        }]
+    });
+}
+
 
     renderPieChart('chart1', allocations.defaults, "Defaults");
     // Chosen allocations could be empty, place text instead

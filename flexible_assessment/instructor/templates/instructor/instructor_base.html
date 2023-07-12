@@ -32,8 +32,7 @@
 							Student Choices</a>
 						<a class="nav-link {% block nav_item_final %}{% endblock nav_item_final %}" href="{% url 'instructor:group_form' course.id %}"><i class="bi bi-check2 me-2"></i> Final Grades</a>
 					{% else %}
-						<a class="nav-link {% block nav_item_setup %}{% endblock nav_item_setup %}" href="{% url 'instructor:instructor_form' course.id %}"><i class="bi bi-tools me-2"></i> Course
-							Setup</a>
+						<a class="nav-link {% block nav_item_setup %}{% endblock nav_item_setup %}" href="{% url 'instructor:instructor_form' course.id %}"><i class="bi bi-tools me-2"></i> Assessments</a>
 					{% endif %}
                     <hr>
                     <a class="nav-link {% block nav_item_help %}{% endblock nav_item_help %}" href="https://github.com/UBC-LFS/Canvas-Flexible-Assessment/wiki/Instructor-Guide" target="_blank" rel="noopener noreferrer"><i class="bi bi-question-circle me-2"></i> About</a>
