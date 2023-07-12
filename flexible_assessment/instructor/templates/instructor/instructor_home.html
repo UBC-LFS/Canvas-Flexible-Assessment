@@ -170,7 +170,7 @@
                 dataLabels: {
                   padding: 0,
                   enabled: true,
-                  format: '<b>{point.name}</b>: {point.percentage:.2f} %'
+                  format: '<b>{point.name}</b><br>{point.percentage:.2f} %'
                 }
               }
             },
@@ -183,7 +183,22 @@
     }
 
     renderPieChart('chart1', allocations.defaults, "Defaults");
-    renderPieChart('chart2', allocations.chose, "Students Who Chose");
+    // Chosen allocations could be empty, place text instead
+    if (allocations.chose.length == 0) {
+        const div = document.getElementById('chart2');
+                // Step 2: Create a new text node
+        const textNode = document.createTextNode("No students have made choices yet");
+
+        // Step 3: Append the text node to the div
+        div.appendChild(textNode);
+
+        // Step 4: Apply CSS styles for vertical centering
+        div.style.display = "flex";
+        div.style.alignItems = "center";
+        div.style.justifyContent = "center";
+    } else {
+        renderPieChart('chart2', allocations.chose, "Students Who Chose");
+    }
     renderPieChart('chart3', allocations.all, "All Students");
 
 
@@ -200,20 +215,24 @@
             text: 'Difference Between Student Choices and Defaults'
         },
         xAxis: {
-                categories: categories
-            },
-            yAxis: {
-                title: {
-                    text: 'Difference (%)'
-                }
-            },
+            categories: categories
+        },
+        yAxis: {
+            title: {
+                text: 'Difference (%)'
+            }
+        },
         series: [{
             name: 'Allocation Difference',
-            data: data
+            data: data.map(function(value) {
+                return {
+                    y: value,
+                    color: value >= 0 ? 'blue' : 'red'
+                };
+            })
         }]
     });
 {% endif %}
-
 
     $(document).ready(function () {
         var errors = [];
