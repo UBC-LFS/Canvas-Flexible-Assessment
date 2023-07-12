@@ -26,8 +26,8 @@
                 <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                     <h3 class="card-header">Welcome Instructions</h3>
                     <div class="card-body pt-2 pb-3">
+                        <p class="fw-light m-0 pb-1">This is a message that will appear at the top of the students' screens where they decide their weights.</p>
                         {% bootstrap_field date_form.welcome_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
-                        <p class="fw-light m-0 pt-2">This is a message that will appear at the top of the students' screens where they decide their weights.</p>
                     </div>
                 </div>
             </div>
@@ -58,10 +58,14 @@
                         <p class="fw-light m-0">{% bootstrap_formset_errors formset %}</p>
                     </div>
                     <div class="card-body pt-2 pb-3">
+                        <p class="fw-light m-0 pb-1">
+                            Click the <i>+Assessment</i> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible.
+                            The <b style="font-weight: bold;">Default %</b> will be used for students who do not enter desired percentages. The <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> values define the range of weights students will be able to enter. 
+                            If you do not want an assessment to be flexible, enter the same value for the Default %, Minimum % and Maximum %. The default values for all assessments <u>must add up to 100%</u>.</p>
                         <table id="assessments" class='table table-striped {% if populated %}populated{% endif %}' style="table-layout: fixed">
                             <thead>
                                 <tr>
-                                    <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Title</th>
+                                    <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Assessment</th>
                                     <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
                                     <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
                                     <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
@@ -91,9 +95,7 @@
                             <h5 class="align-middle m-0">Total: <span id="total"></span></h5>
                         </div>
                         <div class="d-flex align-items-center justify-content-between">
-                            <p class="fw-light m-0">Total default allocations should add up to 100%</p>
-
-                            <div class="form-switch">
+                            <div class="form-switch ms-auto">
                                 {{ options_form.ignore_conflicts.as_hidden }}
                                 {% bootstrap_field options_form.hide_total wrapper_class='mb-3; vertical-align: middle;' %}
                             </div>
@@ -108,8 +110,8 @@
                 <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                     <h3 class="card-header">Comment Instructions</h3>
                     <div class="card-body pt-2 pb-3">
+                        <p class="fw-light m-0 pb-1">This is a message that will appear above the box where students put their comments.</p>
                         {% bootstrap_field date_form.comment_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
-                        <p class="fw-light m-0 pt-2">This is a message that will appear above the box where students put their comments.</p>
                     </div>
                 </div>
             </div>
@@ -118,8 +120,9 @@
         <div class="d-flex align-items-center justify-content-center pt-4" id="date_form">
             <div class="col-9">
                 <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                    <h4 class="card-header">Flexible assessment availability</h4>
+                    <h4 class="card-header">Availability</h4>
                     <div class="card-body pt-2 pb-3">
+                        <p class="fw-light m-0">These are the dates for when students will be able to enter their desired percentages.</p>
                         <table class='table table-borderless mb-2'>
                             <tr>
                                 <th class="pb-0" style="font-size: 110%;">Open Date</th>
@@ -131,7 +134,6 @@
                             </tr>
                         </table>
                         {% bootstrap_form_errors date_form type='non_fields' %}
-                        <p class="fw-light m-0">Open and close dates for flexible assessment</p>
                     </div>
                 </div>
             </div>
