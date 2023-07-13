@@ -127,10 +127,23 @@ def get_default_min_max(id):
     assessment = Assessment.objects.filter(pk=id).first()
     return (assessment.default, assessment.min, assessment.max)
 
+@register.simple_tag()
+def not_flexible(default_min_max):
+    return default_min_max[1] == default_min_max[2]
+
+
 
 @register.simple_tag()
 def get_group_weight(groups, id):
     return grader.get_group_weight(groups, id)
+
+@register.simple_tag()
+def get_group_weight_percentage(groups, id):
+    percentage = grader.get_group_weight(groups, id)
+    if percentage is not None:
+        return f"{percentage:.2f}%"
+    else:
+        return ""
 
 
 @register.simple_tag()

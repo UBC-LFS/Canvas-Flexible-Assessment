@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
@@ -150,6 +151,9 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         groups, _ = FlexCanvas(self.request)\
             .get_groups_and_enrollments(course_id)
         context['groups'] = groups
+
+        context['canvas_domain'] = settings.CANVAS_DOMAIN
+
         return context
 
     def _submit_final_grades(self, course_id, canvas):
@@ -202,6 +206,12 @@ class AssessmentGroupView(views.InstructorFormView):
     template_name = 'instructor/assessment_group_form.html'
     form_class = AssessmentGroupForm
     success_reverse_name = 'instructor:final_grades'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['canvas_domain'] = settings.CANVAS_DOMAIN
+
+        return context
 
     def get_form_kwargs(self):
         """Adds course_id, FlexCanvas instance, and assessments as keyword

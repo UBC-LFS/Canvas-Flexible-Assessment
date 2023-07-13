@@ -24,10 +24,16 @@
                 <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                     <h3 class="card-header">Match Assessments to Canvas Assignment Groups</h3>
                     <div class="card-body pt-2 pb-3">
+                        <p class="fw-light m-0">
+                            To use the Flexible Assessment app to calculate Final Grades, you must
+                            <a href="https://community.canvaslms.com/t5/Instructor-Guide/How-do-I-add-an-assignment-group-in-a-course/ta-p/970" target="_blank" rel="noopener noreferrer">set up Assignment Groups in Canvas</a>
+                            on the <a href="{{ canvas_domain }}courses/{{ course.id }}/assignments" target="_blank" rel="noopener noreferrer">Assignments page of your course</a>.
+                            After you set up the Assignment Groups, reload this page, click the drop-down lists on the right to match them with the Assessments on the left, and click Continue.
+                        </p>
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <td class="text-center align-middle" style="font-size: 110%;"><span style="font-weight: bold;">Flexible Assessment</span> (with default %)</td>
+                                    <td class="text-center align-middle" style="font-size: 110%;"><span style="font-weight: bold;">Assessment</span> (with default %)</td>
                                     <th class="text-center align-middle" style="font-size: 110%;">Canvas Assignment Group</th>
                                 </tr>
                             </thead>
@@ -41,7 +47,6 @@
                             </tbody>
                         </table>
                         <div class="d-flex align-items-center justify-content-between">
-                            <p class="fw-light m-0">Match the assessment to the Canvas assignment group</p>
                             <button class="btn btn-primary float-end" type="submit">Continue <i class="bi bi-chevron-right"></i></button>
                         </div>
                     </div>
