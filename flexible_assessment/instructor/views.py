@@ -100,8 +100,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             if not canvas.is_allow_override(course_id):
                 messages.error(
                     request,
-                    "Check 'Allow Final Grade Override' under"
-                    " Gradebook Settings")
+                    "You must enable the Final Grade Override in the settings on the Grades page in Canvas.")
 
                 logger.info('Allow Final Grade Override setting'
                             'not checked in Canvas',
