@@ -36,3 +36,7 @@ def get_default_min_max(id):
 @register.simple_tag()
 def is_any_flex_none(flexes):
     return any(f.flex is None for f in flexes)
+
+@register.simple_tag()
+def not_flexible(default_min_max):
+    return default_min_max[1] == default_min_max[2]

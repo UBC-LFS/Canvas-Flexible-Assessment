@@ -119,7 +119,7 @@ def grades_csv(course, students, groups):
         titles.append(f"{assessment.title} ({grader.get_group_weight(groups, assessment.group)}%)")
         titles.append(f"{assessment.title} (Chosen %)")
 
-    header = ['Student'] + ['Override Total', 'Default Total', 'Difference'] + titles
+    header = ['Student'] + ['Override Total', 'Default Total', 'Difference', 'Chose Percentages?'] + titles
 
     csv_writer.write(header)
 
@@ -138,18 +138,22 @@ def grades_csv(course, students, groups):
             values.append(round(default_total, 2))
             diff = override_total - default_total
             values.append(round(diff, 2))
+            values.append("Yes")
         else:
             values.append(round(default_total, 2))
             values.append(round(default_total, 2))
             values.append('')
+            values.append("No")
             
         for assessment in assessments:
             score = grader.get_score(groups, assessment.group, student)
             values.append(score)
             
+            group_weight = grader.get_group_weight(groups, assessment.group)
+
             flex = student.flexassessment_set.get(
                 assessment=assessment).flex
-            values.append(flex) if flex is not None else values.append("Default")
+            values.append(flex) if flex is not None else values.append(group_weight)
 
         csv_writer.write(values)
 

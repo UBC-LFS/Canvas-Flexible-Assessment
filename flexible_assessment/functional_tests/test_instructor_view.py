@@ -146,7 +146,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser.get(self.live_server_url + reverse('instructor:instructor_home', args=[2])) 
         
         # 1
-        self.browser.find_element(By.LINK_TEXT, "Course Setup").click()
+        self.browser.find_element(By.LINK_TEXT, "Assessments").click()
         self.browser.find_element(By.XPATH, '//button[contains(text(), "Assessment")]').click()
         self.browser.find_element(By.XPATH, '//button[contains(text(), "Assessment")]').click()
         self.browser.find_element(By.XPATH, '//button[contains(text(), "Assessment")]').click()

@@ -8,20 +8,16 @@
 
 {% block nav_item_home %}active{% endblock nav_item_home %} 
 {% block content %}
-<div class="pt-5 pb-5">
-    <div class="container">
-        <h1>{{ course.title }}</h1>
-        <h3>Hello {{ display_name }}</h3>
-    </div>
+
+<div class="container d-flex justify-content-start pt-5 pb-5">
+    <h1><b>Flexible Assessment</b></h1>
 </div>
+
 <div class="pb-5">
     {% if not course.close %}
     <div class="d-flex align-items-center justify-content-center">
         <div class="col-10">
             <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <h3 class="mb-0">Flexible Assessment</h3>
-                </div>
                 <div class="card-body p-4">
                     <p>
                         Welcome to Flexible Assessment, the system that allows students to decide how their final grade will be weighted. 
@@ -35,18 +31,22 @@
     <div class="d-flex align-items-center justify-content-center">
         <div class="col-9">
             <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                <h3 class="card-header">Your Weights</h3>
+                <h3 class="card-header">Assessment Weights</h3>
                 <div class="card-body pt-2 pb-3">
+                    <p class="fw-light mt-0 mb-1">The window to make changes is <span style="font-weight:bold;">{{course.open}} - {{ course.close }}</span></p>
                     {% not_open course as no %}
-                        <p class="fw-light mt-0 mb-1">The window to make changes is <span style="font-weight:bold;">{{course.open}} - {{ course.close }}</span></p>
                     {% before_deadline course as before_deadline %}
+                    {% is_any_flex_none flexes as has_none %}
+
                     {% if before_deadline %}
-                        <p class="fw-light mt-0 mb-1">You are here before the open date. Check the times above for when you can change your chosen %.</p>
+                        <p class="fw-light mt-0 mb-1">You are here before the open date, please return to this page after {{ course.open }} to enter your desired percentages.</p>
                     {% elif no %}
-                        <p class="fw-light mt-0 mb-1">It is past the deadline to make changes.</p>
+                        <p class="fw-light mt-0 mb-1">It is <span style="font-weight: bold;">past the deadline</span> to make changes.</p>
+                        {% if has_none %}
+                            <p class="fw-light mt-0 mb-1">The instructor's recommended default percentages will be used because you did not enter your desired percentages before the deadline.</p>
+                        {% endif %}
                     {% endif %}
 
-                    {% is_any_flex_none flexes as has_none %}
 
                     {% if has_none and not no %}
                     <p class="fw-light mt-0 mb-1">Please navigate to <a href="{% url 'student:student_form' course.id %}">Assessments</a> to make your choices. The default % will be applied if any are left blank. </p>
@@ -55,7 +55,9 @@
                         <thead>
                             <tr>
                                 <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Title</th>
-                                <th class="text-center align-middle" style="font-size: 110%;">Chosen %</th>
+                                {% if not has_none %}
+                                    <th class="text-center align-middle" style="font-size: 110%;">Chosen %</th>
+                                {% endif %}
                                 <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
                                 <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
                                 <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
@@ -65,9 +67,11 @@
                             {% for flex in flexes %}
                                 <tr height="60px">
                                     <td class="text-center align-middle">{{ flex.assessment.title }}</td>
-                                    <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
-                                        <b>{{ flex.flex|default_if_none:"Default" }}</b>
-                                    </td>
+                                    {% if not has_none %}
+                                        <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
+                                            <b>{{ flex.flex }}</b>
+                                        </td>
+                                    {% endif %}
                                     {% get_default_min_max flex.assessment.id.hex as default_min_max %}
                                     <td class="text-center align-middle">{{ default_min_max.0 }}</td>
                                     <td class="text-center align-middle">{{ default_min_max.1 }}</td>

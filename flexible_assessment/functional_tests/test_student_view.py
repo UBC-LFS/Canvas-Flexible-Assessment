@@ -439,8 +439,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
-        self.browser_teacher.execute_script("arguments[0].scrollIntoView();", update_button)
-        update_button.click()
+        update_button.send_keys(Keys.ENTER)
         alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
         alert.accept()
         wait = WebDriverWait(self.browser_teacher, 5)

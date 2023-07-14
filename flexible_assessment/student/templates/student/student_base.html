@@ -25,9 +25,8 @@
 		<div class="row min-vh-100">
 			<div class="col-sm-2 shadow-sm">
                 <div class="pt-5 pb-3">
-                    <a class="text-dark text-decoration-none" href="{% url 'student:student_home' course.id %}">
-                        <h4 class="text-center text-break m-0">Flexible Assessment</h4>
-                    </a>
+                        <h4 class="text-center text-dark text-break m-0">Course:<br> <b>{{ course.title }}</b></h4>
+                        <h4 class="text-center text-dark text-break m-0 pt-3">User:<br> <b>{{ request.session.display_name }}</b></h4>
                 </div>
 				<hr>
 				{% block sidebar %}

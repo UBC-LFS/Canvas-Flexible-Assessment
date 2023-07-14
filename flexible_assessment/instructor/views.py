@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
@@ -99,8 +100,8 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             if not canvas.is_allow_override(course_id):
                 messages.error(
                     request,
-                    "Check 'Allow Final Grade Override' under"
-                    " Gradebook Settings")
+                    "You must enable the 'Final Grade Override'"
+                    "in the settings on the Grades page in Canvas.")
 
                 logger.info('Allow Final Grade Override setting'
                             'not checked in Canvas',
@@ -129,8 +130,8 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             logger.info('Completed final grades submission to Canvas',
                         extra=log_extra)
 
-        hide_total = request.POST.get('hide_total') == 'on'
-        canvas.get_course(course_id).update_settings(hide_final_grades=hide_total)
+        release_total = request.POST.get('release_total') != 'on'
+        canvas.get_course(course_id).update_settings(hide_final_grades=release_total)
 
         return HttpResponseRedirect(
             reverse('instructor:instructor_home',
@@ -150,6 +151,9 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         groups, _ = FlexCanvas(self.request)\
             .get_groups_and_enrollments(course_id)
         context['groups'] = groups
+
+        context['canvas_domain'] = settings.CANVAS_DOMAIN
+
         return context
 
     def _submit_final_grades(self, course_id, canvas):
@@ -202,6 +206,12 @@ class AssessmentGroupView(views.InstructorFormView):
     template_name = 'instructor/assessment_group_form.html'
     form_class = AssessmentGroupForm
     success_reverse_name = 'instructor:final_grades'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['canvas_domain'] = settings.CANVAS_DOMAIN
+
+        return context
 
     def get_form_kwargs(self):
         """Adds course_id, FlexCanvas instance, and assessments as keyword

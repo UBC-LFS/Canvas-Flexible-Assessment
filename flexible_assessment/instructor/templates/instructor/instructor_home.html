@@ -3,55 +3,102 @@
 
 {% block nav_item_home %}active{% endblock nav_item_home %} 
 {% block content %}
-<div class="pt-5 pb-5">
-    <div class="container">
-        <h1>{{ course.title }}</h1>
-        <h3>Hello {{ display_name }}</h3>
-    </div>
+
+<div class="container d-flex justify-content-start pt-5 pb-5">
+    <h1><b>Flexible Assessment</b></h1>
 </div>
-<div class="pb-5">
-    {% if course.close %}
-        <div class="d-flex align-items-center justify-content-center pb-5">
-            <div class="col-10">
-                <div class="d-flex justify-content-around row">
-                    <div class="col-5">
-                        <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                            <div class="card-header d-flex align-items-center justify-content-between">
-                                <h3 class="mb-0">Response Rate</h3>
+
+{% if course.close %}
+  <div class="pb-5">
+    <div class="d-flex align-items-center justify-content-center pb-5">
+        <div class="col-10">
+            <div class="d-flex justify-content-around row">
+                <div class="col-5">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h3 class="mb-0">Response Rate</h3>
+                        </div>
+                        <div class="card-body p-4 text-center">
+                        {% get_response_rate course as ratio %}
+                        <h2>{{ ratio.0 }} / {{ ratio.1 }}</h2> <!-- Move the ratio display above the progress bar -->
+                        <div class="progress progress-lg"> <!-- Add progress-lg class for larger size -->
+                            <div class="progress-bar" role="progressbar" style="width: {{ ratio.2 }}%;" aria-valuenow="{{ ratio.2 }}" aria-valuemin="0" aria-valuemax="100">
                             </div>
-                            <div class="card-body p-4 text-center">
-                                {% get_response_rate course as response_rate %}
-                                <h2>{{ response_rate.0 }}</h2>
-                                <h5 style="color: gray;"><i>{{ response_rate.1 }}</i></h5>
-                                <h3 class="mb-0">Students</h3>
-                            </div>
+                        </div>
+                        <h5 style="color: gray;" class="progress-label">{{ ratio.2 }}%</h5> <!-- Move the ratio display below the progress bar -->
+                        <div class="mt-2">
+                            <h3 class="mb-0">Students</h3>
+                        </div>
                         </div>
                     </div>
-                    <div class="col-5">
-                        <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                            <div class="card-header d-flex align-items-center justify-content-between">
-                                <h3 class="mb-0">Assessment Allocations</h3>
-                            </div>
-                            <div id="container_data" class="card-body"></div>
+                </div>
+                <div class="col-5">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h3 class="mb-0">Allocation Difference</h3>
                         </div>
+                        <div id="container" class="card-body"></div>
                     </div>
                 </div>
             </div>
         </div>
-    {% endif %}
+    </div>
+
+  <div class="d-flex align-items-center justify-content-center pb-5">
+    <div class="col-10">
+      <div class="card shadow-sm" style="border-radius: 1em;">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h3 class="mb-0">Assessment Allocations</h3>
+        </div>
+        <div id="container" class="card-body d-flex justify-content-between">
+          <!-- Chart 1 -->
+          <div class="card shadow-sm chart-container" id="chart1" style="flex: 1;">
+          </div>
+
+          <!-- Chart 2 -->
+          <div class="card shadow-sm chart-container" id="chart2" style="flex: 1;">
+          </div>
+
+          <!-- Chart 3 -->
+          <div class="card shadow-sm chart-container" id="chart3" style="flex: 1;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endif %}
+
+
+
+   <div class="pb-5 d-flex align-items-center justify-content-center">
+        <div class="col-10">
+            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                <div class="card-body p-4">
+                    <p>Welcome to Flexible Assessment, a Canvas integration that allows students to choose how their final grades will be weighted within ranges defined by the instructor.</p>
+                    <p>This system was created for a Teaching & Learning Enhancement Fund (TLEF) project to streamline the processes involved in Flexible Assessment, including: Collecting desired percentages from students, recalculating their final grades according to those percentages, and exporting the grades into the Canvas Grades page.
+                        It is based on a Flexible Assessment approach devised by Dr. Candice Rideout, a Professor of Teaching in the Faculty of Land & Food Systems that has been shown to increase student satisfaction and self-regulation <a href="#footnote-1" style="text-decoration: none;"><sup>[1]</sup></a>.</p>
+                    <p>For more information, see our <a href="https://github.com/UBC-LFS/Canvas-Flexible-Assessment/wiki/Instructor-Guide" target="_blank" rel="noopener noreferrer">About</a> page.</p>
+
+                    <hr>
+                    <p id="footnote-1">[1] Candice A. Rideout (2018) Students' choices and achievement in large undergraduate classes using a novel flexible assessment approach, Assessment & Evaluation in Higher Education, 43:1, 68-78, DOI: <a href="https://doi.org/10.1080/02602938.2017.1294144" target="_blank" rel="noopener noreferrer">10.1080/02602938.2017.1294144</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="d-flex align-items-center justify-content-center">
         <div class="col-10">
             <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h3 class="mb-0">Using Flexible Assessment</h3>
+                    <h3 class="mb-0">Instructions</h3>
                 </div>
                 <div class="card-body p-4">
-                    <p>Welcome to Flexible Assessment - the application that allows students to choose how their final grades will be weighted within ranges defined by the instructor!</p>
-                    <h3>Steps to use this tool</h3>
                     <ol>
                         <li class="p-2 fs-5"><h4>Setup</h4>
                             <ol class="fs-6 lh-lg" type="a">
-                                <li>Go to the <b>Course Setup</b> page and enter assessments as they appear on your syllabus.</li>
+                                <li>Go to the <b>Assessments</b> page and enter assessments as they appear on your syllabus.</li>
                                 <li>For each assessment you will have to add the <i>default</i>, <i>minimum</i> and <i>maximum</i> weights you will accept.</li>
                                 <li>Add <i>open</i> and <i>close</i> dates for when students can enter their desired percentages.</li>
                                 <li>Clicking Save completes the setup. You can view the assessments and availability dates under <b>Assessments</b>.</li>
@@ -71,7 +118,7 @@
                             </ol>
                         </li>
                     </ol>
-                    <p>The Flexible Assessment approach is based on research done by Candice Rideout that you can read <a href="https://doi.org/10.1080/02602938.2017.1294144">here</a>. Please contact <a href="mailto: it@landfood.ubc.ca">it@landfood.ubc.ca</a> for more information.</p>
+                    <p>Please contact <a href="mailto: it@landfood.ubc.ca">it@landfood.ubc.ca</a> for more information.</p>
                 </div>
             </div>
         </div>
@@ -84,61 +131,158 @@
     <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
     {% endfor %}
 </ul>
+
 {% endif %}
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://code.highcharts.com/modules/pattern-fill.js"></script>
+
+
+{% get_allocations course as allocations %}
+{% get_flex_difference course as flex_differences %}
 
 <script>
-    {% if course.close %}
-        {% get_average_allocations course as average_allocations %}
-        var series = {{ average_allocations|safe }};
+{% if course.close %}
+  var allocations = JSON.parse('{{ allocations|escapejs }}');
 
-        var options = {
-            chart: {
-                type: 'column',
-                height: '80%'
+  // Function to render the pie chart
+function renderPieChart(containerId, data, title) {
+    // Define the pstterns to be used for pattern fill
+    var patterns = [
+        'url(#pattern0)',
+        'url(#pattern1)',
+        'url(#pattern2)',
+        // Add more patterns as needed
+    ];
+
+    // Create an array of pattern fill colors
+    var patternColors = [
+        '#0000FF', // Blue
+        '#FF0000', // Red
+        '#00FF00', // Green
+        // Add more pattern colors as needed
+    ];
+
+    // Create the pattern definitions for each pattern
+    var patternDefs = patterns.map(function (pattern, index) {
+        return {
+            id: 'pattern' + index,
+            path: {
+                d: 'M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11',
+                stroke: patternColors[index],
+                strokeWidth: 3,
             },
-            title: {
-                text: "",
-                floating: true
-            },
-            xAxis: {
-                categories: ['Default', 'Student Average'],
-            },
-            yAxis: {
-                visible: false
-            },
-            plotOptions: {
-                column: {
-                    stacking: 'percent',
-                    dataLabels: {
-                        enabled: true,
-                        format: '{y}%',
-                        style: {
-                            fontSize: '12px'
-                        }
+            color: patternColors[index],
+            zIndex: 2
+        };
+    });
+
+    // Add the pattern definitions to the Highcharts patternFill plugin
+    Highcharts.setOptions({
+        defs: {
+            patterns: patternDefs
+        }
+    });
+
+    Highcharts.chart(containerId, {
+        chart: {
+            type: 'pie'
+        },
+        title: {
+            text: title
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        accessibility: {
+            point: {
+                valueSuffix: '%'
+            }
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    padding: 0,
+                    enabled: true,
+                    format: '<b>{point.name}</b><br>{point.percentage:.2f} %'
+                },
+                states: {
+                    hover: {
+                        brightness: 0,
+                        borderColor: 'black'
+                    }
+                },
+                point: {
+                    patternFill: {
+                        patterns: patterns
                     }
                 }
-            },
-            colors: ['#009999', '#99CC33', '#FF9900', '#9999CC',
-                        '#66CCCC', '#339966', '#CCCC33'],
-            tooltip: {
-                headerFormat: '<b>{point.x}</b><br/>',
-                pointFormat: '{series.name}: {point.y}%'
-            },
-            exporting: {
-                enabled: false
-            },
-            credits: {
-                enabled: false
-            },
-            series: series,
-        };
+            }
+        },
+        series: [{
+            innerSize: '20%',
+            name: 'Allocations',
+            data: data
+        }]
+    });
+}
 
-        Highcharts.chart('container_data', options);
-    {% endif %}
+
+    renderPieChart('chart1', allocations.defaults, "Defaults");
+    // Chosen allocations could be empty, place text instead
+    if (allocations.chose.length == 0) {
+        const div = document.getElementById('chart2');
+                // Step 2: Create a new text node
+        const textNode = document.createTextNode("Students have not entered percentages yet");
+
+        // Step 3: Append the text node to the div
+        div.appendChild(textNode);
+
+        // Step 4: Apply CSS styles for vertical centering
+        div.style.display = "flex";
+        div.style.alignItems = "center";
+        div.style.justifyContent = "center";
+    } else {
+        renderPieChart('chart2', allocations.chose, "Students Who Chose");
+    }
+    renderPieChart('chart3', allocations.all, "All Students");
+
+
+    var flex_differences = JSON.parse('{{ flex_differences|escapejs }}')
+
+    var categories = Object.keys(flex_differences);
+    var data = Object.values(flex_differences);
+
+    Highcharts.chart('container', {
+        chart: {
+            type: 'bar'
+        },
+        title: {
+            text: 'Difference Between Student Choices and Defaults'
+        },
+        xAxis: {
+            categories: categories
+        },
+        yAxis: {
+            title: {
+                text: 'Difference (%)'
+            }
+        },
+        series: [{
+            name: 'Allocation Difference',
+            data: data.map(function(value) {
+                return {
+                    y: value,
+                    color: value >= 0 ? 'blue' : 'red'
+                };
+            })
+        }]
+    });
+{% endif %}
 
     $(document).ready(function () {
         var errors = [];

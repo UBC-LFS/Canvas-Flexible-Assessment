@@ -1,5 +1,6 @@
 from django import template
 from flexible_assessment.models import Assessment, Roles
+import json
 
 from .. import grader
 
@@ -31,8 +32,7 @@ def get_response_rate(course):
         percentage = round(valid_num/len(students)*100, 2)
     else:
         percentage = 0
-    return ('{} / {}'.format(valid_num, len(students)),
-            '{}%'.format(percentage))
+    return valid_num, len(students), percentage
 
 
 @register.simple_tag()
@@ -52,6 +52,54 @@ def get_average_allocations(course):
 
     return series
 
+@register.simple_tag()
+def get_allocations(course):
+    """ Return a list with default allocations, allocations chosen, then all students """ 
+    assessments = course.assessment_set.all()
+    data = {"defaults": [], "chose": [], "all": []} # If none chosen, have chose be empty
+    for assessment in assessments:
+        all_flexes = assessment.flexassessment_set.all()
+        fas_chosen = all_flexes.exclude(flex__isnull=True)
+        if len(fas_chosen) > 0:
+            student_average = round(sum([fa.flex for fa in fas_chosen])/len(fas_chosen), 2)
+            data["chose"].append({
+                "name": assessment.title,
+                "y": float(student_average)
+            })
+            all_students = round(sum([fa.flex if fa.flex is not None else assessment.default for fa in all_flexes]) / len(fas_chosen), 2)
+            data["all"].append({
+                "name": assessment.title,
+                "y": float(all_students)
+            })
+
+        else:
+            # If none chosen, then it all students is just the default
+            data["all"].append({
+                "name": assessment.title,
+                "y": float(assessment.default)
+            })
+        
+        data["defaults"].append({
+            "name": assessment.title,
+            "y": float(assessment.default)
+        })
+
+    return json.dumps(data)
+
+@register.simple_tag()
+def get_flex_difference(course):
+    """ For each assessment in the course, return the difference between the default flex and the student choices average """
+    assessments = course.assessment_set.all()
+    data = {} 
+    for assessment in assessments:
+        fas_chosen = assessment.flexassessment_set.exclude(flex__isnull=True)
+        if len(fas_chosen) > 0:
+            difference = round(sum([fa.flex - assessment.default for fa in fas_chosen])/len(fas_chosen), 2)
+            data[assessment.title] = float(difference)
+        else:
+            data[assessment.title] = 0
+    
+    return json.dumps(data)
 
 @register.simple_tag()
 def get_score(groups, group_id, student):
@@ -79,10 +127,23 @@ def get_default_min_max(id):
     assessment = Assessment.objects.filter(pk=id).first()
     return (assessment.default, assessment.min, assessment.max)
 
+@register.simple_tag()
+def not_flexible(default_min_max):
+    return default_min_max[1] == default_min_max[2]
+
+
 
 @register.simple_tag()
 def get_group_weight(groups, id):
     return grader.get_group_weight(groups, id)
+
+@register.simple_tag()
+def get_group_weight_percentage(groups, id):
+    percentage = grader.get_group_weight(groups, id)
+    if percentage is not None:
+        return f"{percentage:.2f}%"
+    else:
+        return ""
 
 
 @register.simple_tag()
