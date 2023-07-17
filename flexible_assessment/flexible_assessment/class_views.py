@@ -1,14 +1,16 @@
 from abc import ABC, abstractmethod
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import ImproperlyConfigured
-from django.urls import reverse_lazy
+from django.contrib import messages
+from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist, PermissionDenied
+from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponse, HttpResponseRedirect
 
 from flexible_assessment.view_roles import Instructor, Student
 
-from .models import Course, Roles, UserProfile
+from .models import Course, Roles, UserProfile, UserCourse
 
 
 class ExportView(ABC):
@@ -49,8 +51,31 @@ class GenericView(LoginRequiredMixin, UserPassesTestMixin):
             raise ImproperlyConfigured(
                 "GenericView requires definition of 'allowed_view_role'")
         course = get_object_or_404(Course, pk=self.kwargs['course_id'])
-        return self.allowed_view_role.permission_test(self.request.user,
-                                                      course)
+        allowed_to_access = self.allowed_view_role.permission_test(self.request.user, course) 
+
+        return allowed_to_access
+
+    def handle_no_permission(self):
+        """ Try to redirect user to the homepage that they have the permissions for """
+        try:
+            course_id = self.kwargs['course_id']
+            user_course = UserCourse.objects.get(course_id=course_id, 
+                                               user_id=self.request.user.user_id)
+        except Exception as e:
+            raise PermissionDenied('You do not have the right permissions to view this page')
+        
+        if user_course.role in Instructor.permitted_roles:
+            messages.info(self.request, 'You have been automatically redirected back to the page you have permisisons to view (Instructor)')
+            return HttpResponseRedirect(
+                reverse('instructor:instructor_home',
+                    kwargs={'course_id': course_id}))
+        elif user_course.role in Student.permitted_roles:
+            messages.info(self.request, 'You have been automatically redirected back to the page you have permisisons to view (Student)')
+            return HttpResponseRedirect(
+                reverse('student:student_home',
+                    kwargs={'course_id': course_id}))
+        else: 
+            raise PermissionDenied('You do not have the right permissions to view this page')
 
 
 class TemplateView(GenericView, generic.TemplateView):

@@ -19,7 +19,7 @@ class TestUrls(TestCase):
         self.client.force_login(self.user)
         return course.id
 
-    # Helper function to log in a student and try to access the url
+    # Helper function to log in a student and try to access the url, students should be redirected home
     def url_invalid_for_student(self, url_name):
         user = UserProfile.objects.get(login_id="test_student1")
         course = Course.objects.get(title="test_course1")
@@ -27,7 +27,9 @@ class TestUrls(TestCase):
         
         url = reverse(f'instructor:{url_name}', args=[course.id])
         response = self.client.get(url)
-        self.assertEquals(response.status_code, 403)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('student:student_home', args=[course.id]))
     
     # Helper function to log in an instructor and try to access the url
     def url_valid_for_instructor(self, url_name):
