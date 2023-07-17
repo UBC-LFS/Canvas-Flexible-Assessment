@@ -201,8 +201,8 @@ def get_assessment_formset(extra=0):
         Assessment, fields=('title', 'default', 'min', 'max'),
         extra=extra,
         widgets={'title': forms.TextInput(attrs={'size': 15}),
-                 'default': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100}),
-                 'min': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100}),
-                 'max': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100})},
+                 'default': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100, 'step': 1.00}),
+                 'min': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100, 'step': 1.00}),
+                 'max': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100, 'step': 1.00})},
         formset=AssessmentBaseFormSet)
     return AssessmentFormSet
