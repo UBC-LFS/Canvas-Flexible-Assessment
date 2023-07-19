@@ -210,6 +210,7 @@ class AssessmentGroupView(views.InstructorFormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['canvas_domain'] = settings.CANVAS_DOMAIN
+        context['show_weights'] = self.kwargs['show_weights']
 
         return context
 
@@ -232,6 +233,8 @@ class AssessmentGroupView(views.InstructorFormView):
         kwargs['canvas_course'] = canvas_course
         kwargs['assessments'] = models.Assessment.objects.filter(
             course_id=course_id)
+        
+        self.kwargs['show_weights'] = canvas_course.apply_assignment_group_weights
 
         return kwargs
 
