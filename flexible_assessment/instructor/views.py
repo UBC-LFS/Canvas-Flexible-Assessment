@@ -280,17 +280,14 @@ class AssessmentGroupView(views.InstructorFormView):
         return response
 
     def _update_assessments_and_groups(self, form):
-        """Adds assignment group to assessment, set apply_assignment_group_weights setting and updates
-        Canvas group weights
+        """Adds assignment group to assessment, updates
+        Canvas group weights, and set apply_assignment_group_weights setting
         """
 
         course_id = self.kwargs['course_id']
 
         canvas_course = FlexCanvas(self.request).get_course(course_id)
         course_name = canvas_course.__getattribute__('name')
-
-        should_show_weights = self.request.POST.get('show_weights') == 'on'
-        canvas_course.update(course={'apply_assignment_group_weights': should_show_weights})
 
         for assessment_id, group_id in form.cleaned_data.items():
             assessment = models.Assessment.objects.get(pk=assessment_id)
@@ -318,6 +315,9 @@ class AssessmentGroupView(views.InstructorFormView):
 
         for id in unmatched_group_ids:
             canvas_course.get_assignment_group(id).edit(group_weight=0)
+        
+        should_show_weights = self.request.POST.get('show_weights') == 'on'
+        canvas_course.update(course={'apply_assignment_group_weights': should_show_weights})
 
 
 class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
