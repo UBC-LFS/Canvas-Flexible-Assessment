@@ -289,6 +289,10 @@ class AssessmentGroupView(views.InstructorFormView):
         canvas_course = FlexCanvas(self.request).get_course(course_id)
         course_name = canvas_course.__getattribute__('name')
 
+        # Print the value
+        should_show_weights = self.request.POST.get('show_weights') == 'on'
+        canvas_course.update(course={'apply_assignment_group_weights': should_show_weights})
+
         for assessment_id, group_id in form.cleaned_data.items():
             assessment = models.Assessment.objects.get(pk=assessment_id)
             assessment.group = int(group_id)
