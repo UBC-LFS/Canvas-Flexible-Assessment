@@ -58,6 +58,9 @@ class MockCanvasCourse(object):
 
     def update_settings(self, hide_final_grades):
         return
+    
+    def update(self, course):
+        return
         
 class MockCanvas(object):
     def __init__(self):

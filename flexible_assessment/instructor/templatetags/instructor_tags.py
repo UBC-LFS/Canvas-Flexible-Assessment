@@ -57,31 +57,44 @@ def get_allocations(course):
     """ Return a list with default allocations, allocations chosen, then all students """ 
     assessments = course.assessment_set.all()
     data = {"defaults": [], "chose": [], "all": []} # If none chosen, have chose be empty
-    for assessment in assessments:
+    for index, assessment in enumerate(assessments):
+        # colors = ["#7D3AC1", "#AF4BCE", "#DB4CB2", "#EB548C", "#EA7369", "#F0A58F", "#FDA58F", "#FCEAE6"]
+        # colors = ['#002145', '#003B6F', '#00509E', '#0065CE', '#007BFF', '#4D8AFF', '#7FAFFF', '#B3D4FF', '#E6F0FF', '#FDB813']
+        colors = [
+            '#002145', '#003B6F', '#00509E', '#0065CE', '#007BFF',
+            '#4D8AFF', '#7FAFFF', '#B3D4FF', '#E6F0FF', '#FDB813',
+            '#FF69B4', '#FFDAB9', '#00CED1', '#FF6347', '#BA55D3'
+        ]
+        color = "#C5C6D0" if assessment.min == assessment.max else colors[index % len(colors)]
+                
         all_flexes = assessment.flexassessment_set.all()
         fas_chosen = all_flexes.exclude(flex__isnull=True)
         if len(fas_chosen) > 0:
             student_average = round(sum([fa.flex for fa in fas_chosen])/len(fas_chosen), 2)
             data["chose"].append({
                 "name": assessment.title,
-                "y": float(student_average)
+                "y": float(student_average),
+                "color": color
             })
             all_students = round(sum([fa.flex if fa.flex is not None else assessment.default for fa in all_flexes]) / len(fas_chosen), 2)
             data["all"].append({
                 "name": assessment.title,
-                "y": float(all_students)
+                "y": float(all_students),
+                "color": color
             })
 
         else:
             # If none chosen, then it all students is just the default
             data["all"].append({
                 "name": assessment.title,
-                "y": float(assessment.default)
+                "y": float(assessment.default),
+                "color": color
             })
         
         data["defaults"].append({
             "name": assessment.title,
-            "y": float(assessment.default)
+            "y": float(assessment.default),
+            "color": color
         })
 
     return json.dumps(data)

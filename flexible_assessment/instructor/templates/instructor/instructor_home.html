@@ -4,7 +4,16 @@
 {% block nav_item_home %}active{% endblock nav_item_home %} 
 {% block content %}
 
-<div class="container d-flex justify-content-start pt-5 pb-5">
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message|safe }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="container-fluid d-flex justify-content-center align-items-center pt-5 pb-5">
     <h1><b>Flexible Assessment</b></h1>
 </div>
 
@@ -149,43 +158,6 @@
 
   // Function to render the pie chart
 function renderPieChart(containerId, data, title) {
-    // Define the pstterns to be used for pattern fill
-    var patterns = [
-        'url(#pattern0)',
-        'url(#pattern1)',
-        'url(#pattern2)',
-        // Add more patterns as needed
-    ];
-
-    // Create an array of pattern fill colors
-    var patternColors = [
-        '#0000FF', // Blue
-        '#FF0000', // Red
-        '#00FF00', // Green
-        // Add more pattern colors as needed
-    ];
-
-    // Create the pattern definitions for each pattern
-    var patternDefs = patterns.map(function (pattern, index) {
-        return {
-            id: 'pattern' + index,
-            path: {
-                d: 'M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11',
-                stroke: patternColors[index],
-                strokeWidth: 3,
-            },
-            color: patternColors[index],
-            zIndex: 2
-        };
-    });
-
-    // Add the pattern definitions to the Highcharts patternFill plugin
-    Highcharts.setOptions({
-        defs: {
-            patterns: patternDefs
-        }
-    });
-
     Highcharts.chart(containerId, {
         chart: {
             type: 'pie'
@@ -216,11 +188,6 @@ function renderPieChart(containerId, data, title) {
                         borderColor: 'black'
                     }
                 },
-                point: {
-                    patternFill: {
-                        patterns: patterns
-                    }
-                }
             }
         },
         series: [{

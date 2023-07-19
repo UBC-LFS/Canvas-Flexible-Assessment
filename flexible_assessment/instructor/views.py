@@ -280,8 +280,8 @@ class AssessmentGroupView(views.InstructorFormView):
         return response
 
     def _update_assessments_and_groups(self, form):
-        """Adds assignment group to assessment and updates
-        Canvas group weights
+        """Adds assignment group to assessment, updates
+        Canvas group weights, and set apply_assignment_group_weights setting
         """
 
         course_id = self.kwargs['course_id']
@@ -315,6 +315,9 @@ class AssessmentGroupView(views.InstructorFormView):
 
         for id in unmatched_group_ids:
             canvas_course.get_assignment_group(id).edit(group_weight=0)
+        
+        should_show_weights = self.request.POST.get('show_weights') == 'on'
+        canvas_course.update(course={'apply_assignment_group_weights': should_show_weights})
 
 
 class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
