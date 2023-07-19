@@ -30,7 +30,7 @@ class StudentAssessmentBaseForm(forms.Form):
                 max_digits=5,
                 decimal_places=2,
                 label=fa.assessment.title,
-                widget=forms.NumberInput(attrs={'size': 5, 'step': 1.00})
+                widget=forms.NumberInput(attrs={'size': 5})
                 )
 
         self.fields.update(flex_fields)
@@ -201,8 +201,8 @@ def get_assessment_formset(extra=0):
         Assessment, fields=('title', 'default', 'min', 'max'),
         extra=extra,
         widgets={'title': forms.TextInput(attrs={'size': 15}),
-                 'default': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100, 'step': 1.00}),
-                 'min': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100, 'step': 1.00}),
-                 'max': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100, 'step': 1.00})},
+                 'default': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100}),
+                 'min': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100}),
+                 'max': forms.NumberInput(attrs={'size': 5, 'min': 0, 'max': 100})},
         formset=AssessmentBaseFormSet)
     return AssessmentFormSet

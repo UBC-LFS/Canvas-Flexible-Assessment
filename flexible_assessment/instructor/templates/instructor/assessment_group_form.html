@@ -49,8 +49,8 @@
                         <div class="d-flex align-items-left pb-2">
                             <div class="form-check">
                                 <label class="form-check-label" for="show_weights">
-                                    <input type="checkbox" name="show_weights" class="form-check-input" id="show_weights" checked>
-                                    Calculate Canvas Gradebook using Assignment Group Weights (Turning this off will hide Assignment Group Weights in Canvas)
+                                    <input type="checkbox" name="show_weights" class="form-check-input" id="show_weights" {% if show_weights %}checked{% endif %}>
+                                    Calculate Canvas Gradebook using Assignment Group Weights (Having this off will hide Assignment Group Weights in Canvas)
                                 </label>
                             </div>
                         </div>

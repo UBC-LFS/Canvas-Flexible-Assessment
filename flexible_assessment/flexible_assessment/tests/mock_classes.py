@@ -36,6 +36,7 @@ class MockAssignmentGroup(object):
         
 class MockCanvasCourse(object):
     name = "MOCK COURSE"
+    apply_assignment_group_weights = True
 
     def __init__(self):
         self.groups = [MockAssignmentGroup("test_group1", 1),
