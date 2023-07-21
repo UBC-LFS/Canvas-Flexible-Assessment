@@ -210,7 +210,6 @@ class AssessmentGroupView(views.InstructorFormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['canvas_domain'] = settings.CANVAS_DOMAIN
-        context['show_weights'] = self.kwargs['show_weights']
 
         return context
 
@@ -284,7 +283,7 @@ class AssessmentGroupView(views.InstructorFormView):
 
     def _update_assessments_and_groups(self, form):
         """Adds assignment group to assessment, updates
-        Canvas group weights, and set apply_assignment_group_weights setting
+        Canvas group weights
         """
 
         course_id = self.kwargs['course_id']
@@ -318,9 +317,6 @@ class AssessmentGroupView(views.InstructorFormView):
 
         for id in unmatched_group_ids:
             canvas_course.get_assignment_group(id).edit(group_weight=0)
-        
-        should_show_weights = self.request.POST.get('show_weights') == 'on'
-        canvas_course.update(course={'apply_assignment_group_weights': should_show_weights})
 
 
 class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
@@ -342,9 +338,8 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         context = super().get_context_data(**kwargs)
         course = context['course']
 
-        course_settings = FlexCanvas(self.request) \
-            .get_course(course.id) \
-            .get_settings()
+        canvas_course = FlexCanvas(self.request).get_course(course.id)
+        course_settings = canvas_course.get_settings()
 
         if not course.open:
             hide_total = True
@@ -354,7 +349,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         context['date_form'] = CourseSettingsForm(
             self.request.POST or None, instance=course, prefix='date')
         context['options_form'] = OptionsForm(
-            self.request.POST or None, prefix='options', hide_total=hide_total)
+            self.request.POST or None, prefix='options', hide_total=hide_total, show_weights=canvas_course.apply_assignment_group_weights)
 
         if self.request.POST:
             AssessmentFormSet = get_assessment_formset()
@@ -491,9 +486,11 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         else:
             self._reset_conflict_students(course, conflict_students)
 
-        FlexCanvas(self.request)\
-            .get_course(course_id)\
-            .update_settings(hide_final_grades=hide_total)
+        # Update Canvas settings
+        canvas_course = FlexCanvas(self.request).get_course(course_id)
+        canvas_course.update_settings(hide_final_grades=hide_total)
+        show_weights = options_form.cleaned_data['show_weights']
+        canvas_course.update(course={'apply_assignment_group_weights': show_weights})
 
         return HttpResponseRedirect(self.get_success_url())
 
