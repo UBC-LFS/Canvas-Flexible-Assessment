@@ -55,11 +55,16 @@ class OptionsForm(forms.Form):
         label='Hide totals in student grades summary')
     ignore_conflicts = forms.BooleanField(
         required=False)
+    show_weights = forms.BooleanField(
+        required=False,
+        label='Calculate Canvas Gradebook using Assignment Group Weights (Having this off will hide Assignment Group Weights in Canvas)')
 
     def __init__(self, *args, **kwargs):
         hide_total = kwargs.pop('hide_total', False)
+        show_weights = kwargs.pop('show_weights', True)
         super().__init__(*args, **kwargs)
         self.initial['hide_total'] = hide_total
+        self.initial['show_weights'] = show_weights
 
 
 class CourseSettingsForm(ModelForm):
