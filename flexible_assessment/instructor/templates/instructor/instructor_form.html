@@ -59,7 +59,7 @@
                     </div>
                     <div class="card-body pt-2 pb-3">
                         <p class="fw-light m-0 pb-1">
-                            Click the <i>+Assessment</i> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible.
+                            Click the <b style="font-weight: bold">+Assessment</b> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible.
                             The <b style="font-weight: bold;">Default %</b> will be used for students who do not enter desired percentages. The <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> values define the range of weights students will be able to enter. 
                             If you do not want an assessment to be flexible, enter the same value for the Default %, Minimum % and Maximum %. The default values for all assessments <u>must add up to 100%</u>.
                         </p>
@@ -96,7 +96,8 @@
                             <h5 class="align-middle m-0">Total: <span id="total"></span></h5>
                         </div>
                         <div class="d-flex flex-column">
-                            {% bootstrap_field options_form.show_weights wrapper_class="mb-1" %}
+                            <p class="fw-light m-0 pb-1">Select both of these options to hide incorrect weights and calculations in Canvas Grades</p>
+                            {% bootstrap_field options_form.hide_weights wrapper_class="mb-1" %}
                             {% bootstrap_field options_form.hide_total wrapper_class="mb-1" %}
                         </div>
                         {{ options_form.ignore_conflicts.as_hidden }}
