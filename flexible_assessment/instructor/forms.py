@@ -172,6 +172,9 @@ class AssessmentBaseFormSet(BaseModelFormSet):
             self.non_form_errors().append(
                 ValidationError('Default assessments should add up to 100%')
             )
+        
+        if len(self.forms) < 2:
+            self.non_form_errors().append("You must enter at least two assessments.")
 
         for form in self.forms:
             cleaned_data = form.cleaned_data
