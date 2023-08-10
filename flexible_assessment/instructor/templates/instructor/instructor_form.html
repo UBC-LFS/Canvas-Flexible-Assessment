@@ -188,7 +188,7 @@
         var courseClosed = {{ course.close|yesno:"true,false" }}; // Also check if this is the first time setting up the assessments
         var total = calculate_total();
         if (total == 0) {
-            if (confirm("You total adds up to 0, if you click OK, your course and all of its data will be reset.")) {
+            if (confirm("Your total adds up to 0. If you click OK, this course’s Flexible Assessment setup and all student choices and comments will be deleted.")) {
                 form.action += "?reset=true";
                 document.forms[0].dataset.changed = "false";
                 return true;
