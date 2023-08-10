@@ -77,11 +77,23 @@ class CourseSettingsForm(ModelForm):
         else:
             self.initial['open'] = timezone.localtime().replace(
                 hour=9, minute=0, second=0)
+        
+        self.fields['close'].required = False
+        self.fields['open'].required = False
 
     def clean(self):
         cleaned_data = super().clean()
         open_datetime = cleaned_data.get('open')
         close_datetime = cleaned_data.get('close')
+
+        if open_datetime is None:
+            self.add_error('open', ValidationError('Please enter a date'))
+        
+        if close_datetime is None:
+            self.add_error('close', ValidationError('Please enter a date'))
+        
+        if open_datetime is None or close_datetime is None:
+            return 
 
         if open_datetime > close_datetime:
             self.add_error(None, ValidationError(
