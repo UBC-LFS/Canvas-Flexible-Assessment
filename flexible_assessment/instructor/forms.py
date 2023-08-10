@@ -176,12 +176,18 @@ class AssessmentBaseFormSet(BaseModelFormSet):
         if len(self.forms) < 2:
             self.non_form_errors().append("You must enter at least two assessments.")
 
+        # They must have at least 2 assessments flexible (or else students can't actually make choices)
+        num_assessments_flexible = 0
+        
         for form in self.forms:
             cleaned_data = form.cleaned_data
             default = cleaned_data.get('default')
             min_value = cleaned_data.get('min')
             max_value = cleaned_data.get('max')
             title = cleaned_data.get('title')
+
+            if min_value != max_value:
+                num_assessments_flexible += 1
 
             allocations = [('default', default),
                            ('max', max_value),
@@ -218,6 +224,9 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                     'min',
                     ValidationError('Minimum must be lower than maximum')
                 )
+        
+        if num_assessments_flexible < 2 and len(self.forms) > 1:
+            self.non_form_errors().append("You must make at least two assessments flexible.")
 
 
 class AssessmentFileForm(forms.Form):

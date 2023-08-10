@@ -216,6 +216,7 @@
 
     function confirmSubmission(form) {
         var courseClosed = {{ course.close|yesno:"true,false" }}; // Also check if this is the first time setting up the assessments
+        var numResponses = parseInt({% get_number_responses course %});
         var total = calculate_total();
         if (total == 0) {
             if (confirm("Your total adds up to 0. If you click OK, this course’s Flexible Assessment setup and all student choices and comments will be deleted.")) {
@@ -225,8 +226,8 @@
             }
             return false;
         }
-        else if ($('#added-deleted-form').val() === "true" && courseClosed) {
-            if (confirm("If you added or deleted an assessment, all student responses will be reset if you save these changes.")) {
+        else if ($('#added-deleted-form').val() === "true" && numResponses > 0) {
+            if (confirm("You changed your assessments. If you click OK, all student choices and comments will be deleted.")) {
                 document.forms[0].dataset.changed = "false";
                 return true;
             }
