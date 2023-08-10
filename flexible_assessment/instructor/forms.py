@@ -156,7 +156,6 @@ class AssessmentGroupForm(forms.Form):
 
         self.fields.update(assessment_fields)
 
-
 class AssessmentBaseFormSet(BaseModelFormSet):
     def clean(self):
         if any(self.errors):
@@ -168,45 +167,54 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                 self.forms.remove(form)
 
         default_sum = sum([form.cleaned_data.get('default', 0)
-                          for form in self.forms])
+                           for form in self.forms])
         if default_sum != 100:
-            raise ValidationError(
-                'Default assessments should add up to 100%'
-                ' currently it is {}%'
-                .format(default_sum))
+            self.non_form_errors().append(
+                ValidationError('Default assessments should add up to 100%')
+            )
 
         for form in self.forms:
             cleaned_data = form.cleaned_data
             default = cleaned_data.get('default')
-            min = cleaned_data.get('min')
-            max = cleaned_data.get('max')
+            min_value = cleaned_data.get('min')
+            max_value = cleaned_data.get('max')
             title = cleaned_data.get('title')
 
             allocations = [('default', default),
-                           ('max', max),
-                           ('min', min)]
+                           ('max', max_value),
+                           ('min', min_value)]
             labels = {'default': 'Default', 'max': 'Maximum', 'min': 'Minimum'}
 
             for field, allocation in allocations:
                 if allocation and (allocation > 100.0 or allocation < 0.0):
                     form.add_error(
-                        field, ValidationError(
-                            '{} must be within 0.0 and 100.0'.format(
-                                labels[field])))
+                        field,
+                        ValidationError('{} must be within 0.0 and 100.0'.format(labels[field]))
+                    )
             if '<' in title or '>' in title:
-                form.add_error('title', ValidationError(
-                    'Invalid special character in title'))
-            if min > default:
-                form.add_error('min', ValidationError(
-                    'Minimum must be lower than default'))
-            if default > max:
-                form.add_error('max', ValidationError(
-                    'Maximum must be higher than default'))
-            if min > max:
-                form.add_error('max', ValidationError(
-                    'Maximum must be higher than minimum'))
-                form.add_error('min', ValidationError(
-                    'Minimum must be lower than maximum'))
+                form.add_error(
+                    'title',
+                    ValidationError('Invalid special character in title')
+                )
+            if min_value > default:
+                form.add_error(
+                    'min',
+                    ValidationError('Minimum must be lower than default')
+                )
+            if default > max_value:
+                form.add_error(
+                    'max',
+                    ValidationError('Maximum must be higher than default')
+                )
+            if min_value > max_value:
+                form.add_error(
+                    'max',
+                    ValidationError('Maximum must be higher than minimum')
+                )
+                form.add_error(
+                    'min',
+                    ValidationError('Minimum must be lower than maximum')
+                )
 
 
 class AssessmentFileForm(forms.Form):
