@@ -432,16 +432,26 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         default_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-default')
         default_field.clear()
-        default_field.send_keys("100")
+        default_field.send_keys("90")
         
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.click() # This is so the Update button is enabled
+
+        self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Assessment")]').click()
+        
+        title_field = self.browser_teacher.find_element(By.NAME, 'assessment-1-title')
+        default_field = self.browser_teacher.find_element(By.NAME, 'assessment-1-default')
+        min_field = self.browser_teacher.find_element(By.NAME, 'assessment-1-min')
+        max_field = self.browser_teacher.find_element(By.NAME, 'assessment-1-max')
+        
+        title_field.send_keys('AssignmentC')
+        default_field.send_keys('10')
+        min_field.send_keys('10')
+        max_field.send_keys('90')
         
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         update_button.send_keys(Keys.ENTER)
-        alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
-        alert.accept()
         wait = WebDriverWait(self.browser_teacher, 5)
         wait.until_not(EC.url_contains('form')) # Wait for changes to be made
         
@@ -456,7 +466,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         inputs[1].clear()
-        inputs[1].send_keys("100")
+        inputs[1].send_keys("90")
+        inputs[2].send_keys("10")
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.clear()
         comment_field.send_keys("Where did the second assessment go :'(")
@@ -522,8 +533,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         update_button.send_keys(Keys.ENTER)
-        alert = self.browser_teacher.switch_to.alert # Accept the confirmation message that a student will be reset
-        alert.accept()
         wait = WebDriverWait(self.browser_teacher, 5)
         wait.until_not(EC.url_contains('form')) # Wait for changes to be made
         

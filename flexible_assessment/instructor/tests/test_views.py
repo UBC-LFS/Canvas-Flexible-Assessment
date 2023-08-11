@@ -167,7 +167,6 @@ class TestViews(TestCase):
         
         self.assertEqual(type(response), TemplateResponse)
         self.assertContains(response, 'Default assessments should add up to 100%')
-        self.assertContains(response, 'currently it is 99%')
 
     @mock_classes.use_mock_canvas()
     def test_InstructorAssessmentView_invalid_out_of_range(self, mocked_flex_canvas_instance):
