@@ -470,7 +470,6 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         hide_total = options_form.cleaned_data['hide_total']
         ignore_conflicts = options_form.cleaned_data['ignore_conflicts']
-        formset.clean()
 
         assessments, conflict_students = self._save_assessments(
             formset.forms, course, ignore_conflicts)

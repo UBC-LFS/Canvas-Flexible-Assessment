@@ -184,7 +184,7 @@ class TestStudentViews(StaticLiveServerTestCase):
     @mock_classes.use_mock_canvas()
     def test_student_percentage_gets_reset(self, mocked_flex_canvas_instance):
         """ The student in course 4 chooses his flexes, but then the teacher changes the weights thus resetting their weights
-            1. Student starts by choosing 10 % and 90 %
+            1. Student starts by choosing 20 % and 80 %
             2. Student gets redirected to the homepage and sees their weights
             3. Instructor then changes the minimum of the first assignment to 20%
             4. Student upon refreshing the page sees their weights are now the default
@@ -204,8 +204,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        inputs[1].send_keys("10")
-        inputs[2].send_keys("90")
+        inputs[1].send_keys("20")
+        inputs[2].send_keys("80")
         inputs[3].click()
         
         comment_field = self.browser.find_element(By.NAME, "comment")
@@ -217,8 +217,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertNotIn('form', self.browser.current_url)
         
         bodyText = self.browser.find_element(By.TAG_NAME, 'body').text
-        self.assertIn('10', bodyText)
-        self.assertIn('90', bodyText)
+        self.assertIn('20', bodyText)
+        self.assertIn('80', bodyText)
         
         # 3
         session_id_teacher = self.client_teacher.session.session_key
@@ -231,7 +231,11 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
-        min_field.send_keys("20")
+        min_field.send_keys("21")
+        
+        max_field = self.browser_teacher.find_element(By.NAME, 'assessment-1-max')
+        max_field.clear()
+        max_field.send_keys("79")
         
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
@@ -347,8 +351,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        inputs[1].send_keys("10")
-        inputs[2].send_keys("90")
+        inputs[1].send_keys("20")
+        inputs[2].send_keys("80")
         inputs[3].click()
         
         comment_field = self.browser.find_element(By.NAME, "comment")
@@ -364,7 +368,11 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.clear()
-        min_field.send_keys("20")
+        min_field.send_keys("21")
+
+        max_field = self.browser_teacher.find_element(By.NAME, 'assessment-1-max')
+        max_field.clear()
+        max_field.send_keys("79")
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         update_button.send_keys(Keys.ENTER)
@@ -379,9 +387,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         inputs[1].clear()
-        inputs[1].send_keys("20")
+        inputs[1].send_keys("21")
         inputs[2].clear()
-        inputs[2].send_keys("80")
+        inputs[2].send_keys("79")
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.clear()
         comment_field.send_keys("Who changed the minimum from 10% to 20% :'(")
@@ -432,7 +440,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         default_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-default')
         default_field.clear()
-        default_field.send_keys("90")
+        default_field.send_keys("80")
         
         min_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-min')
         min_field.click() # This is so the Update button is enabled
@@ -445,9 +453,9 @@ class TestStudentViews(StaticLiveServerTestCase):
         max_field = self.browser_teacher.find_element(By.NAME, 'assessment-1-max')
         
         title_field.send_keys('AssignmentC')
-        default_field.send_keys('10')
-        min_field.send_keys('10')
-        max_field.send_keys('90')
+        default_field.send_keys('20')
+        min_field.send_keys('20')
+        max_field.send_keys('80')
         
         self.browser_teacher.fullscreen_window()
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
@@ -466,8 +474,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         inputs[1].clear()
-        inputs[1].send_keys("90")
-        inputs[2].send_keys("10")
+        inputs[1].send_keys("80")
+        inputs[2].send_keys("20")
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.clear()
         comment_field.send_keys("Where did the second assessment go :'(")
@@ -521,8 +529,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         title_field.send_keys('AssignmentC')
         default_field.send_keys('10')
-        min_field.send_keys('10')
-        max_field.send_keys('90')
+        min_field.send_keys('0')
+        max_field.send_keys('60')
 
         old_default_field = self.browser_teacher.find_element(By.NAME, 'assessment-0-default')
         old_default_field.clear()
@@ -546,8 +554,10 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
+        inputs[1].clear()
+        inputs[1].send_keys("20")
         inputs[2].clear()
-        inputs[2].send_keys("80")
+        inputs[2].send_keys("70")
         inputs[3].send_keys("10")
         comment_field = self.browser.find_element(By.NAME, "comment")
         comment_field.clear()
@@ -577,8 +587,8 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit = self.browser.find_element(By.TAG_NAME, 'button')
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
         
-        inputs[1].send_keys("10")
-        inputs[2].send_keys("90")
+        inputs[1].send_keys("20")
+        inputs[2].send_keys("80")
         inputs[3].click()
         
         comment_field = self.browser.find_element(By.NAME, "comment")
@@ -605,6 +615,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         
         update_button = self.browser_teacher.find_element(By.XPATH, '//button[contains(text(), "Update")]')
         update_button.send_keys(Keys.ENTER)
+
         wait = WebDriverWait(self.browser_teacher, 5)
         wait.until_not(EC.url_contains('form')) # Wait for changes to be made
         

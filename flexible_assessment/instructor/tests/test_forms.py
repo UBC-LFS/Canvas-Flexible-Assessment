@@ -29,7 +29,6 @@ class TestForms(TestCase):
         course_id = 1
         course = MockCanvasCourse()
         assessments = Assessment.objects.filter(course_id=course_id)
-        # AssessmentGroupForm does not verify if each choice is unique, AssessmentGroupForm does that
         data = {
             assessments[0].id.hex: 1,
             assessments[1].id.hex: 3,

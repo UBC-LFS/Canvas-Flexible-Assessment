@@ -3,7 +3,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.forms import BaseModelFormSet, ModelForm, modelformset_factory
 from django.utils import timezone
 from flexible_assessment.models import Assessment, Course, FlexAssessment
-
+import flexible_assessment.utils as utils
 
 class StudentAssessmentBaseForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -178,6 +178,11 @@ class AssessmentBaseFormSet(BaseModelFormSet):
 
         # They must have at least 2 assessments flexible (or else students can't actually make choices)
         num_assessments_flexible = 0
+
+        # These are used to determine if the flex ranges are possible for students to select
+        all_assessments = [] # Example: {'title': 'assignment1', 'default': Decimal('20.00'), 'min': Decimal('10.00'), 'max': Decimal('30.00'), 'id': <Assessment: assignment1, test_course1>}
+        total_min = 0
+        total_max = 0
         
         for form in self.forms:
             cleaned_data = form.cleaned_data
@@ -185,6 +190,11 @@ class AssessmentBaseFormSet(BaseModelFormSet):
             min_value = cleaned_data.get('min')
             max_value = cleaned_data.get('max')
             title = cleaned_data.get('title')
+            cleaned_data['form'] = form
+
+            all_assessments.append(cleaned_data)
+            total_min += min_value
+            total_max += max_value
 
             if min_value != max_value:
                 num_assessments_flexible += 1
@@ -224,7 +234,9 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                     'min',
                     ValidationError('Minimum must be lower than maximum')
                 )
-        
+
+        if default_sum == 100: # Don't check ranges if doesn't add to 100
+            utils.find_invalid_flex_ranges(all_assessments, total_min, total_max)
         if num_assessments_flexible < 2 and len(self.forms) > 1:
             self.non_form_errors().append("You must make at least two assessments flexible.")
 

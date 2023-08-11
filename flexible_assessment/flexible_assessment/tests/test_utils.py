@@ -1,7 +1,10 @@
-from django.test import TestCase
+from django.test import TestCase, tag
+from django.forms import ValidationError
 import flexible_assessment.models as models 
 from flexible_assessment.tests.test_data import DATA
 import flexible_assessment.utils as utils
+from flexible_assessment.tests.mock_classes import *
+import instructor.forms as forms
 
 import flexible_assessment.tests.mock_classes as mock_classes
 import types
@@ -148,8 +151,51 @@ class TestUtils(TestCase):
         created_student = models.UserProfile.objects.filter(pk=student_id).first()
         user_comment_set = created_student.usercomment_set.filter(course__id=course_id)
         self.assertTrue(user_comment_set.exists())
-        
-        
-        
-        
+    
 
+    def test_assessments_min_impossible(self):
+        """ If they use this min, they won't be able to reach 100 """
+        data = {
+            'form-TOTAL_FORMS': '2',
+            'form-INITIAL_FORMS': '0',
+            'form-MAX_NUM_FORMS': '',
+            'form-0-title': 'Assignment1',
+            'form-0-default': '50',
+            'form-0-min': '50',
+            'form-0-max': '51',
+            'form-1-title': 'Assignment2',
+            'form-1-default': '50',
+            'form-1-min': '48',
+            'form-1-max': '50',
+        }
+        AssessmentFormSet = forms.get_assessment_formset()
+        formset = AssessmentFormSet(data)
+        self.assertFalse(formset.is_valid())
+
+        form_errors = ' '.join(str(form.errors) for form in formset.forms)
+
+        target_error = "Please increase to 49"
+        self.assertIn(target_error, form_errors)
+
+    def test_assessments_max_impossible(self):
+        """ If they use this max, they always go above 100 """
+        data = {
+            'form-TOTAL_FORMS': '2',
+            'form-INITIAL_FORMS': '0',
+            'form-MAX_NUM_FORMS': '',
+            'form-0-title': 'Assignment1',
+            'form-0-default': '50',
+            'form-0-min': '50',
+            'form-0-max': '52',
+            'form-1-title': 'Assignment2',
+            'form-1-default': '50',
+            'form-1-min': '49',
+            'form-1-max': '50',
+        }
+        AssessmentFormSet = forms.get_assessment_formset()
+        formset = AssessmentFormSet(data)
+        self.assertFalse(formset.is_valid())
+        form_errors = ' '.join(str(form.errors) for form in formset.forms)
+
+        target_error = "Please decrease to 51"
+        self.assertIn(target_error, form_errors)
