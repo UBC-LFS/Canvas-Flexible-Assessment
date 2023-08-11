@@ -349,7 +349,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         context['date_form'] = CourseSettingsForm(
             self.request.POST or None, instance=course, prefix='date')
         context['options_form'] = OptionsForm(
-            self.request.POST or None, prefix='options', hide_total=hide_total, hide_weights=canvas_course.apply_assignment_group_weights)
+            self.request.POST or None, prefix='options', hide_total=hide_total, hide_weights=not canvas_course.apply_assignment_group_weights)
 
         if self.request.POST:
             AssessmentFormSet = get_assessment_formset()
@@ -489,7 +489,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         canvas_course = FlexCanvas(self.request).get_course(course_id)
         canvas_course.update_settings(hide_final_grades=hide_total)
         hide_weights = options_form.cleaned_data['hide_weights']
-        canvas_course.update(course={'apply_assignment_group_weights': hide_weights})
+        canvas_course.update(course={'apply_assignment_group_weights': not hide_weights})
 
         return HttpResponseRedirect(self.get_success_url())
 
