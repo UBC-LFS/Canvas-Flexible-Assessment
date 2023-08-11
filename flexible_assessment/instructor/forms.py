@@ -170,7 +170,7 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                            for form in self.forms])
         if default_sum != 100:
             self.non_form_errors().append(
-                ValidationError('Default assessments should add up to 100%')
+                ValidationError('Default assessments should add up to 100%.')
             )
         
         if len(self.forms) < 2:
