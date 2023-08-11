@@ -152,7 +152,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser.find_element(By.XPATH, '//button[contains(text(), "Assessment")]').click()
         
         inputs = self.browser.find_elements(By.TAG_NAME, 'input')
-        values = ["A1", "33", "30", "50", "A2", "33", "10", "50", "A3", "34", "0", "100"]
+        values = ["A1", "33", "30", "50", "A2", "33", "10", "50", "A3", "34", "0", "60"]
         for index, value in enumerate(values):
             inputs[index + 6].send_keys(value) # There are 6 hidden inputs we need to skip over
 

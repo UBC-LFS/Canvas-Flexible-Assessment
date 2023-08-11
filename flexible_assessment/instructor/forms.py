@@ -3,7 +3,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.forms import BaseModelFormSet, ModelForm, modelformset_factory
 from django.utils import timezone
 from flexible_assessment.models import Assessment, Course, FlexAssessment
-
+import flexible_assessment.utils as utils
 
 class StudentAssessmentBaseForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -52,19 +52,19 @@ class StudentAssessmentBaseForm(forms.Form):
 class OptionsForm(forms.Form):
     hide_total = forms.BooleanField(
         required=False,
-        label='Hide totals in student grades summary')
+        label='Hide totals in Student Grades Summary')
     ignore_conflicts = forms.BooleanField(
         required=False)
-    show_weights = forms.BooleanField(
+    hide_weights = forms.BooleanField(
         required=False,
-        label='Calculate Canvas Gradebook using Assignment Group Weights (Having this off will hide Assignment Group Weights in Canvas)')
+        label='Hide Assignment Group Weights in Canvas')
 
     def __init__(self, *args, **kwargs):
         hide_total = kwargs.pop('hide_total', False)
-        show_weights = kwargs.pop('show_weights', True)
+        hide_weights = kwargs.pop('hide_weights', True)
         super().__init__(*args, **kwargs)
         self.initial['hide_total'] = hide_total
-        self.initial['show_weights'] = show_weights
+        self.initial['hide_weights'] = hide_weights
 
 
 class CourseSettingsForm(ModelForm):
@@ -77,11 +77,23 @@ class CourseSettingsForm(ModelForm):
         else:
             self.initial['open'] = timezone.localtime().replace(
                 hour=9, minute=0, second=0)
+        
+        self.fields['close'].required = False
+        self.fields['open'].required = False
 
     def clean(self):
         cleaned_data = super().clean()
         open_datetime = cleaned_data.get('open')
         close_datetime = cleaned_data.get('close')
+
+        if open_datetime is None:
+            self.add_error('open', ValidationError('Please enter a date'))
+        
+        if close_datetime is None:
+            self.add_error('close', ValidationError('Please enter a date'))
+        
+        if open_datetime is None or close_datetime is None:
+            return 
 
         if open_datetime > close_datetime:
             self.add_error(None, ValidationError(
@@ -144,7 +156,6 @@ class AssessmentGroupForm(forms.Form):
 
         self.fields.update(assessment_fields)
 
-
 class AssessmentBaseFormSet(BaseModelFormSet):
     def clean(self):
         if any(self.errors):
@@ -156,45 +167,78 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                 self.forms.remove(form)
 
         default_sum = sum([form.cleaned_data.get('default', 0)
-                          for form in self.forms])
+                           for form in self.forms])
         if default_sum != 100:
-            raise ValidationError(
-                'Default assessments should add up to 100%'
-                ' currently it is {}%'
-                .format(default_sum))
+            self.non_form_errors().append(
+                ValidationError('Default assessments should add up to 100%')
+            )
+        
+        if len(self.forms) < 2:
+            self.non_form_errors().append("You must enter at least two assessments.")
 
+        # They must have at least 2 assessments flexible (or else students can't actually make choices)
+        num_assessments_flexible = 0
+
+        # These are used to determine if the flex ranges are possible for students to select
+        all_assessments = [] # Example: {'title': 'assignment1', 'default': Decimal('20.00'), 'min': Decimal('10.00'), 'max': Decimal('30.00'), 'id': <Assessment: assignment1, test_course1>}
+        total_min = 0
+        total_max = 0
+        
         for form in self.forms:
             cleaned_data = form.cleaned_data
             default = cleaned_data.get('default')
-            min = cleaned_data.get('min')
-            max = cleaned_data.get('max')
+            min_value = cleaned_data.get('min')
+            max_value = cleaned_data.get('max')
             title = cleaned_data.get('title')
+            cleaned_data['form'] = form
+
+            all_assessments.append(cleaned_data)
+            total_min += min_value
+            total_max += max_value
+
+            if min_value != max_value:
+                num_assessments_flexible += 1
 
             allocations = [('default', default),
-                           ('max', max),
-                           ('min', min)]
+                           ('max', max_value),
+                           ('min', min_value)]
             labels = {'default': 'Default', 'max': 'Maximum', 'min': 'Minimum'}
 
             for field, allocation in allocations:
                 if allocation and (allocation > 100.0 or allocation < 0.0):
                     form.add_error(
-                        field, ValidationError(
-                            '{} must be within 0.0 and 100.0'.format(
-                                labels[field])))
+                        field,
+                        ValidationError('{} must be within 0.0 and 100.0'.format(labels[field]))
+                    )
             if '<' in title or '>' in title:
-                form.add_error('title', ValidationError(
-                    'Invalid special character in title'))
-            if min > default:
-                form.add_error('min', ValidationError(
-                    'Minimum must be lower than default'))
-            if default > max:
-                form.add_error('max', ValidationError(
-                    'Maximum must be higher than default'))
-            if min > max:
-                form.add_error('max', ValidationError(
-                    'Maximum must be higher than minimum'))
-                form.add_error('min', ValidationError(
-                    'Minimum must be lower than maximum'))
+                form.add_error(
+                    'title',
+                    ValidationError('Invalid special character in title')
+                )
+            if min_value > default:
+                form.add_error(
+                    'min',
+                    ValidationError('Minimum must be lower than default')
+                )
+            if default > max_value:
+                form.add_error(
+                    'max',
+                    ValidationError('Maximum must be higher than default')
+                )
+            if min_value > max_value:
+                form.add_error(
+                    'max',
+                    ValidationError('Maximum must be higher than minimum')
+                )
+                form.add_error(
+                    'min',
+                    ValidationError('Minimum must be lower than maximum')
+                )
+
+        if default_sum == 100: # Don't check ranges if doesn't add to 100
+            utils.find_invalid_flex_ranges(all_assessments, total_min, total_max)
+        if num_assessments_flexible < 2 and len(self.forms) > 1:
+            self.non_form_errors().append("You must make at least two assessments flexible.")
 
 
 class AssessmentFileForm(forms.Form):

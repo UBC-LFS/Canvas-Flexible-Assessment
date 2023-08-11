@@ -53,8 +53,11 @@ class MockCanvasCourse(object):
     
     def get_assignment_group(self, group_id):
         # Find and return the mock assignment group that matches the group_id, or None if not found
-        group =  next(filter(lambda group: str(group.id) == group_id, self.groups), None)
-        return group
+        for group in self.groups:
+            if int(group.id) == int(group_id):
+                return group
+
+        return None
    
 
     def update_settings(self, hide_final_grades):

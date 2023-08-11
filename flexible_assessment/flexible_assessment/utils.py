@@ -1,4 +1,5 @@
 import logging
+from django.forms import ValidationError
 
 from instructor.canvas_api import FlexCanvas
 
@@ -101,3 +102,32 @@ def set_user_course(canvas_fields, role):
     set_user_course_enrollment(user, course, role)
     if role == models.Roles.STUDENT:
         set_user_comment(user, course)
+
+
+def find_invalid_flex_ranges(assessments, total_min, total_max):
+    """ 
+    Given a list of assessments (dictionary that contains title, min, max, form) and total_min, total_max
+    which are the sums of all the assessments min/max values, add form.errors if invalid. 
+    Assessments are invalid if the min value does not allow the total to reach 100. Or
+    if the max value causes the total to always go above 100
+    """
+    for assessment in assessments:
+        if not ('min' in assessment and 'max' in assessment):
+            continue
+
+        current_min = assessment['min']
+        current_max = assessment['max']
+
+        total_with_current_min = total_max - current_max + current_min 
+        if total_with_current_min < 100:
+            assessment['form'].add_error(
+                'min',
+                ValidationError(f'Not possible for students to select. Please increase to {current_min + 100 - total_with_current_min} or increase the total max of other assessments to {100 - current_min}')
+            )
+        
+        total_with_current_max = total_min - current_min + current_max
+        if total_with_current_max > 100:
+            assessment['form'].add_error(
+                'max',
+                ValidationError(f'Not possible for students to select. Please decrease to {current_max - (total_with_current_max - 100)} or decrease the total min of other assessments to {100 - current_max}')
+            )

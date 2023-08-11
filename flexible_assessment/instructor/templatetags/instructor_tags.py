@@ -34,6 +34,14 @@ def get_response_rate(course):
         percentage = 0
     return valid_num, len(students), percentage
 
+@register.simple_tag()
+def get_number_responses(course):
+    user_courses = course.usercourse_set.filter(role=Roles.STUDENT)
+    students = [user_course.user for user_course in user_courses]
+    valid_num = sum([grader.valid_flex(student, course)
+                    for student in students])
+    return valid_num
+
 
 @register.simple_tag()
 def get_average_allocations(course):

@@ -9,6 +9,35 @@
 {% block nav_item_setup %}active{% endblock nav_item_setup %} 
 {% block nav_item_assessments %}active{% endblock nav_item_assessments %} 
 {% block content %}
+
+<!-- This Overrides the styling automatically added by bootstrap_field for form validation -->
+<style>
+    .form-control.is-valid {
+        border-color: #ced4da;
+        padding-right: initial;
+        background-image: initial;
+        background-repeat: initial;
+        background-position: initial;
+        background-size: initial;
+    }
+
+    .form-check-input.is-valid~.form-check-label {
+        border-color: #ced4da;
+        padding-right: initial;
+        background-image: initial;
+        background-repeat: initial;
+        background-position: initial;
+        background-size: initial;
+        color: initial;
+    }
+
+    .form-check-input.is-valid:checked {
+        border-color: #0d6efd;
+        background-color: #0d6efd;
+    }
+
+</style>
+
 <form action="" method="post" data-changed="false" onsubmit="return confirmSubmission(this);">
 	{% csrf_token %}
 
@@ -54,15 +83,16 @@
                             </ul>
                         </div> -->
                     </div>
-                    <div class="d-flex align-items-center justify-content-between">
-                        <p class="fw-light m-0">{% bootstrap_formset_errors formset %}</p>
-                    </div>
+
                     <div class="card-body pt-2 pb-3">
                         <p class="fw-light m-0 pb-1">
-                            Click the <i>+Assessment</i> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible.
+                            Click the <b style="font-weight: bold">+Assessment</b> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible.
                             The <b style="font-weight: bold;">Default %</b> will be used for students who do not enter desired percentages. The <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> values define the range of weights students will be able to enter. 
                             If you do not want an assessment to be flexible, enter the same value for the Default %, Minimum % and Maximum %. The default values for all assessments <u>must add up to 100%</u>.
                         </p>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <p class="fw-light m-0">{% bootstrap_formset_errors formset %}</p>
+                        </div>
                         <table id="assessments" class='table table-striped {% if populated %}populated{% endif %}' style="table-layout: fixed">
                             <thead>
                                 <tr>
@@ -96,7 +126,8 @@
                             <h5 class="align-middle m-0">Total: <span id="total"></span></h5>
                         </div>
                         <div class="d-flex flex-column">
-                            {% bootstrap_field options_form.show_weights wrapper_class="mb-1" %}
+                            <p class="fw-light m-0 pb-1">Select both of these options to hide incorrect weights and calculations in Canvas Grades</p>
+                            {% bootstrap_field options_form.hide_weights wrapper_class="mb-1" %}
                             {% bootstrap_field options_form.hide_total wrapper_class="mb-1" %}
                         </div>
                         {{ options_form.ignore_conflicts.as_hidden }}
@@ -185,17 +216,18 @@
 
     function confirmSubmission(form) {
         var courseClosed = {{ course.close|yesno:"true,false" }}; // Also check if this is the first time setting up the assessments
+        var numResponses = parseInt({% get_number_responses course %});
         var total = calculate_total();
         if (total == 0) {
-            if (confirm("You total adds up to 0, if you click OK, your course and all of its data will be reset.")) {
+            if (confirm("Your total adds up to 0. If you click OK, this course’s Flexible Assessment setup and all student choices and comments will be deleted.")) {
                 form.action += "?reset=true";
                 document.forms[0].dataset.changed = "false";
                 return true;
             }
             return false;
         }
-        else if ($('#added-deleted-form').val() === "true" && courseClosed) {
-            if (confirm("If you added or deleted an assessment, all student responses will be reset if you save these changes.")) {
+        else if ($('#added-deleted-form').val() === "true" && numResponses > 0) {
+            if (confirm("You changed your assessments. If you click OK, all student choices and comments will be deleted.")) {
                 document.forms[0].dataset.changed = "false";
                 return true;
             }

@@ -233,7 +233,7 @@ class AssessmentGroupView(views.InstructorFormView):
         kwargs['assessments'] = models.Assessment.objects.filter(
             course_id=course_id)
         
-        self.kwargs['show_weights'] = canvas_course.apply_assignment_group_weights
+        self.kwargs['hide_weights'] = not canvas_course.apply_assignment_group_weights
 
         return kwargs
 
@@ -349,7 +349,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         context['date_form'] = CourseSettingsForm(
             self.request.POST or None, instance=course, prefix='date')
         context['options_form'] = OptionsForm(
-            self.request.POST or None, prefix='options', hide_total=hide_total, show_weights=canvas_course.apply_assignment_group_weights)
+            self.request.POST or None, prefix='options', hide_total=hide_total, hide_weights=canvas_course.apply_assignment_group_weights)
 
         if self.request.POST:
             AssessmentFormSet = get_assessment_formset()
@@ -470,7 +470,6 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         hide_total = options_form.cleaned_data['hide_total']
         ignore_conflicts = options_form.cleaned_data['ignore_conflicts']
-        formset.clean()
 
         assessments, conflict_students = self._save_assessments(
             formset.forms, course, ignore_conflicts)
@@ -489,8 +488,8 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         # Update Canvas settings
         canvas_course = FlexCanvas(self.request).get_course(course_id)
         canvas_course.update_settings(hide_final_grades=hide_total)
-        show_weights = options_form.cleaned_data['show_weights']
-        canvas_course.update(course={'apply_assignment_group_weights': show_weights})
+        hide_weights = options_form.cleaned_data['hide_weights']
+        canvas_course.update(course={'apply_assignment_group_weights': hide_weights})
 
         return HttpResponseRedirect(self.get_success_url())
 
