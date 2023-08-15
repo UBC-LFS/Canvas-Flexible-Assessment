@@ -17,7 +17,7 @@ import instructor.views as views
 
 import flexible_assessment.tests.mock_classes as mock_classes
 
-class TestStudentViews(StaticLiveServerTestCase):
+class TestInstructorViews(StaticLiveServerTestCase):
     fixtures = DATA
         
     def setUp(self):
@@ -230,7 +230,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         # 4
         mocked_flex_canvas_instance.canvas_course.groups.append(mock_classes.MockAssignmentGroup("NEW GROUP", 2))
         self.browser.refresh()
-        self.browser.find_element(By.XPATH, '//*[@id="id_123e4567e89b12d3a456426655440002"]/option[5]').click()
+        self.browser.find_element(By.XPATH, '//*[@id="id_123e4567e89b12d3a456426655440002"]/option[2]').click()
         self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]').click()
         
         self.assertIn('final/list', self.browser.current_url)
