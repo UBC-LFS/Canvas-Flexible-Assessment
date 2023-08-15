@@ -2,7 +2,11 @@ from abc import ABC, abstractmethod
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
-from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist, PermissionDenied
+from django.core.exceptions import (
+    ImproperlyConfigured,
+    ObjectDoesNotExist,
+    PermissionDenied,
+)
 from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.shortcuts import get_object_or_404
@@ -20,7 +24,7 @@ class ExportView(ABC):
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
-        if self.kwargs.get('csv', False) or self.kwargs.get('log', False):
+        if self.kwargs.get("csv", False) or self.kwargs.get("log", False):
             return self.export_list()
         else:
             return response
@@ -43,48 +47,64 @@ class GenericView(LoginRequiredMixin, UserPassesTestMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['course'] = Course.objects.get(pk=self.kwargs['course_id'])
+        context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
         return context
 
     def test_func(self):
         if not self.allowed_view_role:
             raise ImproperlyConfigured(
-                "GenericView requires definition of 'allowed_view_role'")
-        course = get_object_or_404(Course, pk=self.kwargs['course_id'])
-        allowed_to_access = self.allowed_view_role.permission_test(self.request.user, course) 
+                "GenericView requires definition of 'allowed_view_role'"
+            )
+        course = get_object_or_404(Course, pk=self.kwargs["course_id"])
+        allowed_to_access = self.allowed_view_role.permission_test(
+            self.request.user, course
+        )
 
         return allowed_to_access
 
     def handle_no_permission(self):
-        """ Try to redirect user to the homepage that they have the permissions for """
+        """Try to redirect user to the homepage that they have the permissions for"""
         try:
-            course_id = self.kwargs['course_id']
-            user_course = UserCourse.objects.get(course_id=course_id, 
-                                               user_id=self.request.user.user_id)
+            course_id = self.kwargs["course_id"]
+            user_course = UserCourse.objects.get(
+                course_id=course_id, user_id=self.request.user.user_id
+            )
         except Exception as e:
-            raise PermissionDenied('You do not have the right permissions to view this page')
-        
+            raise PermissionDenied(
+                "You do not have the right permissions to view this page"
+            )
+
         if user_course.role in Instructor.permitted_roles:
-            messages.info(self.request, 'You have been automatically redirected back to the page you have permisisons to view (Instructor)')
+            messages.info(
+                self.request,
+                "You have been automatically redirected back to the page you have permisisons to view (Instructor)",
+            )
             return HttpResponseRedirect(
-                reverse('instructor:instructor_home',
-                    kwargs={'course_id': course_id}))
+                reverse("instructor:instructor_home", kwargs={"course_id": course_id})
+            )
         elif user_course.role in Student.permitted_roles:
-            messages.info(self.request, 'You have been automatically redirected back to the page you have permisisons to view (Student)')
+            messages.info(
+                self.request,
+                "You have been automatically redirected back to the page you have permisisons to view (Student)",
+            )
             return HttpResponseRedirect(
-                reverse('student:student_home',
-                    kwargs={'course_id': course_id}))
-        else: 
-            raise PermissionDenied('You do not have the right permissions to view this page')
+                reverse("student:student_home", kwargs={"course_id": course_id})
+            )
+        else:
+            raise PermissionDenied(
+                "You do not have the right permissions to view this page"
+            )
 
 
 class TemplateView(GenericView, generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['display_name'] = self.request.session.get('display_name', '')
-        if (context['display_name'] == ''):
-            context['display_name'] = UserProfile.objects.get(pk=self.request.session['_auth_user_id']).display_name
-            self.request.session['display_name'] = context['display_name']
+        context["display_name"] = self.request.session.get("display_name", "")
+        if context["display_name"] == "":
+            context["display_name"] = UserProfile.objects.get(
+                pk=self.request.session["_auth_user_id"]
+            ).display_name
+            self.request.session["display_name"] = context["display_name"]
 
         return context
 
@@ -104,14 +124,15 @@ class ListView(GenericView, generic.ListView):
 class InstructorListView(ListView):
     allowed_view_role = Instructor
     model = UserProfile
-    context_object_name = 'student_list'
+    context_object_name = "student_list"
 
     def get_queryset(self):
         """QuerySet is students for current course"""
 
-        course_id = self.kwargs['course_id']
+        course_id = self.kwargs["course_id"]
         queryset = UserProfile.objects.filter(
-            usercourse__role=Roles.STUDENT, usercourse__course__id=course_id)
+            usercourse__role=Roles.STUDENT, usercourse__course__id=course_id
+        )
         return queryset
 
 
@@ -122,9 +143,11 @@ class FormView(GenericView, generic.FormView):
         if not self.success_reverse_name:
             raise ImproperlyConfigured(
                 "No success reverse name to redirect to."
-                " Provide success_reverse_name.")
-        return reverse_lazy(self.success_reverse_name,
-                            kwargs={'course_id': self.kwargs['course_id']})
+                " Provide success_reverse_name."
+            )
+        return reverse_lazy(
+            self.success_reverse_name, kwargs={"course_id": self.kwargs["course_id"]}
+        )
 
 
 class InstructorFormView(FormView):

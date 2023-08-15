@@ -21,21 +21,26 @@ from django.shortcuts import get_object_or_404
 from instructor.canvas_api import FlexCanvas
 
 from . import grader, writer
-from .forms import (AssessmentFileForm, AssessmentGroupForm, CourseSettingsForm,
-                    OptionsForm, StudentAssessmentBaseForm,
-                    get_assessment_formset)
+from .forms import (
+    AssessmentFileForm,
+    AssessmentGroupForm,
+    CourseSettingsForm,
+    OptionsForm,
+    StudentAssessmentBaseForm,
+    get_assessment_formset,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class InstructorHome(views.InstructorTemplateView):
-    template_name = 'instructor/instructor_home.html'
+    template_name = "instructor/instructor_home.html"
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
-        login_redirect = request.GET.get('login_redirect')
+        login_redirect = request.GET.get("login_redirect")
         if login_redirect:
-            course = self.get_context_data().get('course', '')
+            course = self.get_context_data().get("course", "")
             utils.update_students(request, course)
         return response
 
@@ -43,25 +48,33 @@ class InstructorHome(views.InstructorTemplateView):
 class FlexAssessmentListView(views.ExportView, views.InstructorListView):
     """ListView for student flexible allocations"""
 
-    template_name = 'instructor/percentage_list.html'
+    template_name = "instructor/percentage_list.html"
 
     def export_list(self):
         students = self.get_queryset()
-        course_id = self.kwargs['course_id']
+        course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
-        if self.kwargs.get('csv', ''):
+        if self.kwargs.get("csv", ""):
             response = writer.students_csv(course, students)
 
-            logger.info('Percentage view exported',
-                        extra={'course': str(course),
-                               'user': self.request.session['display_name']})
-        elif self.kwargs.get('log', ''):
+            logger.info(
+                "Percentage view exported",
+                extra={
+                    "course": str(course),
+                    "user": self.request.session["display_name"],
+                },
+            )
+        elif self.kwargs.get("log", ""):
             response = writer.course_log(course)
 
-            logger.info('Course log exported',
-                        extra={'course': str(course),
-                               'user': self.request.session['display_name']})
+            logger.info(
+                "Course log exported",
+                extra={
+                    "course": str(course),
+                    "user": self.request.session["display_name"],
+                },
+            )
 
         return response
 
@@ -69,73 +82,71 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
 class FinalGradeListView(views.ExportView, views.InstructorListView):
     """ListView for student final grades with default and override scores"""
 
-    template_name = 'instructor/final_grade_list.html'
+    template_name = "instructor/final_grade_list.html"
 
     def export_list(self):
         students = self.get_queryset()
-        course_id = self.kwargs['course_id']
+        course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
-        groups = self.get_context_data().get('groups')
+        groups = self.get_context_data().get("groups")
 
         csv_response = writer.grades_csv(course, students, groups)
 
-        logger.info('Final list view exported',
-                    extra={'course': str(course),
-                           'user': self.request.session['display_name']})
+        logger.info(
+            "Final list view exported",
+            extra={"course": str(course), "user": self.request.session["display_name"]},
+        )
 
         return csv_response
 
     def post(self, request, *args, **kwargs):
         """Sets override grades for students on Canvas"""
 
-        course_id = self.kwargs['course_id']
+        course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
-        log_extra = {'course': str(course),
-                     'user': request.session['display_name']}
+        log_extra = {"course": str(course), "user": request.session["display_name"]}
 
-        if self.kwargs.get('submit', False):
+        if self.kwargs.get("submit", False):
             canvas = FlexCanvas(request)
 
             if not canvas.is_allow_override(course_id):
                 messages.error(
                     request,
                     "You must enable the 'Final Grade Override'"
-                    "in the settings on the Grades page in Canvas.")
+                    "in the settings on the Grades page in Canvas.",
+                )
 
-                logger.info('Allow Final Grade Override setting'
-                            'not checked in Canvas',
-                            extra=log_extra)
+                logger.info(
+                    "Allow Final Grade Override setting" "not checked in Canvas",
+                    extra=log_extra,
+                )
 
                 return HttpResponseRedirect(
-                    reverse(
-                        'instructor:final_grades',
-                        kwargs={'course_id': course_id}))
+                    reverse("instructor:final_grades", kwargs={"course_id": course_id})
+                )
 
             success = self._submit_final_grades(course_id, canvas)
             if not success:
                 messages.error(
                     request,
-                    "Something went wrong when submitting grades!"
-                    "Please try again.")
+                    "Something went wrong when submitting grades!" "Please try again.",
+                )
 
-                logger.info('Error in submitting final grades',
-                            extra=log_extra)
+                logger.info("Error in submitting final grades", extra=log_extra)
 
                 return HttpResponseRedirect(
-                    reverse(
-                        'instructor:final_grades',
-                        kwargs={'course_id': course_id}))
+                    reverse("instructor:final_grades", kwargs={"course_id": course_id})
+                )
 
-            logger.info('Completed final grades submission to Canvas',
-                        extra=log_extra)
+            logger.info("Completed final grades submission to Canvas", extra=log_extra)
 
-        release_total = request.POST.get('release_total') != 'on'
+        release_total = request.POST.get("release_total") != "on"
         canvas.get_course(course_id).update_settings(hide_final_grades=release_total)
 
         return HttpResponseRedirect(
-            reverse('instructor:instructor_home',
-                    kwargs={'course_id': course_id}))
+            reverse("instructor:instructor_home", kwargs={"course_id": course_id})
+        )
 
     def get_context_data(self, **kwargs):
         """Adds Canvas Assignment Groups to context for rendering grades
@@ -147,12 +158,11 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         """
 
         context = super().get_context_data(**kwargs)
-        course_id = self.kwargs['course_id']
-        groups, _ = FlexCanvas(self.request)\
-            .get_groups_and_enrollments(course_id)
-        context['groups'] = groups
+        course_id = self.kwargs["course_id"]
+        groups, _ = FlexCanvas(self.request).get_groups_and_enrollments(course_id)
+        context["groups"] = groups
 
-        context['canvas_domain'] = settings.CANVAS_DOMAIN
+        context["canvas_domain"] = settings.CANVAS_DOMAIN
 
         return context
 
@@ -161,9 +171,14 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
 
         def _set_override(student_name, enrollment_id, override, incomplete):
             canvas.set_override(enrollment_id, override, incomplete)
-            logger.info('Submitted %s final grade to Canvas', student_name,
-                        extra={'course': str(course),
-                               'user': self.request.session['display_name']})
+            logger.info(
+                "Submitted %s final grade to Canvas",
+                student_name,
+                extra={
+                    "course": str(course),
+                    "user": self.request.session["display_name"],
+                },
+            )
 
         course = models.Course.objects.get(pk=course_id)
         groups, enrollments = canvas.get_groups_and_enrollments(course_id)
@@ -172,19 +187,17 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         incomplete = [False]
         batch_size = 64
         for student_id, enrollment_id in enrollments.items():
-            student = models.UserProfile.objects\
-                .filter(pk=student_id)\
-                .first()
+            student = models.UserProfile.objects.filter(pk=student_id).first()
             if not student:
                 continue
-            override = grader.get_override_total(groups, student, course) \
-                or grader.get_default_total(groups, student)
+            override = grader.get_override_total(
+                groups, student, course
+            ) or grader.get_default_total(groups, student)
 
-            t = Thread(target=_set_override,
-                       args=(student.display_name,
-                             enrollment_id,
-                             override,
-                             incomplete))
+            t = Thread(
+                target=_set_override,
+                args=(student.display_name, enrollment_id, override, incomplete),
+            )
             threads.append(t)
 
             if len(threads) >= batch_size:
@@ -203,13 +216,13 @@ class AssessmentGroupView(views.InstructorFormView):
     to assignment groups on Canvas
     """
 
-    template_name = 'instructor/assessment_group_form.html'
+    template_name = "instructor/assessment_group_form.html"
     form_class = AssessmentGroupForm
-    success_reverse_name = 'instructor:final_grades'
+    success_reverse_name = "instructor:final_grades"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['canvas_domain'] = settings.CANVAS_DOMAIN
+        context["canvas_domain"] = settings.CANVAS_DOMAIN
 
         return context
 
@@ -225,15 +238,14 @@ class AssessmentGroupView(views.InstructorFormView):
 
         kwargs = super().get_form_kwargs()
 
-        course_id = self.kwargs['course_id']
+        course_id = self.kwargs["course_id"]
 
         canvas_course = FlexCanvas(self.request).get_course(course_id)
 
-        kwargs['canvas_course'] = canvas_course
-        kwargs['assessments'] = models.Assessment.objects.filter(
-            course_id=course_id)
-        
-        self.kwargs['hide_weights'] = not canvas_course.apply_assignment_group_weights
+        kwargs["canvas_course"] = canvas_course
+        kwargs["assessments"] = models.Assessment.objects.filter(course_id=course_id)
+
+        self.kwargs["hide_weights"] = not canvas_course.apply_assignment_group_weights
 
         return kwargs
 
@@ -269,8 +281,7 @@ class AssessmentGroupView(views.InstructorFormView):
         items = list(form.cleaned_data.items())
         for field, group in items:
             if group in duplicates:
-                form.add_error(field, ValidationError(
-                    'Matched groups must be unique'))
+                form.add_error(field, ValidationError("Matched groups must be unique"))
 
         if form.errors:
             response = super().form_invalid(form)
@@ -286,10 +297,10 @@ class AssessmentGroupView(views.InstructorFormView):
         Canvas group weights
         """
 
-        course_id = self.kwargs['course_id']
+        course_id = self.kwargs["course_id"]
 
         canvas_course = FlexCanvas(self.request).get_course(course_id)
-        course_name = canvas_course.__getattribute__('name')
+        course_name = canvas_course.__getattribute__("name")
 
         for assessment_id, group_id in form.cleaned_data.items():
             assessment = models.Assessment.objects.get(pk=assessment_id)
@@ -298,22 +309,24 @@ class AssessmentGroupView(views.InstructorFormView):
 
             group = canvas_course.get_assignment_group(group_id)
             group.edit(group_weight=assessment.default)
-            group_name = group.__getattribute__('name')
+            group_name = group.__getattribute__("name")
 
-            logger.info('Matched %s to Canvas %s group',
-                        assessment.title,
-                        group_name,
-                        extra={'course': course_name,
-                               'user': self.request.session['display_name']})
+            logger.info(
+                "Matched %s to Canvas %s group",
+                assessment.title,
+                group_name,
+                extra={
+                    "course": course_name,
+                    "user": self.request.session["display_name"],
+                },
+            )
 
         matched_group_ids = [int(id) for id in form.cleaned_data.values()]
-        canvas_group_ids = [
-            group.id for group in canvas_course.get_assignment_groups()]
+        canvas_group_ids = [group.id for group in canvas_course.get_assignment_groups()]
 
         unmatched_group_ids = list(
-            filter(
-                lambda id: id not in matched_group_ids,
-                canvas_group_ids))
+            filter(lambda id: id not in matched_group_ids, canvas_group_ids)
+        )
 
         for id in unmatched_group_ids:
             canvas_course.get_assignment_group(id).edit(group_weight=0)
@@ -322,9 +335,9 @@ class AssessmentGroupView(views.InstructorFormView):
 class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
     """FormView for instructor setup of flexible assessment for a course"""
 
-    template_name = 'instructor/instructor_form.html'
+    template_name = "instructor/instructor_form.html"
     form_class = BaseModelFormSet
-    success_reverse_name = 'instructor:instructor_home'
+    success_reverse_name = "instructor:instructor_home"
 
     def get_context_data(self, **kwargs):
         """Populates and adds assessment formset, date form, and options
@@ -336,7 +349,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             Request context
         """
         context = super().get_context_data(**kwargs)
-        course = context['course']
+        course = context["course"]
 
         canvas_course = FlexCanvas(self.request).get_course(course.id)
         course_settings = canvas_course.get_settings()
@@ -344,46 +357,52 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         if not course.open:
             hide_total = True
         else:
-            hide_total = course_settings['hide_final_grades']
+            hide_total = course_settings["hide_final_grades"]
 
-        context['date_form'] = CourseSettingsForm(
-            self.request.POST or None, instance=course, prefix='date')
-        context['options_form'] = OptionsForm(
-            self.request.POST or None, prefix='options', hide_total=hide_total, hide_weights=not canvas_course.apply_assignment_group_weights)
+        context["date_form"] = CourseSettingsForm(
+            self.request.POST or None, instance=course, prefix="date"
+        )
+        context["options_form"] = OptionsForm(
+            self.request.POST or None,
+            prefix="options",
+            hide_total=hide_total,
+            hide_weights=not canvas_course.apply_assignment_group_weights,
+        )
 
         if self.request.POST:
             AssessmentFormSet = get_assessment_formset()
-            context['formset'] = AssessmentFormSet(
-                self.request.POST, prefix='assessment')
+            context["formset"] = AssessmentFormSet(
+                self.request.POST, prefix="assessment"
+            )
 
-        elif self.request.GET.get('initial', False):
-            fields_str = self.request.GET.get('initial', '')
+        elif self.request.GET.get("initial", False):
+            fields_str = self.request.GET.get("initial", "")
             initial = self._to_initial_dict(fields_str)
 
             AssessmentFormSet = get_assessment_formset(extra=len(initial))
-            context['formset'] = AssessmentFormSet(
+            context["formset"] = AssessmentFormSet(
                 queryset=models.Assessment.objects.none(),
                 initial=initial,
-                prefix='assessment')
-            context['populated'] = True
+                prefix="assessment",
+            )
+            context["populated"] = True
 
         else:
-            qs = models.Assessment.objects.filter(
-                course=course)
+            qs = models.Assessment.objects.filter(course=course)
             if len(qs) > 0:
-                ids = qs.values_list('id', flat=True)
-                original_order = Case(*[When(id=id, then=pos)
-                                        for pos, id in enumerate(ids)])
+                ids = qs.values_list("id", flat=True)
+                original_order = Case(
+                    *[When(id=id, then=pos) for pos, id in enumerate(ids)]
+                )
                 qs = qs.order_by(original_order)
 
             AssessmentFormSet = get_assessment_formset()
-            context['formset'] = AssessmentFormSet(
-                queryset=qs, prefix='assessment')
+            context["formset"] = AssessmentFormSet(queryset=qs, prefix="assessment")
 
         return context
 
     def export_list(self):
-        course_id = self.kwargs['course_id']
+        course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
         csv_response = writer.assessments_csv(course)
@@ -393,44 +412,57 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         """Defines the assessment formset, date form, and options form
         for validation
         """
-        course_id = self.kwargs['course_id']
-        reset_param = request.GET.get('reset')
-        if reset_param == 'true':
+        course_id = self.kwargs["course_id"]
+        reset_param = request.GET.get("reset")
+        if reset_param == "true":
             course = models.Course.objects.get(pk=course_id)
-            user = models.UserProfile.objects.get(pk=self.request.session['_auth_user_id'])
+            user = models.UserProfile.objects.get(
+                pk=self.request.session["_auth_user_id"]
+            )
             old_user_course = models.UserCourse.objects.get(user=user, course=course)
-            
-            logger.info('RESETTING COURSE INITIATED BY %s',
-                        user.display_name,
-                        extra={'course': course.title,
-                               'user': self.request.session['display_name']})
-            
-            current_flexes = models.FlexAssessment.objects.filter(assessment__course=course.id)
-            logger.info('FLEXES RESET ARE %s',
-                        current_flexes,
-                        extra={'course': course.title,
-                                'user': self.request.session['display_name']})
-            
+
+            logger.info(
+                "RESETTING COURSE INITIATED BY %s",
+                user.display_name,
+                extra={
+                    "course": course.title,
+                    "user": self.request.session["display_name"],
+                },
+            )
+
+            current_flexes = models.FlexAssessment.objects.filter(
+                assessment__course=course.id
+            )
+            logger.info(
+                "FLEXES RESET ARE %s",
+                current_flexes,
+                extra={
+                    "course": course.title,
+                    "user": self.request.session["display_name"],
+                },
+            )
+
             course_title = course.title
             course.delete()
             new_course = utils.set_course(course_id, course_title)
             utils.set_user_course_enrollment(user, new_course, old_user_course.role)
-            
-            return HttpResponseRedirect(reverse('instructor:instructor_home',
-                                        kwargs={'course_id': course_id}))
-            
-        date_form = CourseSettingsForm(request.POST,
-                             instance=models.Course.objects.get(pk=course_id),
-                             prefix='date')
+
+            return HttpResponseRedirect(
+                reverse("instructor:instructor_home", kwargs={"course_id": course_id})
+            )
+
+        date_form = CourseSettingsForm(
+            request.POST,
+            instance=models.Course.objects.get(pk=course_id),
+            prefix="date",
+        )
 
         AssessmentFormSet = get_assessment_formset()
 
-        formset = AssessmentFormSet(request.POST, prefix='assessment')
-        options_form = OptionsForm(request.POST, prefix='options')
+        formset = AssessmentFormSet(request.POST, prefix="assessment")
+        options_form = OptionsForm(request.POST, prefix="options")
 
-        if formset.is_valid() \
-                and date_form.is_valid() \
-                and options_form.is_valid():
+        if formset.is_valid() and date_form.is_valid() and options_form.is_valid():
             return self.forms_valid(formset, date_form, options_form)
 
         elif not formset.is_valid():
@@ -461,18 +493,19 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             TemplateResponse if error
         """
 
-        course_id = self.kwargs['course_id']
+        course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
         self._set_flex_availability(date_form, course)
 
         options_form.clean()
 
-        hide_total = options_form.cleaned_data['hide_total']
-        ignore_conflicts = options_form.cleaned_data['ignore_conflicts']
+        hide_total = options_form.cleaned_data["hide_total"]
+        ignore_conflicts = options_form.cleaned_data["ignore_conflicts"]
 
         assessments, conflict_students = self._save_assessments(
-            formset.forms, course, ignore_conflicts)
+            formset.forms, course, ignore_conflicts
+        )
 
         if conflict_students and not ignore_conflicts:
             return super().form_invalid(formset)
@@ -488,29 +521,37 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         # Update Canvas settings
         canvas_course = FlexCanvas(self.request).get_course(course_id)
         canvas_course.update_settings(hide_final_grades=hide_total)
-        hide_weights = options_form.cleaned_data['hide_weights']
-        canvas_course.update(course={'apply_assignment_group_weights': not hide_weights})
+        hide_weights = options_form.cleaned_data["hide_weights"]
+        canvas_course.update(
+            course={"apply_assignment_group_weights": not hide_weights}
+        )
 
         return HttpResponseRedirect(self.get_success_url())
 
     def _set_flex_availability(self, date_form, course):
-        old_dts = tuple(map(
-            lambda dt: dt.astimezone(pytz.timezone('America/Vancouver'))
-            if dt is not None else 'None',
-            (course.open, course.close)))
+        old_dts = tuple(
+            map(
+                lambda dt: dt.astimezone(pytz.timezone("America/Vancouver"))
+                if dt is not None
+                else "None",
+                (course.open, course.close),
+            )
+        )
 
         date_form.save()
 
-        new_dts = (date_form.cleaned_data['open'],
-                   date_form.cleaned_data['close'])
+        new_dts = (date_form.cleaned_data["open"], date_form.cleaned_data["close"])
 
         if old_dts != new_dts:
-            logger.info('Updated flex availability '
-                        'from %s - %s to %s - %s',
-                        *old_dts,
-                        *new_dts,
-                        extra={'course': str(course),
-                               'user': self.request.session['display_name']})
+            logger.info(
+                "Updated flex availability " "from %s - %s to %s - %s",
+                *old_dts,
+                *new_dts,
+                extra={
+                    "course": str(course),
+                    "user": self.request.session["display_name"],
+                }
+            )
 
     def _save_assessments(self, forms, course, ignore_conflicts):
         assessments = []
@@ -526,19 +567,22 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             if curr_conflict_students and not ignore_conflicts:
                 messages.warning(
                     self.request,
-                    '{} flex allocations are out of range for {}'
-                        .format(len(curr_conflict_students), assessment.title))
+                    "{} flex allocations are out of range for {}".format(
+                        len(curr_conflict_students), assessment.title
+                    ),
+                )
 
         return assessments, conflict_students
 
     def _create_assessments(self, course, assessments):
-        log_extra = {'course': str(course),
-                     'user': self.request.session['display_name']}
+        log_extra = {
+            "course": str(course),
+            "user": self.request.session["display_name"],
+        }
         assessment_created = False
 
         for assessment in assessments:
-            old_assessment = models.Assessment.objects \
-                .filter(pk=assessment.id).first()
+            old_assessment = models.Assessment.objects.filter(pk=assessment.id).first()
 
             assessment.save()
 
@@ -546,41 +590,51 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
             if not old_assessment:
                 assessment_created = True
-                logger.info('%s created (default %s%%, min %s%%, max %s%%)',
-                            assessment.title,
-                            assessment.default,
-                            assessment.min,
-                            assessment.max,
-                            extra=log_extra)
+                logger.info(
+                    "%s created (default %s%%, min %s%%, max %s%%)",
+                    assessment.title,
+                    assessment.default,
+                    assessment.min,
+                    assessment.max,
+                    extra=log_extra,
+                )
             else:
-                log_allocations = (old_assessment.default,
-                                   old_assessment.min,
-                                   old_assessment.max,
-                                   assessment.default,
-                                   assessment.min,
-                                   assessment.max)
+                log_allocations = (
+                    old_assessment.default,
+                    old_assessment.min,
+                    old_assessment.max,
+                    assessment.default,
+                    assessment.min,
+                    assessment.max,
+                )
                 if log_allocations[:3] != log_allocations[3:]:
-                    logger.info('%s updated '
-                                '(default %s%%, min %s%%, max %s%%) '
-                                'to (default %s%%, min %s%%, max %s%%)',
-                                assessment.title,
-                                *log_allocations,
-                                extra=log_extra)
+                    logger.info(
+                        "%s updated "
+                        "(default %s%%, min %s%%, max %s%%) "
+                        "to (default %s%%, min %s%%, max %s%%)",
+                        assessment.title,
+                        *log_allocations,
+                        extra=log_extra
+                    )
 
         return assessment_created
 
     def _delete_assessments(self, course, assessments):
-        assessments_to_delete = course.assessment_set \
-            .exclude(id__in=[assessment.id for assessment in assessments])
+        assessments_to_delete = course.assessment_set.exclude(
+            id__in=[assessment.id for assessment in assessments]
+        )
 
         assessment_deleted = False
         if assessments_to_delete:
             assessment_deleted = True
-            logger.info('Deleted assessments: %s',
-                        ', '.join(assessments_to_delete.values_list(
-                            'title', flat=True)),
-                        extra={'course': str(course),
-                               'user': self.request.session['display_name']})
+            logger.info(
+                "Deleted assessments: %s",
+                ", ".join(assessments_to_delete.values_list("title", flat=True)),
+                extra={
+                    "course": str(course),
+                    "user": self.request.session["display_name"],
+                },
+            )
             assessments_to_delete.delete()
 
         return assessment_deleted
@@ -589,19 +643,24 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         course.reset_students(conflict_students)
 
         for student in conflict_students:
-            logger.info('Reset flex allocations and comment for %s '
-                        'due to out of range allocations',
-                        student.display_name,
-                        extra={'course': str(course),
-                               'user': self.request.session['display_name']})
+            logger.info(
+                "Reset flex allocations and comment for %s "
+                "due to out of range allocations",
+                student.display_name,
+                extra={
+                    "course": str(course),
+                    "user": self.request.session["display_name"],
+                },
+            )
 
     def _reset_all_students(self, course):
         course.reset_all_students()
 
-        logger.info('Reset all student flex allocations and comments '
-                    'due to new or deleted assessment(s)',
-                    extra={'course': str(course),
-                           'user': self.request.session['display_name']})
+        logger.info(
+            "Reset all student flex allocations and comments "
+            "due to new or deleted assessment(s)",
+            extra={"course": str(course), "user": self.request.session["display_name"]},
+        )
 
     def _to_initial_dict(self, fields_str):
         """Converts assessment data for formset initial data
@@ -622,7 +681,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         fields = json.loads(fields_str)
         initial = []
-        names = ('title', 'default', 'min', 'max')
+        names = ("title", "default", "min", "max")
         for values in fields:
             assessment_fields = {}
             for name, value in zip(names, values):
@@ -635,15 +694,15 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 class OverrideStudentAssessmentView(views.InstructorFormView):
     """FormView for instructor overriding student flexible allocations"""
 
-    template_name = 'instructor/override_student_form.html'
+    template_name = "instructor/override_student_form.html"
     form_class = StudentAssessmentBaseForm
 
     def get_success_url(self):
-        previous = self.request.GET.get('previous', '')
-        if previous == 'final':
-            self.success_reverse_name = 'instructor:final_grades'
+        previous = self.request.GET.get("previous", "")
+        if previous == "final":
+            self.success_reverse_name = "instructor:final_grades"
         else:
-            self.success_reverse_name = 'instructor:percentage_list'
+            self.success_reverse_name = "instructor:percentage_list"
 
         return super().get_success_url()
 
@@ -658,12 +717,14 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         """
 
         context = super().get_context_data(**kwargs)
-        student_name = get_object_or_404(models.UserProfile, pk=self.kwargs['pk']).display_name
-        context['student_name'] = student_name
+        student_name = get_object_or_404(
+            models.UserProfile, pk=self.kwargs["pk"]
+        ).display_name
+        context["student_name"] = student_name
 
-        previous = self.request.GET.get('previous', '')
+        previous = self.request.GET.get("previous", "")
 
-        context['previous'] = previous
+        context["previous"] = previous
 
         return context
 
@@ -677,14 +738,14 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         """
 
         kwargs = super().get_form_kwargs()
-        user_id = self.kwargs['pk']
-        course_id = self.kwargs['course_id']
+        user_id = self.kwargs["pk"]
+        course_id = self.kwargs["course_id"]
 
         if not user_id or not course_id:
             raise PermissionDenied
 
-        kwargs['user_id'] = user_id
-        kwargs['course_id'] = course_id
+        kwargs["user_id"] = user_id
+        kwargs["course_id"] = course_id
 
         return kwargs
 
@@ -704,8 +765,8 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
             TemplateResponse if error in form
         """
 
-        user_id = self.kwargs['pk']
-        course_id = self.kwargs['course_id']
+        user_id = self.kwargs["pk"]
+        course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
         if not user_id or not course_id:
@@ -715,41 +776,51 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
             if flex > assessment.max:
-                form.add_error(assessment_id, ValidationError(
-                    'Flex should be less than or equal to max'))
+                form.add_error(
+                    assessment_id,
+                    ValidationError("Flex should be less than or equal to max"),
+                )
             elif flex < assessment.min:
-                form.add_error(assessment_id, ValidationError(
-                    'Flex should be greater than or equal to min'))
+                form.add_error(
+                    assessment_id,
+                    ValidationError("Flex should be greater than or equal to min"),
+                )
 
         if form.errors:
             response = super().form_invalid(form)
             return response
 
-        log_extra = {'course': str(course),
-                     'user': self.request.session['display_name']}
+        log_extra = {
+            "course": str(course),
+            "user": self.request.session["display_name"],
+        }
 
         for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
             flex_assessment = assessment.flexassessment_set.filter(
-                user__user_id=user_id).first()
+                user__user_id=user_id
+            ).first()
             old_flex = flex_assessment.flex
             flex_assessment.flex = flex
             flex_assessment.save()
 
             if old_flex is None:
-                logger.info('Set %s flex for %s to %s%%',
-                            flex_assessment.user.display_name,
-                            assessment.title,
-                            flex,
-                            extra=log_extra)
+                logger.info(
+                    "Set %s flex for %s to %s%%",
+                    flex_assessment.user.display_name,
+                    assessment.title,
+                    flex,
+                    extra=log_extra,
+                )
             elif old_flex != flex:
-                logger.info('Updated %s flex for %s '
-                            'from %s%% to %s%%',
-                            flex_assessment.user.display_name,
-                            assessment.title,
-                            old_flex,
-                            flex,
-                            extra=log_extra)
+                logger.info(
+                    "Updated %s flex for %s " "from %s%% to %s%%",
+                    flex_assessment.user.display_name,
+                    assessment.title,
+                    old_flex,
+                    flex,
+                    extra=log_extra,
+                )
 
         response = super().form_valid(form)
         return response
@@ -758,16 +829,15 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
 class ImportAssessmentView(views.InstructorFormView):
     """FormView for importing assessments"""
 
-    template_name = 'instructor/assessment_upload.html'
+    template_name = "instructor/assessment_upload.html"
     form_class = AssessmentFileForm
-    success_reverse_name = 'instructor:instructor_form'
+    success_reverse_name = "instructor:instructor_form"
 
     def get_success_url(self):
         """Appends imported assessment data to url as parameter"""
 
-        fields_str = json.dumps(self.fields, separators=(',', ':'))
-        success_url = super().get_success_url() \
-            + '?initial={}'.format(fields_str)
+        fields_str = json.dumps(self.fields, separators=(",", ":"))
+        success_url = super().get_success_url() + "?initial={}".format(fields_str)
 
         return success_url
 
@@ -787,17 +857,16 @@ class ImportAssessmentView(views.InstructorFormView):
             TemplateResponse if error
         """
 
-        file_header = self.request.FILES.get('assessments', None)
+        file_header = self.request.FILES.get("assessments", None)
         if file_header is None:
             return super().form_invalid(form)
-        encoded_file = TextIOWrapper(file_header.file,
-                                     encoding=self.request.encoding)
+        encoded_file = TextIOWrapper(file_header.file, encoding=self.request.encoding)
 
         with encoded_file as csv_file:
             data = []
             reader = csv.reader(csv_file)
             headers = next(reader, None)
-            if headers != ['Assessment', 'Default', 'Minimum', 'Maximum']:
+            if headers != ["Assessment", "Default", "Minimum", "Maximum"]:
                 return super().form_invalid(form)
 
             for row in reader:
@@ -814,11 +883,12 @@ class ImportAssessmentView(views.InstructorFormView):
 
         self.fields = data
 
-        course_id = self.kwargs['course_id']
+        course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
-        logger.info('Successfully imported assessments (not yet saved)',
-                    extra={'course': str(course),
-                           'user': self.request.session['display_name']})
+        logger.info(
+            "Successfully imported assessments (not yet saved)",
+            extra={"course": str(course), "user": self.request.session["display_name"]},
+        )
 
         return super().form_valid(form)

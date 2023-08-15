@@ -11,8 +11,8 @@ def get_launch_data_storage():
 
 def get_launch_url(request):
     target_link_uri = request.POST.get(
-        'target_link_uri',
-        request.GET.get('target_link_uri'))
+        "target_link_uri", request.GET.get("target_link_uri")
+    )
     if not target_link_uri:
         raise Exception('Missing "target_link_uri" param')
 
@@ -20,8 +20,7 @@ def get_launch_url(request):
 
 
 def get_lti_config_path():
-    return os.path.join(settings.BASE_DIR, 'configs',
-                        settings.LTI_CONFIG)
+    return os.path.join(settings.BASE_DIR, "configs", settings.LTI_CONFIG)
 
 
 def get_tool_conf():

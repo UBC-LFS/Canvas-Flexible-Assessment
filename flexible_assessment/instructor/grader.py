@@ -22,12 +22,12 @@ def get_default_total(groups, student):
     scores = []
     weights = []
     for assessment in groups.values():
-        grades = assessment['grade_list']['grades']
+        grades = assessment["grade_list"]["grades"]
         for curr_id, score in grades:
             if student_id_str == curr_id:
                 if score is not None:
                     scores.append(score)
-                    weights.append(assessment['group_weight'])
+                    weights.append(assessment["group_weight"])
                 break
 
     score_weight = zip(scores, weights)
@@ -42,9 +42,11 @@ def get_default_total(groups, student):
 
 def valid_flex(student, course):
     null_flex_assessments = student.flexassessment_set.filter(
-        assessment__course=course, flex__isnull=True)
+        assessment__course=course, flex__isnull=True
+    )
     flex_assessments_with_flex = student.flexassessment_set.filter(
-        assessment__course=course, flex__isnull=False)
+        assessment__course=course, flex__isnull=False
+    )
     flex_sum = sum([fa.flex for fa in flex_assessments_with_flex])
 
     return (not null_flex_assessments) and (flex_sum == 100)
@@ -78,9 +80,7 @@ def get_override_total(groups, student, course):
     flex_set = []
     assessments = course.assessment_set.all()
     for assessment in assessments:
-        flex = assessment.flexassessment_set.filter(user=student)\
-            .first()\
-            .flex
+        flex = assessment.flexassessment_set.filter(user=student).first().flex
         score = get_score(groups, assessment.group, student)
 
         if score is not None:
@@ -117,7 +117,8 @@ def get_averages(groups, course):
     """
 
     students = UserProfile.objects.filter(
-        usercourse__role=Roles.STUDENT, usercourse__course=course)
+        usercourse__role=Roles.STUDENT, usercourse__course=course
+    )
 
     overrides = []
     defaults = []
@@ -138,9 +139,8 @@ def get_averages(groups, course):
     averages = []
     for curr_list in [overrides, defaults, diffs]:
         averages.append(
-            round(
-                sum(curr_list) / len(curr_list),
-                2) if len(curr_list) != 0 else 0)
+            round(sum(curr_list) / len(curr_list), 2) if len(curr_list) != 0 else 0
+        )
 
     return averages
 
@@ -149,9 +149,9 @@ def get_group_weight(groups, id):
     """Gets Canvas assignment group weight"""
 
     try:
-        return round(groups[str(id)]['group_weight'], 2)
+        return round(groups[str(id)]["group_weight"], 2)
     except Exception:
-        return ''
+        return ""
 
 
 def get_score(groups, group_id, student):
@@ -160,7 +160,7 @@ def get_score(groups, group_id, student):
     student_id = student.user_id
     group_id_str = str(group_id)
     student_id_str = str(student_id)
-    grades = groups[group_id_str]['grade_list']['grades']
+    grades = groups[group_id_str]["grade_list"]["grades"]
     for curr_id, score in grades:
         if student_id_str == curr_id:
             return score

@@ -1,103 +1,107 @@
 {% extends "instructor/instructor_base.html" %}
 {% load instructor_tags %}
 {% load django_bootstrap5 %}
-
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
-
-{% block nav_item_final %}{% if previous == 'final' %}active{% endif %}{% endblock nav_item_final %} 
-{% block nav_item_percentages %}{% if previous != 'final' %}active{% endif %}{% endblock nav_item_percentages %} 
-
+{% block nav_item_final %}
+    {% if previous == 'final' %}active{% endif %}
+{% endblock nav_item_final %}
+{% block nav_item_percentages %}
+    {% if previous != 'final' %}active{% endif %}
+{% endblock nav_item_percentages %}
 {% block content %}
-
-<form action="" method="post">
-	{% csrf_token %}
-
-	{% bootstrap_form_errors form type='non_fields' %}
-
-	{% for hidden_field in form.hidden_fields %}
-		{% bootstrap_field hidden_field %}
-	{% endfor %}
-
-    <div class="mt-5 mb-5">
-        <div class="d-flex align-items-center justify-content-center">
-            <div class="col-9">
-                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                    <div class="card-header">
-                        <h3>Assessments</h3>
-                        <h5>Student: {{ student_name }}</h5>
-                    </div>
-                    <div class="card-body pt-2 pb-3">
-                        <table class="table table-striped mb-2" style="table-layout: fixed;">
-                            <thead>
-                                <tr>
-                                    <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Title</th>
-                                    <th class="text-center align-middle" style="font-size: 110%;">Desired %</th>
-                                    <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
-                                    <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
-                                    <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for field in form.visible_fields %}
-                                    {% if field.name != "comment" and field.name != "agreement" %}
-                                        {% get_default_min_max field.name as default_min_max %}
-                                        <tr height="60px">
-                                            <td class="text-center align-middle">{{ field.label }}</td>
-                                            {% not_flexible default_min_max as fixed %}
-                                            {% if fixed %}
-                                                <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
-                                                    <input type="{{ field.field.widget.input_type }}"
-                                                        name="{{ field.html_name }}"
-                                                        value="{{ default_min_max.0 }}"
-                                                        disabled
-                                                        class="form-control">
-                                                    <input type="hidden"
-                                                        name="{{ field.html_name }}"
-                                                        value="{{ default_min_max.0 }}">
-                                                </td>
-                                            {% else %}
-                                                <td class="flex text-center align-middle" style="text-align: center; width: 25%;">
-                                                    {% bootstrap_field field show_label=False placeholder='' wrapper_class='mb-3; vertical-align: middle;' %}
-                                                </td>
-                                            {% endif %}
-                                            <td class="text-center align-middle">{{ default_min_max.0 }}</td>
-                                            <td class="text-center align-middle">{{ default_min_max.1 }}</td>
-                                            <td class="text-center align-middle">{{ default_min_max.2 }}</td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th class="text-center align-middle">Total</th>
-                                    <th class="text-center align-middle"><span id="total"></span></th>
-                                    <td colspan="3"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                        <p class="fw-light m-0">All assessments should be given desired % and total flex adds up to 100%</p>
+    <form action="" method="post">
+        {% csrf_token %}
+        {% bootstrap_form_errors form type='non_fields' %}
+        {% for hidden_field in form.hidden_fields %}
+            {% bootstrap_field hidden_field %}
+        {% endfor %}
+        <div class="mt-5 mb-5">
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="col-9">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <div class="card-header">
+                            <h3>Assessments</h3>
+                            <h5>Student: {{ student_name }}</h5>
+                        </div>
+                        <div class="card-body pt-2 pb-3">
+                            <table class="table table-striped mb-2" style="table-layout: fixed;">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Title</th>
+                                        <th class="text-center align-middle" style="font-size: 110%;">Desired %</th>
+                                        <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
+                                        <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
+                                        <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for field in form.visible_fields %}
+                                        {% if field.name != "comment" and field.name != "agreement" %}
+                                            {% get_default_min_max field.name as default_min_max %}
+                                            <tr height="60px">
+                                                <td class="text-center align-middle">{{ field.label }}</td>
+                                                {% not_flexible default_min_max as fixed %}
+                                                {% if fixed %}
+                                                    <td class="flex text-center align-middle"
+                                                        style="text-align: center;
+                                                               width: 25%">
+                                                        <input type="{{ field.field.widget.input_type }}"
+                                                               name="{{ field.html_name }}"
+                                                               value="{{ default_min_max.0 }}"
+                                                               disabled
+                                                               class="form-control">
+                                                        <input type="hidden"
+                                                               name="{{ field.html_name }}"
+                                                               value="{{ default_min_max.0 }}">
+                                                    </td>
+                                                {% else %}
+                                                    <td class="flex text-center align-middle"
+                                                        style="text-align: center;
+                                                               width: 25%">
+                                                        {% bootstrap_field field show_label=False placeholder='' wrapper_class='mb-3; vertical-align: middle;' %}
+                                                    </td>
+                                                {% endif %}
+                                                <td class="text-center align-middle">{{ default_min_max.0 }}</td>
+                                                <td class="text-center align-middle">{{ default_min_max.1 }}</td>
+                                                <td class="text-center align-middle">{{ default_min_max.2 }}</td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th class="text-center align-middle">Total</th>
+                                        <th class="text-center align-middle">
+                                            <span id="total"></span>
+                                        </th>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <p class="fw-light m-0">
+                                All assessments should be given desired % and total flex adds up to 100%
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="d-flex align-items-center justify-content-center mt-4">
-            <div class="d-flex justify-content-between col-9">
-                {% if previous == 'final' %}
-                    <a href="{% url 'instructor:final_grades' course.id %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
-                {% else %}
-                    <a href="{% url 'instructor:percentage_list' course.id %}" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
-                {% endif %}
-                <button class="btn btn-primary" type="submit">Submit</button>
+            <div class="d-flex align-items-center justify-content-center mt-4">
+                <div class="d-flex justify-content-between col-9">
+                    {% if previous == 'final' %}
+                        <a href="{% url 'instructor:final_grades' course.id %}"
+                           class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+                    {% else %}
+                        <a href="{% url 'instructor:percentage_list' course.id %}"
+                           class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+                    {% endif %}
+                    <button class="btn btn-primary" type="submit">Submit</button>
+                </div>
             </div>
         </div>
-    </div>
-</form>
-
-
-<script>
+    </form>
+    <script>
 	check_valid();
 
 	$(document).on('change', '.flex', function () {
@@ -124,5 +128,5 @@
 		};
 	};
 
-</script>
+    </script>
 {% endblock %}

@@ -1,7 +1,10 @@
 import uuid
 
-from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
-                                        PermissionsMixin)
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
 
 
@@ -14,8 +17,9 @@ class UserProfileManager(BaseUserManager):
     create_superuser(user_id, login_id, display_name, role, password=None)
         Creates superuser"""
 
-    def create_user(self, user_id, login_id,
-                    display_name, superuser=False, password=None):
+    def create_user(
+        self, user_id, login_id, display_name, superuser=False, password=None
+    ):
         """Regular User creation
         Parameters
         ----------
@@ -35,15 +39,16 @@ class UserProfileManager(BaseUserManager):
             user_id=user_id,
             login_id=login_id,
             display_name=display_name,
-            superuser=superuser
+            superuser=superuser,
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, user_id, login_id,
-                         display_name, superuser=True, password=None):
+    def create_superuser(
+        self, user_id, login_id, display_name, superuser=True, password=None
+    ):
         """Superuser creation
         Parameters
         ----------
@@ -60,17 +65,15 @@ class UserProfileManager(BaseUserManager):
         """
 
         user = self.create_user(
-            user_id,
-            login_id,
-            display_name,
-            superuser=superuser,
-            password=password)
+            user_id, login_id, display_name, superuser=superuser, password=password
+        )
         user.save(using=self._db)
         return user
 
 
 class Roles(models.IntegerChoices):
     """Role choices available for user mapped to an integer"""
+
     ADMIN = 1
     TEACHER = 2
     TA = 3
@@ -100,11 +103,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     objects = UserProfileManager()
 
-    USERNAME_FIELD = 'user_id'
-    REQUIRED_FIELDS = ['login_id', 'display_name']
+    USERNAME_FIELD = "user_id"
+    REQUIRED_FIELDS = ["login_id", "display_name"]
 
     def __str__(self):
-        return '{}, {}'.format(self.login_id, self.display_name)
+        return "{}, {}".format(self.login_id, self.display_name)
 
     @property
     def is_superuser(self):
@@ -112,10 +115,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_staff(self):
-        return self.superuser 
+        return self.superuser
 
     class Meta:
-        ordering = ['display_name']
+        ordering = ["display_name"]
 
 
 class Course(models.Model):
@@ -143,8 +146,16 @@ class Course(models.Model):
     title = models.CharField(max_length=100)
     open = models.DateTimeField(null=True)
     close = models.DateTimeField(null=True)
-    welcome_instructions = models.TextField(blank=True, null=True, default="Welcome to Flexible Assessment, the system that allows students to decide how their final grades will be weighted. Please enter your desired weights in the fields below, agree to the terms, and click Submit.")
-    comment_instructions = models.TextField(blank=True, null=True, default="Please enter your reasons for the choices you made.")
+    welcome_instructions = models.TextField(
+        blank=True,
+        null=True,
+        default="Welcome to Flexible Assessment, the system that allows students to decide how their final grades will be weighted. Please enter your desired weights in the fields below, agree to the terms, and click Submit.",
+    )
+    comment_instructions = models.TextField(
+        blank=True,
+        null=True,
+        default="Please enter your reasons for the choices you made.",
+    )
 
     def __str__(self):
         return "{} - {}".format(self.title, self.id)
@@ -152,22 +163,24 @@ class Course(models.Model):
     def set_flex_assessments(self, assessment):
         """Creates flex assessment objects for new assessments in the course"""
 
-        user_courses = self.usercourse_set.filter(
-            role=Roles.STUDENT).select_related('user')
+        user_courses = self.usercourse_set.filter(role=Roles.STUDENT).select_related(
+            "user"
+        )
         users = [user_course.user for user_course in user_courses]
         flex_assessments = [
             FlexAssessment(user=user, assessment=assessment)
             for user in users
             if not FlexAssessment.objects.filter(
-                user=user, assessment=assessment).exists()]
+                user=user, assessment=assessment
+            ).exists()
+        ]
         FlexAssessment.objects.bulk_create(flex_assessments)
 
     def reset_students(self, students):
         """Resets flex allocations and comments for students"""
 
         for student in students:
-            fas_to_reset = student.flexassessment_set \
-                .filter(assessment__course=self)
+            fas_to_reset = student.flexassessment_set.filter(assessment__course=self)
             fas_to_reset.update(flex=None)
             student.usercomment_set.filter(course=self).update(comment="")
 
@@ -199,10 +212,8 @@ class UserCourse(models.Model):
     class Meta:
         constraints = [
             models.constraints.UniqueConstraint(
-                fields=[
-                    'user_id',
-                    'course_id'],
-                name='User and Course unique')
+                fields=["user_id", "course_id"], name="User and Course unique"
+            )
         ]
 
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -210,7 +221,7 @@ class UserCourse(models.Model):
     role = models.IntegerField(choices=Roles.choices)
 
     def __str__(self):
-        return '{}, {}, {}'.format(self.user.display_name, self.course.title, self.role)
+        return "{}, {}, {}".format(self.user.display_name, self.course.title, self.role)
 
 
 class Assessment(models.Model):
@@ -246,7 +257,7 @@ class Assessment(models.Model):
     group = models.IntegerField(null=True)
 
     def __str__(self):
-        return '{}, {}'.format(self.title, self.course.title)
+        return "{}, {}".format(self.title, self.course.title)
 
     def check_valid_flex(self):
         """Returns students with flex allocations
@@ -255,9 +266,10 @@ class Assessment(models.Model):
 
         flex_assessments = self.flexassessment_set.exclude(flex__isnull=True)
 
-        conflict_fas = flex_assessments.filter(flex__lt=self.min) \
-            | flex_assessments.filter(flex__gt=self.max)
-        conflict_fas = conflict_fas.select_related('user')
+        conflict_fas = flex_assessments.filter(
+            flex__lt=self.min
+        ) | flex_assessments.filter(flex__gt=self.max)
+        conflict_fas = conflict_fas.select_related("user")
 
         conflict_students = {fa.user for fa in conflict_fas}
 
@@ -284,7 +296,9 @@ class FlexAssessment(models.Model):
     flex = models.DecimalField(null=True, blank=True, max_digits=5, decimal_places=2)
 
     def __str__(self):
-        return '{}, {}, {}'.format(self.user.display_name, self.assessment.title, self.flex)
+        return "{}, {}, {}".format(
+            self.user.display_name, self.assessment.title, self.flex
+        )
 
 
 class UserComment(models.Model):
@@ -305,5 +319,4 @@ class UserComment(models.Model):
     comment = models.TextField(max_length=100, default="", blank=True)
 
     def __str__(self):
-        return '{}, {} comment'.format(self.user.display_name,
-                                       self.course.title)
+        return "{}, {} comment".format(self.user.display_name, self.course.title)

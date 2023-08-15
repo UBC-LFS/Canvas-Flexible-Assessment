@@ -12,7 +12,7 @@ def add_flex_assessments(sender, instance, created, **kwargs):
     if created and instance.role == Roles.STUDENT:
         assessments = instance.course.assessment_set.all()
         flex_assessments = [
-            FlexAssessment(
-                user=user,
-                assessment=assessment) for assessment in assessments]
+            FlexAssessment(user=user, assessment=assessment)
+            for assessment in assessments
+        ]
         FlexAssessment.objects.bulk_create(flex_assessments)

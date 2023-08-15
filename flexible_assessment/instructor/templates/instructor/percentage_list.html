@@ -1,68 +1,77 @@
 {% extends "instructor/instructor_base.html" %}
 {% load instructor_tags %}
-
-{% block nav_item_percentages %}active{% endblock nav_item_percentages %} 
+{% block nav_item_percentages %}
+    active
+{% endblock nav_item_percentages %}
 {% block content %}
-
-<div class="mt-5 mb-5">
-    <div class="d-flex align-items-center justify-content-center">
-        <div class="col-11">
-            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
-                    <h3 class="mb-0">Student Chosen Weights</h3>
-                    <div class="dropdown-center">
-                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" style="border-radius: 1em;">Export</button>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item" href="{% url 'instructor:percentage_list_export' course.id %}">
-                                    <i class="bi bi-download"></i> Percentages</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {% if not course.close %}disabled{% endif %}" href="{% url 'instructor:log_export' course.id %}">
-                                    <i class="bi bi-download"></i> Change Log</a>
-                            </li>
-                        </ul>
+    <div class="mt-5 mb-5">
+        <div class="d-flex align-items-center justify-content-center">
+            <div class="col-11">
+                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                    <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
+                        <h3 class="mb-0">Student Chosen Weights</h3>
+                        <div class="dropdown-center">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    style="border-radius: 1em">Export</button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="{% url 'instructor:percentage_list_export' course.id %}">
+                                        <i class="bi bi-download"></i> Percentages</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {% if not course.close %}disabled{% endif %}"
+                                       href="{% url 'instructor:log_export' course.id %}">
+                                        <i class="bi bi-download"></i> Change Log</a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-                <div class="card-body pt-2 pb-3">
-                    <p class="fw-light m-0 pb-2">The table below shows the students' chosen percentages.
-                        Students who have not made any choices appear blank and their final grades will be calculated using the Default values you set on the Assessments page. To edit a student's choices, click on their name.
-                    </p>
-                    <table id='percentage' class="table table-striped mb-4 nowrap" width="100%">
-                        <thead>
-                            <tr>
-                                <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
-                                {% for assessment in course.assessment_set.all %}
-                                    <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }}</th>
-                                {% endfor %}
-                                <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Comment</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student in student_list %}
+                    <div class="card-body pt-2 pb-3">
+                        <p class="fw-light m-0 pb-2">
+                            The table below shows the students' chosen percentages.
+                            Students who have not made any choices appear blank and their final grades will be calculated using the Default values you set on the Assessments page. To edit a student's choices, click on their name.
+                        </p>
+                        <table id='percentage' class="table table-striped mb-4 nowrap" width="100%">
+                            <thead>
                                 <tr>
-                                    <td class="text-center align-middle text-break"><a
-                                            href="{% url 'instructor:override_student_form_percentage' course.id student.user_id %}?previous=percentages">{{ student.display_name }}</a></td>
+                                    <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
                                     {% for assessment in course.assessment_set.all %}
-                                        {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
-                                            <td class="text-center align-middle">{{ flex_assessment.flex|to_str|default_if_none:"-" }}</td>
-                                        {% endwith %}
+                                        <th class="assessment text-center align-middle" style="font-size: 110%;">
+                                            {{ assessment.title }}
+                                        </th>
                                     {% endfor %}
-                                    {% with student.usercomment_set.all|comment_filter:course.id as user_comment %}
-                                        <td class="align-middle text-break">{{ user_comment.comment }}</td>
-                                    {% endwith %}
+                                    <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Comment</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {% for student in student_list %}
+                                    <tr>
+                                        <td class="text-center align-middle text-break">
+                                            <a href="{% url 'instructor:override_student_form_percentage' course.id student.user_id %}?previous=percentages">{{ student.display_name }}</a>
+                                        </td>
+                                        {% for assessment in course.assessment_set.all %}
+                                            {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
+                                                <td class="text-center align-middle">
+                                                    {{ flex_assessment.flex|to_str|default_if_none:"-" }}
+                                                </td>
+                                            {% endwith %}
+                                        {% endfor %}
+                                        {% with student.usercomment_set.all|comment_filter:course.id as user_comment %}
+                                            <td class="align-middle text-break">{{ user_comment.comment }}</td>
+                                        {% endwith %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<script>
+    <script>
     $(document).ready(function () {
         var colspan = $('.assessment').length;
 
@@ -76,5 +85,5 @@
             ]            
         });
     });
-</script>
+    </script>
 {% endblock %}

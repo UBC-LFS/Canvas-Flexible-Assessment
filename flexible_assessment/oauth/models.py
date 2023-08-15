@@ -7,7 +7,7 @@ class CanvasOAuth2Token(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='oauth2_token',
+        related_name="oauth2_token",
     )
 
     access_token = models.BinaryField()

@@ -1,59 +1,67 @@
 {% extends "instructor/instructor_base.html" %}
 {% load django_bootstrap5 %}
-
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
-
-{% block nav_item_final %}active{% endblock nav_item_final %} 
+{% block nav_item_final %}
+    active
+{% endblock nav_item_final %}
 {% block content %}
-
-<form action="" method="post">
-	{% csrf_token %}
-
-	{% bootstrap_form_errors form type='non_fields' %}
-
-	{% for hidden_field in form.hidden_fields %}
-		{{ hidden_field.errors }}
-		{{ hidden_field }}
-	{% endfor %}
-
-    <div class="mt-5 mb-5">
-        <div class="d-flex align-items-center justify-content-center">
-            <div class="col-9">
-                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                    <h3 class="card-header">Match Assessments to Canvas Assignment Groups</h3>
-                    <div class="card-body pt-2 pb-3">
-                        <p class="fw-light m-0">
-                            To use the Flexible Assessment app to calculate Final Grades, you must
-                            <a href="https://community.canvaslms.com/t5/Instructor-Guide/How-do-I-add-an-assignment-group-in-a-course/ta-p/970" target="_blank" rel="noopener noreferrer">set up Assignment Groups in Canvas</a>
-                            on the <a href="{{ canvas_domain }}courses/{{ course.id }}/assignments" target="_blank" rel="noopener noreferrer">Assignments page of your course</a>.
-                            After you set up the Assignment Groups, reload this page, click the drop-down lists on the right to match them with the Assessments on the left, and click Continue.
-                        </p>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <td class="text-center align-middle" style="font-size: 110%;"><span style="font-weight: bold;">Assessment</span> (with default %)</td>
-                                    <th class="text-center align-middle" style="font-size: 110%;">Canvas Assignment Group</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for field in form.visible_fields %}
-                                <tr>
-                                    <td class="text-center align-middle">{{ field.label }}</td>
-                                    <td class="align-middle">{% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <button class="btn btn-primary float-end" type="submit">Continue <i class="bi bi-chevron-right"></i></button>
+    <form action="" method="post">
+        {% csrf_token %}
+        {% bootstrap_form_errors form type='non_fields' %}
+        {% for hidden_field in form.hidden_fields %}
+            {{ hidden_field.errors }}
+            {{ hidden_field }}
+        {% endfor %}
+        <div class="mt-5 mb-5">
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="col-9">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <h3 class="card-header">Match Assessments to Canvas Assignment Groups</h3>
+                        <div class="card-body pt-2 pb-3">
+                            <p class="fw-light m-0">
+                                To use the Flexible Assessment app to calculate Final Grades, you must
+                                <a href="https://community.canvaslms.com/t5/Instructor-Guide/How-do-I-add-an-assignment-group-in-a-course/ta-p/970"
+                                   target="_blank"
+                                   rel="noopener noreferrer">set up Assignment Groups in Canvas</a>
+                                on the
+                                <a href="{{ canvas_domain }}courses/{{ course.id }}/assignments"
+                                   target="_blank"
+                                   rel="noopener noreferrer">Assignments page of your course</a>.
+                                After you set up the Assignment Groups, reload this page, click the drop-down lists on the right to match them with the Assessments on the left, and click Continue.
+                            </p>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <td class="text-center align-middle" style="font-size: 110%;">
+                                            <span style="font-weight: bold;">Assessment</span> (with default %)
+                                        </td>
+                                        <th class="text-center align-middle" style="font-size: 110%;">
+                                            Canvas Assignment Group
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for field in form.visible_fields %}
+                                        <tr>
+                                            <td class="text-center align-middle">{{ field.label }}</td>
+                                            <td class="align-middle">
+                                                {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <button class="btn btn-primary float-end" type="submit">
+                                    Continue <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</form>
-
+    </form>
 {% endblock %}
