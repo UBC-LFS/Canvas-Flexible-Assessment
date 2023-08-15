@@ -42,13 +42,12 @@ class FlexCanvas(Canvas):
                 course(id: $course_id) {
                     allowFinalGradeOverride
                     } }"""
-        query_response = self.graphql(query,
-                                      variables={"course_id": course_id})
+        query_response = self.graphql(query, variables={"course_id": course_id})
 
-        return query_response['data']['course']['allowFinalGradeOverride']
+        return query_response["data"]["course"]["allowFinalGradeOverride"]
 
     def set_override(self, enrollment_id, override, incomplete, attempt=1):
-        """"Sets final grade override for student with given enrollment ID
+        """ "Sets final grade override for student with given enrollment ID
 
         Parameters
         ----------
@@ -72,16 +71,14 @@ class FlexCanvas(Canvas):
                             } } }"""
         try:
             if not incomplete[0]:
-                self.graphql(mutation,
-                             variables={"enrollment_id": enrollment_id,
-                                        "override": override})
+                self.graphql(
+                    mutation,
+                    variables={"enrollment_id": enrollment_id, "override": override},
+                )
         except CanvasException:
             if attempt <= 5:
                 time.sleep(1)
-                self.set_override(enrollment_id,
-                                  override,
-                                  incomplete,
-                                  attempt+1)
+                self.set_override(enrollment_id, override, incomplete, attempt + 1)
             else:
                 incomplete[0] = True
 
@@ -119,42 +116,40 @@ class FlexCanvas(Canvas):
               _id
             } } } } } } }"""
 
-        query_response = self.graphql(
-            query, variables={"course_id": course_id})
+        query_response = self.graphql(query, variables={"course_id": course_id})
 
         query_flattened = self._flatten_dict(query_response)
-        groups = query_flattened.get(
-            'data.course.assignment_groups.groups', None)
+        groups = query_flattened.get("data.course.assignment_groups.groups", None)
         if groups is None:
             raise PermissionDenied
 
         group_dict = {}
         user_enrollment_dict = {}
         for group in groups:
-            id = group['group_id']
-            group.pop('group_id', None)
+            id = group["group_id"]
+            group.pop("group_id", None)
             group_dict[id] = group
 
         for group_data in group_dict.values():
             group_flattened = self._flatten_dict(group_data)
-            grades = group_flattened.get('grade_list.grades', None)
+            grades = group_flattened.get("grade_list.grades", None)
             if grades is None:
                 raise PermissionDenied
 
             updated_grades = []
             for grade in grades:
                 grade_flattened = self._flatten_dict(grade)
-                user_id = grade_flattened.get('enrollment.user.user_id', None)
-                enrollment_id = grade_flattened.get('enrollment._id', None)
+                user_id = grade_flattened.get("enrollment.user.user_id", None)
+                enrollment_id = grade_flattened.get("enrollment._id", None)
                 if user_id is None:
                     raise PermissionDenied
 
                 user_enrollment_dict[user_id] = enrollment_id
 
-                score = grade_flattened['current_score']
+                score = grade_flattened["current_score"]
                 updated_grades.append((user_id, score))
 
-            group_data['grade_list']['grades'] = updated_grades
+            group_data["grade_list"]["grades"] = updated_grades
 
         return group_dict, user_enrollment_dict
 
@@ -166,7 +161,5 @@ class FlexCanvas(Canvas):
             else:
                 yield new_key, v
 
-    def _flatten_dict(self, d: MutableMapping,
-                      parent_key: str = '',
-                      sep: str = '.'):
+    def _flatten_dict(self, d: MutableMapping, parent_key: str = "", sep: str = "."):
         return dict(self._flatten_dict_gen(d, parent_key, sep))

@@ -1,117 +1,155 @@
 {% extends "instructor/instructor_base.html" %}
 {% load instructor_tags %}
-
-{% block nav_item_final %}active{% endblock nav_item_final %} 
+{% block nav_item_final %}
+    active
+{% endblock nav_item_final %}
 {% block content %}
-
-<div class="mt-5 mb-5">
-    <div class="d-flex align-items-center justify-content-center">
-        <div class="col-11">
-            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
-                    <h3 class="mb-0">Final Grades</h3>
-                    <a class="btn btn-outline-primary btn-sm" style="border-radius: 1em;" href="{% url 'instructor:final_grades_export' course.id %}"><i class="bi bi-download"></i> Export</a>
-                </div>
-                <div class="card-body pt-2 pb-3">
-                    <p class="fw-light pb-2">
-                        The table below shows students' desired percentages, the grades from the Assignment Groups in Canvas, their final grade calculated using their percentages in the Override column, the final grade they would have received using the Default scheme, and the Difference between them. The Difference for students who did not choose desired percentages will be zero and appear in italics. 
-                        The Default Total and Difference columns are not visible to students. Click the Export button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, you must
-                        <a href="https://community.canvaslms.com/t5/Instructor-Guide/How-do-I-override-a-student-s-final-grade-in-the-Gradebook/ta-p/946" target="_blank" rel="noopener noreferrer">enable the Final Grade Override</a>
-                        in the settings on the <a href="{{ canvas_domain }}courses/{{ course.id }}/gradebook" target="_blank" rel="noopener noreferrer">Grades page in Canvas</a>.
-                        After the Final Grade Override is enabled, verify your grades to make sure they are calculated as expected, and click Send to Canvas. <span style="font-weight:bold;">Warning:</span> This will overwrite any grades manually entered in the Override column in Canvas with the ones in the Override Total column below.
-                    </p>
-                    <table id="final" class="table table-striped mb-3 nowrap" width="100%">
-                        <thead>
-                            <tr>
-                                <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
-                                <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Override Total</th>
-                                <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Default Total</th>
-                                <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Difference</th>
-                                <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Chose Percentages?</th>
-                                {% for assessment in course.assessment_set.all %}
-                                    <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }} <br> ({% get_group_weight groups assessment.group %}%)</th>
-                                    <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }} <br> (Chosen %)</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student in student_list %}
+    <div class="mt-5 mb-5">
+        <div class="d-flex align-items-center justify-content-center">
+            <div class="col-11">
+                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                    <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
+                        <h3 class="mb-0">Final Grades</h3>
+                        <a class="btn btn-outline-primary btn-sm"
+                           style="border-radius: 1em"
+                           href="{% url 'instructor:final_grades_export' course.id %}"><i class="bi bi-download"></i> Export</a>
+                    </div>
+                    <div class="card-body pt-2 pb-3">
+                        <p class="fw-light pb-2">
+                            The table below shows students' desired percentages, the grades from the Assignment Groups in Canvas, their final grade calculated using their percentages in the Override column, the final grade they would have received using the Default scheme, and the Difference between them. The Difference for students who did not choose desired percentages will be zero and appear in italics.
+                            The Default Total and Difference columns are not visible to students. Click the Export button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, you must
+                            <a href="https://community.canvaslms.com/t5/Instructor-Guide/How-do-I-override-a-student-s-final-grade-in-the-Gradebook/ta-p/946"
+                               target="_blank"
+                               rel="noopener noreferrer">enable the Final Grade Override</a>
+                            in the settings on the
+                            <a href="{{ canvas_domain }}courses/{{ course.id }}/gradebook"
+                               target="_blank"
+                               rel="noopener noreferrer">Grades page in Canvas</a>.
+                            After the Final Grade Override is enabled, verify your grades to make sure they are calculated as expected, and click Send to Canvas. <span style="font-weight:bold;">Warning:</span> This will overwrite any grades manually entered in the Override column in Canvas with the ones in the Override Total column below.
+                        </p>
+                        <table id="final" class="table table-striped mb-3 nowrap" width="100%">
+                            <thead>
                                 <tr>
-                                    <td class="text-center align-middle text-break"><a href="{% url 'instructor:override_student_form_final' course.id student.user_id %}?previous=final">{{ student.display_name }}</a></td>
-                                    {% get_student_grades groups student course as grades %}
-                                    <td class="text-center align-middle {{ grades.0 }}">{{ grades.1 }}</td>
-                                    <td class="text-center align-middle default">{{ grades.2 }}</td>
-                                    <td class="text-center align-middle {{ grades.0 }}">{{ grades.3 }}</td>
-                                    <td class="text-center align-middle">
-                                        {% if grades.0 == "overriden" %}
-                                            Yes
-                                        {% else %}
-                                            No
-                                        {% endif %}
-                                        </td>
+                                    <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
+                                        Override Total
+                                    </th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
+                                        Default Total
+                                    </th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
+                                        Difference
+                                    </th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
+                                        Chose Percentages?
+                                    </th>
                                     {% for assessment in course.assessment_set.all %}
-                                        {% get_group_weight_percentage groups assessment.group as default_weight %}
-                                        {% get_score groups assessment.group student as score %}
-                                        <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>
-                                        {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
-                                            <td class="text-center align-middle">{{ flex_assessment.flex|to_str|default_if_none:default_weight }}</td>
-                                        {% endwith %}
+                                        <th class="assessment text-center align-middle" style="font-size: 110%;">
+                                            {{ assessment.title }}
+                                            <br>
+                                            ({% get_group_weight groups assessment.group %}%)
+                                        </th>
+                                        <th class="assessment text-center align-middle" style="font-size: 110%;">
+                                            {{ assessment.title }}
+                                            <br>
+                                            (Chosen %)
+                                        </th>
                                     {% endfor %}
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th class="text-center align-middle">Averages</th>
-                                {% get_averages_str groups course as averages %}
-                                <td class="text-center align-middle">{{ averages.0 }}</td>
-                                <td class="text-center align-middle">{{ averages.1 }}</td>
-                                <td class="text-center align-middle">{{ averages.2 }}</td>
-                                <td class="empty"></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                   
-                    <form id="grade-submit" method="post" action="{% url 'instructor:final_grades_submit' course.id %}">
-                        {% csrf_token %}
-                        <div class="d-flex align-items-left">
-                            <div class="form-check">
-                                <label class="form-check-label" for="flexCheckDefault">
-                                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" name="flexCheckDefault">
-                                    I have verified that the final grades are correct
-                                </label>
+                            </thead>
+                            <tbody>
+                                {% for student in student_list %}
+                                    <tr>
+                                        <td class="text-center align-middle text-break">
+                                            <a href="{% url 'instructor:override_student_form_final' course.id student.user_id %}?previous=final">{{ student.display_name }}</a>
+                                        </td>
+                                        {% get_student_grades groups student course as grades %}
+                                        <td class="text-center align-middle {{ grades.0 }}">{{ grades.1 }}</td>
+                                        <td class="text-center align-middle default">{{ grades.2 }}</td>
+                                        <td class="text-center align-middle {{ grades.0 }}">{{ grades.3 }}</td>
+                                        <td class="text-center align-middle">
+                                            {% if grades.0 == "overriden" %}
+                                                Yes
+                                            {% else %}
+                                                No
+                                            {% endif %}
+                                        </td>
+                                        {% for assessment in course.assessment_set.all %}
+                                            {% get_group_weight_percentage groups assessment.group as default_weight %}
+                                            {% get_score groups assessment.group student as score %}
+                                            <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>
+                                            {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
+                                                <td class="text-center align-middle">
+                                                    {{ flex_assessment.flex|to_str|default_if_none:default_weight }}
+                                                </td>
+                                            {% endwith %}
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="text-center align-middle">Averages</th>
+                                    {% get_averages_str groups course as averages %}
+                                    <td class="text-center align-middle">{{ averages.0 }}</td>
+                                    <td class="text-center align-middle">{{ averages.1 }}</td>
+                                    <td class="text-center align-middle">{{ averages.2 }}</td>
+                                    <td class="empty"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <form id="grade-submit"
+                              method="post"
+                              action="{% url 'instructor:final_grades_submit' course.id %}">
+                            {% csrf_token %}
+                            <div class="d-flex align-items-left">
+                                <div class="form-check">
+                                    <label class="form-check-label" for="flexCheckDefault">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               value=""
+                                               id="flexCheckDefault"
+                                               name="flexCheckDefault">
+                                        I have verified that the final grades are correct
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                        <p class="d-flex justify-content-left" id="checkbox-error-message" style="display:none !important; color:red;">Select the checkbox to confirm that you have verified the final grades before sending them to Canvas.</p>
-                        <div class="d-flex align-items-left">
-                            <div class="form-check">
-                                <label class="form-check-label" for="release_total">
-                                    <input type="checkbox" name="release_total" class="form-check-input" id="release_total">
-                                    Release Assignment Group and Override Total grades to students
-                                </label>
+                            <p class="d-flex justify-content-left"
+                               id="checkbox-error-message"
+                               style="display:none !important;
+                                      color:red">
+                                Select the checkbox to confirm that you have verified the final grades before sending them to Canvas.
+                            </p>
+                            <div class="d-flex align-items-left">
+                                <div class="form-check">
+                                    <label class="form-check-label" for="release_total">
+                                        <input type="checkbox"
+                                               name="release_total"
+                                               class="form-check-input"
+                                               id="release_total">
+                                        Release Assignment Group and Override Total grades to students
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="d-flex align-items-center justify-content-center">
-                            <button type="submit" id="submit-button" class="btn btn-primary">Send to Canvas <i class="bi bi-cloud-arrow-up ms-1"></i></button>
-                        </div>
-                    </form>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <button type="submit" id="submit-button" class="btn btn-primary">
+                                    Send to Canvas <i class="bi bi-cloud-arrow-up ms-1"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-{% if messages %}
-<ul class="messages" hidden>
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-
-
-<script>
+    {% if messages %}
+        <ul class="messages" hidden>
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <script>
 	var colspan = $('.assessment').length;
 	$('.empty').attr('colspan', colspan);
 
@@ -168,6 +206,5 @@
     });
     
 
-</script>
-
+    </script>
 {% endblock %}

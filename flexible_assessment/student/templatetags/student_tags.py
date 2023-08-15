@@ -16,7 +16,8 @@ def not_open(course):
         return now > close or now < open
     else:
         return False
-    
+
+
 @register.simple_tag()
 def before_deadline(course):
     if course:
@@ -28,14 +29,17 @@ def before_deadline(course):
     else:
         return True
 
+
 @register.simple_tag()
 def get_default_min_max(id):
     assessment = Assessment.objects.filter(pk=id).first()
     return (assessment.default, assessment.min, assessment.max)
 
+
 @register.simple_tag()
 def is_any_flex_none(flexes):
     return any(f.flex is None for f in flexes)
+
 
 @register.simple_tag()
 def not_flexible(default_min_max):

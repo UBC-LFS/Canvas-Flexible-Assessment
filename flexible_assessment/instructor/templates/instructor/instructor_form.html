@@ -1,214 +1,234 @@
 {% extends "instructor/instructor_base.html" %}
 {% load instructor_tags %}
 {% load django_bootstrap5 %}
-
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
-
-{% block nav_item_setup %}active{% endblock nav_item_setup %} 
-{% block nav_item_assessments %}active{% endblock nav_item_assessments %} 
+{% block nav_item_setup %}
+    active
+{% endblock nav_item_setup %}
+{% block nav_item_assessments %}
+    active
+{% endblock nav_item_assessments %}
 {% block content %}
+    <!-- This Overrides the styling automatically added by bootstrap_field for form validation -->
+    <style>
+        .form-control.is-valid {
+            border-color: #ced4da;
+            padding-right: initial;
+            background-image: initial;
+            background-repeat: initial;
+            background-position: initial;
+            background-size: initial;
+        }
 
-<!-- This Overrides the styling automatically added by bootstrap_field for form validation -->
-<style>
-    .form-control.is-valid {
-        border-color: #ced4da;
-        padding-right: initial;
-        background-image: initial;
-        background-repeat: initial;
-        background-position: initial;
-        background-size: initial;
-    }
+        .form-check-input.is-valid~.form-check-label {
+            border-color: #ced4da;
+            padding-right: initial;
+            background-image: initial;
+            background-repeat: initial;
+            background-position: initial;
+            background-size: initial;
+            color: initial;
+        }
 
-    .form-check-input.is-valid~.form-check-label {
-        border-color: #ced4da;
-        padding-right: initial;
-        background-image: initial;
-        background-repeat: initial;
-        background-position: initial;
-        background-size: initial;
-        color: initial;
-    }
+        .form-check-input.is-valid:checked {
+            border-color: #0d6efd;
+            background-color: #0d6efd;
+        }
 
-    .form-check-input.is-valid:checked {
-        border-color: #0d6efd;
-        background-color: #0d6efd;
-    }
-
-    .form-check-input.is-valid {
-        border-color: #ced4da;
-    }
-
-</style>
-
-<form action="" method="post" data-changed="false" onsubmit="return confirmSubmission(this);">
-	{% csrf_token %}
-
-	{{ formset.management_form }}
-
-	{% for hidden_field in date_form.hidden_fields %}
-		{% bootstrap_field hidden_field %}
-	{% endfor %}
-    <input type="hidden" id="added-deleted-form" value="false">
-
-    <div class="mt-5 mb-5">
-
-        <div class="d-flex align-items-center justify-content-center" id="welcome_form">
-            <div class="col-9">
-                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                    <h3 class="card-header">Welcome Instructions</h3>
-                    <div class="card-body pt-2 pb-3">
-                        <p class="fw-light m-0 pb-1">This is a message that will appear at the top of the students' screens where they decide their weights.</p>
-                        {% bootstrap_field date_form.welcome_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+        .form-check-input.is-valid {
+            border-color: #ced4da;
+        }
+    </style>
+    <form action=""
+          method="post"
+          data-changed="false"
+          onsubmit="return confirmSubmission(this);">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        {% for hidden_field in date_form.hidden_fields %}
+            {% bootstrap_field hidden_field %}
+        {% endfor %}
+        <input type="hidden" id="added-deleted-form" value="false">
+        <div class="mt-5 mb-5">
+            <div class="d-flex align-items-center justify-content-center"
+                 id="welcome_form">
+                <div class="col-9">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <h3 class="card-header">Welcome Instructions</h3>
+                        <div class="card-body pt-2 pb-3">
+                            <p class="fw-light m-0 pb-1">
+                                This is a message that will appear at the top of the students' screens where they decide their weights.
+                            </p>
+                            {% bootstrap_field date_form.welcome_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="d-flex align-items-center justify-content-center pt-4" id="form_set">
-            <div class="col-9">
-                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                        <h3 class="mb-0">Assessments</h3>
-                        <!-- <div class="dropdown-center">
-                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
-                                data-bs-toggle="dropdown" style="border-radius: 1em;">Actions</button>
+            <div class="d-flex align-items-center justify-content-center pt-4"
+                 id="form_set">
+                <div class="col-9">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h3 class="mb-0">Assessments</h3>
+                            <!-- <div class="dropdown-center">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" style="border-radius: 1em;">Actions</button>
                             <ul class="dropdown-menu">
                                 <li>
                                     <a class="dropdown-item" href="{% url 'instructor:file_upload' course.id %}">
                                         <i class="bi bi-upload"></i> Import</a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item {% if not course.close %}disabled{% endif %}"
-                                        href="{% url 'instructor:assessments_export' course.id %}">
+                                    <a class="dropdown-item {% if not course.close %}disabled{% endif %}" href="{% url 'instructor:assessments_export' course.id %}">
                                         <i class="bi bi-download"></i> Export</a>
                                 </li>
                             </ul>
                         </div> -->
-                    </div>
-
-                    <div class="card-body pt-2 pb-3">
-                        <p class="fw-light m-0 pb-1">
-                            Click the <b style="font-weight: bold">+Assessment</b> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible.
-                            The <b style="font-weight: bold;">Default %</b> will be used for students who do not enter desired percentages. The <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> values define the range of weights students will be able to enter. 
-                            If you do not want an assessment to be flexible, enter the same value for the Default %, Minimum % and Maximum %. The default values for all assessments <u>must add up to 100%</u>.
-                        </p>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <p class="fw-light m-0">{% bootstrap_formset_errors formset %}</p>
                         </div>
-                        <table id="assessments" class='table table-striped {% if populated %}populated{% endif %}' style="table-layout: fixed">
-                            <thead>
-                                <tr>
-                                    <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Assessment</th>
-                                    <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
-                                    <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
-                                    <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
-                                    <th class="text-center align-middle" style="width: 12%; font-size: 110%;">Remove</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for form in formset.forms %}
-                                    {% for hidden in form.hidden_fields %}
-                                        {{ hidden }}
-                                    {% endfor %}
-                                    <tr height="60px">
-                                        {% for field in form.visible_fields %}
-                                            <td class="{{ field.label }} text-center align-middle">
-                                                {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
-                                            </td>
-                                        {% endfor %}
-                                        <td class="text-center align-middle"><button class="btn btn-outline-danger btn-sm delete"
-                                                type="button"><i class="bi bi-trash3"></i></button></td>
+                        <div class="card-body pt-2 pb-3">
+                            <p class="fw-light m-0 pb-1">
+                                Click the <b style="font-weight: bold">+Assessment</b> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible.
+                                The <b style="font-weight: bold;">Default %</b> will be used for students who do not enter desired percentages. The <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> values define the range of weights students will be able to enter.
+                                If you do not want an assessment to be flexible, enter the same value for the Default %, Minimum % and Maximum %. The default values for all assessments <u>must add up to 100%</u>.
+                            </p>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <p class="fw-light m-0">{% bootstrap_formset_errors formset %}</p>
+                            </div>
+                            <table id="assessments"
+                                   class='table table-striped {% if populated %}populated{% endif %}'
+                                   style="table-layout: fixed">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center align-middle" style="width: 30%; font-size: 110%;">
+                                            Assessment
+                                        </th>
+                                        <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
+                                        <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
+                                        <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
+                                        <th class="text-center align-middle" style="width: 12%; font-size: 110%;">Remove</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <button class="btn btn-outline-primary" type="button" id="add"><i class="bi bi-plus-lg"></i>
-                                Assessment</button>
-                            <h5 class="align-middle m-0">Total: <span id="total"></span></h5>
+                                </thead>
+                                <tbody>
+                                    {% for form in formset.forms %}
+                                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                                        <tr height="60px">
+                                            {% for field in form.visible_fields %}
+                                                <td class="{{ field.label }} text-center align-middle">
+                                                    {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                                                </td>
+                                            {% endfor %}
+                                            <td class="text-center align-middle">
+                                                <button class="btn btn-outline-danger btn-sm delete" type="button">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <button class="btn btn-outline-primary" type="button" id="add">
+                                    <i class="bi bi-plus-lg"></i>Assessment
+                                </button>
+                                <h5 class="align-middle m-0">
+                                    Total: <span id="total"></span>
+                                </h5>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <p class="fw-light m-0 pb-1">
+                                    Select both of these options to hide incorrect weights and calculations in Canvas Grades
+                                </p>
+                                {% bootstrap_field options_form.hide_weights wrapper_class="mb-1" %}
+                                {% bootstrap_field options_form.hide_total wrapper_class="mb-1" %}
+                            </div>
+                            {{ options_form.ignore_conflicts.as_hidden }}
                         </div>
-                        <div class="d-flex flex-column">
-                            <p class="fw-light m-0 pb-1">Select both of these options to hide incorrect weights and calculations in Canvas Grades</p>
-                            {% bootstrap_field options_form.hide_weights wrapper_class="mb-1" %}
-                            {% bootstrap_field options_form.hide_total wrapper_class="mb-1" %}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-center pt-4"
+                 id="comment_form">
+                <div class="col-9">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <h3 class="card-header">Comment Instructions</h3>
+                        <div class="card-body pt-2 pb-3">
+                            <p class="fw-light m-0 pb-1">
+                                This is a message that will appear above the box where students put their comments.
+                            </p>
+                            {% bootstrap_field date_form.comment_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
                         </div>
-                        {{ options_form.ignore_conflicts.as_hidden }}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-center pt-4"
+                 id="date_form">
+                <div class="col-9">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <h4 class="card-header">Availability</h4>
+                        <div class="card-body pt-2 pb-3">
+                            <p class="fw-light m-0">
+                                These are the dates for when students will be able to enter their desired percentages.
+                            </p>
+                            <table class='table table-borderless mb-2'>
+                                <tr>
+                                    <th class="pb-0" style="font-size: 110%;">Open Date</th>
+                                    <th class="pb-0" style="font-size: 110%;">Close Date</th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {% bootstrap_field date_form.open show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                                    </td>
+                                    <td>
+                                        {% bootstrap_field date_form.close show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                                    </td>
+                                </tr>
+                            </table>
+                            {% bootstrap_form_errors date_form type='non_fields' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex flex-column align-items-center justify-content-center pt-4">
+                <div class="d-flex justify-content-between col-9 pb-4">
+                    <a href="{% url 'instructor:instructor_home' course.id %}"
+                       style="border-radius: 1em"
+                       class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+                    <div class="d-grid col-2">
+                        <button class="btn btn-primary" style="border-radius: 1em;" type="submit">
+                            {% if course.close %}
+                                Update
+                            {% else %}
+                                Save
+                            {% endif %}
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="d-flex align-items-center justify-content-center pt-4" id="comment_form">
-            <div class="col-9">
-                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                    <h3 class="card-header">Comment Instructions</h3>
-                    <div class="card-body pt-2 pb-3">
-                        <p class="fw-light m-0 pb-1">This is a message that will appear above the box where students put their comments.</p>
-                        {% bootstrap_field date_form.comment_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="d-flex align-items-center justify-content-center pt-4" id="date_form">
-            <div class="col-9">
-                <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
-                    <h4 class="card-header">Availability</h4>
-                    <div class="card-body pt-2 pb-3">
-                        <p class="fw-light m-0">These are the dates for when students will be able to enter their desired percentages.</p>
-                        <table class='table table-borderless mb-2'>
-                            <tr>
-                                <th class="pb-0" style="font-size: 110%;">Open Date</th>
-                                <th class="pb-0" style="font-size: 110%;">Close Date</th>
-                            </tr>
-                            <tr>
-                                <td>{% bootstrap_field date_form.open show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
-                                <td>{% bootstrap_field date_form.close show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
-                            </tr>
-                        </table>
-                        {% bootstrap_form_errors date_form type='non_fields' %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="d-flex flex-column align-items-center justify-content-center pt-4">
-            <div class="d-flex justify-content-between col-9 pb-4">
-                <a href="{% url 'instructor:instructor_home' course.id %}" style="border-radius: 1em;" class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
-                <div class="d-grid col-2">
-                    <button class="btn btn-primary" style="border-radius: 1em;" type="submit">{% if course.close %} Update {% else %} Save {% endif %}</button>
-                </div>
-            </div>
-        </div>
-        
-        
-    </div>
-</form>
-
-<table id="empty_form" style="display:none">
-	<tr height="60px">
-		{% for field in formset.empty_form.visible_fields %}
-			<td class="{{ field.label }} text-center align-middle">
-				{% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
-			</td>
-		{% endfor %}
-		<td class="text-center align-middle"><button class="btn btn-outline-danger btn-sm delete"
-				type="button"><i class="bi bi-trash3"></i></button></td>
-	</tr>
-</table>
-
-{% if messages %}
-<ul class="messages" hidden>
-    {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-
-
-<script>
+    </form>
+    <table id="empty_form" style="display:none">
+        <tr height="60px">
+            {% for field in formset.empty_form.visible_fields %}
+                <td class="{{ field.label }} text-center align-middle">
+                    {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                </td>
+            {% endfor %}
+            <td class="text-center align-middle">
+                <button class="btn btn-outline-danger btn-sm delete" type="button">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </td>
+        </tr>
+    </table>
+    {% if messages %}
+        <ul class="messages" hidden>
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <script>
     // Add event listener for beforeunload event
     window.addEventListener("beforeunload", function (event) {
         // If the form has been changed, prompt the user to confirm leaving the page
@@ -266,7 +286,7 @@
 
     function calculate_total() {
         var total = 0;
-		$(".Default").each(function () {
+		$(".Default").each(function() {
 			curr = parseFloat($(this).find("input").val());
 			if (!isNaN(curr)) {
 				total += curr;
@@ -287,7 +307,7 @@
 		};
 	};
 
-    $(document).on('change', '.Default', function () {
+    $(document).on('change', '.Default', function() {
 		check_valid();
         document.forms[0].dataset.changed = "true";
 	});
@@ -323,13 +343,13 @@
 		tr.remove();
 
         // Filters for assessment inputs
-		var filtered = $('input').filter(function () {
+		var filtered = $('input').filter(function() {
 			return this.id.match(/id_assessment-\d+-/);
 		});
 
 		var curr = -1;
 		var decrement = false;
-		filtered.each(function () {
+		filtered.each(function() {
 			form_idx = parseInt(this.id.replace(/[^\d]/g, ''));
 
             // Checks for gap in table row ids for assessments 
@@ -340,10 +360,10 @@
 
             // Decrements each input element id after gap to make continuous sequence of ids (0->1->2)
 			if (decrement) {
-				var new_id = this.id.replace(/(\d+)/, function (match, n) {
+				var new_id = this.id.replace(/(\d+)/, function(match, n) {
 					return parseInt(n) - 1;
 				});
-				var new_name = this.name.replace(/(\d+)/, function (match, n) {
+				var new_name = this.name.replace(/(\d+)/, function(match, n) {
 					return parseInt(n) - 1;
 				});
 				this.id = new_id;
@@ -353,5 +373,5 @@
 		});
 		check_valid();
 	};
-</script>
+    </script>
 {% endblock %}

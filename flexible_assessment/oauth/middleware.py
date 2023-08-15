@@ -15,10 +15,10 @@ class OAuthMiddleware(object):
         return response
 
     def process_exception(self, request, exception):
-        course_id_match = re.findall(r'\/instructor\/(\d*)\/', request.path)
+        course_id_match = re.findall(r"\/instructor\/(\d*)\/", request.path)
         if course_id_match:
             course_id = course_id_match[0]
-            request.session['course_id'] = course_id
+            request.session["course_id"] = course_id
 
         if isinstance(exception, MissingTokenError):
             return handle_missing_or_invalid_token(request)
