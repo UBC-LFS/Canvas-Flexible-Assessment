@@ -6,3 +6,4 @@ configs/
 log/
 docs/
 static/
+env/

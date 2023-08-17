@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, tag
 from instructor.forms import *
 from flexible_assessment.tests.test_data import DATA
 
@@ -73,3 +73,33 @@ class TestForms(TestCase):
             form.errors[assessments[3].id.hex][0],
             "Select a valid choice. - is not one of the available choices.",
         )
+
+    @patch("instructor.views.FlexCanvas", return_value=MockFlexCanvas)
+    def test_AssessmentGroupForm_correct_order(self, mock_flex_canvas):
+        """Make sure Assessment Groups from Cavnas are ordered correctly"""
+        course_id = 1
+        course = MockCanvasCourse()
+        course.groups = [
+            MockAssignmentGroup("A1", 1),
+            MockAssignmentGroup("b1", 2),
+            MockAssignmentGroup("a2", 3),
+            MockAssignmentGroup("B2", 4),
+        ]
+
+        assessments = Assessment.objects.filter(course_id=course_id)
+        data = {
+            assessments[0].id.hex: 1,
+            assessments[1].id.hex: 2,
+            assessments[2].id.hex: 3,
+            assessments[3].id.hex: 4,
+        }
+
+        form = AssessmentGroupForm(
+            canvas_course=course, assessments=assessments, data=data
+        )
+
+        choices = form.fields[assessments[0].id.hex].choices
+        group_names = [item[1] for item in choices[1:]]
+        expected_names = ["A1", "a2", "b1", "B2"]
+
+        self.assertListEqual(group_names, expected_names, "Names are not equal")

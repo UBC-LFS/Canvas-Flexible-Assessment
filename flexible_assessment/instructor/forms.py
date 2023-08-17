@@ -148,7 +148,7 @@ class AssessmentGroupForm(forms.Form):
         choices = [(None, "---------")]
         id_map = {}
         canvas_assignment_groups = sorted(
-            canvas_course.get_assignment_groups(), key=lambda group: group.name
+            canvas_course.get_assignment_groups(), key=lambda group: group.name.lower()
         )
 
         for canvas_group in canvas_assignment_groups:
