@@ -259,14 +259,14 @@ class TestViews(TestCase):
         forms = [
             {
                 "title": "TITLE 1",
-                "default": 31,
-                "min": 0,
+                "default": 20,
+                "min": 10,
                 "max": 30,
                 "id": "123e4567-e89b-12d3-a456-426655440001",
             },
             {
                 "title": "TITLE 2",
-                "default": 25,
+                "default": 30,
                 "min": 10,
                 "max": 30,
                 "id": "123e4567-e89b-12d3-a456-426655440002",
@@ -280,9 +280,9 @@ class TestViews(TestCase):
             },
             {
                 "title": "TITLE 4",
-                "default": 19,
-                "min": 20,
-                "max": 30,
+                "default": 25,
+                "min": 0,
+                "max": 80,
                 "id": "123e4567-e89b-12d3-a456-426655440004",
             },
         ]
@@ -301,8 +301,10 @@ class TestViews(TestCase):
         )
 
         self.assertEqual(type(response), TemplateResponse)
-        self.assertContains(response, "Minimum must be lower than default")
-        self.assertContains(response, "Maximum must be higher than default")
+        self.assertContains(
+            response, "Total % cannot reach 100 when choosing this Min %"
+        )
+        self.assertContains(response, "Total % exceeds 100 when choosing this Max %")
 
     @mock_classes.use_mock_canvas()
     def test_InstructorAssessmentView_invalid_min_max_ranges(

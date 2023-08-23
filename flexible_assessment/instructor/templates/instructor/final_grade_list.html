@@ -16,8 +16,21 @@
                     </div>
                     <div class="card-body pt-2 pb-3">
                         <p class="fw-light pb-2">
-                            The table below shows students' desired percentages, the grades from the Assignment Groups in Canvas, their final grade calculated using their percentages in the Override column, the final grade they would have received using the Default scheme, and the Difference between them. The Difference for students who did not choose desired percentages will be zero and appear in italics.
-                            The Default Total and Difference columns are not visible to students. Click the Export button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, you must
+                            The table below shows students' desired percentages, the grades from the Assignment Groups in Canvas, their final grade calculated using their percentages in the
+                            <span style="font-weight:bold;">Override</span>
+                            column, the final grade they would have received using the
+                            <span style="font-weight:bold;">Default</span>
+                            scheme, and the
+                            <span style="font-weight:bold;">Difference</span>
+                            between them. The
+                            <span style="font-weight:bold;">Difference</span>
+                            for students who did not choose desired percentages will be zero and appear in italics. The
+                            <span style="font-weight:bold;">Default Total</span>
+                            and
+                            <span style="font-weight:bold;">Difference</span>
+                            columns are not visible to students. Click the
+                            <span style="font-weight:bold;"><i class="bi bi-download"></i> Export</span>
+                            button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, you must
                             <a href="https://community.canvaslms.com/t5/Instructor-Guide/How-do-I-override-a-student-s-final-grade-in-the-Gradebook/ta-p/946"
                                target="_blank"
                                rel="noopener noreferrer">enable the Final Grade Override</a>
@@ -25,7 +38,9 @@
                             <a href="{{ canvas_domain }}courses/{{ course.id }}/gradebook"
                                target="_blank"
                                rel="noopener noreferrer">Grades page in Canvas</a>.
-                            After the Final Grade Override is enabled, verify your grades to make sure they are calculated as expected, and click Send to Canvas. <span style="font-weight:bold;">Warning:</span> This will overwrite any grades manually entered in the Override column in Canvas with the ones in the Override Total column below.
+                            After the
+                            <span style="font-weight:bold;">Final Grade Override</span>
+                            is enabled, verify your grades to make sure they are calculated as expected, and click Send to Canvas.
                         </p>
                         <table id="final" class="table table-striped mb-3 nowrap" width="100%">
                             <thead>
@@ -131,10 +146,15 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center justify-content-center">
+                            <div class="d-flex align-items-center justify-content-center pb-2">
                                 <button type="submit" id="submit-button" class="btn btn-primary">
                                     Send to Canvas <i class="bi bi-cloud-arrow-up ms-1"></i>
                                 </button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <p class="fw-light">
+                                    <span style="color: red; font-weight:bold;">Warning:</span> This will overwrite the Canvas Gradebook Override column with the <span style="font-weight:bold;">Override Total</span> values here.
+                                </p>
                             </div>
                         </form>
                     </div>
