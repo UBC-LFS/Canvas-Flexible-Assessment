@@ -194,9 +194,15 @@ class TestInstructorViews(StaticLiveServerTestCase):
                 value
             )  # There are 6 hidden inputs we need to skip over
 
+        open_date_field = self.browser.find_element(By.NAME, "date-open")
         date_field = self.browser.find_element(By.NAME, "date-close")
 
         tomorrow = datetime.now() + timedelta(1)
+
+        open_date_field.send_keys(datetime.strftime(tomorrow, "%m-%d-%Y"))
+        open_date_field.send_keys(Keys.TAB)
+        open_date_field.send_keys("0245PM")
+
         date_field.send_keys(datetime.strftime(tomorrow, "%m-%d-%Y"))
         date_field.send_keys(Keys.TAB)
         date_field.send_keys("0245PM")

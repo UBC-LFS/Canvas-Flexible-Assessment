@@ -81,10 +81,6 @@ class CourseSettingsForm(ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance.open:
             self.initial["open"] = self.instance.open
-        else:
-            self.initial["open"] = timezone.localtime().replace(
-                hour=9, minute=0, second=0
-            )
 
         self.fields["close"].required = False
         self.fields["open"].required = False
@@ -239,26 +235,39 @@ class AssessmentBaseFormSet(BaseModelFormSet):
                 )
             if min_value > default:
                 form.add_error(
-                    "min", ValidationError("Minimum must be lower than default")
+                    "min",
+                    ValidationError(
+                        "Minimum must be lower than or equal to the default"
+                    ),
                 )
             if default > max_value:
                 form.add_error(
-                    "max", ValidationError("Maximum must be higher than default")
+                    "max",
+                    ValidationError(
+                        "Maximum must be higher than or equal to the default"
+                    ),
                 )
             if min_value > max_value:
                 form.add_error(
-                    "max", ValidationError("Maximum must be higher than minimum")
+                    "max",
+                    ValidationError(
+                        "Maximum must be higher than or equal to the minimum"
+                    ),
                 )
                 form.add_error(
-                    "min", ValidationError("Minimum must be lower than maximum")
+                    "min",
+                    ValidationError(
+                        "Minimum must be lower than or equal to the maximum"
+                    ),
                 )
 
-        if default_sum == 100:  # Don't check ranges if doesn't add to 100
-            utils.find_invalid_flex_ranges(all_assessments, total_min, total_max)
         if num_assessments_flexible < 2 and len(self.forms) > 1:
             self.non_form_errors().append(
                 "You must make at least two assessments flexible."
             )
+
+        if not any(form.errors for form in self.forms) and not self.non_form_errors():
+            utils.find_invalid_flex_ranges(all_assessments, total_min, total_max)
 
 
 class AssessmentFileForm(forms.Form):

@@ -127,7 +127,7 @@ def find_invalid_flex_ranges(assessments, total_min, total_max):
             assessment["form"].add_error(
                 "min",
                 ValidationError(
-                    f"Not possible for students to select. Please increase to {current_min + 100 - total_with_current_min} or increase the total max of other assessments to {100 - current_min}"
+                    f"Total % cannot reach 100 when choosing this Min %. Please increase to {current_min + 100 - total_with_current_min} or increase the total Max % of other assessments to {100 - current_min}"
                 ),
             )
 
@@ -136,6 +136,6 @@ def find_invalid_flex_ranges(assessments, total_min, total_max):
             assessment["form"].add_error(
                 "max",
                 ValidationError(
-                    f"Not possible for students to select. Please decrease to {current_max - (total_with_current_max - 100)} or decrease the total min of other assessments to {100 - current_max}"
+                    f"Total % exceeds 100 when choosing this Max %. Please decrease to {current_max - (total_with_current_max - 100)} or decrease the total Min % of other assessments to {100 - current_max}"
                 ),
             )
