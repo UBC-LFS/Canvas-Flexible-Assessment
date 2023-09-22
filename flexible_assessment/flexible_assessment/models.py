@@ -246,6 +246,8 @@ class Assessment(models.Model):
         Foreign Key with Course
     group : int
         Canvas assignment group id
+    order : int
+        Position number of assessment when grouped together for ordering
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -255,6 +257,7 @@ class Assessment(models.Model):
     max = models.DecimalField(max_digits=5, decimal_places=2)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     group = models.IntegerField(null=True)
+    order = models.IntegerField(blank=False, default=100_000)
 
     def __str__(self):
         return "{}, {}".format(self.title, self.course.title)

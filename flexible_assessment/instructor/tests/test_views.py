@@ -152,6 +152,7 @@ class TestViews(TestCase):
                 "min": 0,
                 "max": 50,
                 "id": "123e4567-e89b-12d3-a456-426655440001",
+                "order": 1,
             },
             {
                 "title": "TITLE 2",
@@ -159,6 +160,7 @@ class TestViews(TestCase):
                 "min": 50,
                 "max": 50,
                 "id": "123e4567-e89b-12d3-a456-426655440002",
+                "order": 2,
             },
             {
                 "title": "TITLE 3",
@@ -166,6 +168,7 @@ class TestViews(TestCase):
                 "min": 0,
                 "max": 50,
                 "id": "123e4567-e89b-12d3-a456-426655440003",
+                "order": 3,
             },
             {
                 "title": "TITLE 4",
@@ -173,6 +176,7 @@ class TestViews(TestCase):
                 "min": 0,
                 "max": 50,
                 "id": "123e4567-e89b-12d3-a456-426655440004",
+                "order": 4,
             },
         ]
 

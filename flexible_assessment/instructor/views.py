@@ -26,6 +26,7 @@ from .forms import (
     AssessmentGroupForm,
     CourseSettingsForm,
     OptionsForm,
+    OrderingForm,
     StudentAssessmentBaseForm,
     get_assessment_formset,
 )
@@ -243,7 +244,7 @@ class AssessmentGroupView(views.InstructorFormView):
         canvas_course = FlexCanvas(self.request).get_course(course_id)
 
         kwargs["canvas_course"] = canvas_course
-        kwargs["assessments"] = models.Assessment.objects.filter(course_id=course_id)
+        kwargs["assessments"] = models.Assessment.objects.filter(course_id=course_id).order_by("order")
 
         self.kwargs["hide_weights"] = not canvas_course.apply_assignment_group_weights
 
@@ -340,7 +341,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
     success_reverse_name = "instructor:instructor_home"
 
     def get_context_data(self, **kwargs):
-        """Populates and adds assessment formset, date form, and options
+        """Populates and adds assessment formset, date form, ordeing form, and options
         form to context
 
         Returns
@@ -369,6 +370,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             hide_weights=not canvas_course.apply_assignment_group_weights,
         )
 
+        context["ordering_form"] = OrderingForm(
+            self.request.POST, prefix="ordering"
+        )
+
         if self.request.POST:
             AssessmentFormSet = get_assessment_formset()
             context["formset"] = AssessmentFormSet(
@@ -390,11 +395,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         else:
             qs = models.Assessment.objects.filter(course=course)
             if len(qs) > 0:
-                ids = qs.values_list("id", flat=True)
-                original_order = Case(
-                    *[When(id=id, then=pos) for pos, id in enumerate(ids)]
-                )
-                qs = qs.order_by(original_order)
+                qs = qs.order_by('order')
 
             AssessmentFormSet = get_assessment_formset()
             context["formset"] = AssessmentFormSet(queryset=qs, prefix="assessment")
@@ -461,9 +462,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         formset = AssessmentFormSet(request.POST, prefix="assessment")
         options_form = OptionsForm(request.POST, prefix="options")
+        ordering_form = OrderingForm(request.POST, prefix="ordering")
 
         if formset.is_valid() and date_form.is_valid() and options_form.is_valid():
-            return self.forms_valid(formset, date_form, options_form)
+            return self.forms_valid(formset, date_form, options_form, ordering_form)
 
         elif not formset.is_valid():
             return self.form_invalid(formset)
@@ -472,7 +474,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         else:
             return self.form_invalid(options_form)
 
-    def forms_valid(self, formset, date_form, options_form):
+    def forms_valid(self, formset, date_form, options_form, ordering_form):
         """Validates and saves assessment formset and date form and creates
         or removes related flexible assessments, and updates relevant Canvas
         course settings using options form
@@ -485,6 +487,8 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             Contains flex assessment open and close datetime
         options_form : OptionsForm
             Contains options for the course setup
+        ordering_form: OrderingForm
+            Contains the id order of the assessments when rearranged
 
         Returns
         -------
@@ -512,6 +516,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         assessment_created = self._create_assessments(course, assessments)
         assessment_deleted = self._delete_assessments(course, assessments)
+        self.save_new_ordering(ordering_form, course, assessments)
 
         if assessment_created or assessment_deleted:
             self._reset_all_students(course)
@@ -552,6 +557,17 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                     "user": self.request.session["display_name"],
                 }
             )
+
+    def save_new_ordering(self, ordering_form, course, assessments):
+        if ordering_form.is_valid():
+            if ordering_form != None:
+                ordered_ids = ordering_form.cleaned_data["ordering"].split(',')
+                for i in range(len(ordered_ids)):
+                    if ordered_ids[i] != "":
+                        curr = assessments[int(ordered_ids[i])]
+                        curr.order = i
+                        curr.save()
+                    
 
     def _save_assessments(self, forms, course, ignore_conflicts):
         assessments = []

@@ -17,7 +17,7 @@ class StudentAssessmentBaseForm(forms.Form):
 
         flex_assessments = FlexAssessment.objects.filter(
             user__user_id=self.user_id, assessment__course_id=self.course_id
-        )
+        ).order_by('assessment__order')
 
         flex_fields = {}
         for fa in flex_assessments:
@@ -73,6 +73,12 @@ class OptionsForm(forms.Form):
         self.initial["hide_total"] = hide_total
         self.initial["hide_weights"] = hide_weights
 
+class OrderingForm(forms.Form):
+    ordering = forms.CharField(widget = forms.HiddenInput())
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['ordering'].required = False
 
 class CourseSettingsForm(ModelForm):
     """Form to set flexible assessment availability for students."""
