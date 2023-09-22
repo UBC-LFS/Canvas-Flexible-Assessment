@@ -27,7 +27,7 @@ class StudentHome(views.StudentTemplateView):
         # Add custom context data
         flex_assessments = models.FlexAssessment.objects.filter(
             user__user_id=user_id, assessment__course_id=course.id
-        )
+        ).order_by('assessment__order')
         context["flexes"] = flex_assessments
         return context
 

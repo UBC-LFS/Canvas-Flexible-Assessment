@@ -1,6 +1,7 @@
 {% extends "instructor/instructor_base.html" %}
 {% load instructor_tags %}
 {% load django_bootstrap5 %}
+{% load static %}
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
@@ -12,6 +13,7 @@
 {% endblock nav_item_assessments %}
 {% block content %}
     <!-- This Overrides the styling automatically added by bootstrap_field for form validation -->
+    <script src="{% static 'js/external/Sortable.min.js' %}"></script>
     <style>
         .form-control.is-valid {
             border-color: #ced4da;
@@ -39,6 +41,40 @@
 
         .form-check-input.is-valid {
             border-color: #ced4da;
+        }
+
+        .handle-td {
+            height: 60px;
+            vertical-align: middle;
+            width: 5%;
+        }
+
+        .handle {
+            display: block;
+            float: inline-end;
+            border-top: 3px solid #ABB0B8;
+            width: 30px;
+            padding-top: 5px;
+            cursor: grab;
+        }
+        .handle:after{
+            display: block;
+            content: "";
+            padding-top: 5px;
+            border-top: 3px solid #ABB0B8;
+        }
+        .handle:before {
+            display: block;
+            content: "";
+            padding-top: 5px;
+            border-top: 3px solid #ABB0B8;
+        }
+
+        .handle:hover, .handle:hover:before, .handle:hover:after {
+            border-color: #4C4E52;
+        }
+        .handle:active, .handle:active:before, .handle:active:after {
+            cursor: grabbing;
         }
     </style>
     <form action=""
@@ -100,6 +136,7 @@
                                    style="table-layout: fixed">
                                 <thead>
                                     <tr>
+                                        <th style="width: 5%;"></th>
                                         <th class="text-center align-middle" style="width: 30%; font-size: 110%;">
                                             Assessment
                                         </th>
@@ -109,10 +146,13 @@
                                         <th class="text-center align-middle" style="width: 12%; font-size: 110%;">Remove</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="forms">
                                     {% for form in formset.forms %}
-                                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                                         <tr height="60px">
+                                            <td class="handle-td">
+                                                <span class="handle"></span>
+                                            </td>
+                                            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                                             {% for field in form.visible_fields %}
                                                 <td class="{{ field.label }} text-center align-middle">
                                                     {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
@@ -158,6 +198,7 @@
                             </p>
                             {% bootstrap_field date_form.comment_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
                         </div>
+                        {{ ordering_form }}
                     </div>
                 </div>
             </div>
@@ -209,6 +250,9 @@
     </form>
     <table id="empty_form" style="display:none">
         <tr height="60px">
+            <td>
+                <span class="handle"></span>
+            </td>
             {% for field in formset.empty_form.visible_fields %}
                 <td class="{{ field.label }} text-center align-middle">
                     {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
@@ -242,6 +286,7 @@
         var courseClosed = {{ course.close|yesno:"true,false" }}; // Also check if this is the first time setting up the assessments
         var numResponses = parseInt({% get_number_responses course %});
         var total = calculate_total();
+        saveOrdering();
         if (total == 0) {
             if (confirm("Your total adds up to 0. If you click OK, this course’s Flexible Assessment setup and all student choices and comments will be deleted.")) {
                 form.action += "?reset=true";
@@ -297,6 +342,7 @@
     }
 
 	function check_valid() {
+        saveOrdering();
         total = calculate_total();
 		var total_str = total.toString();
 		$('#total').text(total_str + "%");
@@ -334,12 +380,13 @@
 
         // If deleted row was an existing assessment, decrease initial form number
         // If deleted row was an empty row then initial forms (existing assessments) remains same
-        // Every existing assessment has tr and a hidden input in table hence initial * 2
-        if (tr.index() < initial*2)
+        if (tr.index() < initial)
             $('#id_assessment-INITIAL_FORMS').val(parseInt(initial) - 1);
 		$('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) - 1);
 
-        input.remove();
+        //input.remove();
+        raw_id = tr.find('input').attr('id');
+        id_removed = parseInt(raw_id.replace(/\D/g, ''))
 		tr.remove();
 
         // Filters for assessment inputs
@@ -347,14 +394,14 @@
 			return this.id.match(/id_assessment-\d+-/);
 		});
 
-		var curr = -1;
+		//var curr = -1;
 		var decrement = false;
 		filtered.each(function() {
 			form_idx = parseInt(this.id.replace(/[^\d]/g, ''));
 
             // Checks for gap in table row ids for assessments 
             // e.g. deleting second row in a table of four assessments means ids go from 0->2->3
-			if (!decrement && form_idx - curr > 1) {
+			if (id_removed < form_idx) {
 				decrement = true;
 			};
 
@@ -369,9 +416,29 @@
 				this.id = new_id;
 				this.name = new_name;
 			};
-			curr = form_idx;
+			//curr = form_idx;
+            decrement = false;
 		});
 		check_valid();
 	};
+    //Identifies the sortable elements of the table for Sortable.min.js
+    const groups = document.getElementById('forms');
+    let sortable = Sortable.create(groups, {
+        handle: '.handle',
+    });
+
+    //Function to save the current order to the ordering form
+    function saveOrdering() {
+        //Gets all rows and respective ids
+        const rows = document.getElementById("forms").querySelectorAll('tr');
+        let ids_list = [];
+        //Adds ids in the current order to the form
+        for (let row of rows) {
+            raw_id = $(row).find('input').attr('id');
+            ids_list.push(parseInt(raw_id.replace(/\D/g, '')));
+        }
+        $("#id_ordering-ordering").val(ids_list.toString());
+
+    }
     </script>
 {% endblock %}

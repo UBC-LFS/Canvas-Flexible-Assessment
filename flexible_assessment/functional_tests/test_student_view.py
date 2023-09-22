@@ -528,7 +528,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser_teacher.find_element(By.LINK_TEXT, "Assessments").click()
 
         delete_button = self.browser_teacher.find_element(
-            By.XPATH, '//*[@id="assessments"]/tbody/tr[2]/td[5]/button'
+            By.XPATH, '//*[@id="assessments"]/tbody/tr[2]/td[6]/button'
         ).click()
 
         default_field = self.browser_teacher.find_element(
