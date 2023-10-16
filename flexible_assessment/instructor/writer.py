@@ -85,7 +85,7 @@ def students_csv(course, students):
 
     csv_writer = CSVWriter("Students", course)
 
-    assessments = [assessment for assessment in course.assessment_set.all()]
+    assessments = [assessment for assessment in course.assessment_set.all().order_by('order')]
     header = (
         ["Student"] + [assessment.title for assessment in assessments] + ["Comment"]
     )
