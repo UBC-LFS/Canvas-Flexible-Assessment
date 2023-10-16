@@ -283,6 +283,21 @@
     });
 
     function confirmSubmission(form) {
+        //alert($('#form_set tbody tr').children()[0].innerHTML);
+        $('#form_set tbody tr').each(function() {
+            if ($(this).children().length == 7) {
+                if (!$(this).children().eq(5).find("input").val() && !$(this).children().eq(4).find("input").val()) {
+                    $(this).children().eq(4).find("input").val($(this).children().eq(3).find("input").val());
+                    $(this).children().eq(5).find("input").val($(this).children().eq(3).find("input").val());
+                }
+            }
+            else {
+                if (!$(this).children().eq(4).find("input").val() && !$(this).children().eq(3).find("input").val()) {
+                    $(this).children().eq(3).find("input").val($(this).children().eq(2).find("input").val());
+                    $(this).children().eq(4).find("input").val($(this).children().eq(2).find("input").val());
+                }
+            }
+        });
         var courseClosed = {{ course.close|yesno:"true,false" }}; // Also check if this is the first time setting up the assessments
         var numResponses = parseInt({% get_number_responses course %});
         var total = calculate_total();
