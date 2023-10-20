@@ -236,7 +236,7 @@
                        style="border-radius: 1em"
                        class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
                     <div class="d-grid col-2">
-                        <button class="btn btn-primary" style="border-radius: 1em;" type="submit">
+                        <button class="btn btn-primary" style="border-radius: 1em;" type="submit" onclick="saveOrdering()">
                             {% if course.close %}
                                 Update
                             {% else %}
@@ -301,7 +301,6 @@
         var courseClosed = {{ course.close|yesno:"true,false" }}; // Also check if this is the first time setting up the assessments
         var numResponses = parseInt({% get_number_responses course %});
         var total = calculate_total();
-        saveOrdering();
         if (total == 0) {
             if (confirm("Your total adds up to 0. If you click OK, this course’s Flexible Assessment setup and all student choices and comments will be deleted.")) {
                 form.action += "?reset=true";
@@ -357,7 +356,6 @@
     }
 
 	function check_valid() {
-        saveOrdering();
         total = calculate_total();
 		var total_str = total.toString();
 		$('#total').text(total_str + "%");

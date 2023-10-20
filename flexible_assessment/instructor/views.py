@@ -341,7 +341,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
     success_reverse_name = "instructor:instructor_home"
 
     def get_context_data(self, **kwargs):
-        """Populates and adds assessment formset, date form, ordeing form, and options
+        """Populates and adds assessment formset, date form, ordering form, and options
         form to context
 
         Returns
@@ -512,6 +512,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         )
 
         if conflict_students and not ignore_conflicts:
+            self.save_new_ordering(ordering_form, course, assessments)
             return super().form_invalid(formset)
 
         assessment_created = self._create_assessments(course, assessments)
@@ -564,9 +565,12 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 ordered_ids = ordering_form.cleaned_data["ordering"].split(',')
                 for i in range(len(ordered_ids)):
                     if ordered_ids[i] != "":
-                        curr = assessments[int(ordered_ids[i])]
-                        curr.order = i
-                        curr.save()
+                        try:
+                            curr = assessments[int(ordered_ids[i])]
+                            curr.order = i
+                            curr.save()
+                        except:
+                            return
                     
 
     def _save_assessments(self, forms, course, ignore_conflicts):
