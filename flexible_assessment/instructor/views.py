@@ -912,3 +912,14 @@ class ImportAssessmentView(views.InstructorFormView):
         )
 
         return super().form_valid(form)
+
+class InstructorHelp(views.InstructorTemplateView):
+    template_name = "instructor/instructor_help.html"
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        login_redirect = request.GET.get("login_redirect")
+        if login_redirect:
+            course = self.get_context_data().get("course", "")
+            utils.update_students(request, course)
+        return response

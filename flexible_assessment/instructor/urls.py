@@ -71,4 +71,7 @@ urlpatterns = [
         {"submit": True},
         name="final_grades_submit",
     ),
+    path("<int:course_id>/help", 
+         views.InstructorHelp.as_view(), 
+         name="instructor_help"),
 ]
