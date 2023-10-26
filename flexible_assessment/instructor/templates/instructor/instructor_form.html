@@ -63,8 +63,9 @@
             cursor: grabbing;
             color: #000000;
         }
-        .bi-three-dots-vertical {
+        .bi-grip-vertical {
             text-align: left;
+            font-size: 30px;
         }
     </style>
     <form action=""
@@ -126,7 +127,7 @@
                                    style="table-layout: fixed">
                                 <thead>
                                     <tr>
-                                        <th style="width: 20px; font-size: 110%;"></th>
+                                        <th style="width: 30px; font-size: 110%;"></th>
                                         <th class="text-center align-middle" style="width: 30%; font-size: 110%;">
                                             Assessment
                                         </th>
@@ -141,7 +142,7 @@
                                         <tr height="60px">
                                             <td class="handle-td">
                                                 <div class="handle">
-                                                <i class="bi bi-three-dots-vertical"></i>
+                                                <i class="bi bi-grip-vertical"></i>
                                                 </div>
                                             </td>
                                             {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
