@@ -46,35 +46,26 @@
         .handle-td {
             height: 60px;
             vertical-align: middle;
-            width: 5%;
+            width: 100%;
         }
 
         .handle {
-            display: block;
-            float: inline-end;
-            border-top: 3px solid #ABB0B8;
-            width: 30px;
-            padding-top: 5px;
             cursor: grab;
-        }
-        .handle:after{
-            display: block;
-            content: "";
-            padding-top: 5px;
-            border-top: 3px solid #ABB0B8;
-        }
-        .handle:before {
-            display: block;
-            content: "";
-            padding-top: 5px;
-            border-top: 3px solid #ABB0B8;
+            color: #434343;
+            width: 100%;
+            text-align: center;
         }
 
-        .handle:hover, .handle:hover:before, .handle:hover:after {
-            border-color: #4C4E52;
+        .handle:hover {
+            color: #000000;
         }
-        .handle:active, .handle:active:before, .handle:active:after {
+        .handle:active {
             cursor: grabbing;
+            color: #000000;
+        }
+        .bi-grip-vertical {
+            text-align: left;
+            font-size: 30px;
         }
     </style>
     <form action=""
@@ -136,7 +127,7 @@
                                    style="table-layout: fixed">
                                 <thead>
                                     <tr>
-                                        <th style="width: 5%;"></th>
+                                        <th style="width: 30px; font-size: 110%;"></th>
                                         <th class="text-center align-middle" style="width: 30%; font-size: 110%;">
                                             Assessment
                                         </th>
@@ -150,7 +141,9 @@
                                     {% for form in formset.forms %}
                                         <tr height="60px">
                                             <td class="handle-td">
-                                                <span class="handle"></span>
+                                                <div class="handle">
+                                                <i class="bi bi-grip-vertical"></i>
+                                                </div>
                                             </td>
                                             {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                                             {% for field in form.visible_fields %}

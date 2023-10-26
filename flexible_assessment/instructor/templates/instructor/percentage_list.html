@@ -60,7 +60,7 @@
                                             {% endwith %}
                                         {% endfor %}
                                         {% with student.usercomment_set.all|comment_filter:course.id as user_comment %}
-                                            <td class="align-middle text-break">{{ user_comment.comment }}</td>
+                                            <td class="text-center align-middle text-break">{{ user_comment.comment }}</td>
                                         {% endwith %}
                                     </tr>
                                 {% endfor %}
