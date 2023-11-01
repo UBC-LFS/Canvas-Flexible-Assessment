@@ -1,5 +1,6 @@
 from unittest.mock import patch
 from functools import wraps
+from canvasapi.calendar_event import CalendarEvent
 
 def use_mock_canvas(location="instructor.views.FlexCanvas"):
     """ Decorate a function that replaces FlexCanvas with MockFlexCanvas and pass the instance of MockFlexCanvas to the function 
@@ -86,3 +87,6 @@ class MockFlexCanvas(MockCanvas):
 
     def is_allow_override(self, course_id):
         return True
+    
+    def create_calendar_event(self, calendar_event):
+        return calendar_event
