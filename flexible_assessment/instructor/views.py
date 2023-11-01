@@ -566,9 +566,19 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                     "user": self.request.session["display_name"],
                 }
             )
-            calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
-            calendar_event = calendar_event.edit({"start_at": course.open,
-                                                  "end_at": course.close})
+            try:
+                calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
+            except:
+                event_details = {"context_code": ("course_"+str(course.id)),
+                                  "title": (course.title+" flexible assessment change dates"),
+                                  "start_at": course.open,
+                                  "end_at": course.close}
+                calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
+                course.calendar_id = calendar_event.id
+                course.save()
+            finally:    
+                calendar_event = calendar_event.edit({"start_at": course.open,
+                                                      "end_at": course.close})
 
     def save_new_ordering(self, ordering_form, course, assessments):
         if ordering_form.is_valid():
