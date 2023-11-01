@@ -156,6 +156,9 @@ class Course(models.Model):
         null=True,
         default="Please enter your reasons for the choices you made.",
     )
+    calendar_id = models.IntegerField(null=True, 
+                                      blank=True, 
+                                      default=None)
 
     def __str__(self):
         return "{} - {}".format(self.title, self.id)

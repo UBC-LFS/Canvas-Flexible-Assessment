@@ -525,11 +525,6 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             self._reset_conflict_students(course, conflict_students)
 
         # Update Canvas settings
-        event_details = {"context_code": ("course_"+str(course.id)),
-                                  "title": (course.title+" flexible assessment change dates"),
-                                  "start_at": course.open,
-                                  "end_at": course.close}
-        calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
         canvas_course = FlexCanvas(self.request).get_course(course_id)
         canvas_course.update_settings(hide_final_grades=hide_total)
         hide_weights = options_form.cleaned_data["hide_weights"]
@@ -552,6 +547,14 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         date_form.save()
 
         new_dts = (date_form.cleaned_data["open"], date_form.cleaned_data["close"])
+        if course.calendar_id is None:
+            event_details = {"context_code": ("course_"+str(course.id)),
+                                  "title": (course.title+" flexible assessment change dates"),
+                                  "start_at": course.open,
+                                  "end_at": course.close}
+            calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
+            course.calendar_id = calendar_event.id
+            course.save()
 
         if old_dts != new_dts:
             logger.info(
@@ -563,6 +566,9 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                     "user": self.request.session["display_name"],
                 }
             )
+            calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
+            calendar_event = calendar_event.edit({"start_at": course.open,
+                                                  "end_at": course.close})
 
     def save_new_ordering(self, ordering_form, course, assessments):
         if ordering_form.is_valid():
