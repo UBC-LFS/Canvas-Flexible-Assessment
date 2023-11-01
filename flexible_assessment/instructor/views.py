@@ -525,6 +525,11 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             self._reset_conflict_students(course, conflict_students)
 
         # Update Canvas settings
+        event_details = {"context_code": ("course_"+str(course.id)),
+                                  "title": (course.title+" flexible assessment change dates"),
+                                  "start_at": course.open,
+                                  "end_at": course.close}
+        calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
         canvas_course = FlexCanvas(self.request).get_course(course_id)
         canvas_course.update_settings(hide_final_grades=hide_total)
         hide_weights = options_form.cleaned_data["hide_weights"]
