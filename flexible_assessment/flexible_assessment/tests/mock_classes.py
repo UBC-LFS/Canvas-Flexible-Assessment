@@ -74,6 +74,16 @@ class MockCanvas(object):
     def get_course(self, course_id, use_sis_id=False, **kwargs):
         return self.canvas_course
     
+class MockCalendarEvent(object):
+    def __init__(self, dict):
+        self.id = 12345
+        self.title = dict['title']
+        self.start_at = dict['start_at']
+        self.end_at = dict['end_at']
+
+    def edit(self, dict):
+        return self
+    
 class MockFlexCanvas(MockCanvas):
     """ This is used to mock FlexCanvas since FlexCanvas requires Canvas authentication to use the Canvas api"""
     
@@ -89,4 +99,9 @@ class MockFlexCanvas(MockCanvas):
         return True
     
     def create_calendar_event(self, calendar_event):
-        return calendar_event
+        return MockCalendarEvent(calendar_event)
+    
+    def get_calendar_event(self, calendar_event):
+        return MockCalendarEvent({'title': 'course_1',
+                                  'start_at': "2009-06-15T13:45:30",
+                                  'end_at': "2009-06-15T13:45:30"})
