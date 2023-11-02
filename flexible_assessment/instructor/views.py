@@ -554,6 +554,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                                   "end_at": date_form.cleaned_data["close"]}
             calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
             course.calendar_id = calendar_event.id
+            course.save(update_fields=["calendar_id"])
 
         if old_dts != new_dts:
             logger.info(
@@ -568,7 +569,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             try:
                 print("Uses try clause")
                 calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
-                print("get request completed")
+                print(calendar_event.title)
                 calendar_event = calendar_event.edit({"start_at": date_form.cleaned_data["open"],
                                                       "end_at": date_form.cleaned_data["close"]})
                 print("edited calendar")
@@ -582,6 +583,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
                 print("calendar event created")
                 course.calendar_id = calendar_event.id
+                course.save(update_fields=["calendar_id"])
                 print("calendar id recorded") 
                 
 
