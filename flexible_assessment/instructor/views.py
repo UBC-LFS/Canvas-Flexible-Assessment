@@ -570,21 +570,18 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 print("Uses try clause")
                 calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
                 print(calendar_event.title)
-                calendar_event = calendar_event.edit({"start_at": date_form.cleaned_data["open"],
-                                                      "end_at": date_form.cleaned_data["close"]})
-                print("edited calendar")
+                calendar_event = calendar_event.delete()
+                print("deleted calendar")
             except:
                 print("Uses except clause")
+            finally:
                 event_details = {"context_code": ("course_"+str(course.id)),
                                   "title": (course.title+" flexible assessment change dates"),
                                   "start_at": date_form.cleaned_data["open"],
                                   "end_at": date_form.cleaned_data["close"]}
-                print("created event_details")
                 calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
-                print("calendar event created")
                 course.calendar_id = calendar_event.id
                 course.save(update_fields=["calendar_id"])
-                print("calendar id recorded") 
                 
 
     def save_new_ordering(self, ordering_form, course, assessments):
