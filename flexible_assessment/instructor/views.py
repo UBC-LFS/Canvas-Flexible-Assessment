@@ -570,7 +570,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 print("Uses try clause")
                 calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
                 print(calendar_event.title)
-                calendar_event = calendar_event.delete()
+                calendar_event.delete()
                 print("deleted calendar")
             except:
                 print("Uses except clause")
