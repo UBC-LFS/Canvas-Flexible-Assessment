@@ -567,14 +567,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 }
             )
             try:
-                print("Uses try clause")
                 calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
-                print(calendar_event.title)
-                calendar_event.delete()
-                print("deleted calendar")
+                calendar_event.edit({"start_at": date_form.cleaned_data["open"],
+                                  "end_at": date_form.cleaned_data["close"]})
             except:
-                print("Uses except clause")
-            finally:
                 event_details = {"context_code": ("course_"+str(course.id)),
                                   "title": (course.title+" flexible assessment change dates"),
                                   "start_at": date_form.cleaned_data["open"],
