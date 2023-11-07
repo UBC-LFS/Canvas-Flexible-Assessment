@@ -562,10 +562,12 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         new_dts = (date_form.cleaned_data["open"], date_form.cleaned_data["close"])
         if course.calendar_id is None:
             event_details = {"context_code": ("course_"+str(course.id)),
-                                  "title": (course.title+" flexible assessment change dates"),
+                                  "title": ("Deadline to make Flexible Assessment choices for" + course.title),
                                   "start_at": date_form.cleaned_data["close"],
                                   "end_at": date_form.cleaned_data["close"],
-                                  "all_day": True}
+                                  "all_day": True,
+                                  "description":("After this date you will not be able to change your choices on Flexible Assessment.", 
+                                  "If not completed your choices will automatically be set to the default value")}
             calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
             course.calendar_id = calendar_event.id
             #Updates only the calendar id so it can be referenced later without a NULL value
@@ -583,16 +585,20 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             )
             try:
                 calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
-                calendar_event.edit(calendar_event={"title": (course.title+" flexible assessment change dates"),
+                calendar_event.edit(calendar_event={"title": ("Deadline to make Flexible Assessment choices for" + course.title),
                                                     "start_at": date_form.cleaned_data["close"],
                                                     "end_at": date_form.cleaned_data["close"],
-                                                    "all_day": True})
+                                                    "all_day": True,
+                                                    "description":("After this date you will not be able to change your choices on Flexible Assessment.", 
+                                                    "If not completed your choices will automatically be set to the default value")})
             except:
                 event_details = {"context_code": ("course_"+str(course.id)),
-                                  "title": (course.title+" flexible assessment change dates"),
+                                  "title": ("Deadline to make Flexible Assessment choices for" + course.title),
                                   "start_at": date_form.cleaned_data["close"],
                                   "end_at": date_form.cleaned_data["close"],
-                                  "all_day": True}
+                                  "all_day": True,
+                                  "description":("After this date you will not be able to change your choices on Flexible Assessment.", 
+                                  "If not completed your choices will automatically be set to the default value")}
                 calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
                 course.calendar_id = calendar_event.id
                 course.save(update_fields=["calendar_id"])
