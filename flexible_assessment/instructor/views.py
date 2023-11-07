@@ -512,6 +512,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         )
 
         if conflict_students and not ignore_conflicts:
+            #ensures that the order of the forms remains even if they are invalid
             self.save_new_ordering(ordering_form, course, assessments)
             return super().form_invalid(formset)
 
@@ -535,6 +536,18 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         return HttpResponseRedirect(self.get_success_url())
 
     def _set_flex_availability(self, date_form, course):
+        """
+        Sets the time period in which students are able to select the assessment weights
+        Updates the log to sow date changes
+        Creates or updated calendar event in Canvas
+        
+        Parameters
+        -----------
+        date_form: DateForm
+            Contains flex assessment open and close datetime
+        course: CourseObject
+            The database entry for this specific course
+        """
         old_dts = tuple(
             map(
                 lambda dt: dt.astimezone(pytz.timezone("America/Vancouver"))
@@ -554,6 +567,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                                   "end_at": date_form.cleaned_data["close"]}
             calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
             course.calendar_id = calendar_event.id
+            #Updates only the calendar id so it can be referenced later without a NULL value
             course.save(update_fields=["calendar_id"])
 
         if old_dts != new_dts:
@@ -582,6 +596,14 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 
 
     def save_new_ordering(self, ordering_form, course, assessments):
+        """
+        Ordering form numbers forms in original order
+        The new order reflects the position of each form based on their initial index
+        e.g. [2, 4, 0, 1, 3] -> the form that initially had index 2 will be at the start 
+        followed by the one that initially had index 4 etc.
+
+        This function assigns the index of ordered_ids to the order field of the respective assessment
+        """
         if ordering_form.is_valid():
             if ordering_form != None:
                 ordered_ids = ordering_form.cleaned_data["ordering"].split(',')
