@@ -566,7 +566,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                                   "start_at": date_form.cleaned_data["close"],
                                   "end_at": date_form.cleaned_data["close"],
                                   "all_day": True,
-                                  "description":"<b>If you have not made your choices by this time, your choices will be automatically set to default</b>"}
+                                  "description":"<p>If you have not made your choices by this time, your choices will be automatically set to default</p>"}
             calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
             course.calendar_id = calendar_event.id
             #Updates only the calendar id so it can be referenced later without a NULL value
@@ -588,14 +588,14 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                                                     "start_at": date_form.cleaned_data["close"],
                                                     "end_at": date_form.cleaned_data["close"],
                                                     "all_day": True,
-                                                    "description":"<b>If you have not made your choices by this time, your choices will be automatically set to default</b>"})
+                                                    "description":"<p>If you have not made your choices by this time, your choices will be automatically set to default</p>"})
             except:
                 event_details = {"context_code": ("course_"+str(course.id)),
                                   "title": ("Deadline to make Flexible Assessment choices for " + course.title),
                                   "start_at": date_form.cleaned_data["close"],
                                   "end_at": date_form.cleaned_data["close"],
                                   "all_day": True,
-                                  "description":"<b>If you have not made your choices by this time, your choices will be automatically set to default</b>"}
+                                  "description":"<p>If you have not made your choices by this time, your choices will be automatically set to default</p>"}
                 calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
                 course.calendar_id = calendar_event.id
                 course.save(update_fields=["calendar_id"])
