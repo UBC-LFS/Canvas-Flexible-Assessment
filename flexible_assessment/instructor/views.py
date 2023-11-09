@@ -563,7 +563,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         calendar_created = False
         if course.calendar_id is None:
             event_details = {"context_code": ("course_"+str(course.id)),
-                                  "title": ("Deadline to make Flexible Assessment choices for " + course.title),
+                                  "title": ("Flexible Assessment"),
                                   "start_at": date_form.cleaned_data["close"],
                                   "end_at": date_form.cleaned_data["close"],
                                   "all_day": True,
@@ -598,7 +598,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 try:
                     calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
                     calendar_event_old = calendar_event.end_at
-                    calendar_event.edit(calendar_event={"title": ("Deadline to make Flexible Assessment choices for " + course.title),
+                    calendar_event.edit(calendar_event={"title": ("Flexible Assessment"),
                                                         "start_at": date_form.cleaned_data["close"],
                                                         "end_at": date_form.cleaned_data["close"],
                                                         "all_day": True,
@@ -615,7 +615,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                     )
                 except:
                     event_details = {"context_code": ("course_"+str(course.id)),
-                                    "title": ("Deadline to make Flexible Assessment choices for " + course.title),
+                                    "title": ("Flexible Assessment"),
                                     "start_at": date_form.cleaned_data["close"],
                                     "end_at": date_form.cleaned_data["close"],
                                     "all_day": True,
