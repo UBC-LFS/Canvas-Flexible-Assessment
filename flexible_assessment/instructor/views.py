@@ -3,6 +3,7 @@ import json
 import logging
 from io import TextIOWrapper
 from threading import Thread
+from datetime import datetime
 
 import flexible_assessment.class_views as views
 import flexible_assessment.models as models
@@ -43,6 +44,15 @@ class InstructorHome(views.InstructorTemplateView):
         if login_redirect:
             course = self.get_context_data().get("course", "")
             utils.update_students(request, course)
+            canvas = FlexCanvas(request)
+            if course.calendar_id is not None:
+                try:
+                    calendar_event = canvas.get_calendar_event(course.calendar_id)
+                    if (datetime(calendar_event.end_at) - datetime(course.close)).total_seconds() <= 60:
+                        course.close = calendar_event.end_at
+                        course.save()
+                except:
+                    pass
         return response
 
 
