@@ -1,6 +1,8 @@
 import csv
 import json
 import logging
+from datetime import datetime
+import dateutil.parser
 from io import TextIOWrapper
 from threading import Thread
 
@@ -352,8 +354,19 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         context = super().get_context_data(**kwargs)
         course = context["course"]
 
-        canvas_course = FlexCanvas(self.request).get_course(course.id)
+        canvas = FlexCanvas(self.request)
+        canvas_course = canvas.get_course(course.id)
         course_settings = canvas_course.get_settings()
+
+        context["is_different"] = False
+
+        if course.calendar_id is not None:
+            try:
+                formatted_calendar_date = dateutil.parser.isoparse(canvas.get_calendar_event(str(course.calendar_id)).end_at)
+                if (course.close-formatted_calendar_date).days > 1:
+                    context["is_different"] = True
+            except:
+                pass
 
         if not course.open:
             hide_total = True

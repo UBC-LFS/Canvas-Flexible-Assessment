@@ -103,5 +103,5 @@ class MockFlexCanvas(MockCanvas):
     
     def get_calendar_event(self, calendar_event):
         return MockCalendarEvent({'title': 'course_1',
-                                  'start_at': "2009-06-15T13:45:30",
-                                  'end_at': "2009-06-15T13:45:30"})
+                                  'start_at': "2009-06-15T13:45:30Z",
+                                  'end_at': "2009-06-15T13:45:30Z"})

@@ -68,6 +68,26 @@
             font-size: 30px;
         }
     </style>
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Calendar mismatch</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick=$("#exampleModal").modal('hide');>
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            The date you have selected in Flexible Assessment does not match the date of the Canvas calendar event.
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">OK</button>
+            </div>
+        </div>
+        </div>
+    </div>
     <form action=""
           method="post"
           data-changed="false"
@@ -318,6 +338,9 @@
 
 
     $(document).ready(function () {
+        {% if is_different %}
+        $('#exampleModal').modal('show');
+        {% endif %}
         var warnings = [];
         $('.warning').each(function(_, warning) {
             warnings.push(warning.textContent);
