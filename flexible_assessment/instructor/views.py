@@ -5,6 +5,7 @@ from datetime import datetime
 import dateutil.parser
 from io import TextIOWrapper
 from threading import Thread
+from datetime import datetime
 
 import flexible_assessment.class_views as views
 import flexible_assessment.models as models
