@@ -366,7 +366,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 print("try clause")
                 formatted_calendar_date = dateutil.parser.isoparse(canvas.get_calendar_event(str(course.calendar_id)).end_at)
                 print(formatted_calendar_date)
-                if (course.close-formatted_calendar_date).days > 1:
+                if abs((course.close-formatted_calendar_date).days) > 1:
                     print("setting to true")
                     context["is_different"] = True
             except:
