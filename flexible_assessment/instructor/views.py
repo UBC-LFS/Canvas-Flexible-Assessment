@@ -19,7 +19,7 @@ from django.forms import BaseModelFormSet, ValidationError
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 
 from instructor.canvas_api import FlexCanvas
 
@@ -363,11 +363,8 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         if course.calendar_id is not None:
             try:
-                print("try clause")
                 formatted_calendar_date = dateutil.parser.isoparse(canvas.get_calendar_event(str(course.calendar_id)).end_at)
-                print(formatted_calendar_date)
                 if abs((course.close-formatted_calendar_date).days) > 1:
-                    print("setting to true")
                     context["is_different"] = True
             except:
                 pass
@@ -1023,3 +1020,51 @@ class InstructorHelp(views.InstructorTemplateView):
             course = self.get_context_data().get("course", "")
             utils.update_students(request, course)
         return response
+
+def match_calendar_to_flex_dates(request, course_id):
+    course = models.Course.objects.get(pk=course_id)
+    if course.calendar_id is not None:
+        calendar_event = FlexCanvas(request).get_calendar_event(course.calendar_id)
+        calendar_event_old = calendar_event.end_at
+        calendar_event.edit(calendar_event={"title": ("Flexible Assessment"),
+                                            "start_at": course.close,
+                                            "end_at": course.close,
+                                            "all_day": True,
+                                            "description":"If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>"})
+        logger.info(
+            "Calendar event with id %s updated from %s to %s",
+            course.calendar_id,
+            calendar_event_old,
+            course.close,
+            extra={
+                "course": str(course),
+                "user": request.session["display_name"],
+            }
+        )
+    
+    return HttpResponseRedirect(
+                    reverse("instructor:instructor_form", kwargs={"course_id": course_id}))
+
+
+def match_flex_dates_to_calendar(request, course_id):
+    course = models.Course.objects.get(pk=course_id)
+    if course.calendar_id is not None:
+        calendar_event = FlexCanvas(request).get_calendar_event(course.calendar_id)
+        curr_end = course.close
+        course.close = calendar_event.end_at
+        course.save(update_fields=["close"])
+
+        logger.info(
+                "Updated flex availability " "from %s - %s to %s - %s",
+                course.open,
+                curr_end,
+                course.open,
+                course.close,
+                extra={
+                    "course": str(course),
+                    "user": request.session["display_name"],
+                }
+            )
+
+    return HttpResponseRedirect(
+                reverse("instructor:instructor_form", kwargs={"course_id": course_id}))
