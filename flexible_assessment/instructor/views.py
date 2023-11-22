@@ -596,6 +596,28 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                     "user": self.request.session["display_name"]
                 }
             )
+        
+        try:
+            calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
+        except:
+            event_details = {"context_code": ("course_"+str(course.id)),
+                            "title": ("Flexible Assessment"),
+                            "start_at": date_form.cleaned_data["close"],
+                            "end_at": date_form.cleaned_data["close"],
+                            "all_day": True,
+                            "description":"If you have not made your choices by this deadline, your choices will be <strong>automatically set to the default percentages</strong>"}
+            calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
+            course.calendar_id = calendar_event.id
+            course.save(update_fields=["calendar_id"])
+            logger.info(
+                "Calendar event not found, created new one with id %s and date %s",
+                course.calendar_id,
+                date_form.cleaned_data["close"],
+                extra={
+                    "course": str(course),
+                    "user": self.request.session["display_name"],
+                }
+            )
 
         if old_dts != new_dts:
             logger.info(
@@ -607,45 +629,23 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                     "user": self.request.session["display_name"],
                 }
             )
-            if not calendar_created:
-                #If the calendar event has been manually deleted the except clause will run to create a new one
-                try:
-                    calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
-                    calendar_event_old = calendar_event.end_at
-                    calendar_event.edit(calendar_event={"title": ("Flexible Assessment"),
-                                                        "start_at": date_form.cleaned_data["close"],
-                                                        "end_at": date_form.cleaned_data["close"],
-                                                        "all_day": True,
-                                                        "description":"If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>"})
-                    logger.info(
-                        "Calendar event with id %s updated from %s to %s",
-                        course.calendar_id,
-                        calendar_event_old,
-                        date_form.cleaned_data["close"],
-                        extra={
-                            "course": str(course),
-                            "user": self.request.session["display_name"],
-                        }
-                    )
-                except:
-                    event_details = {"context_code": ("course_"+str(course.id)),
-                                    "title": ("Flexible Assessment"),
-                                    "start_at": date_form.cleaned_data["close"],
-                                    "end_at": date_form.cleaned_data["close"],
-                                    "all_day": True,
-                                    "description":"If you have not made your choices by this deadline, your choices will be <strong>automatically set to the default percentages</strong>"}
-                    calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
-                    course.calendar_id = calendar_event.id
-                    course.save(update_fields=["calendar_id"])
-                    logger.info(
-                        "Calendar event not found, created new one with id %s and date %s",
-                        course.calendar_id,
-                        date_form.cleaned_data["close"],
-                        extra={
-                            "course": str(course),
-                            "user": self.request.session["display_name"],
-                        }
-                    )
+            calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
+            calendar_event_old = calendar_event.end_at
+            calendar_event.edit(calendar_event={"title": ("Flexible Assessment"),
+                                                "start_at": date_form.cleaned_data["close"],
+                                                "end_at": date_form.cleaned_data["close"],
+                                                "all_day": True,
+                                                "description":"If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>"})
+            logger.info(
+                "Calendar event with id %s updated from %s to %s",
+                course.calendar_id,
+                calendar_event_old,
+                date_form.cleaned_data["close"],
+                extra={
+                    "course": str(course),
+                    "user": self.request.session["display_name"],
+                }
+            )
                 
 
     def save_new_ordering(self, ordering_form, course, assessments):
