@@ -1050,13 +1050,18 @@ def match_flex_dates_to_calendar(request, course_id):
     course = models.Course.objects.get(pk=course_id)
     if course.calendar_id is not None:
         calendar_event = FlexCanvas(request).get_calendar_event(course.calendar_id)
+        curr_start = course.open
         curr_end = course.close
-        course.close = calendar_event.end_at
+        course.close = dateutil.parser.isoparse(calendar_event.end_at)
         course.save(update_fields=["close"])
+
+        if course.close < course.open:
+            course.open = course.close+dateutil.relativedelta.relativedelta(days=-1)
+            course.save(update_fields=["open"])
 
         logger.info(
                 "Updated flex availability " "from %s - %s to %s - %s",
-                course.open,
+                curr_start,
                 curr_end,
                 course.open,
                 course.close,
