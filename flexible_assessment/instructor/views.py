@@ -599,6 +599,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         
         try:
             calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
+            calendar_event_old = calendar_event.end_at
         except:
             event_details = {"context_code": ("course_"+str(course.id)),
                             "title": ("Flexible Assessment"),
