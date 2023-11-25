@@ -70,20 +70,26 @@
     </style>
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Calendar mismatch</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick=$("#exampleModal").modal('hide');>
-                <span aria-hidden="true">&times;</span>
+            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close" onclick=$("#exampleModal").modal('hide');>
+                <span aria-hidden="true"></span>
             </button>
             </div>
             <div class="modal-body">
-            The date you have selected in Flexible Assessment does not match the date of the Canvas calendar event.
+            The date you have selected in Flexible Assessment does not match the date in the calendar on Canvas. 
+            You can change the date of the Calendar by selecting "Change Calendar" to match what has been set in Flexible Assessment.
+            Or you can select "Change Flex Dates" to change the end date of the availability to match the calendar date in Canvas.
             </div>
-            <div class="modal-footer">
-            <a role="button" type="button" class="btn btn-secondary" href="{% url 'instructor:match_calendar' course.id %}">Change Canvas Calendar</a>
-            <a role="button" type="button" class="btn btn-primary" href="{% url 'instructor:match_flex' course.id %}">Change Flexible Assessment dates</a>
+            <div class="modal-footer justify-content-between">
+                <div>
+                    <a role="button" type="button" class="btn btn-secondary" href="{% url 'instructor:match_calendar' course.id %}">Change Calendar</a>
+                </div>
+                <div>                
+                    <a role="button" type="button" class="btn btn-primary" href="{% url 'instructor:match_flex' course.id %}">Change Flex Dates</a>
+                </div>
             </div>
         </div>
         </div>
@@ -338,6 +344,7 @@
 
 
     $(document).ready(function () {
+        $('#exampleModal').modal('hide');
         {% if is_different %}
         $('#exampleModal').modal('show');
         {% endif %}

@@ -364,7 +364,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         if course.calendar_id is not None:
             try:
                 formatted_calendar_date = dateutil.parser.isoparse(canvas.get_calendar_event(str(course.calendar_id)).end_at)
-                if abs((course.close-formatted_calendar_date).days) > 1:
+                if abs(((course.close-formatted_calendar_date).days)*60*60*24+((course.close-formatted_calendar_date).seconds)) > 3600:
                     context["is_different"] = True
             except:
                 pass
