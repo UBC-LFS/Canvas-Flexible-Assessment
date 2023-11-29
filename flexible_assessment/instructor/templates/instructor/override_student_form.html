@@ -43,26 +43,11 @@
                                             <tr height="60px">
                                                 <td class="text-center align-middle">{{ field.label }}</td>
                                                 {% not_flexible default_min_max as fixed %}
-                                                {% if fixed %}
-                                                    <td class="flex text-center align-middle"
-                                                        style="text-align: center;
-                                                               width: 25%">
-                                                        <input type="{{ field.field.widget.input_type }}"
-                                                               name="{{ field.html_name }}"
-                                                               value="{{ default_min_max.0 }}"
-                                                               disabled
-                                                               class="form-control">
-                                                        <input type="hidden"
-                                                               name="{{ field.html_name }}"
-                                                               value="{{ default_min_max.0 }}">
-                                                    </td>
-                                                {% else %}
                                                     <td class="flex text-center align-middle"
                                                         style="text-align: center;
                                                                width: 25%">
                                                         {% bootstrap_field field show_label=False placeholder='' wrapper_class='mb-3; vertical-align: middle;' %}
                                                     </td>
-                                                {% endif %}
                                                 <td class="text-center align-middle">{{ default_min_max.0 }}</td>
                                                 <td class="text-center align-middle">{{ default_min_max.1 }}</td>
                                                 <td class="text-center align-middle">{{ default_min_max.2 }}</td>

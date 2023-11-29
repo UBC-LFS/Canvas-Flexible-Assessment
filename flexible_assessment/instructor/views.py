@@ -897,7 +897,9 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         if not user_id or not course_id:
             raise PermissionDenied
 
+
         assessment_fields = list(form.cleaned_data.items())
+        """
         for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
             if flex > assessment.max:
@@ -910,6 +912,7 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
                     assessment_id,
                     ValidationError("Flex should be greater than or equal to min"),
                 )
+        """
 
         if form.errors:
             response = super().form_invalid(form)
