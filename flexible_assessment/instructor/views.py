@@ -361,8 +361,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         context["is_different"] = False
 
+        #Checks to see if the calendar matches the flex dates
         if course.calendar_id is not None:
             try:
+                #If the difference exceeds an hour, the is_different context variable is set to True to launch a modal in the browser
                 formatted_calendar_date = dateutil.parser.isoparse(canvas.get_calendar_event(str(course.calendar_id)).end_at)
                 if abs(((course.close-formatted_calendar_date).days)*60*60*24+((course.close-formatted_calendar_date).seconds)) > 3600:
                     context["is_different"] = True
@@ -552,7 +554,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
     def _set_flex_availability(self, date_form, course):
         """
         Sets the time period in which students are able to select the assessment weights
-        Updates the log to sow date changes
+        Updates the log to show date changes
         Creates or updated calendar event in Canvas
         
         Parameters
@@ -584,7 +586,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                                   "description":"If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>"}
             calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
             course.calendar_id = calendar_event.id
-            #Updates only the calendar id so it is not NULL on submission
+            #Updates only the calendar id so it is not NULL on submission as it doesn't have a field in the form
             course.save(update_fields=["calendar_id"])
             calendar_created = True
 
@@ -597,12 +599,13 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 }
             )
         
+        """
+        Checks to see if the Calendar event exists in Canvas by attempting to update it
+        Calendar events still exist after deletion, only return error after trying to update
+        """
         try:
             calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
-            calendar_event.edit(calendar_event={"title": ("Flexible Assessment"),
-                                                "start_at": date_form.cleaned_data["close"],
-                                                "end_at": date_form.cleaned_data["close"],
-                                                "all_day": True,})
+            calendar_event.edit(calendar_event={"title": ("Flexible Assessment")})
         except:
             event_details = {"context_code": ("course_"+str(course.id)),
                             "title": ("Flexible Assessment"),
@@ -623,6 +626,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 }
             )
 
+        #Updates both flex dates and calendar if date is changed
         if old_dts != new_dts:
             logger.info(
                 "Updated flex availability " "from %s - %s to %s - %s",
@@ -1026,6 +1030,9 @@ class InstructorHelp(views.InstructorTemplateView):
         return response
 
 def match_calendar_to_flex_dates(request, course_id):
+    """
+    Function based view that changes the calendar to match the flex dates before redirecting back to instructor_form
+    """
     course = models.Course.objects.get(pk=course_id)
     if course.calendar_id is not None:
         calendar_event = FlexCanvas(request).get_calendar_event(course.calendar_id)
@@ -1051,6 +1058,9 @@ def match_calendar_to_flex_dates(request, course_id):
 
 
 def match_flex_dates_to_calendar(request, course_id):
+    """
+    Function based view that changes the flex dates to match the calendar before redirecting back to instructor_form
+    """
     course = models.Course.objects.get(pk=course_id)
     if course.calendar_id is not None:
         calendar_event = FlexCanvas(request).get_calendar_event(course.calendar_id)
