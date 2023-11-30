@@ -83,7 +83,7 @@ class MockCalendarEvent(object):
 
     def edit(self, calendar_event):
         for k, v in calendar_event.items():
-            setattr(self, k, v)
+            setattr(self, k, str(v))
         return self
     
 class MockFlexCanvas(MockCanvas):
@@ -92,6 +92,7 @@ class MockFlexCanvas(MockCanvas):
     def __init__(self):
         super().__init__()
         self.groups_dict = {str(group.id): group for group in self.get_course(1).groups}
+        self.calendar_item = None
 
     def get_groups_and_enrollments(self, course_id):
         dict = {k: v.asdict() for k, v in self.groups_dict.items()}
@@ -101,9 +102,8 @@ class MockFlexCanvas(MockCanvas):
         return True
     
     def create_calendar_event(self, calendar_event):
-        return MockCalendarEvent(calendar_event)
+        self.calendar_item = MockCalendarEvent(calendar_event)
+        return self.calendar_item
     
     def get_calendar_event(self, calendar_event):
-        return MockCalendarEvent({'title': 'course_1',
-                                  'start_at': "2009-06-15T13:45:30Z",
-                                  'end_at': "2009-06-20T13:45:30Z"})
+        return self.calendar_item
