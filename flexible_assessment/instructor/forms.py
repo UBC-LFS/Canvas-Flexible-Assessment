@@ -65,6 +65,7 @@ class OptionsForm(forms.Form):
     hide_weights = forms.BooleanField(
         required=False, label="Hide Assignment Group Weights in Canvas"
     )
+    prevent_reset = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
         hide_total = kwargs.pop("hide_total", False)

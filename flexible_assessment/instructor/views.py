@@ -522,9 +522,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         hide_total = options_form.cleaned_data["hide_total"]
         ignore_conflicts = options_form.cleaned_data["ignore_conflicts"]
+        prevent_reset = options_form.cleaned_data["prevent_reset"]
 
         assessments, conflict_students = self._save_assessments(
-            formset.forms, course, ignore_conflicts
+            formset.forms, course, ignore_conflicts, prevent_reset
         )
 
         if conflict_students and not ignore_conflicts:
@@ -539,7 +540,8 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         if assessment_created or assessment_deleted:
             self._reset_all_students(course)
         else:
-            self._reset_conflict_students(course, conflict_students)
+            if not prevent_reset:
+                self._reset_conflict_students(course, conflict_students)
 
         # Update Canvas settings
         canvas_course = FlexCanvas(self.request).get_course(course_id)
@@ -678,7 +680,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                             return
                     
 
-    def _save_assessments(self, forms, course, ignore_conflicts):
+    def _save_assessments(self, forms, course, ignore_conflicts, prevent_reset):
         assessments = []
         conflict_students = set()
         for form in forms:
@@ -689,7 +691,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             curr_conflict_students = assessment.check_valid_flex()
             conflict_students = conflict_students.union(curr_conflict_students)
 
-            if curr_conflict_students and not ignore_conflicts:
+            if curr_conflict_students and not ignore_conflicts and not prevent_reset:
                 messages.warning(
                     self.request,
                     "{} flex allocations are out of range for {}".format(
