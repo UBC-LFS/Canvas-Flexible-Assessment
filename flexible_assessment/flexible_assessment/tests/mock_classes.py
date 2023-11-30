@@ -82,7 +82,9 @@ class MockCalendarEvent(object):
         self.end_at = dict['end_at']
 
     def edit(self, calendar_event):
-        return MockCalendarEvent(calendar_event)
+        for k, v in calendar_event.items():
+            setattr(self, k, v)
+        return self
     
 class MockFlexCanvas(MockCanvas):
     """ This is used to mock FlexCanvas since FlexCanvas requires Canvas authentication to use the Canvas api"""
@@ -104,4 +106,4 @@ class MockFlexCanvas(MockCanvas):
     def get_calendar_event(self, calendar_event):
         return MockCalendarEvent({'title': 'course_1',
                                   'start_at': "2009-06-15T13:45:30Z",
-                                  'end_at': "2009-06-15T13:45:30Z"})
+                                  'end_at': "2009-06-20T13:45:30Z"})
