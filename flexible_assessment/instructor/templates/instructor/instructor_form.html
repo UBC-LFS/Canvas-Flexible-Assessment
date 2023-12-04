@@ -270,7 +270,9 @@
     <table id="empty_form" style="display:none">
         <tr height="60px">
             <td class="handle-td">
-                <span class="handle"></span>
+                <div class="handle">
+                <i class="bi bi-grip-vertical"></i>
+                </div>
             </td>
             {% for field in formset.empty_form.visible_fields %}
                 <td class="{{ field.label }} text-center align-middle">
