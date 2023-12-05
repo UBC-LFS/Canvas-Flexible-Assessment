@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select, WebDriverWait
+from selenium.webdriver import ActionChains
 import flexible_assessment.models as models
 from django.urls import reverse
 from django.test import Client, tag
@@ -14,6 +15,7 @@ from datetime import datetime, timedelta
 from flexible_assessment.tests.test_data import DATA
 from unittest.mock import patch, MagicMock, ANY
 import instructor.views as views
+import time
 
 import flexible_assessment.tests.mock_classes as mock_classes
 
@@ -453,3 +455,72 @@ class TestInstructorViews(StaticLiveServerTestCase):
         body_text = student_browser.find_element(By.TAG_NAME, "body").text
         self.assertIn(course_after.title, body_text)
         student_browser.close()
+
+    @tag("slow")
+    @mock_classes.use_mock_canvas()
+    def test_reordering(self, mocked_flex_canvas_instance):
+        """In course 3 the teacher is setting up flexible assessment for the first time
+        The teacher will set up 3 assessments and swap the positions of the last two
+        1. Navigate to Course Setup and create 3 assessments
+        2. Switch positions of the 2nd and 3rd assessments
+        3. Check that the updated positions are correct
+        """
+        print("---------------------test_auto_min_max-------------------------------")
+
+        session_id = self.client.session.session_key
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[3])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[3])
+        )
+        # 1
+        self.browser.find_element(By.LINK_TEXT, "Assessments").click()
+        self.browser.find_element(By.ID, "add").click()
+        self.browser.find_element(By.ID, "add").click()
+        self.browser.find_element(By.ID, "add").click()
+
+        inputs = self.browser.find_elements(By.TAG_NAME, "input")
+        values = ["A1", "25", "10", "40", "A2", "25", "10", "40", "A3", "50", "50", "50"]
+        for index, value in enumerate(values):
+            inputs[index + 6].send_keys(
+                value
+            )  # There are 6 hidden inputs we need to skip over
+
+        open_date_field = self.browser.find_element(By.NAME, "date-open")
+        date_field = self.browser.find_element(By.NAME, "date-close")
+
+        tomorrow = datetime.now() + timedelta(1)
+
+        open_date_field.send_keys(datetime.strftime(tomorrow, "%m-%d-%Y"))
+        open_date_field.send_keys(Keys.TAB)
+        open_date_field.send_keys("0245PM")
+
+        date_field.send_keys(datetime.strftime(tomorrow, "%m-%d-%Y"))
+        date_field.send_keys(Keys.TAB)
+        date_field.send_keys("0245PM")
+
+        self.browser.fullscreen_window()
+        actions = ActionChains(self.browser)
+        handle_elements = self.browser.find_elements(By.CLASS_NAME, "handle-td")
+        source_element = handle_elements[2]
+        target_element = handle_elements[1]
+        actions.drag_and_drop(source_element, target_element).perform()
+        time.sleep(3)
+
+        update_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Update")]'
+        )
+        update_button.send_keys(Keys.ENTER)
+
+        wait = WebDriverWait(self.browser, 5)
+        wait.until_not(EC.url_contains("form"))
+
+        A3_order = models.Assessment.objects.get(title="A3").order
+        A2_order = models.Assessment.objects.get(title="A2").order
+        A1_order = models.Assessment.objects.get(title="A1").order
+        self.assertEqual(A3_order, 1)
+        self.assertEqual(A2_order, 2)
+        self.assertEqual(A1_order, 0)
