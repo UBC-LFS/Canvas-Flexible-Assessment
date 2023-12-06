@@ -460,12 +460,14 @@ class TestInstructorViews(StaticLiveServerTestCase):
     @mock_classes.use_mock_canvas()
     def test_reordering(self, mocked_flex_canvas_instance):
         """In course 3 the teacher is setting up flexible assessment for the first time
-        The teacher will set up 3 assessments and swap the positions of the last two
+        The teacher will set up assessments and reorder them
         1. Navigate to Course Setup and create 3 assessments
         2. Switch positions of the 2nd and 3rd assessments
         3. Check that the updated positions are correct
+        4. Add a new assessment and move it to the top
+        5. Check that the order of all assessments has changed
         """
-        print("---------------------test_auto_min_max-------------------------------")
+        print("---------------------test_reordering-------------------------------")
 
         session_id = self.client.session.session_key
         self.browser.get(
@@ -502,13 +504,13 @@ class TestInstructorViews(StaticLiveServerTestCase):
         date_field.send_keys(Keys.TAB)
         date_field.send_keys("0245PM")
 
+        #2
         self.browser.fullscreen_window()
         actions = ActionChains(self.browser)
         handle_elements = self.browser.find_elements(By.CLASS_NAME, "handle-td")
         source_element = handle_elements[2]
         target_element = handle_elements[1]
         actions.drag_and_drop(source_element, target_element).perform()
-        time.sleep(3)
 
         update_button = self.browser.find_element(
             By.XPATH, '//button[contains(text(), "Update")]'
@@ -518,9 +520,109 @@ class TestInstructorViews(StaticLiveServerTestCase):
         wait = WebDriverWait(self.browser, 5)
         wait.until_not(EC.url_contains("form"))
 
+        #3
         A3_order = models.Assessment.objects.get(title="A3").order
         A2_order = models.Assessment.objects.get(title="A2").order
         A1_order = models.Assessment.objects.get(title="A1").order
         self.assertEqual(A3_order, 1)
         self.assertEqual(A2_order, 2)
         self.assertEqual(A1_order, 0)
+
+        #4
+        self.browser.find_element(By.LINK_TEXT, "Assessments").click()
+        self.browser.find_element(By.ID, "add").click()
+
+        handle_elements = self.browser.find_elements(By.CLASS_NAME, "handle-td")
+        source_element = handle_elements[3]
+        target_element = handle_elements[0]
+        actions.drag_and_drop(source_element, target_element).perform()
+
+        inputs = self.browser.find_elements(By.TAG_NAME, "input")
+        values = ["A4", "0", "0", "0"]
+        for index, value in enumerate(values):
+            inputs[index + 6].send_keys(
+                value
+            )  # There are 6 hidden inputs we need to skip over
+
+        update_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Update")]'
+        )
+        update_button.send_keys(Keys.ENTER)
+
+        wait = WebDriverWait(self.browser, 5)
+        wait.until_not(EC.url_contains("form"))
+
+        #5
+        A4_order = models.Assessment.objects.get(title="A4").order
+        A3_order = models.Assessment.objects.get(title="A3").order
+        A2_order = models.Assessment.objects.get(title="A2").order
+        A1_order = models.Assessment.objects.get(title="A1").order
+        self.assertEqual(A3_order, 2)
+        self.assertEqual(A2_order, 3)
+        self.assertEqual(A1_order, 1)
+        self.assertEqual(A4_order, 0)
+
+    @tag("slow")
+    @mock_classes.use_mock_canvas()
+    def test_min_max_auto(self, mocked_flex_canvas_instance):
+        """In course 3 the teacher is setting up flexible assessment for the first time
+        The teacher will set up a course and leave the min and max for one of them empty
+        The fields should be filled in as per the default value automatically
+        1. Navigate to Course Setup and create 3 assessments with one having empty fields
+        2. Check that the value of the min and max are correct
+        """
+        print("---------------------test_min_max_auto-------------------------------")
+
+        session_id = self.client.session.session_key
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[3])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[3])
+        )
+
+        # 1
+        self.browser.find_element(By.LINK_TEXT, "Assessments").click()
+        self.browser.find_element(By.ID, "add").click()
+        self.browser.find_element(By.ID, "add").click()
+        self.browser.find_element(By.ID, "add").click()
+
+        inputs = self.browser.find_elements(By.TAG_NAME, "input")
+        #empty fields are represented by empty strings
+        values = ["A1", "25", "10", "40", "A2", "25", "10", "40", "A3", "50", "", ""]
+        for index, value in enumerate(values):
+            inputs[index + 6].send_keys(
+                value
+            )  # There are 6 hidden inputs we need to skip over
+
+        open_date_field = self.browser.find_element(By.NAME, "date-open")
+        date_field = self.browser.find_element(By.NAME, "date-close")
+
+        tomorrow = datetime.now() + timedelta(1)
+
+        open_date_field.send_keys(datetime.strftime(tomorrow, "%m-%d-%Y"))
+        open_date_field.send_keys(Keys.TAB)
+        open_date_field.send_keys("0245PM")
+
+        date_field.send_keys(datetime.strftime(tomorrow, "%m-%d-%Y"))
+        date_field.send_keys(Keys.TAB)
+        date_field.send_keys("0245PM")
+
+        self.browser.fullscreen_window()
+
+        update_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Update")]'
+        )
+        update_button.send_keys(Keys.ENTER)
+
+        wait = WebDriverWait(self.browser, 5)
+        wait.until_not(EC.url_contains("form"))
+
+        #2
+        A3_min = models.Assessment.objects.get(title="A3").min
+        A3_max = models.Assessment.objects.get(title="A3").max
+
+        self.assertEqual(A3_min, 50)
+        self.assertEqual(A3_max, 50)
