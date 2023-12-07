@@ -70,9 +70,17 @@ class MockCanvasCourse(object):
 class MockCanvas(object):
     def __init__(self):
         self.canvas_course = MockCanvasCourse()
+        self.calendar_item = None
     
     def get_course(self, course_id, use_sis_id=False, **kwargs):
         return self.canvas_course
+
+    def create_calendar_event(self, calendar_event):
+        self.calendar_item = MockCalendarEvent(calendar_event)
+        return self.calendar_item
+    
+    def get_calendar_event(self, calendar_event):
+        return self.calendar_item
     
 class MockCalendarEvent(object):
     def __init__(self, dict):
