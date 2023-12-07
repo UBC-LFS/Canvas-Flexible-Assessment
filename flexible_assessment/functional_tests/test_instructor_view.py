@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.test import Client, tag
 from django.http import HttpResponseRedirect
 from datetime import datetime, timedelta
+import dateutil
 from flexible_assessment.tests.test_data import DATA
 from unittest.mock import patch, MagicMock, ANY
 import instructor.views as views
@@ -626,3 +627,108 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         self.assertEqual(A3_min, 50)
         self.assertEqual(A3_max, 50)
+
+    @tag("slow")
+    @mock_classes.use_mock_canvas()
+    def test_calendar(self, mocked_flex_canvas_instance):
+        """In course 3 the teacher is setting up flexible assessment
+        The calendar should match the open and close dates and provide an option if the dates do not match
+        1. Navigate to Course Setup and create 3 assessments
+        2. Check that the calendar dates are correct
+        3. Change the calendar date
+        4. Select the option to change the calendar dates
+        5. Check that the calendar dates are correct
+        6. Change the calendar date
+        7. Select the option to change the close date of flex assessment
+        8. Check that the close date is different to the original close date
+        """
+        print("---------------------test_calendar-------------------------------")
+
+        session_id = self.client.session.session_key
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[3])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[3])
+        )
+
+        # 1
+        self.browser.find_element(By.LINK_TEXT, "Assessments").click()
+        self.browser.find_element(By.ID, "add").click()
+        self.browser.find_element(By.ID, "add").click()
+        self.browser.find_element(By.ID, "add").click()
+
+        inputs = self.browser.find_elements(By.TAG_NAME, "input")
+        values = ["A1", "25", "10", "40", "A2", "25", "10", "40", "A3", "50", "50", "50"]
+        for index, value in enumerate(values):
+            inputs[index + 6].send_keys(
+                value
+            )  # There are 6 hidden inputs we need to skip over
+
+        open_date_field = self.browser.find_element(By.NAME, "date-open")
+        date_field = self.browser.find_element(By.NAME, "date-close")
+
+        tomorrow = datetime.now() + timedelta(1)
+
+        open_date_field.send_keys(datetime.strftime(tomorrow, "%m-%d-%Y"))
+        open_date_field.send_keys(Keys.TAB)
+        open_date_field.send_keys("0245PM")
+
+        date_field.send_keys(datetime.strftime(tomorrow, "%m-%d-%Y"))
+        date_field.send_keys(Keys.TAB)
+        date_field.send_keys("0245PM")
+
+        update_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Update")]'
+        )
+        update_button.send_keys(Keys.ENTER)
+
+        wait = WebDriverWait(self.browser, 5)
+        wait.until_not(EC.url_contains("form"))
+
+        #2
+        calendar_id = models.Course.objects.get(id=3).calendar_id
+        canvas_calendar = mocked_flex_canvas_instance.get_calendar_event(str(calendar_id))
+        self.assertEqual(calendar_id, canvas_calendar.id)
+        start_at = dateutil.parser.parse(canvas_calendar.start_at).replace(tzinfo=None)
+        end_at = dateutil.parser.parse(canvas_calendar.end_at).replace(tzinfo=None)
+        self.assertTrue(abs((end_at - tomorrow).days) <= 1)
+        self.assertTrue(abs((start_at - tomorrow).days) <= 1)
+
+        #3
+        canvas_calendar.edit(calendar_event={"title": "Flexible Assessment", "end_at": models.Course.objects.get(id=3).close+timedelta(2)})
+
+        #4
+        self.browser.find_element(By.LINK_TEXT, "Assessments").click()
+        time.sleep(5)
+        self.browser.find_element(By.CLASS_NAME, "btn-secondary").click()
+
+        #5
+        start_at = dateutil.parser.parse(canvas_calendar.start_at).replace(tzinfo=None)
+        end_at = dateutil.parser.parse(canvas_calendar.end_at).replace(tzinfo=None)
+        self.assertTrue(abs((end_at - tomorrow).days) <= 1)
+        self.assertTrue(abs((start_at - tomorrow).days) <= 1)
+
+        update_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Update")]'
+        )
+        update_button.send_keys(Keys.ENTER)
+
+        wait = WebDriverWait(self.browser, 5)
+        wait.until_not(EC.url_contains("form"))
+
+        #6
+        canvas_calendar.edit(calendar_event={"title": "Flexible Assessment", "end_at": models.Course.objects.get(id=3).close+timedelta(2)})
+
+        #7
+        self.browser.find_element(By.LINK_TEXT, "Assessments").click()
+        time.sleep(5)
+        self.browser.find_element(By.CLASS_NAME, "btn-primary").click()
+
+        #8
+        c_close = models.Course.objects.get(id=3).close.replace(tzinfo=None)
+        c_open = models.Course.objects.get(id=3).open.replace(tzinfo=None)
+        self.assertTrue(abs((c_close - tomorrow).days) > 1)
+        self.assertTrue(abs((c_open - tomorrow).days) <= 1)
