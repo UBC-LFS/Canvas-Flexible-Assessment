@@ -528,7 +528,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             formset.forms, course, ignore_conflicts, prevent_reset
         )
 
-        if conflict_students and not ignore_conflicts:
+        if conflict_students and not ignore_conflicts and not prevent_reset:
             #ensures that the order of the forms remains even if they are invalid
             self.save_new_ordering(ordering_form, course, assessments)
             return super().form_invalid(formset)
@@ -551,6 +551,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             course={"apply_assignment_group_weights": not hide_weights}
         )
 
+        print("here")
         return HttpResponseRedirect(self.get_success_url())
 
     def _set_flex_availability(self, date_form, course):

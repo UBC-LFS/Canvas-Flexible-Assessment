@@ -1,7 +1,7 @@
 from django import forms
 from django.utils import timezone
 from django.utils.html import format_html
-from flexible_assessment.models import Course, UserComment
+from flexible_assessment.models import Course, UserComment, Assessment
 from instructor.forms import StudentAssessmentBaseForm
 
 
@@ -63,3 +63,10 @@ class StudentAssessmentForm(StudentAssessmentBaseForm):
         if course.close != None and (now > close_datetime or now < open_datetime):
             for field in self.fields.values():
                 field.disabled = True
+
+        for field in self.fields.values():
+            if field.label is not None and len(Assessment.objects.filter(title=field.label).filter(course=self.course_id)) > 0:
+                if Assessment.objects.filter(title=field.label).filter(course=self.course_id).first().min == Assessment.objects.filter(title=field.label).filter(course=self.course_id).first().max:
+                    if field.initial is None:
+                        field.initial = Assessment.objects.filter(title=field.label).filter(course=self.course_id).first().min
+                    field.disabled = True

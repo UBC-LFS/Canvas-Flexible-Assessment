@@ -1,6 +1,6 @@
 from django import template
 from django.utils import timezone
-from flexible_assessment.models import Assessment
+from flexible_assessment.models import Assessment, FlexAssessment
 
 register = template.Library()
 
@@ -34,6 +34,14 @@ def before_deadline(course):
 def get_default_min_max(id):
     assessment = Assessment.objects.filter(pk=id).first()
     return (assessment.default, assessment.min, assessment.max)
+
+@register.simple_tag(takes_context=True)
+def get_student_weight(context, id):
+    request = context.get("request")
+    student_id = request.session.get("user_id", "")
+    flex_assess = FlexAssessment.objects.filter(user=student_id, assessment=id).first()
+    return flex_assess.flex
+
 
 
 @register.simple_tag()

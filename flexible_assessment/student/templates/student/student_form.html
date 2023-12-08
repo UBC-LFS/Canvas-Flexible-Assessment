@@ -55,14 +55,7 @@
                                                         <td class="flex text-center align-middle"
                                                             style="text-align: center;
                                                                    width: 25%">
-                                                            <input type="{{ field.field.widget.input_type }}"
-                                                                   name="{{ field.html_name }}"
-                                                                   value="{{ default_min_max.0 }}"
-                                                                   disabled
-                                                                   class="form-control">
-                                                            <input type="hidden"
-                                                                   name="{{ field.html_name }}"
-                                                                   value="{{ default_min_max.0 }}">
+                                                            {% bootstrap_field field show_label=False placeholder='' wrapper_class='mb-3; vertical-align: middle;' %}
                                                         </td>
                                                     {% else %}
                                                         <td class="flex text-center align-middle"
