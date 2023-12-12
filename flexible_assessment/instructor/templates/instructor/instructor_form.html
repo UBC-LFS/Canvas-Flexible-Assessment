@@ -143,7 +143,7 @@
                             <p class="fw-light m-0 pb-1">
                                 Click the <b style="font-weight: bold">+Assessment</b> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible.
                                 The <b style="font-weight: bold;">Default %</b> will be used for students who do not enter desired percentages. The <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> values define the range of weights students will be able to enter.
-                                If you do not want an assessment to be flexible, enter the same value for the Default %, Minimum % and Maximum %. The default values for all assessments <u>must add up to 100%</u>.
+                                If you do not want an assessment to be flexible, leave the <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> fields blank or equal to the <b style="font-weight: bold;">Default %</b>. The default values for all assessments <u>must add up to 100%</u>.
                             </p>
                             <div class="d-flex align-items-center justify-content-between">
                                 <p class="fw-light m-0">{% bootstrap_formset_errors formset %}</p>
@@ -196,7 +196,7 @@
                             </div>
                             <div class="d-flex flex-column">
                                 <p class="fw-light m-0 pb-1">
-                                    Select both of these options to hide incorrect weights and calculations in Canvas Grades
+                                    If you already enabled and entered weights for Assignment Groups on the Assignments page in Canvas, select the first option below to hide these weights. This option prevents students from seeing incorrect weights in their view of Grades. Select the second option below to hide overall grades for the Assignment Groups and Final Grades. This option prevents students from seeing possible incorrect Final Grade calculations before you have exported the recalculated Final Grades from the Flexible Assessment app.
                                 </p>
                                 {% bootstrap_field options_form.hide_weights wrapper_class="mb-1" %}
                                 {% bootstrap_field options_form.hide_total wrapper_class="mb-1" %}
@@ -213,7 +213,7 @@
                         <h3 class="card-header">Comment Instructions</h3>
                         <div class="card-body pt-2 pb-3">
                             <p class="fw-light m-0 pb-1">
-                                This is a message that will appear above the box where students put their comments.
+                                This message will appear above the box where students can enter comments.
                             </p>
                             {% bootstrap_field date_form.comment_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
                         </div>

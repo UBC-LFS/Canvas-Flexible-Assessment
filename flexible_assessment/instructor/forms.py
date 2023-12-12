@@ -59,7 +59,7 @@ class StudentAssessmentBaseForm(forms.Form):
 
 class OptionsForm(forms.Form):
     hide_total = forms.BooleanField(
-        required=False, label="Hide totals in Student Grades Summary"
+        required=False, label="Hide Subtotal grades for Assignment Groups and Final grades"
     )
     ignore_conflicts = forms.BooleanField(required=False)
     hide_weights = forms.BooleanField(
