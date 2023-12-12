@@ -1,0 +1,112 @@
+{% extends "instructor/instructor_base.html" %}
+{% load instructor_tags %}
+{% block nav_item_help %}
+    active
+{% endblock nav_item_help %}
+{% block content %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show"
+                 role="alert">
+                {{ message|safe }}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    <div class="container-fluid d-flex justify-content-center align-items-center pt-5 pb-5">
+        <h1>
+            <b>Help</b>
+        </h1>
+    </div>
+    <div class="d-flex align-items-center justify-content-center">
+        <div class="col-10">
+            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h3 class="mb-0">Frequently Asked Questions</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div id="accordion">
+
+                        <div class="card">
+                          <div class="card-header">
+                            <a class="btn" data-bs-toggle="collapse" href="#collapseOne">
+                            How do I change student choices after the deadline?
+                            </a>
+                          </div>
+                          <div id="collapseOne" class="collapse" data-bs-parent="#accordion">
+                            <div class="card-body">
+                                Under Student Choices, you can click that student's name and there you will be able to input updated choices.
+                              <img src="https://user-images.githubusercontent.com/122059045/264164639-fca9e898-6364-4e85-a462-9a66e70b8461.png" width="100%">
+                            </div>
+                          </div>
+                        </div>
+                      
+                        <div class="card">
+                          <div class="card-header">
+                            <a class="collapsed btn" data-bs-toggle="collapse" href="#collapseTwo" style="text-align:left">
+                            How do I enable 'Final Grade Override' in the settings on the Grades page in Canvas?
+                            </a>
+                          </div>
+                          <div id="collapseTwo" class="collapse" data-bs-parent="#accordion">
+                            <div class="card-body">
+                                On Canvas go to Grades (Gradebook) > Settings > Advanced and check Allow final grade override. This allows the app to upload the recalculated grades to Canvas.
+                                <img src="https://user-images.githubusercontent.com/122059045/224784081-1214936b-31fc-476b-a974-bfd63eaf5ad2.png" width="100%">
+                            </div>
+                          </div>
+                        </div>
+                      
+                        <div class="card">
+                          <div class="card-header">
+                            <a class="collapsed btn" data-bs-toggle="collapse" href="#collapseThree" style="text-align:left">
+                            If I disable Flexible Assessment from Canvas will the data inside be lost?
+                            </a>
+                          </div>
+                          <div id="collapseThree" class="collapse" data-bs-parent="#accordion">
+                            <div class="card-body">
+                                No, disabling Flexible Assessment from Canvas will have no impact on Flexible Assessment. If you re-enable it, your setup and any student choices will still be there.
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="card">
+                          <div class="card-header">
+                            <a class="collapsed btn" data-bs-toggle="collapse" href="#collapseFour" style="text-align:left">
+                            Why is the Total grade in Canvas Gradebook different from the Default Total in Flexible Assessment?
+                            </a>
+                          </div>
+                          <div id="collapseFour" class="collapse" data-bs-parent="#accordion">
+                              <div class="card-body">
+                                Flexible Assessment uses the default assessment weights to calculate the default total.
+                                If you are hiding Assignment Group Weights in Canvas, unhide them so Canvas gradebook calculates the total grade properly with the assessment group weights.
+                                <img src="https://user-images.githubusercontent.com/122059045/264165772-7cd9ae9d-d359-4411-b790-e372f2d0f4c5.png" width="100%">
+                              </div>
+                          </div>
+                        </div>
+                      
+                      </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if messages %}
+        <ul class="messages" hidden>
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <script>
+        $(document).ready(function() {
+            var errors = [];
+            $('.error').each(function(_, error) {
+                errors.push(error.textContent);
+            });
+            var error_str = errors.join(', ');
+            if (error_str)
+                alert(error_str);
+        })
+    </script>
+{% endblock content %}

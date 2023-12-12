@@ -1,6 +1,7 @@
 {% extends "instructor/instructor_base.html" %}
 {% load instructor_tags %}
 {% load django_bootstrap5 %}
+{% load static %}
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
@@ -12,6 +13,7 @@
 {% endblock nav_item_assessments %}
 {% block content %}
     <!-- This Overrides the styling automatically added by bootstrap_field for form validation -->
+    <script src="{% static 'js/external/Sortable.min.js' %}"></script>
     <style>
         .form-control.is-valid {
             border-color: #ced4da;
@@ -40,7 +42,58 @@
         .form-check-input.is-valid {
             border-color: #ced4da;
         }
+
+        .handle-td {
+            height: 60px;
+            vertical-align: middle;
+            width: 100%;
+        }
+
+        .handle {
+            cursor: grab;
+            color: #434343;
+            width: 100%;
+            text-align: center;
+        }
+
+        .handle:hover {
+            color: #000000;
+        }
+        .handle:active {
+            cursor: grabbing;
+            color: #000000;
+        }
+        .bi-grip-vertical {
+            text-align: left;
+            font-size: 30px;
+        }
     </style>
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Calendar mismatch</h5>
+            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close" onclick=$("#exampleModal").modal('hide');>
+                <span aria-hidden="true"></span>
+            </button>
+            </div>
+            <div class="modal-body">
+            The date you have selected in Flexible Assessment does not match the date in the calendar on Canvas. 
+            You can change the date of the Calendar by selecting "Change Calendar" to match what has been set in Flexible Assessment.
+            Or you can select "Change Flex Dates" to change the end date of the availability to match the calendar date in Canvas.
+            </div>
+            <div class="modal-footer justify-content-between">
+                <div>
+                    <a role="button" type="button" class="btn btn-secondary" href="{% url 'instructor:match_calendar' course.id %}">Change Calendar</a>
+                </div>
+                <div>                
+                    <a role="button" type="button" class="btn btn-primary" href="{% url 'instructor:match_flex' course.id %}">Change Flex Dates</a>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
     <form action=""
           method="post"
           data-changed="false"
@@ -90,7 +143,7 @@
                             <p class="fw-light m-0 pb-1">
                                 Click the <b style="font-weight: bold">+Assessment</b> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible.
                                 The <b style="font-weight: bold;">Default %</b> will be used for students who do not enter desired percentages. The <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> values define the range of weights students will be able to enter.
-                                If you do not want an assessment to be flexible, enter the same value for the Default %, Minimum % and Maximum %. The default values for all assessments <u>must add up to 100%</u>.
+                                If you do not want an assessment to be flexible, leave the <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> fields blank or equal to the <b style="font-weight: bold;">Default %</b>. The default values for all assessments <u>must add up to 100%</u>.
                             </p>
                             <div class="d-flex align-items-center justify-content-between">
                                 <p class="fw-light m-0">{% bootstrap_formset_errors formset %}</p>
@@ -100,6 +153,7 @@
                                    style="table-layout: fixed">
                                 <thead>
                                     <tr>
+                                        <th style="width: 30px; font-size: 110%;"></th>
                                         <th class="text-center align-middle" style="width: 30%; font-size: 110%;">
                                             Assessment
                                         </th>
@@ -109,10 +163,15 @@
                                         <th class="text-center align-middle" style="width: 12%; font-size: 110%;">Remove</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="forms">
                                     {% for form in formset.forms %}
-                                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                                         <tr height="60px">
+                                            <td class="handle-td">
+                                                <div class="handle">
+                                                <i class="bi bi-grip-vertical"></i>
+                                                </div>
+                                            </td>
+                                            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                                             {% for field in form.visible_fields %}
                                                 <td class="{{ field.label }} text-center align-middle">
                                                     {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
@@ -137,7 +196,7 @@
                             </div>
                             <div class="d-flex flex-column">
                                 <p class="fw-light m-0 pb-1">
-                                    Select both of these options to hide incorrect weights and calculations in Canvas Grades
+                                    If you already enabled and entered weights for Assignment Groups on the Assignments page in Canvas, select the first option below to hide these weights. This option prevents students from seeing incorrect weights in their view of Grades. Select the second option below to hide overall grades for the Assignment Groups and Final Grades. This option prevents students from seeing possible incorrect Final Grade calculations before you have exported the recalculated Final Grades from the Flexible Assessment app.
                                 </p>
                                 {% bootstrap_field options_form.hide_weights wrapper_class="mb-1" %}
                                 {% bootstrap_field options_form.hide_total wrapper_class="mb-1" %}
@@ -154,10 +213,11 @@
                         <h3 class="card-header">Comment Instructions</h3>
                         <div class="card-body pt-2 pb-3">
                             <p class="fw-light m-0 pb-1">
-                                This is a message that will appear above the box where students put their comments.
+                                This message will appear above the box where students can enter comments.
                             </p>
                             {% bootstrap_field date_form.comment_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
                         </div>
+                        {{ ordering_form }}
                     </div>
                 </div>
             </div>
@@ -195,7 +255,7 @@
                        style="border-radius: 1em"
                        class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
                     <div class="d-grid col-2">
-                        <button class="btn btn-primary" style="border-radius: 1em;" type="submit">
+                        <button class="btn btn-primary" style="border-radius: 1em;" type="submit" onclick="saveOrdering()">
                             {% if course.close %}
                                 Update
                             {% else %}
@@ -209,6 +269,11 @@
     </form>
     <table id="empty_form" style="display:none">
         <tr height="60px">
+            <td class="handle-td">
+                <div class="handle">
+                <i class="bi bi-grip-vertical"></i>
+                </div>
+            </td>
             {% for field in formset.empty_form.visible_fields %}
                 <td class="{{ field.label }} text-center align-middle">
                     {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
@@ -239,6 +304,21 @@
     });
 
     function confirmSubmission(form) {
+        //alert($('#form_set tbody tr').children()[0].innerHTML);
+        $('#form_set tbody tr').each(function() {
+            if ($(this).children().length == 7) {
+                if (!$(this).children().eq(5).find("input").val() && !$(this).children().eq(4).find("input").val()) {
+                    $(this).children().eq(4).find("input").val($(this).children().eq(3).find("input").val());
+                    $(this).children().eq(5).find("input").val($(this).children().eq(3).find("input").val());
+                }
+            }
+            else {
+                if (!$(this).children().eq(4).find("input").val() && !$(this).children().eq(3).find("input").val()) {
+                    $(this).children().eq(3).find("input").val($(this).children().eq(2).find("input").val());
+                    $(this).children().eq(4).find("input").val($(this).children().eq(2).find("input").val());
+                }
+            }
+        });
         var courseClosed = {{ course.close|yesno:"true,false" }}; // Also check if this is the first time setting up the assessments
         var numResponses = parseInt({% get_number_responses course %});
         var total = calculate_total();
@@ -266,6 +346,10 @@
 
 
     $(document).ready(function () {
+        $('#exampleModal').modal('hide');
+        {% if is_different %}
+        $('#exampleModal').modal('show');
+        {% endif %}
         var warnings = [];
         $('.warning').each(function(_, warning) {
             warnings.push(warning.textContent);
@@ -334,12 +418,13 @@
 
         // If deleted row was an existing assessment, decrease initial form number
         // If deleted row was an empty row then initial forms (existing assessments) remains same
-        // Every existing assessment has tr and a hidden input in table hence initial * 2
-        if (tr.index() < initial*2)
+        if (tr.index() < initial)
             $('#id_assessment-INITIAL_FORMS').val(parseInt(initial) - 1);
 		$('#id_assessment-TOTAL_FORMS').val(parseInt(form_idx) - 1);
 
-        input.remove();
+        //input.remove();
+        raw_id = tr.find('input').attr('id');
+        id_removed = parseInt(raw_id.replace(/\D/g, ''))
 		tr.remove();
 
         // Filters for assessment inputs
@@ -347,14 +432,14 @@
 			return this.id.match(/id_assessment-\d+-/);
 		});
 
-		var curr = -1;
+		//var curr = -1;
 		var decrement = false;
 		filtered.each(function() {
 			form_idx = parseInt(this.id.replace(/[^\d]/g, ''));
 
             // Checks for gap in table row ids for assessments 
             // e.g. deleting second row in a table of four assessments means ids go from 0->2->3
-			if (!decrement && form_idx - curr > 1) {
+			if (id_removed < form_idx) {
 				decrement = true;
 			};
 
@@ -369,9 +454,29 @@
 				this.id = new_id;
 				this.name = new_name;
 			};
-			curr = form_idx;
+			//curr = form_idx;
+            decrement = false;
 		});
 		check_valid();
 	};
+    //Identifies the sortable elements of the table for Sortable.min.js
+    const groups = document.getElementById('forms');
+    let sortable = Sortable.create(groups, {
+        handle: '.handle',
+    });
+
+    //Function to save the current order to the ordering form
+    function saveOrdering() {
+        //Gets all rows and respective ids
+        const rows = document.getElementById("forms").querySelectorAll('tr');
+        let ids_list = [];
+        //Adds ids in the current order to the form
+        for (let row of rows) {
+            raw_id = $(row).find('input').attr('id');
+            ids_list.push(parseInt(raw_id.replace(/\D/g, '')));
+        }
+        $("#id_ordering-ordering").val(ids_list.toString());
+
+    }
     </script>
 {% endblock %}

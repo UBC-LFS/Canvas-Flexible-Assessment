@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import include, path
 
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("student/", include("student.urls")),
@@ -11,4 +13,4 @@ urlpatterns = [
     path("jwks/", views.get_jwks, name="jwks"),
     path("login/", views.login, name="login"),
     path("oauth/", include("oauth.urls")),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -17,7 +17,7 @@ class StudentAssessmentBaseForm(forms.Form):
 
         flex_assessments = FlexAssessment.objects.filter(
             user__user_id=self.user_id, assessment__course_id=self.course_id
-        )
+        ).order_by('assessment__order')
 
         flex_fields = {}
         for fa in flex_assessments:
@@ -59,7 +59,7 @@ class StudentAssessmentBaseForm(forms.Form):
 
 class OptionsForm(forms.Form):
     hide_total = forms.BooleanField(
-        required=False, label="Hide totals in Student Grades Summary"
+        required=False, label="Hide Subtotal grades for Assignment Groups and Final grades"
     )
     ignore_conflicts = forms.BooleanField(required=False)
     hide_weights = forms.BooleanField(
@@ -73,6 +73,12 @@ class OptionsForm(forms.Form):
         self.initial["hide_total"] = hide_total
         self.initial["hide_weights"] = hide_weights
 
+class OrderingForm(forms.Form):
+    ordering = forms.CharField(widget = forms.HiddenInput())
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['ordering'].required = False
 
 class CourseSettingsForm(ModelForm):
     """Form to set flexible assessment availability for students."""
@@ -174,6 +180,25 @@ class AssessmentGroupForm(forms.Form):
 
 
 class AssessmentBaseFormSet(BaseModelFormSet):
+    def get_queryset(self):
+        if not hasattr(self, "_queryset"):
+            if self.queryset is not None:
+                qs = self.queryset
+            else:
+                qs = self.model._default_manager.get_queryset()
+
+            # If the queryset isn't already ordered we need to add an
+            # artificial ordering here to make sure that all formsets
+            # constructed from this queryset have the same form order.
+            if not qs.ordered:
+                qs = qs.order_by("order")
+
+            # Removed queryset limiting here. As per discussion re: #13023
+            # on django-dev, max_num should not prevent existing
+            # related objects/inlines from being displayed.
+            self._queryset = qs
+        return self._queryset
+
     def clean(self):
         if any(self.errors):
             return

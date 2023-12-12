@@ -46,7 +46,7 @@ def get_number_responses(course):
 def get_average_allocations(course):
     assessments = course.assessment_set.all()
     series = []
-    for assessment in assessments:
+    for assessment in assessments.order_by("order"):
         fas = assessment.flexassessment_set.exclude(flex__isnull=True)
         if len(fas) > 0:
             student_average = round(sum([fa.flex for fa in fas]) / len(fas), 2)
@@ -71,7 +71,7 @@ def get_allocations(course):
         "chose": [],
         "all": [],
     }  # If none chosen, have chose be empty
-    for index, assessment in enumerate(assessments):
+    for index, assessment in enumerate(assessments.order_by("order")):
         # colors = ["#7D3AC1", "#AF4BCE", "#DB4CB2", "#EB548C", "#EA7369", "#F0A58F", "#FDA58F", "#FCEAE6"]
         # colors = ['#002145', '#003B6F', '#00509E', '#0065CE', '#007BFF', '#4D8AFF', '#7FAFFF', '#B3D4FF', '#E6F0FF', '#FDB813']
         colors = [
@@ -142,7 +142,7 @@ def get_flex_difference(course):
     """For each assessment in the course, return the difference between the default flex and the student choices average"""
     assessments = course.assessment_set.all()
     data = {}
-    for assessment in assessments:
+    for assessment in assessments.order_by("order"):
         fas_chosen = assessment.flexassessment_set.exclude(flex__isnull=True)
         if len(fas_chosen) > 0:
             difference = round(

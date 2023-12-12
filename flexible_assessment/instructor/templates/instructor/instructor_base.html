@@ -53,10 +53,12 @@
                    href="{% url 'instructor:instructor_form' course.id %}"><i class="bi bi-tools me-2"></i> Assessments</a>
             {% endif %}
             <hr>
-            <a class="nav-link {% block nav_item_help %}{% endblock nav_item_help %}"
+            <a class="nav-link {% block nav_item_about %}{% endblock nav_item_about %}"
                href="https://github.com/UBC-LFS/Canvas-Flexible-Assessment/wiki/Instructor-Guide"
                target="_blank"
-               rel="noopener noreferrer"><i class="bi bi-question-circle me-2"></i> About</a>
+               rel="noopener noreferrer"><i class="bi bi-info-circle me-2"></i> About</a>
+            <a class="nav-link {% block nav_item_help %}{% endblock nav_item_help %}"
+               href="{% url 'instructor:instructor_help' course.id %}"><i class="bi bi-question-circle me-2"></i> Help</a>
         </nav>
     {% endblock %}
 </div>

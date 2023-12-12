@@ -71,4 +71,15 @@ urlpatterns = [
         {"submit": True},
         name="final_grades_submit",
     ),
+    path("<int:course_id>/help", 
+         views.InstructorHelp.as_view(), 
+         name="instructor_help"
+    ),
+    path("<int:course_id>/match_calendar",
+        views.match_calendar_to_flex_dates,
+        name="match_calendar"
+    ),
+    path("<int:course_id>/match_dates",
+        views.match_flex_dates_to_calendar,
+        name="match_flex")
 ]

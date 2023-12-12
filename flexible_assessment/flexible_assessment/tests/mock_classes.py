@@ -1,5 +1,6 @@
 from unittest.mock import patch
 from functools import wraps
+from canvasapi.calendar_event import CalendarEvent
 
 def use_mock_canvas(location="instructor.views.FlexCanvas"):
     """ Decorate a function that replaces FlexCanvas with MockFlexCanvas and pass the instance of MockFlexCanvas to the function 
@@ -69,9 +70,29 @@ class MockCanvasCourse(object):
 class MockCanvas(object):
     def __init__(self):
         self.canvas_course = MockCanvasCourse()
+        self.calendar_item = None
     
     def get_course(self, course_id, use_sis_id=False, **kwargs):
         return self.canvas_course
+
+    def create_calendar_event(self, calendar_event):
+        self.calendar_item = MockCalendarEvent(calendar_event)
+        return self.calendar_item
+    
+    def get_calendar_event(self, calendar_event):
+        return self.calendar_item
+    
+class MockCalendarEvent(object):
+    def __init__(self, dict):
+        self.id = 12345
+        self.title = dict['title']
+        self.start_at = dict['start_at']
+        self.end_at = dict['end_at']
+
+    def edit(self, calendar_event):
+        for k, v in calendar_event.items():
+            setattr(self, k, str(v))
+        return self
     
 class MockFlexCanvas(MockCanvas):
     """ This is used to mock FlexCanvas since FlexCanvas requires Canvas authentication to use the Canvas api"""
@@ -79,6 +100,7 @@ class MockFlexCanvas(MockCanvas):
     def __init__(self):
         super().__init__()
         self.groups_dict = {str(group.id): group for group in self.get_course(1).groups}
+        self.calendar_item = None
 
     def get_groups_and_enrollments(self, course_id):
         dict = {k: v.asdict() for k, v in self.groups_dict.items()}
@@ -86,3 +108,10 @@ class MockFlexCanvas(MockCanvas):
 
     def is_allow_override(self, course_id):
         return True
+    
+    def create_calendar_event(self, calendar_event):
+        self.calendar_item = MockCalendarEvent(calendar_event)
+        return self.calendar_item
+    
+    def get_calendar_event(self, calendar_event):
+        return self.calendar_item
