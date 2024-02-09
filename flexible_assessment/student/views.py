@@ -27,7 +27,7 @@ class StudentHome(views.StudentTemplateView):
         # Add custom context data
         flex_assessments = models.FlexAssessment.objects.filter(
             user__user_id=user_id, assessment__course_id=course.id
-        ).order_by('assessment__order')
+        ).order_by("assessment__order")
         context["flexes"] = flex_assessments
         return context
 
@@ -91,6 +91,11 @@ class StudentAssessmentView(views.StudentFormView):
 
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["user"] = self.get_form_kwargs()["user_id"]
+        return context
+
     def form_valid(self, form):
         """Validates form by checking if flex allocation is within range
         and form is submitted within allowed flexible assessment time frame,
@@ -129,12 +134,16 @@ class StudentAssessmentView(views.StudentFormView):
         assessment_fields = list(form.cleaned_data.items())
         for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
-            if flex > assessment.max:
+            if flex > assessment.max and not self.flex_overriden(
+                assessment_id, user_id
+            ):
                 form.add_error(
                     assessment_id,
                     ValidationError("Flex should be less than or equal to max"),
                 )
-            elif flex < assessment.min:
+            elif flex < assessment.min and not self.flex_overriden(
+                assessment_id, user_id
+            ):
                 form.add_error(
                     assessment_id,
                     ValidationError("Flex should be greater than or equal to min"),
@@ -188,3 +197,16 @@ class StudentAssessmentView(views.StudentFormView):
 
         response = super().form_valid(form)
         return response
+
+    def flex_overriden(self, assessment_id, user_id):
+        # The assumption is that a flex value outside the min/max constaints could only be set by the instructor.
+        # If the method returns true, than the instructor must have overidden the values.
+        # This method is used in whether or not to use student bounds checking.
+        assessment = models.Assessment.objects.get(pk=assessment_id)
+        flex_assessment = assessment.flexassessment_set.filter(
+            user__user_id=user_id
+        ).first()
+        curr_flex = flex_assessment.flex
+        if curr_flex == None:
+            return False
+        return (curr_flex > assessment.max) or (curr_flex < assessment.min)

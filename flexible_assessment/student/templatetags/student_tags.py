@@ -44,3 +44,21 @@ def is_any_flex_none(flexes):
 @register.simple_tag()
 def not_flexible(default_min_max):
     return default_min_max[1] == default_min_max[2]
+
+
+@register.simple_tag(takes_context=True)
+def get_flex(context, id):
+    user_id = context["user"]
+    assessment = Assessment.objects.get(pk=id)
+    flex_assessment = assessment.flexassessment_set.filter(
+        user__user_id=user_id
+    ).first()
+    return flex_assessment.flex
+
+
+@register.simple_tag()
+def is_flex_overidden(curr_flex, id):
+    assessment = Assessment.objects.get(pk=id)
+    if curr_flex == None:
+        return False
+    return (curr_flex > assessment.max) or (curr_flex < assessment.min)

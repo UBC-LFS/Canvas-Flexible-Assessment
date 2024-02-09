@@ -11,9 +11,37 @@
     {% if previous != 'final' %}active{% endif %}
 {% endblock nav_item_percentages %}
 {% block content %}
+    <style>
+        .form-control.is-valid {
+            border-color: #ced4da;
+            padding-right: initial;
+            background-image: initial;
+            background-repeat: initial;
+            background-position: initial;
+            background-size: initial;
+        }
+
+        .form-check-input.is-valid~.form-check-label {
+            border-color: #ced4da;
+            padding-right: initial;
+            background-image: initial;
+            background-repeat: initial;
+            background-position: initial;
+            background-size: initial;
+            color: initial;
+        }
+
+        .form-check-input.is-valid:checked {
+            border-color: #0d6efd;
+            background-color: #0d6efd;
+        }
+
+        .form-check-input.is-valid {
+            border-color: #ced4da;
+        }
+    </style>
     <form action="" method="post">
         {% csrf_token %}
-        {% bootstrap_form_errors form type='non_fields' %}
         {% for hidden_field in form.hidden_fields %}
             {% bootstrap_field hidden_field %}
         {% endfor %}
@@ -26,6 +54,9 @@
                             <h5>Student: {{ student_name }}</h5>
                         </div>
                         <div class="card-body pt-2 pb-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <p class="fw-light m-0">{% bootstrap_form_errors form type='non_fields' %}</p>
+                            </div>
                             <table class="table table-striped mb-2" style="table-layout: fixed;">
                                 <thead>
                                     <tr>
@@ -42,27 +73,11 @@
                                             {% get_default_min_max field.name as default_min_max %}
                                             <tr height="60px">
                                                 <td class="text-center align-middle">{{ field.label }}</td>
-                                                {% not_flexible default_min_max as fixed %}
-                                                {% if fixed %}
-                                                    <td class="flex text-center align-middle"
-                                                        style="text-align: center;
-                                                               width: 25%">
-                                                        <input type="{{ field.field.widget.input_type }}"
-                                                               name="{{ field.html_name }}"
-                                                               value="{{ default_min_max.0 }}"
-                                                               disabled
-                                                               class="form-control">
-                                                        <input type="hidden"
-                                                               name="{{ field.html_name }}"
-                                                               value="{{ default_min_max.0 }}">
-                                                    </td>
-                                                {% else %}
-                                                    <td class="flex text-center align-middle"
-                                                        style="text-align: center;
-                                                               width: 25%">
-                                                        {% bootstrap_field field show_label=False placeholder='' wrapper_class='mb-3; vertical-align: middle;' %}
-                                                    </td>
-                                                {% endif %}
+                                                <td class="flex text-center align-middle"
+                                                    style="text-align: center;
+                                                           width: 25%">
+                                                    {% bootstrap_field field show_label=False placeholder='' wrapper_class='mb-3; vertical-align: middle;' %}
+                                                </td>
                                                 <td class="text-center align-middle">{{ default_min_max.0 }}</td>
                                                 <td class="text-center align-middle">{{ default_min_max.1 }}</td>
                                                 <td class="text-center align-middle">{{ default_min_max.2 }}</td>
@@ -80,9 +95,7 @@
                                     </tr>
                                 </tfoot>
                             </table>
-                            <p class="fw-light m-0">
-                                All assessments should be given desired % and total flex adds up to 100%
-                            </p>
+                            <p class="fw-light m-0">All assessments should be given desired % and total flex adds up to 100%</p>
                         </div>
                     </div>
                 </div>
@@ -119,12 +132,11 @@
         total = total.toFixed(2);
 		total_str = total.toString();
 		$('#total').text(total_str + "%");
+        
 		if (total == 100.00) {
 			$('#total').css('color', 'green');
-			$(":submit").removeAttr("disabled");
 		} else {
 			$('#total').css('color', 'red');
-			$(':submit').attr("disabled", true);
 		};
 	};
 
