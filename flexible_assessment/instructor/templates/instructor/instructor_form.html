@@ -69,29 +69,51 @@
         }
     </style>
     <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade"
+         id="exampleModal"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Calendar mismatch</h5>
-            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close" onclick=$("#exampleModal").modal('hide');>
-                <span aria-hidden="true"></span>
-            </button>
-            </div>
-            <div class="modal-body">
-            The date you have selected in Flexible Assessment does not match the date in the calendar on Canvas. 
-            You can change the date of the Calendar by selecting "Change Calendar" to match what has been set in Flexible Assessment.
-            Or you can select "Change Flex Dates" to change the end date of the availability to match the calendar date in Canvas.
-            </div>
-            <div class="modal-footer justify-content-between">
-                <div>
-                    <a role="button" type="button" class="btn btn-secondary" href="{% url 'instructor:match_calendar' course.id %}">Change Calendar</a>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Calendar mismatch</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-dismiss="modal"
+                            aria-label="Close"
+                            onclick
+                            "
+                            exampleModal
+                            "
+                            .modal
+                            '
+                            hide
+                            '>
+                        <span aria-hidden="true"></span>
+                    </button>
                 </div>
-                <div>                
-                    <a role="button" type="button" class="btn btn-primary" href="{% url 'instructor:match_flex' course.id %}">Change Flex Dates</a>
+                <div class="modal-body">
+                    The date you have selected in Flexible Assessment does not match the date in the calendar on Canvas.
+                    You can change the date of the Calendar by selecting "Change Calendar" to match what has been set in Flexible Assessment.
+                    Or you can select "Change Flex Dates" to change the end date of the availability to match the calendar date in Canvas.
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <div>
+                        <a role="button"
+                           type="button"
+                           class="btn btn-secondary"
+                           href="{% url 'instructor:match_calendar' course.id %}">Change Calendar</a>
+                    </div>
+                    <div>
+                        <a role="button"
+                           type="button"
+                           class="btn btn-primary"
+                           href="{% url 'instructor:match_flex' course.id %}">Change Flex Dates</a>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
     </div>
     <form action=""
@@ -154,9 +176,7 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 30px; font-size: 110%;"></th>
-                                        <th class="text-center align-middle" style="width: 30%; font-size: 110%;">
-                                            Assessment
-                                        </th>
+                                        <th class="text-center align-middle" style="width: 30%; font-size: 110%;">Assessment</th>
                                         <th class="text-center align-middle" style="font-size: 110%;">Default %</th>
                                         <th class="text-center align-middle" style="font-size: 110%;">Minimum %</th>
                                         <th class="text-center align-middle" style="font-size: 110%;">Maximum %</th>
@@ -168,7 +188,7 @@
                                         <tr height="60px">
                                             <td class="handle-td">
                                                 <div class="handle">
-                                                <i class="bi bi-grip-vertical"></i>
+                                                    <i class="bi bi-grip-vertical"></i>
                                                 </div>
                                             </td>
                                             {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
@@ -212,9 +232,7 @@
                     <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                         <h3 class="card-header">Comment Instructions</h3>
                         <div class="card-body pt-2 pb-3">
-                            <p class="fw-light m-0 pb-1">
-                                This message will appear above the box where students can enter comments.
-                            </p>
+                            <p class="fw-light m-0 pb-1">This message will appear above the box where students can enter comments.</p>
                             {% bootstrap_field date_form.comment_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
                         </div>
                         {{ ordering_form }}
@@ -227,21 +245,15 @@
                     <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                         <h4 class="card-header">Availability</h4>
                         <div class="card-body pt-2 pb-3">
-                            <p class="fw-light m-0">
-                                These are the dates for when students will be able to enter their desired percentages.
-                            </p>
+                            <p class="fw-light m-0">These are the dates for when students will be able to enter their desired percentages.</p>
                             <table class='table table-borderless mb-2'>
                                 <tr>
                                     <th class="pb-0" style="font-size: 110%;">Open Date</th>
                                     <th class="pb-0" style="font-size: 110%;">Close Date</th>
                                 </tr>
                                 <tr>
-                                    <td>
-                                        {% bootstrap_field date_form.open show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
-                                    </td>
-                                    <td>
-                                        {% bootstrap_field date_form.close show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
-                                    </td>
+                                    <td>{% bootstrap_field date_form.open show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
+                                    <td>{% bootstrap_field date_form.close show_label=False wrapper_class='mb-3; vertical-align: middle;' %}</td>
                                 </tr>
                             </table>
                             {% bootstrap_form_errors date_form type='non_fields' %}
@@ -255,7 +267,10 @@
                        style="border-radius: 1em"
                        class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
                     <div class="d-grid col-2">
-                        <button class="btn btn-primary" style="border-radius: 1em;" type="submit" onclick="saveOrdering()">
+                        <button class="btn btn-primary"
+                                style="border-radius: 1em"
+                                type="submit"
+                                onclick="saveOrdering()">
                             {% if course.close %}
                                 Update
                             {% else %}
@@ -271,7 +286,7 @@
         <tr height="60px">
             <td class="handle-td">
                 <div class="handle">
-                <i class="bi bi-grip-vertical"></i>
+                    <i class="bi bi-grip-vertical"></i>
                 </div>
             </td>
             {% for field in formset.empty_form.visible_fields %}

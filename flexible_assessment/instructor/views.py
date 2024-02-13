@@ -247,7 +247,9 @@ class AssessmentGroupView(views.InstructorFormView):
         canvas_course = FlexCanvas(self.request).get_course(course_id)
 
         kwargs["canvas_course"] = canvas_course
-        kwargs["assessments"] = models.Assessment.objects.filter(course_id=course_id).order_by("order")
+        kwargs["assessments"] = models.Assessment.objects.filter(
+            course_id=course_id
+        ).order_by("order")
 
         self.kwargs["hide_weights"] = not canvas_course.apply_assignment_group_weights
 
@@ -361,12 +363,20 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         context["is_different"] = False
 
-        #Checks to see if the calendar matches the flex dates
+        # Checks to see if the calendar matches the flex dates
         if course.calendar_id is not None:
             try:
-                #If the difference exceeds an hour, the is_different context variable is set to True to launch a modal in the browser
-                formatted_calendar_date = dateutil.parser.isoparse(canvas.get_calendar_event(str(course.calendar_id)).end_at)
-                if abs(((course.close-formatted_calendar_date).days)*60*60*24+((course.close-formatted_calendar_date).seconds)) > 3600:
+                # If the difference exceeds an hour, the is_different context variable is set to True to launch a modal in the browser
+                formatted_calendar_date = dateutil.parser.isoparse(
+                    canvas.get_calendar_event(str(course.calendar_id)).end_at
+                )
+                if (
+                    abs(
+                        ((course.close - formatted_calendar_date).days) * 60 * 60 * 24
+                        + ((course.close - formatted_calendar_date).seconds)
+                    )
+                    > 3600
+                ):
                     context["is_different"] = True
             except:
                 pass
@@ -386,9 +396,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             hide_weights=not canvas_course.apply_assignment_group_weights,
         )
 
-        context["ordering_form"] = OrderingForm(
-            self.request.POST, prefix="ordering"
-        )
+        context["ordering_form"] = OrderingForm(self.request.POST, prefix="ordering")
 
         if self.request.POST:
             AssessmentFormSet = get_assessment_formset()
@@ -411,7 +419,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         else:
             qs = models.Assessment.objects.filter(course=course)
             if len(qs) > 0:
-                qs = qs.order_by('order')
+                qs = qs.order_by("order")
 
             AssessmentFormSet = get_assessment_formset()
             context["formset"] = AssessmentFormSet(queryset=qs, prefix="assessment")
@@ -528,7 +536,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         )
 
         if conflict_students and not ignore_conflicts:
-            #ensures that the order of the forms remains even if they are invalid
+            # ensures that the order of the forms remains even if they are invalid
             self.save_new_ordering(ordering_form, course, assessments)
             return super().form_invalid(formset)
 
@@ -556,7 +564,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         Sets the time period in which students are able to select the assessment weights
         Updates the log to show date changes
         Creates or updated calendar event in Canvas
-        
+
         Parameters
         -----------
         date_form: DateForm
@@ -566,9 +574,11 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         """
         old_dts = tuple(
             map(
-                lambda dt: dt.astimezone(pytz.timezone("America/Vancouver"))
-                if dt is not None
-                else "None",
+                lambda dt: (
+                    dt.astimezone(pytz.timezone("America/Vancouver"))
+                    if dt is not None
+                    else "None"
+                ),
                 (course.open, course.close),
             )
         )
@@ -578,15 +588,19 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         new_dts = (date_form.cleaned_data["open"], date_form.cleaned_data["close"])
         calendar_created = False
         if course.calendar_id is None:
-            event_details = {"context_code": ("course_"+str(course.id)),
-                                  "title": ("Flexible Assessment"),
-                                  "start_at": date_form.cleaned_data["close"],
-                                  "end_at": date_form.cleaned_data["close"],
-                                  "all_day": True,
-                                  "description":"If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>"}
-            calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
+            event_details = {
+                "context_code": ("course_" + str(course.id)),
+                "title": ("Flexible Assessment"),
+                "start_at": date_form.cleaned_data["close"],
+                "end_at": date_form.cleaned_data["close"],
+                "all_day": True,
+                "description": "If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>",
+            }
+            calendar_event = FlexCanvas(self.request).create_calendar_event(
+                event_details
+            )
             course.calendar_id = calendar_event.id
-            #Updates only the calendar id so it is not NULL on submission as it doesn't have a field in the form
+            # Updates only the calendar id so it is not NULL on submission as it doesn't have a field in the form
             course.save(update_fields=["calendar_id"])
             calendar_created = True
 
@@ -595,25 +609,31 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 course.calendar_id,
                 extra={
                     "course": str(course),
-                    "user": self.request.session["display_name"]
-                }
+                    "user": self.request.session["display_name"],
+                },
             )
-        
+
         """
         Checks to see if the Calendar event exists in Canvas by attempting to update it
         Calendar events still exist after deletion, only return error after trying to update
         """
         try:
-            calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
+            calendar_event = FlexCanvas(self.request).get_calendar_event(
+                course.calendar_id
+            )
             calendar_event.edit(calendar_event={"title": ("Flexible Assessment")})
         except:
-            event_details = {"context_code": ("course_"+str(course.id)),
-                            "title": ("Flexible Assessment"),
-                            "start_at": date_form.cleaned_data["close"],
-                            "end_at": date_form.cleaned_data["close"],
-                            "all_day": True,
-                            "description":"If you have not made your choices by this deadline, your choices will be <strong>automatically set to the default percentages</strong>"}
-            calendar_event = FlexCanvas(self.request).create_calendar_event(event_details)
+            event_details = {
+                "context_code": ("course_" + str(course.id)),
+                "title": ("Flexible Assessment"),
+                "start_at": date_form.cleaned_data["close"],
+                "end_at": date_form.cleaned_data["close"],
+                "all_day": True,
+                "description": "If you have not made your choices by this deadline, your choices will be <strong>automatically set to the default percentages</strong>",
+            }
+            calendar_event = FlexCanvas(self.request).create_calendar_event(
+                event_details
+            )
             course.calendar_id = calendar_event.id
             course.save(update_fields=["calendar_id"])
             logger.info(
@@ -623,10 +643,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 extra={
                     "course": str(course),
                     "user": self.request.session["display_name"],
-                }
+                },
             )
 
-        #Updates both flex dates and calendar if date is changed
+        # Updates both flex dates and calendar if date is changed
         if old_dts != new_dts:
             logger.info(
                 "Updated flex availability " "from %s - %s to %s - %s",
@@ -637,13 +657,19 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                     "user": self.request.session["display_name"],
                 }
             )
-            calendar_event = FlexCanvas(self.request).get_calendar_event(course.calendar_id)
+            calendar_event = FlexCanvas(self.request).get_calendar_event(
+                course.calendar_id
+            )
             calendar_event_old = calendar_event.end_at
-            calendar_event.edit(calendar_event={"title": ("Flexible Assessment"),
-                                                "start_at": date_form.cleaned_data["close"],
-                                                "end_at": date_form.cleaned_data["close"],
-                                                "all_day": True,
-                                                "description":"If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>"})
+            calendar_event.edit(
+                calendar_event={
+                    "title": ("Flexible Assessment"),
+                    "start_at": date_form.cleaned_data["close"],
+                    "end_at": date_form.cleaned_data["close"],
+                    "all_day": True,
+                    "description": "If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>",
+                }
+            )
             logger.info(
                 "Calendar event with id %s updated from %s to %s",
                 course.calendar_id,
@@ -652,22 +678,21 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 extra={
                     "course": str(course),
                     "user": self.request.session["display_name"],
-                }
+                },
             )
-                
 
     def save_new_ordering(self, ordering_form, course, assessments):
         """
         Ordering form numbers forms in original order
         The new order reflects the position of each form based on their initial index
-        e.g. [2, 4, 0, 1, 3] -> the form that initially had index 2 will be at the start 
+        e.g. [2, 4, 0, 1, 3] -> the form that initially had index 2 will be at the start
         followed by the one that initially had index 4 etc.
 
         This function assigns the index of ordered_ids to the order field of the respective assessment
         """
         if ordering_form.is_valid():
             if ordering_form != None:
-                ordered_ids = ordering_form.cleaned_data["ordering"].split(',')
+                ordered_ids = ordering_form.cleaned_data["ordering"].split(",")
                 for i in range(len(ordered_ids)):
                     if ordered_ids[i] != "":
                         try:
@@ -676,7 +701,6 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                             curr.save()
                         except:
                             return
-                    
 
     def _save_assessments(self, forms, course, ignore_conflicts):
         assessments = []
@@ -898,18 +922,18 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
             raise PermissionDenied
 
         assessment_fields = list(form.cleaned_data.items())
-        for assessment_id, flex in assessment_fields:
-            assessment = models.Assessment.objects.get(pk=assessment_id)
-            if flex > assessment.max:
-                form.add_error(
-                    assessment_id,
-                    ValidationError("Flex should be less than or equal to max"),
-                )
-            elif flex < assessment.min:
-                form.add_error(
-                    assessment_id,
-                    ValidationError("Flex should be greater than or equal to min"),
-                )
+        # for assessment_id, flex in assessment_fields:
+        #     assessment = models.Assessment.objects.get(pk=assessment_id)
+        #     if flex > assessment.max:
+        #         form.add_error(
+        #             assessment_id,
+        #             ValidationError("Flex should be less than or equal to max"),
+        #         )
+        #     elif flex < assessment.min:
+        #         form.add_error(
+        #             assessment_id,
+        #             ValidationError("Flex should be greater than or equal to min"),
+        #         )
 
         if form.errors:
             response = super().form_invalid(form)
@@ -1018,6 +1042,7 @@ class ImportAssessmentView(views.InstructorFormView):
 
         return super().form_valid(form)
 
+
 class InstructorHelp(views.InstructorTemplateView):
     template_name = "instructor/instructor_help.html"
 
@@ -1029,6 +1054,7 @@ class InstructorHelp(views.InstructorTemplateView):
             utils.update_students(request, course)
         return response
 
+
 def match_calendar_to_flex_dates(request, course_id):
     """
     Function based view that changes the calendar to match the flex dates before redirecting back to instructor_form
@@ -1037,11 +1063,15 @@ def match_calendar_to_flex_dates(request, course_id):
     if course.calendar_id is not None:
         calendar_event = FlexCanvas(request).get_calendar_event(course.calendar_id)
         calendar_event_old = calendar_event.end_at
-        calendar_event.edit(calendar_event={"title": ("Flexible Assessment"),
-                                            "start_at": course.close,
-                                            "end_at": course.close,
-                                            "all_day": True,
-                                            "description":"If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>"})
+        calendar_event.edit(
+            calendar_event={
+                "title": ("Flexible Assessment"),
+                "start_at": course.close,
+                "end_at": course.close,
+                "all_day": True,
+                "description": "If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>",
+            }
+        )
         logger.info(
             "Calendar event with id %s updated from %s to %s",
             course.calendar_id,
@@ -1050,11 +1080,12 @@ def match_calendar_to_flex_dates(request, course_id):
             extra={
                 "course": str(course),
                 "user": request.session["display_name"],
-            }
+            },
         )
-    
+
     return HttpResponseRedirect(
-                    reverse("instructor:instructor_form", kwargs={"course_id": course_id}))
+        reverse("instructor:instructor_form", kwargs={"course_id": course_id})
+    )
 
 
 def match_flex_dates_to_calendar(request, course_id):
@@ -1070,20 +1101,21 @@ def match_flex_dates_to_calendar(request, course_id):
         course.save(update_fields=["close"])
 
         if course.close < course.open:
-            course.open = course.close+dateutil.relativedelta.relativedelta(days=-1)
+            course.open = course.close + dateutil.relativedelta.relativedelta(days=-1)
             course.save(update_fields=["open"])
 
         logger.info(
-                "Updated flex availability " "from %s - %s to %s - %s",
-                curr_start,
-                curr_end,
-                course.open,
-                course.close,
-                extra={
-                    "course": str(course),
-                    "user": request.session["display_name"],
-                }
-            )
+            "Updated flex availability " "from %s - %s to %s - %s",
+            curr_start,
+            curr_end,
+            course.open,
+            course.close,
+            extra={
+                "course": str(course),
+                "user": request.session["display_name"],
+            },
+        )
 
     return HttpResponseRedirect(
-                reverse("instructor:instructor_form", kwargs={"course_id": course_id}))
+        reverse("instructor:instructor_form", kwargs={"course_id": course_id})
+    )
