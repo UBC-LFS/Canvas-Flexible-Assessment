@@ -951,6 +951,9 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
             ).first()
             old_flex = flex_assessment.flex
             flex_assessment.flex = flex
+            # Informs the database that the instructor updated the flex and not the student
+            if old_flex != flex:
+                flex_assessment.override = True
             flex_assessment.save()
 
             if old_flex is None:

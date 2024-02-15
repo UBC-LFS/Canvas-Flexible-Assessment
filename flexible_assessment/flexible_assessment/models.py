@@ -156,9 +156,7 @@ class Course(models.Model):
         null=True,
         default="Please enter your reasons for the choices you made.",
     )
-    calendar_id = models.IntegerField(null=True, 
-                                      blank=True, 
-                                      default=None)
+    calendar_id = models.IntegerField(null=True, blank=True, default=None)
 
     def __str__(self):
         return "{} - {}".format(self.title, self.id)
@@ -295,15 +293,18 @@ class FlexAssessment(models.Model):
     flex : decimal (2 decimal places)
         Student's grade allocation for assessment
         Should be in [0.00, 100.00]
+    override: is set to True when the last person to change
+        the value is the instructor.
     """
 
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     flex = models.DecimalField(null=True, blank=True, max_digits=5, decimal_places=2)
+    override = models.BooleanField(default=False)
 
     def __str__(self):
-        return "{}, {}, {}".format(
-            self.user.display_name, self.assessment.title, self.flex
+        return "{}, {}, {}. {}".format(
+            self.user.display_name, self.assessment.title, self.flex, self.override
         )
 
 
