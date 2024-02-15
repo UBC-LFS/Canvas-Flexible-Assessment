@@ -58,6 +58,12 @@
                             <h3 class="card-header">Assessments</h3>
                             <div class="card-body pt-2 pb-3">
                                 {% if course.welcome_instructions %}<p class="fw-light mt-0 mb-1">{{ course.welcome_instructions }}</p>{% endif %}
+                                {% is_any_flex_outside_bounds flexes as outside %}
+                                {% if outside %}
+                                    <p class=="fw-light mt-0 mb-1">
+                                        Some of your forms are disabled. This is because an intructor set these weights outside of the minimum and maximum.
+                                    </p>
+                                {% endif %}
                                 <div class="d-flex align-items-center justify-content-between">
                                     <p class="fw-light m-0">{% bootstrap_form_errors form type='non_fields' %}</p>
                                 </div>
@@ -79,8 +85,8 @@
                                                 <tr height="60px">
                                                     <td class="text-center align-middle">{{ field.label }}</td>
                                                     {% not_flexible default_min_max as fixed %}
-                                                    {% is_flex_overidden flex field.name as overidden %}
-                                                    {% if overidden %}
+                                                    {% is_flex_outside_bounds flex field.name as outside %}
+                                                    {% if outside %}
                                                         <td class="flex text-center align-middle"
                                                             style="text-align: center;
                                                                    width: 25%">

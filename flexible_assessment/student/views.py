@@ -93,7 +93,15 @@ class StudentAssessmentView(views.StudentFormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # pull data from form kwargs, this is bad form but short. should probably change later
         context["user"] = self.get_form_kwargs()["user_id"]
+        user_id = context.get("user")
+        course = context.get("course")
+        # Add custom context data
+        flex_assessments = models.FlexAssessment.objects.filter(
+            user__user_id=user_id, assessment__course_id=course.id
+        ).order_by("assessment__order")
+        context["flexes"] = flex_assessments
         return context
 
     def form_valid(self, form):
@@ -134,14 +142,14 @@ class StudentAssessmentView(views.StudentFormView):
         assessment_fields = list(form.cleaned_data.items())
         for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
-            if flex > assessment.max and not self.flex_overriden(
+            if flex > assessment.max and not self.old_flex_outside_bounds(
                 assessment_id, user_id
             ):
                 form.add_error(
                     assessment_id,
                     ValidationError("Flex should be less than or equal to max"),
                 )
-            elif flex < assessment.min and not self.flex_overriden(
+            elif flex < assessment.min and not self.old_flex_outside_bounds(
                 assessment_id, user_id
             ):
                 form.add_error(
@@ -165,6 +173,9 @@ class StudentAssessmentView(views.StudentFormView):
             ).first()
             old_flex = flex_assessment.flex
             flex_assessment.flex = flex
+            # Informs the database that the student updated the flex and not the instructor
+            if old_flex != flex:
+                flex_assessment.override = False
             flex_assessment.save()
 
             if old_flex is None:
@@ -198,10 +209,8 @@ class StudentAssessmentView(views.StudentFormView):
         response = super().form_valid(form)
         return response
 
-    def flex_overriden(self, assessment_id, user_id):
-        # The assumption is that a flex value outside the min/max constaints could only be set by the instructor.
-        # If the method returns true, than the instructor must have overidden the values.
-        # This method is used in whether or not to use student bounds checking.
+    def old_flex_outside_bounds(self, assessment_id, user_id):
+        # A flex can only be set outside of it's normal bounds by an instructor.
         assessment = models.Assessment.objects.get(pk=assessment_id)
         flex_assessment = assessment.flexassessment_set.filter(
             user__user_id=user_id
