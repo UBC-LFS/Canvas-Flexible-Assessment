@@ -847,3 +847,4 @@ class TestStudentViews(StaticLiveServerTestCase):
         bodyText = self.browser.find_element(By.TAG_NAME, "body").text
         self.assertIn("0", bodyText)
         self.assertIn("100", bodyText)
+        self.assertIn("This value has been set by an instructor.", bodyText)
