@@ -39,9 +39,7 @@
                                 <tr>
                                     <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
                                     {% for assessment in course.assessment_set.all|dictsort:"order" %}
-                                        <th class="assessment text-center align-middle" style="font-size: 110%;">
-                                            {{ assessment.title }}
-                                        </th>
+                                        <th class="assessment text-center align-middle" style="font-size: 110%;">{{ assessment.title }}</th>
                                     {% endfor %}
                                     <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Comment</th>
                                 </tr>
@@ -54,9 +52,7 @@
                                         </td>
                                         {% for assessment in course.assessment_set.all|dictsort:"order" %}
                                             {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
-                                                <td class="text-center align-middle">
-                                                    {{ flex_assessment.flex|to_str|default_if_none:"-" }}
-                                                </td>
+                                                <td class="text-center align-middle">{{ flex_assessment.flex|to_str|default_if_none:"-" }}</td>
                                             {% endwith %}
                                         {% endfor %}
                                         {% with student.usercomment_set.all|comment_filter:course.id as user_comment %}

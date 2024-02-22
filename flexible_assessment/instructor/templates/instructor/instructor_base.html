@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -15,20 +16,8 @@
         <link rel="stylesheet"
               type="text/css"
               href="https://cdn.datatables.net/v/bs5/dt-1.12.1/r-2.3.0/datatables.min.css" />
-        {% load static %}
+        {% load instructor_tags %}
         <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-        <style>
-            /* This hides the input buttons for number forms. */
-            input[type="number"]::-webkit-inner-spin-button,
-            input[type="number"]::-webkit-outer-spin-button {
-              -webkit-appearance: none;
-              margin: 0;
-            }
-            
-            input[type="number"] {
-              -moz-appearance: textfield;
-            }
-        </style>
     </head>
     <body>
         <div class="container-fluid">

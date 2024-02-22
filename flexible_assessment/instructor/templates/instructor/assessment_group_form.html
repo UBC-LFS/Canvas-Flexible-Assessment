@@ -1,4 +1,5 @@
 {% extends "instructor/instructor_base.html" %}
+{% load instructor_tags %}
 {% load django_bootstrap5 %}
 {% bootstrap_css %}
 {% bootstrap_javascript %}
@@ -37,9 +38,7 @@
                                         <td class="text-center align-middle" style="font-size: 110%;">
                                             <span style="font-weight: bold;">Assessment</span> (with default %)
                                         </td>
-                                        <th class="text-center align-middle" style="font-size: 110%;">
-                                            Canvas Assignment Group
-                                        </th>
+                                        <th class="text-center align-middle" style="font-size: 110%;">Canvas Assignment Group</th>
                                     </tr>
                                 </thead>
                                 <tbody>
