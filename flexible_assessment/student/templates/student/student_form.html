@@ -8,35 +8,6 @@
     active
 {% endblock nav_item_assessments %}
 {% block content %}
-    <style>
-            .form-control.is-valid {
-                border-color: #ced4da;
-                padding-right: initial;
-                background-image: initial;
-                background-repeat: initial;
-                background-position: initial;
-                background-size: initial;
-            }
-    
-            .form-check-input.is-valid~.form-check-label {
-                border-color: #ced4da;
-                padding-right: initial;
-                background-image: initial;
-                background-repeat: initial;
-                background-position: initial;
-                background-size: initial;
-                color: initial;
-            }
-    
-            .form-check-input.is-valid:checked {
-                border-color: #0d6efd;
-                background-color: #0d6efd;
-            }
-    
-            .form-check-input.is-valid {
-                border-color: #ced4da;
-            }
-    </style>
     <form action="" method="post">
         {% csrf_token %}
         {% for hidden_field in form.hidden_fields %}
@@ -181,7 +152,6 @@
     <script type="text/javascript"
             src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-    var pre_disabled = $(':submit').attr('disabled')
     check_valid();
 
     $(document).on('change', '.flex', function () {

@@ -1,0 +1,45 @@
+.disabled-link {
+    pointer-events: none;
+    color: gray;
+    /* Additional styling to make it look disabled */
+}
+
+/* This hides the input buttons for number forms. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+
+.form-control.is-valid {
+    border-color: #ced4da;
+    padding-right: initial;
+    background-image: initial;
+    background-repeat: initial;
+    background-position: initial;
+    background-size: initial;
+}
+
+.form-check-input.is-valid~.form-check-label {
+    border-color: #ced4da;
+    padding-right: initial;
+    background-image: initial;
+    background-repeat: initial;
+    background-position: initial;
+    background-size: initial;
+    color: initial;
+}
+
+.form-check-input.is-valid:checked {
+    border-color: #0d6efd;
+    background-color: #0d6efd;
+}
+
+.form-check-input.is-valid {
+    border-color: #ced4da;
+}
