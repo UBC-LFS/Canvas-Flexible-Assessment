@@ -1,5 +1,6 @@
 {% extends "instructor/instructor_base.html" %}
 {% load instructor_tags %}
+{% load static %}
 {% block nav_item_final %}
     active
 {% endblock nav_item_final %}
@@ -47,18 +48,10 @@
                             <thead>
                                 <tr>
                                     <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
-                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
-                                        Override Total
-                                    </th>
-                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
-                                        Default Total
-                                    </th>
-                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
-                                        Difference
-                                    </th>
-                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
-                                        Chose Percentages?
-                                    </th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Override Total</th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Default Total</th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Difference</th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Chose Percentages?</th>
                                     {% for assessment in course.assessment_set.all|dictsort:"order" %}
                                         <th class="assessment text-center align-middle" style="font-size: 110%;">
                                             {{ assessment.title }}
@@ -95,9 +88,7 @@
                                             {% get_score groups assessment.group student as score %}
                                             <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>
                                             {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
-                                                <td class="text-center align-middle">
-                                                    {{ flex_assessment.flex|to_str|default_if_none:default_weight }}
-                                                </td>
+                                                <td class="text-center align-middle">{{ flex_assessment.flex|to_str|default_if_none:default_weight }}</td>
                                             {% endwith %}
                                         {% endfor %}
                                     </tr>
@@ -170,62 +161,6 @@
             {% endfor %}
         </ul>
     {% endif %}
-    <script>
-	var colspan = $('.assessment').length;
-	$('.empty').attr('colspan', colspan);
-
-
-    var width = Math.floor(75/colspan);
-    $('.assessment').css('width', width+'%');
-
-    var table = $('#final').DataTable({
-        scrollX: true
-    });
-
-    function format_table() {
-        $('.used-default').css('color', 'gray');
-        $('.used-default').css('font-style', 'italic');
-	}
-
-    $('.dataTables_scrollBody').css('overflow-y', 'hidden');
-
-    table.draw();
-    
-	format_table();
-
-    table.on('draw', format_table);
-
-    $('#submit-button').click(function(e) {
-        var checkBox = document.getElementById("flexCheckDefault");
-        var errorMessage = document.getElementById("checkbox-error-message");
-        if (checkBox.checked == false){
-            e.preventDefault();
-            errorMessage.style.display = "block";
-            return false;
-        }
-        else {
-            errorMessage.style.display = "none !important";
-        }
-
-        if (confirm('Are you sure you want to submit override grades to Canvas?')) {
-            $('#submit-button').prepend('<span class="spinner-border spinner-border-sm me-2"> </span>');
-            $('#submit-button').prop('disabled', true);
-            $('form#grade-submit').submit();
-        } else {
-            return false;
-        }
-    });
-
-    $(document).ready(function () {
-        var errors = [];
-        $('.error').each(function(_, error) {
-            errors.push(error.textContent);
-        });
-        var error_str = errors.join(', ');
-        if (error_str)
-            alert(error_str);
-    });
-    
-
-    </script>
+    <script src="{% static 'js/format_final_grades' %}"></script>
+    <script src="{% static 'js/_error_check.js' %}"></script>
 {% endblock %}

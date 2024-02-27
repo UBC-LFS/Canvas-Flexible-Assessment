@@ -4,6 +4,7 @@
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
+{% load static %}
 {% block nav_item_final %}
     {% if previous == 'final' %}active{% endif %}
 {% endblock nav_item_final %}
@@ -85,31 +86,6 @@
             </div>
         </div>
     </form>
-    <script>
-	check_valid();
-
-	$(document).on('change', '.flex', function () {
-		check_valid();
-	});
-
-	function check_valid() {
-		var total = 0;
-		$(".flex").each(function () {
-			curr = parseFloat($(this).find("input").val());
-			if (!isNaN(curr)) {
-				total += curr;
-			};
-		});
-        total = total.toFixed(2);
-		total_str = total.toString();
-		$('#total').text(total_str + "%");
-        
-		if (total == 100.00) {
-			$('#total').css('color', 'green');
-		} else {
-			$('#total').css('color', 'red');
-		};
-	};
-
-    </script>
+    <script>var fieldType = '.flex'</script>
+    <script src="{% static 'js/check_valid.js' %}"></script>
 {% endblock %}

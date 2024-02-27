@@ -1,6 +1,7 @@
 {% extends "student/student_base.html" %}
 {% load student_tags %}
 {% load django_bootstrap5 %}
+{% load static %}
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
@@ -160,7 +161,7 @@
 
     $(document).on('change', '#id_agreement', function () {
         check_valid();
-    });
+        });
 
     function check_valid() {
         var total = 0;
@@ -175,7 +176,7 @@
         $('#total').text(total_str + "%");
 
         var checked = $('#id_agreement').is(':checked');
-
+    
         if (total == 100.00) {
             $('#total').css('color', 'green');
         } else {

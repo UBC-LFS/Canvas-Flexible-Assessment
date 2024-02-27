@@ -1,4 +1,5 @@
 {% extends "instructor/instructor_base.html" %}
+{% load static %}
 {% load instructor_tags %}
 {% block nav_item_home %}
     active
@@ -191,111 +192,9 @@
         {% if course.close %}
             <script>
                 var allocations = JSON.parse('{{ allocations|escapejs }}');
-
-                // Function to render the pie chart
-                function renderPieChart(containerId, data, title) {
-                    Highcharts.chart(containerId, {
-                        chart: {
-                            type: 'pie'
-                        },
-                        title: {
-                            text: title
-                        },
-                        tooltip: {
-                            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-                        },
-                        accessibility: {
-                            point: {
-                                valueSuffix: '%'
-                            }
-                        },
-                        plotOptions: {
-                            pie: {
-                                allowPointSelect: true,
-                                cursor: 'pointer',
-                                dataLabels: {
-                                    padding: 0,
-                                    enabled: true,
-                                    format: '<b>{point.name}</b><br>{point.percentage:.2f} %'
-                                },
-                                states: {
-                                    hover: {
-                                        brightness: 0,
-                                        borderColor: 'black'
-                                    }
-                                },
-                            }
-                        },
-                        series: [{
-                            innerSize: '20%',
-                            name: 'Allocations',
-                            data: data
-                        }]
-                    });
-                }
-
-
-                renderPieChart('chart1', allocations.defaults, "Defaults");
-                // Chosen allocations could be empty, place text instead
-                if (allocations.chose.length == 0) {
-                    const div = document.getElementById('chart2');
-                    // Step 2: Create a new text node
-                    const textNode = document.createTextNode("Students have not entered percentages yet");
-
-                    // Step 3: Append the text node to the div
-                    div.appendChild(textNode);
-
-                    // Step 4: Apply CSS styles for vertical centering
-                    div.style.display = "flex";
-                    div.style.alignItems = "center";
-                    div.style.justifyContent = "center";
-                } else {
-                    renderPieChart('chart2', allocations.chose, "Students Who Chose");
-                }
-                renderPieChart('chart3', allocations.all, "All Students");
-
-
-                var flex_differences = JSON.parse('{{ flex_differences|escapejs }}')
-
-                var categories = Object.keys(flex_differences);
-                var data = Object.values(flex_differences);
-
-                Highcharts.chart('container', {
-                    chart: {
-                        type: 'bar'
-                    },
-                    title: {
-                        text: 'Difference Between Student Choices and Defaults'
-                    },
-                    xAxis: {
-                        categories: categories
-                    },
-                    yAxis: {
-                        title: {
-                            text: 'Difference (%)'
-                        }
-                    },
-                    series: [{
-                        name: 'Allocation Difference',
-                        data: data.map(function(value) {
-                            return {
-                                y: value,
-                                color: value >= 0 ? 'blue' : 'red'
-                            };
-                        })
-                    }]
-                });
+                var flex_differences = JSON.parse('{{ flex_differences|escapejs }}');
             </script>
+            <script src="{% static 'js/render_chart.js' %}"></script>
         {% endif %}
-        <script>
-            $(document).ready(function() {
-                var errors = [];
-                $('.error').each(function(_, error) {
-                    errors.push(error.textContent);
-                });
-                var error_str = errors.join(', ');
-                if (error_str)
-                    alert(error_str);
-            })
-        </script>
+        <script src="{% static 'js/_error_check.js' %}"></script>
     {% endblock %}

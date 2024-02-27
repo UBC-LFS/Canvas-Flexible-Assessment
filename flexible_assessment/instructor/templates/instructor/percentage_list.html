@@ -1,5 +1,6 @@
 {% extends "instructor/instructor_base.html" %}
 {% load instructor_tags %}
+{% load static %}
 {% block nav_item_percentages %}
     active
 {% endblock nav_item_percentages %}
@@ -67,19 +68,5 @@
             </div>
         </div>
     </div>
-    <script>
-    $(document).ready(function () {
-        var colspan = $('.assessment').length;
-
-        var width = Math.floor(50/colspan);
-        $('.assessment').css('width', width+'%');
-        
-        var table = $('#percentage').DataTable({
-            scrollX: true,
-            columnDefs: [
-                { orderable: false, targets: colspan+1 }
-            ]            
-        });
-    });
-    </script>
+    <script src="{% static 'js/format_percentage_list' %}"></script>
 {% endblock %}

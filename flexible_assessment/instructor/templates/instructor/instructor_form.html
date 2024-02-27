@@ -254,75 +254,13 @@
         </ul>
     {% endif %}
     {% get_number_responses course as responses %}
+    <script>
+        var fieldType = ".Default"
+        var isDifferent = {{ is_different }}
+        var courseClosed = {{ course.close|yesno:"true,false" }}
+        var numResponses = {% get_number_responses course %}
+    </script>
     <script src="{% static 'js/check_valid.js' %}"></script>
     <script src="{% static 'js/add_delete_row.js' %}"></script>
-    <script>
-    // Add event listener for beforeunload event
-    window.addEventListener("beforeunload", function (event) {
-        // If the form has been changed, prompt the user to confirm leaving the page
-        if (document.forms[0].dataset.changed === "true") {
-            event.preventDefault();
-            event.returnValue = ""; // Required for Chrome
-        }
-    });
-
-    function confirmSubmission(form) {
-        //alert($('#form_set tbody tr').children()[0].innerHTML);
-        $('#form_set tbody tr').each(function() {
-            if ($(this).children().length == 7) {
-                if (!$(this).children().eq(5).find("input").val() && !$(this).children().eq(4).find("input").val()) {
-                    $(this).children().eq(4).find("input").val($(this).children().eq(3).find("input").val());
-                    $(this).children().eq(5).find("input").val($(this).children().eq(3).find("input").val());
-                }
-            }
-            else {
-                if (!$(this).children().eq(4).find("input").val() && !$(this).children().eq(3).find("input").val()) {
-                    $(this).children().eq(3).find("input").val($(this).children().eq(2).find("input").val());
-                    $(this).children().eq(4).find("input").val($(this).children().eq(2).find("input").val());
-                }
-            }
-        });
-        var courseClosed = {{ course.close|yesno:"true,false" }}; // Also check if this is the first time setting up the assessments
-        var numResponses = parseInt({% get_number_responses course %});
-        var total = calculate_total();
-        if (total == 0) {
-            if (confirm("Your total adds up to 0. If you click OK, this course’s Flexible Assessment setup and all student choices and comments will be deleted.")) {
-                form.action += "?reset=true";
-                document.forms[0].dataset.changed = "false";
-                return true;
-            }
-            return false;
-        }
-        else if ($('#added-deleted-form').val() === "true" && numResponses > 0) {
-            if (confirm("You changed your assessments. If you click OK, all student choices and comments will be deleted.")) {
-                document.forms[0].dataset.changed = "false";
-                return true;
-            }
-            return false;
-        } else {
-            document.forms[0].dataset.changed = "false";
-            return true;
-        }
-    };
-
-    $(document).ready(function () {
-        $('#exampleModal').modal('hide');
-        {% if is_different %}
-        $('#exampleModal').modal('show');
-        {% endif %}
-        var warnings = [];
-        $('.warning').each(function(_, warning) {
-            warnings.push(warning.textContent);
-        });
-        var warning_str = warnings.join('\n');
-        if (warning_str)
-            if (confirm(warning_str +  '\n Are you sure you want to reset these student allocations?')){
-                $('#id_options-ignore_conflicts').val('true');
-                console.log($('#id_options-ignore_conflicts'));
-                $('form').submit();
-            }
-        if ($('#assessments').hasClass('populated'))
-            alert('Assessments have been added to the form, click {% if course.close %}Update to save{% else %}Save to confirm{% endif %}.')
-    });
-    </script>
+    <script src="{% static 'js/confirm_min_max_override.js' %}"></script>
 {% endblock %}
