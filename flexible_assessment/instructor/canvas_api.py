@@ -105,6 +105,14 @@ class FlexCanvas(Canvas):
         group_id: _id
         group_name: name
         group_weight: groupWeight
+        assignment_list assignmentsConnection {
+          assignments: nodes {
+            assignment_name: name
+            assignment_grade_list: submissionsConnection {
+              assignment_grades: nodes {
+                score
+                user_id: userId
+              }
         grade_list: gradesConnection {
           grades: nodes {
             current_score: currentScore
