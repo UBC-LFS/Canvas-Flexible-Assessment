@@ -486,7 +486,20 @@ class TestInstructorViews(StaticLiveServerTestCase):
         self.browser.find_element(By.ID, "add").click()
 
         inputs = self.browser.find_elements(By.TAG_NAME, "input")
-        values = ["A1", "25", "10", "40", "A2", "25", "10", "40", "A3", "50", "50", "50"]
+        values = [
+            "A1",
+            "25",
+            "10",
+            "40",
+            "A2",
+            "25",
+            "10",
+            "40",
+            "A3",
+            "50",
+            "50",
+            "50",
+        ]
         for index, value in enumerate(values):
             inputs[index + 6].send_keys(
                 value
@@ -505,7 +518,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         date_field.send_keys(Keys.TAB)
         date_field.send_keys("0245PM")
 
-        #2
+        # 2
         self.browser.fullscreen_window()
         actions = ActionChains(self.browser)
         handle_elements = self.browser.find_elements(By.CLASS_NAME, "handle-td")
@@ -521,7 +534,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         wait = WebDriverWait(self.browser, 5)
         wait.until_not(EC.url_contains("form"))
 
-        #3
+        # 3
         A3_order = models.Assessment.objects.get(title="A3").order
         A2_order = models.Assessment.objects.get(title="A2").order
         A1_order = models.Assessment.objects.get(title="A1").order
@@ -529,7 +542,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         self.assertEqual(A2_order, 2)
         self.assertEqual(A1_order, 0)
 
-        #4
+        # 4
         self.browser.find_element(By.LINK_TEXT, "Assessments").click()
         self.browser.find_element(By.ID, "add").click()
 
@@ -553,7 +566,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         wait = WebDriverWait(self.browser, 5)
         wait.until_not(EC.url_contains("form"))
 
-        #5
+        # 5
         A4_order = models.Assessment.objects.get(title="A4").order
         A3_order = models.Assessment.objects.get(title="A3").order
         A2_order = models.Assessment.objects.get(title="A2").order
@@ -591,7 +604,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         self.browser.find_element(By.ID, "add").click()
 
         inputs = self.browser.find_elements(By.TAG_NAME, "input")
-        #empty fields are represented by empty strings
+        # empty fields are represented by empty strings
         values = ["A1", "25", "10", "40", "A2", "25", "10", "40", "A3", "50", "", ""]
         for index, value in enumerate(values):
             inputs[index + 6].send_keys(
@@ -621,7 +634,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         wait = WebDriverWait(self.browser, 5)
         wait.until_not(EC.url_contains("form"))
 
-        #2
+        # 2
         A3_min = models.Assessment.objects.get(title="A3").min
         A3_max = models.Assessment.objects.get(title="A3").max
 
@@ -661,7 +674,20 @@ class TestInstructorViews(StaticLiveServerTestCase):
         self.browser.find_element(By.ID, "add").click()
 
         inputs = self.browser.find_elements(By.TAG_NAME, "input")
-        values = ["A1", "25", "10", "40", "A2", "25", "10", "40", "A3", "50", "50", "50"]
+        values = [
+            "A1",
+            "25",
+            "10",
+            "40",
+            "A2",
+            "25",
+            "10",
+            "40",
+            "A3",
+            "50",
+            "50",
+            "50",
+        ]
         for index, value in enumerate(values):
             inputs[index + 6].send_keys(
                 value
@@ -688,24 +714,31 @@ class TestInstructorViews(StaticLiveServerTestCase):
         wait = WebDriverWait(self.browser, 5)
         wait.until_not(EC.url_contains("form"))
 
-        #2
+        # 2
         calendar_id = models.Course.objects.get(id=3).calendar_id
-        canvas_calendar = mocked_flex_canvas_instance.get_calendar_event(str(calendar_id))
+        canvas_calendar = mocked_flex_canvas_instance.get_calendar_event(
+            str(calendar_id)
+        )
         self.assertEqual(calendar_id, canvas_calendar.id)
         start_at = dateutil.parser.parse(canvas_calendar.start_at).replace(tzinfo=None)
         end_at = dateutil.parser.parse(canvas_calendar.end_at).replace(tzinfo=None)
         self.assertTrue(abs((end_at - tomorrow).days) <= 1)
         self.assertTrue(abs((start_at - tomorrow).days) <= 1)
 
-        #3
-        canvas_calendar.edit(calendar_event={"title": "Flexible Assessment", "end_at": models.Course.objects.get(id=3).close+timedelta(2)})
+        # 3
+        canvas_calendar.edit(
+            calendar_event={
+                "title": "Flexible Assessment",
+                "end_at": models.Course.objects.get(id=3).close + timedelta(2),
+            }
+        )
 
-        #4
+        # 4
         self.browser.find_element(By.LINK_TEXT, "Assessments").click()
         time.sleep(5)
         self.browser.find_element(By.CLASS_NAME, "btn-secondary").click()
 
-        #5
+        # 5
         start_at = dateutil.parser.parse(canvas_calendar.start_at).replace(tzinfo=None)
         end_at = dateutil.parser.parse(canvas_calendar.end_at).replace(tzinfo=None)
         self.assertTrue(abs((end_at - tomorrow).days) <= 1)
@@ -719,15 +752,20 @@ class TestInstructorViews(StaticLiveServerTestCase):
         wait = WebDriverWait(self.browser, 5)
         wait.until_not(EC.url_contains("form"))
 
-        #6
-        canvas_calendar.edit(calendar_event={"title": "Flexible Assessment", "end_at": models.Course.objects.get(id=3).close+timedelta(2)})
+        # 6
+        canvas_calendar.edit(
+            calendar_event={
+                "title": "Flexible Assessment",
+                "end_at": models.Course.objects.get(id=3).close + timedelta(2),
+            }
+        )
 
-        #7
+        # 7
         self.browser.find_element(By.LINK_TEXT, "Assessments").click()
         time.sleep(5)
         self.browser.find_element(By.CLASS_NAME, "btn-primary").click()
 
-        #8
+        # 8
         c_close = models.Course.objects.get(id=3).close.replace(tzinfo=None)
         c_open = models.Course.objects.get(id=3).open.replace(tzinfo=None)
         self.assertTrue(abs((c_close - tomorrow).days) > 1)
