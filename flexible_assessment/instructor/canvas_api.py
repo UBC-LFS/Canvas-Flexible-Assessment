@@ -153,104 +153,105 @@ class FlexCanvas(Canvas):
 
         return group_dict, user_enrollment_dict
 
-def calculate_user_scores(data, rules):
-    user_scores = {}
+    def calculate_user_scores(data, rules):
+        user_scores = {}
 
-    for user_id, assignments in data.items():
-        # Create list of dictionaries (a tuple) out of nested dictionary
-        score_dict = {list(assignment.keys())[0]: list(assignment.values())[0] for assignment in assignments}
+        for user_id, assignments in data.items():
+            # Create list of dictionaries (a tuple) out of nested dictionary
+            score_dict = {list(assignment.keys())[0]: list(assignment.values())[0] for assignment in assignments}
+            
+            # Extracting scores that should never be dropped
+            if rules["neverDrop"]:
+                neverdrop = []
+                for aid in rules["neverDrop"]:
+                    neverdrop.append(aid["_id"])
+                never_drop_scores = {aid: score for aid, score in score_dict.items() if aid in neverdrop}
+                # Extracting scores that can potentially be dropped
+                droppable_scores = {aid: score for aid, score in score_dict.items() if aid not in neverdrop}
+            else:
+                never_drop_scores = {}
+                droppable_scores = {aid: score for aid, score in score_dict.items()}
+
+            # Sorting droppable scores by score, descending order
+            sorted_droppable_scores = sorted(droppable_scores.items(), key=lambda item: item[1])
+
+            # Drop given number of highest scores from droppable assignments
+            if "dropHighest" in rules and rules["dropHighest"]:
+                highest_drop_count = rules["dropHighest"]
+                if highest_drop_count < len(sorted_droppable_scores):
+                    sorted_droppable_scores = sorted_droppable_scores[:-highest_drop_count]
+
+            # Drop given number of lowest scores from droppable assignments
+            if "dropLowest" in rules and rules["dropLowest"]:
+                lowest_drop_count = rules["dropLowest"]
+                if lowest_drop_count < len(sorted_droppable_scores):
+                    sorted_droppable_scores = sorted_droppable_scores[lowest_drop_count:]
+
+            # Combine the scores from neverDrop with the remaining droppable scores
+            final_scores = list(never_drop_scores.values()) + [score for _, score in sorted_droppable_scores]
+
+            # Calculate total_score as the sum of all the undropped scores
+            total_score = sum(final_scores)
+
+            # Store the computed total score for each user
+            user_scores[user_id] = total_score
         
-        # Extracting scores that should never be dropped
-        if rules["neverDrop"]:
-            neverdrop = []
-            for aid in rules["neverDrop"]:
-                neverdrop.append(aid["_id"])
-            never_drop_scores = {aid: score for aid, score in score_dict.items() if aid in neverdrop}
-            # Extracting scores that can potentially be dropped
-            droppable_scores = {aid: score for aid, score in score_dict.items() if aid not in neverdrop}
-        else:
-            never_drop_scores = {}
-            droppable_scores = {aid: score for aid, score in score_dict.items()}
+        #print(user_scores)
+        return user_scores
 
-        # Sorting droppable scores by score, descending order
-        sorted_droppable_scores = sorted(droppable_scores.items(), key=lambda item: item[1])
+    def get_flat_groups_and_enrollments(canvas, course_id):
+        """Gets Canvas assignment groups and student enrollment data
 
-        # Drop given number of highest scores from droppable assignments
-        if "dropHighest" in rules and rules["dropHighest"]:
-            highest_drop_count = rules["dropHighest"]
-            if highest_drop_count < len(sorted_droppable_scores):
-                sorted_droppable_scores = sorted_droppable_scores[:-highest_drop_count]
+        Parameters
+        ----------
+        course_id : int
+            Canvas course ID
 
-        # Drop given number of lowest scores from droppable assignments
-        if "dropLowest" in rules and rules["dropLowest"]:
-            lowest_drop_count = rules["dropLowest"]
-            if lowest_drop_count < len(sorted_droppable_scores):
-                sorted_droppable_scores = sorted_droppable_scores[lowest_drop_count:]
+        Returns
+        -------
+        group_dict : dict
+            Contains assignment group and grades data
+        user_enrollment_dict : dict
+            Contains enrollment ID for each user
+        """
 
-        # Combine the scores from neverDrop with the remaining droppable scores
-        final_scores = list(never_drop_scores.values()) + [score for _, score in sorted_droppable_scores]
-
-        # Calculate total_score as the sum of all the undropped scores
-        total_score = sum(final_scores)
-
-        # Store the computed total score for each user
-        user_scores[user_id] = total_score
-    
-    #print(user_scores)
-    return user_scores
-
-def get_flat_groups_and_enrollments(canvas, course_id):
-    """Gets Canvas assignment groups and student enrollment data
-
-    Parameters
-    ----------
-    course_id : int
-        Canvas course ID
-
-    Returns
-    -------
-    group_dict : dict
-        Contains assignment group and grades data
-    user_enrollment_dict : dict
-        Contains enrollment ID for each user
-    """
-
-    query = """
-    query AssignmentGroupQuery($course_id: ID!) {
-    course(id: $course_id) {
-        assignment_groups: assignmentGroupsConnection {
-            groups: nodes {
-                rules {
-                    dropHighest
-                    dropLowest
-                    neverDrop {
-                        _id
+        query = """
+        query AssignmentGroupQuery($course_id: ID!) {
+        course(id: $course_id) {
+            assignment_groups: assignmentGroupsConnection {
+                groups: nodes {
+                    rules {
+                        dropHighest
+                        dropLowest
+                        neverDrop {
+                            _id
+                        }
                     }
-                }
-                group_id:_id
-                group_name: name
-                group_weight: groupWeight
-                assignment_list: assignmentsConnection {
-                    assignments: nodes {
-                        _id
-                        max_score: pointsPossible
-                        name
-                        submission_list: submissionsConnection {
-                            submissions: nodes {
-                                score
-                                user_id: userId
+                    group_id:_id
+                    group_name: name
+                    group_weight: groupWeight
+                    assignment_list: assignmentsConnection {
+                        assignments: nodes {
+                            _id
+                            max_score: pointsPossible
+                            name
+                            submission_list: submissionsConnection {
+                                submissions: nodes {
+                                    score
+                                    user_id: userId
+                                }
                             }
                         }
                     }
-                }
-                grade_list: gradesConnection {
-                    grades: nodes {
-                        current_score: currentScore
-                        enrollment {
-                            _id
-                            user {
-                                user_id: _id
-                                display_name: name
+                    grade_list: gradesConnection {
+                        grades: nodes {
+                            current_score: currentScore
+                            enrollment {
+                                _id
+                                user {
+                                    user_id: _id
+                                    display_name: name
+                                }
                             }
                         }
                     }
@@ -258,103 +259,102 @@ def get_flat_groups_and_enrollments(canvas, course_id):
             }
         }
     }
-}
-    """
-    # Makes the API call
-    query_response = canvas.graphql(query, variables={"course_id": course_id})
-    query_flattened = _flatten_dict(query_response)
-    groups = query_flattened.get("data.course.assignment_groups.groups", None)
-    if groups is None:
-        raise PermissionDenied
-
-    group_dict = {}
-    # This dict matches grades to enrollment ID, necessary for overriding grade
-    user_enrollment_dict = {}
-    # Set group id key to group value
-    for group in groups:
-        id = group.pop("group_id", None)
-        group_dict[id] = group
-        
-    # Iterate over each assignment group.
-    for group_data in group_dict.values():
-        # Collect special grading rules for each assignment group
-        rules = group_data.pop('rules')
-        # If rules = None you skip the extra processing
-        if all(rule is None for rule in rules.values()):
-            rules = None
-        
-        group_flattened = _flatten_dict(group_data)
-        # Get list of assignments for each group
-        assignments = group_flattened.pop("assignment_list.assignments", None)
-        if assignments is None:
+        """
+        # Makes the API call
+        query_response = canvas.graphql(query, variables={"course_id": course_id})
+        query_flattened = _flatten_dict(query_response)
+        groups = query_flattened.get("data.course.assignment_groups.groups", None)
+        if groups is None:
             raise PermissionDenied
 
-        # Get total amount of assignment (for normalizing the grade)
-        total_assignments = len(assignments)
-
-        # Gets the grades for each assignment, will be editing this to accomodate a flat grading system
-        grades = group_flattened.get("grade_list.grades", [])
-        
-        user_scores = {}
-
-        # Add scores for each assignment to user_id, converts them into a percentage.
-        for assignment in assignments:
-            assignment_flattened = _flatten_dict(assignment)
-            max_score = assignment_flattened.get("max_score", None)
-            submissions = assignment_flattened.get("submission_list.submissions", None)
-
-            # If no submissions of max_score == 0, skip assignment and do not factor it into grade
-            if max_score == 0 or max_score is None or submissions is None:
-                total_assignments -= 1
-                continue
-
-            assignment_id = assignment["_id"]
-
-            for submission in submissions:
-                score = submission["score"]
-                user_id = submission["user_id"]
-                if user_id is None or score is None:
-                    raise PermissionDenied
-
-                flat_score = score / max_score if max_score else 0
-                if rules:
-                     if user_id not in user_scores:
-                         user_scores[user_id] = []
-                     user_scores[user_id].append({assignment_id: flat_score})
-                else:
-                    user_scores[user_id] = user_scores.get(user_id, 0) + flat_score
-
-        # If no rules, skip extra processing
-        if rules:
-            user_scores = calculate_user_scores(user_scores, rules)
-            if rules["dropHighest"]:
-                total_assignments -= rules["dropHighest"]
-            if rules["dropLowest"]:
-                total_assignments -= rules["dropLowest"]
-        
-        # Once group scores are calculated, update assignment grades
-        updated_grades = []
-        for grade in grades:
-            grade_flattened = _flatten_dict(grade)
-            user_id = grade_flattened.get("enrollment.user.user_id", None)
-            enrollment_id = grade_flattened.get("enrollment._id", None)
-            if user_id is None:
+        group_dict = {}
+        # This dict matches grades to enrollment ID, necessary for overriding grade
+        user_enrollment_dict = {}
+        # Set group id key to group value
+        for group in groups:
+            id = group.pop("group_id", None)
+            group_dict[id] = group
+            
+        # Iterate over each assignment group.
+        for group_data in group_dict.values():
+            # Collect special grading rules for each assignment group
+            rules = group_data.pop('rules')
+            # If rules = None you skip the extra processing
+            if all(rule is None for rule in rules.values()):
+                rules = None
+            
+            group_flattened = _flatten_dict(group_data)
+            # Get list of assignments for each group
+            assignments = group_flattened.pop("assignment_list.assignments", None)
+            if assignments is None:
                 raise PermissionDenied
-            user_enrollment_dict[user_id] = enrollment_id
 
-            if user_id in user_scores:
-                # Calculate the average score and convert it to percentage
-                flat_group_score = (user_scores[user_id] / total_assignments) * 100 if total_assignments else 0
-                updated_grades.append((user_id, round(flat_group_score, 2)))
-            else:
-                # Keep the original score if no submissions were found
-                score = grade_flattened["current_score"]
-                updated_grades.append((user_id, score))
+            # Get total amount of assignment (for normalizing the grade)
+            total_assignments = len(assignments)
 
-        group_data["grade_list"]["grades"] = updated_grades
-        group_data.pop("assignment_list", None)  # Remove assignment list as requested
+            # Gets the grades for each assignment, will be editing this to accomodate a flat grading system
+            grades = group_flattened.get("grade_list.grades", [])
+            
+            user_scores = {}
 
-    return group_dict, user_enrollment_dict
+            # Add scores for each assignment to user_id, converts them into a percentage.
+            for assignment in assignments:
+                assignment_flattened = _flatten_dict(assignment)
+                max_score = assignment_flattened.get("max_score", None)
+                submissions = assignment_flattened.get("submission_list.submissions", None)
+
+                # If no submissions of max_score == 0, skip assignment and do not factor it into grade
+                if max_score == 0 or max_score is None or submissions is None:
+                    total_assignments -= 1
+                    continue
+
+                assignment_id = assignment["_id"]
+
+                for submission in submissions:
+                    score = submission["score"]
+                    user_id = submission["user_id"]
+                    if user_id is None or score is None:
+                        raise PermissionDenied
+
+                    flat_score = score / max_score if max_score else 0
+                    if rules:
+                        if user_id not in user_scores:
+                            user_scores[user_id] = []
+                        user_scores[user_id].append({assignment_id: flat_score})
+                    else:
+                        user_scores[user_id] = user_scores.get(user_id, 0) + flat_score
+
+            # If no rules, skip extra processing
+            if rules:
+                user_scores = calculate_user_scores(user_scores, rules)
+                if rules["dropHighest"]:
+                    total_assignments -= rules["dropHighest"]
+                if rules["dropLowest"]:
+                    total_assignments -= rules["dropLowest"]
+            
+            # Once group scores are calculated, update assignment grades
+            updated_grades = []
+            for grade in grades:
+                grade_flattened = _flatten_dict(grade)
+                user_id = grade_flattened.get("enrollment.user.user_id", None)
+                enrollment_id = grade_flattened.get("enrollment._id", None)
+                if user_id is None:
+                    raise PermissionDenied
+                user_enrollment_dict[user_id] = enrollment_id
+
+                if user_id in user_scores:
+                    # Calculate the average score and convert it to percentage
+                    flat_group_score = (user_scores[user_id] / total_assignments) * 100 if total_assignments else 0
+                    updated_grades.append((user_id, round(flat_group_score, 2)))
+                else:
+                    # Keep the original score if no submissions were found
+                    score = grade_flattened["current_score"]
+                    updated_grades.append((user_id, score))
+
+            group_data["grade_list"]["grades"] = updated_grades
+            group_data.pop("assignment_list", None)  # Remove assignment list as requested
+
+        return group_dict, user_enrollment_dict
 
     def _flatten_dict_gen(self, d, parent_key, sep):
         for k, v in d.items():
