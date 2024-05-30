@@ -106,6 +106,11 @@ class MockFlexCanvas(MockCanvas):
         dict = {k: v.asdict() for k, v in self.groups_dict.items()}
         return dict, {} 
 
+    #TODO: Make this work legit in the Mock Canvas enviroment
+    def get_flat_groups_and_enrollments(self, course_id):
+        dict = {k: v.asdict() for k, v in self.groups_dict.items()}
+        return dict, {} 
+
     def is_allow_override(self, course_id):
         return True
     
