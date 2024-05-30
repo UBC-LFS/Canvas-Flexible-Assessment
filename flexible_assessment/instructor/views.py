@@ -302,7 +302,6 @@ class AssessmentGroupView(views.InstructorFormView):
             return response
 
         # Set the session variable to flat is the check box is ticked upon form validation.
-        print(form.cleaned_data)
         self._update_assessments_and_groups(form)
         if flat:
             self.request.session['flat'] = True
