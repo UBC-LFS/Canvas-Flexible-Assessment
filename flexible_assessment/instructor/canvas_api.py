@@ -42,8 +42,6 @@ class FlexCanvas(Canvas):
 
         return response.json()
 
-
-
     def is_allow_override(self, course_id):
         """Checks if Canvas couse with given id has 'allow final grade override'
         enabled
