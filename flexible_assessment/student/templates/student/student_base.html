@@ -23,6 +23,16 @@
                 color: gray;
                 /* Additional styling to make it look disabled */
             }
+            /* This hides the input buttons for number forms. */
+            input[type="number"]::-webkit-inner-spin-button,
+            input[type="number"]::-webkit-outer-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            
+            input[type="number"] {
+                -moz-appearance: textfield;
+            }
         </style>
     </head>
     <body>

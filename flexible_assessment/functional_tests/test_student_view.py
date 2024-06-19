@@ -49,7 +49,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser.add_cookie({"name": "sessionid", "value": session_id})
 
         self.browser.get(
-            self.live_server_url + reverse("student:student_home", args=[4])
+            self.live_server_url + reverse("student:student_home", args=[1])
         )
 
         input("Press Enter in this terminal to continue")
@@ -767,3 +767,84 @@ class TestStudentViews(StaticLiveServerTestCase):
 
         self.assertIn("NEW WELCOME INSTRUCTIONS", page_text)
         self.assertIn("NEW COMMENT INSTRUCTIONS", page_text)
+
+    @tag("slow")
+    @mock_classes.use_mock_canvas()
+    def test_instructor_override(self, mocked_flex_canvas_instance):
+        """The student in course 4 chooses his flexes, instructor has to override them, student checks home page and sees new grades"
+        1. Student starts by choosing 20 % and 80 %
+        2. Student gets redirected to the homepage and sees their weights
+        3. Instructor overrides student grades to 0 % and 100 %
+        4. Student refreshes their homepage and sees their new grades.
+        """
+        print(
+            "---------------------test_instructor_override------------------------------"
+        )
+
+        session_id = self.client.session.session_key
+        self.browser.get(
+            self.live_server_url + reverse("student:student_home", args=[4])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("student:student_home", args=[4])
+        )
+
+        # 1
+        self.assertIn("form", self.browser.current_url)
+        submit = self.browser.find_element(By.TAG_NAME, "button")
+        inputs = self.browser.find_elements(By.TAG_NAME, "input")
+
+        inputs[1].send_keys("20")
+        inputs[2].send_keys("80")
+        inputs[3].click()
+
+        comment_field = self.browser.find_element(By.NAME, "comment")
+        comment_field.send_keys("I hope I don't get sick and miss assignmentA")
+
+        submit.click()
+
+        # 2
+        self.assertNotIn("form", self.browser.current_url)
+
+        bodyText = self.browser.find_element(By.TAG_NAME, "body").text
+        self.assertIn("20", bodyText)
+        self.assertIn("80", bodyText)
+
+        # 3
+        session_id_teacher = self.client_teacher.session.session_key
+        self.browser_teacher.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[4])
+        )
+        self.browser_teacher.add_cookie(
+            {"name": "sessionid", "value": session_id_teacher}
+        )
+
+        self.browser_teacher.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[4])
+        )
+
+        self.browser_teacher.implicitly_wait(10)
+
+        self.browser_teacher.find_element(By.LINK_TEXT, "Student Choices").click()
+        self.browser_teacher.find_element(By.LINK_TEXT, "test_student1").click()
+
+        # self.assertIn("form", self.browser_teacher.current_url)
+        submit = self.browser_teacher.find_element(By.TAG_NAME, "button")
+        inputs = self.browser_teacher.find_elements(By.TAG_NAME, "input")
+
+        inputs[1].clear()
+        inputs[1].send_keys("0")
+        inputs[2].clear()
+        inputs[2].send_keys("100")
+        self.browser_teacher.implicitly_wait(10)
+        submit.click()
+
+        # 4
+        self.browser.refresh()
+        self.browser.refresh()  # Double refresh because database takes time to update
+        bodyText = self.browser.find_element(By.TAG_NAME, "body").text
+        self.assertIn("0", bodyText)
+        self.assertIn("100", bodyText)
+        self.assertIn("This value has been set by an instructor.", bodyText)

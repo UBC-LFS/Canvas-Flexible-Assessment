@@ -8,6 +8,35 @@
     active
 {% endblock nav_item_assessments %}
 {% block content %}
+    <style>
+            .form-control.is-valid {
+                border-color: #ced4da;
+                padding-right: initial;
+                background-image: initial;
+                background-repeat: initial;
+                background-position: initial;
+                background-size: initial;
+            }
+    
+            .form-check-input.is-valid~.form-check-label {
+                border-color: #ced4da;
+                padding-right: initial;
+                background-image: initial;
+                background-repeat: initial;
+                background-position: initial;
+                background-size: initial;
+                color: initial;
+            }
+    
+            .form-check-input.is-valid:checked {
+                border-color: #0d6efd;
+                background-color: #0d6efd;
+            }
+    
+            .form-check-input.is-valid {
+                border-color: #ced4da;
+            }
+    </style>
     <form action="" method="post">
         {% csrf_token %}
         {% for hidden_field in form.hidden_fields %}
@@ -28,8 +57,12 @@
                         <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                             <h3 class="card-header">Assessments</h3>
                             <div class="card-body pt-2 pb-3">
-                                {% if course.welcome_instructions %}
-                                    <p class="fw-light mt-0 mb-1">{{ course.welcome_instructions }}</p>
+                                {% if course.welcome_instructions %}<p class="fw-light mt-0 mb-1">{{ course.welcome_instructions }}</p>{% endif %}
+                                {% is_any_flex_outside_bounds flexes as outside %}
+                                {% if outside %}
+                                    <p class=="fw-light mt-0 mb-1">
+                                        Some of your forms are disabled. This is because an intructor set these weights outside of the minimum and maximum.
+                                    </p>
                                 {% endif %}
                                 <div class="d-flex align-items-center justify-content-between">
                                     <p class="fw-light m-0">{% bootstrap_form_errors form type='non_fields' %}</p>
@@ -48,10 +81,23 @@
                                         {% for field in form.visible_fields %}
                                             {% if field.name != "comment" and field.name != "agreement" %}
                                                 {% get_default_min_max field.name as default_min_max %}
+                                                {% get_flex field.name as flex %}
                                                 <tr height="60px">
                                                     <td class="text-center align-middle">{{ field.label }}</td>
                                                     {% not_flexible default_min_max as fixed %}
-                                                    {% if fixed %}
+                                                    {% is_flex_outside_bounds flex field.name as outside %}
+                                                    {% if outside %}
+                                                        <td class="flex text-center align-middle"
+                                                            style="text-align: center;
+                                                                   width: 25%">
+                                                            <input type="{{ field.field.widget.input_type }}"
+                                                                   name="{{ field.html_name }}"
+                                                                   value="{{ flex }}"
+                                                                   disabled
+                                                                   class="form-control">
+                                                            <input type="hidden" name="{{ field.html_name }}" value="{{ flex }}">
+                                                        </td>
+                                                    {% elif fixed %}
                                                         <td class="flex text-center align-middle"
                                                             style="text-align: center;
                                                                    width: 25%">
@@ -88,9 +134,7 @@
                                         </tr>
                                     </tfoot>
                                 </table>
-                                <p class="fw-light mt-0 mb-1">
-                                    All assessments should be given desired % and total flex adds up to 100%
-                                </p>
+                                <p class="fw-light mt-0 mb-1">All assessments should be given desired % and total flex adds up to 100%</p>
                                 {% bootstrap_field form.agreement wrapper_class='mb-0 mt-2' %}
                             </div>
                         </div>
@@ -102,9 +146,7 @@
                             <h3 class="card-header">Comment</h3>
                             <div class="card-body pt-2 pb-3">
                                 <div class="d-flex align-items-center justify-content-between fw-light mt-1">
-                                    {% if course.comment_instructions %}
-                                        <p class="mb-0">{{ course.comment_instructions }}</p>
-                                    {% endif %}
+                                    {% if course.comment_instructions %}<p class="mb-0">{{ course.comment_instructions }}</p>{% endif %}
                                     <p class="mb-0" style="color: gray;">
                                         <i>Optional</i>
                                     </p>
