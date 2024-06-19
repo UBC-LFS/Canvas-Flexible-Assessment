@@ -21,6 +21,8 @@ class FlexCanvas(Canvas):
 
         base_url = settings.CANVAS_DOMAIN
         access_token = get_oauth_token(request)
+        self.base_url = base_url
+        self.access_token = access_token
         super().__init__(base_url, access_token)
 
     def set_override_true(self, course_id):
@@ -31,10 +33,11 @@ class FlexCanvas(Canvas):
         course_id : int
             Canvas course ID
         """
+
         param = {'allow_final_grade_override' : 'true' }
-        url = f"{base_url}/courses/{course_id}/settings"
+        url = f"{self.base_url}/courses/{course_id}/settings"
         headers = {
-            "Authorization": f"Bearer {access_token}"
+            "Authorization": f"Bearer {self.access_token}"
         }
 
         response = requests.put(url, headers=headers, params=param)
