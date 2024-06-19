@@ -1,4 +1,5 @@
 import time
+import requests
 from collections.abc import MutableMapping
 
 from canvasapi import Canvas
@@ -21,6 +22,25 @@ class FlexCanvas(Canvas):
         base_url = settings.CANVAS_DOMAIN
         access_token = get_oauth_token(request)
         super().__init__(base_url, access_token)
+
+    def set_override_true(self, course_id):
+        """Sets 'allow final grade override' in Canvas course
+        
+        Parameters
+        ----------
+        course_id : int
+            Canvas course ID
+        """
+        param = {'allow_final_grade_override' : 'true' }
+        url = f"{base_url}/courses/{course_id}/settings"
+        headers = {
+            "Authorization": f"Bearer {access_token}"
+        }
+
+        response = requests.put(url, headers=headers, params=param)
+        response.raise_for_status()
+
+        return response.json()
 
     def is_allow_override(self, course_id):
         """Checks if Canvas couse with given id has 'allow final grade override'
