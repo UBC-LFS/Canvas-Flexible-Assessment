@@ -35,7 +35,7 @@ class FlexCanvas(Canvas):
         """
 
         param = {'allow_final_grade_override' : 'true' }
-        url = f"{self.base_url}/courses/{course_id}/settings"
+        url = f"{self.base_url}/api/v1/courses/{course_id}/settings"
         headers = {
             "Authorization": f"Bearer {self.access_token}"
         }
