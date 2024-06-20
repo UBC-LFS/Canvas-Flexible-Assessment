@@ -101,6 +101,7 @@ class MockFlexCanvas(MockCanvas):
         super().__init__()
         self.groups_dict = {str(group.id): group for group in self.get_course(1).groups}
         self.calendar_item = None
+        self.allow_override = False
 
     def get_groups_and_enrollments(self, course_id):
         dict = {k: v.asdict() for k, v in self.groups_dict.items()}
@@ -109,10 +110,13 @@ class MockFlexCanvas(MockCanvas):
     #TODO: Make this work legit in the Mock Canvas enviroment
     def get_flat_groups_and_enrollments(self, course_id):
         dict = {k: v.asdict() for k, v in self.groups_dict.items()}
-        return dict, {} 
-
+        return dict, {}    
+      
+    def set_override_true(self, course_id):
+        self.allow_override = True
+     
     def is_allow_override(self, course_id):
-        return True
+        return self.allow_override
     
     def create_calendar_event(self, calendar_event):
         self.calendar_item = MockCalendarEvent(calendar_event)
