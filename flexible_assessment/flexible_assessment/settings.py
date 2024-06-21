@@ -1,8 +1,5 @@
 import os
 from datetime import timedelta
-from dotenv import load_dotenv
-
-load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -100,7 +97,7 @@ SESSION_COOKIE_NAME = "sessionid"
 SESSION_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = True
 # SESSION_COOKIE_AGE = 15
 
 # Database
