@@ -178,6 +178,9 @@ class AssessmentGroupForm(forms.Form):
 
         self.fields.update(assessment_fields)
 
+    flat = forms.BooleanField(required=False, label='Assignments within groups have equal weight')
+
+
 
 class AssessmentBaseFormSet(BaseModelFormSet):
     def get_queryset(self):
