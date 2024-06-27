@@ -114,6 +114,8 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         if self.kwargs.get("submit", False):
             canvas = FlexCanvas(request)
 
+            canvas.set_override_true(course_id)
+
             if not canvas.is_allow_override(course_id):
                 messages.error(
                     request,
