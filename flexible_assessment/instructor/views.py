@@ -170,13 +170,14 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         if flat_grade:
             # If 'flat' is true, call a method that handles flat grades
             groups, _ = FlexCanvas(self.request).get_flat_groups_and_enrollments(course_id)
+            context["flat"] = True
         else:
             # If 'flat' is false or not set, call the standard method
             groups, _ = FlexCanvas(self.request).get_groups_and_enrollments(course_id)
         context["groups"] = groups
 
         context["canvas_domain"] = settings.CANVAS_DOMAIN
-
+       
         return context
 
     def _submit_final_grades(self, course_id, canvas):
