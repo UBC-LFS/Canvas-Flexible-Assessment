@@ -166,7 +166,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         context = super().get_context_data(**kwargs)
         course_id = self.kwargs["course_id"]
         # Access the session variable to determine which method to call
-        flat_grade = self.request.session.get('flat', 'false') == True
+        flat_grade = self.request.session.get('flat', False) == True
         if flat_grade:
             # If 'flat' is true, call a method that handles flat grades
             groups, _ = FlexCanvas(self.request).get_flat_groups_and_enrollments(course_id)
