@@ -176,7 +176,7 @@ class FlexCanvas(Canvas):
 
         return group_dict, user_enrollment_dict
 
-    def calculate_user_scores(data, rules):
+    def calculate_user_scores(self, data, rules):
         user_scores = {}
 
         for user_id, assignments in data.items():
