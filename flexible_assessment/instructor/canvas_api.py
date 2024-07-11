@@ -349,7 +349,7 @@ class FlexCanvas(Canvas):
 
             # If no rules, skip extra processing
             if rules:
-                user_scores = calculate_user_scores(user_scores, rules)
+                user_scores = self.calculate_user_scores(user_scores, rules)
                 if rules["dropHighest"]:
                     total_assignments -= rules["dropHighest"]
                 if rules["dropLowest"]:
