@@ -114,6 +114,8 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         if self.kwargs.get("submit", False):
             canvas = FlexCanvas(request)
 
+            canvas.set_override_true(course_id)
+
             if not canvas.is_allow_override(course_id):
                 messages.error(
                     request,
@@ -163,11 +165,19 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
 
         context = super().get_context_data(**kwargs)
         course_id = self.kwargs["course_id"]
-        groups, _ = FlexCanvas(self.request).get_groups_and_enrollments(course_id)
+        # Access the session variable to determine which method to call
+        flat_grade = self.request.session.get('flat', 'false') == True
+        if flat_grade:
+            # If 'flat' is true, call a method that handles flat grades
+            groups, _ = FlexCanvas(self.request).get_flat_groups_and_enrollments(course_id)
+            context["flat"] = True
+        else:
+            # If 'flat' is false or not set, call the standard method
+            groups, _ = FlexCanvas(self.request).get_groups_and_enrollments(course_id)
         context["groups"] = groups
 
         context["canvas_domain"] = settings.CANVAS_DOMAIN
-
+       
         return context
 
     def _submit_final_grades(self, course_id, canvas):
@@ -273,6 +283,7 @@ class AssessmentGroupView(views.InstructorFormView):
             HttpResponseRedirect if form is valid,
             TemplateResponse if error in form
         """
+        flat = form.cleaned_data.pop('flat', None)
 
         matched_groups = form.cleaned_data.values()
 
@@ -293,7 +304,13 @@ class AssessmentGroupView(views.InstructorFormView):
             response = super().form_invalid(form)
             return response
 
+        # Set the session variable to flat is the check box is ticked upon form validation.
+        print(form.cleaned_data)
         self._update_assessments_and_groups(form)
+        if flat:
+            self.request.session['flat'] = True
+        else:
+            self.request.session['flat'] = False
 
         response = super().form_valid(form)
         return response

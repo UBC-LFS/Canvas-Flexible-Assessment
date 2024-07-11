@@ -16,6 +16,9 @@
                     </div>
                     <div class="card-body pt-2 pb-3">
                         <p class="fw-light pb-2">
+                            {% if flat %}
+                            Flat!
+                            {% endif %}
                             The table below shows students' desired percentages, the grades from the Assignment Groups in Canvas, their final grade calculated using their percentages in the
                             <span style="font-weight:bold;">Override</span>
                             column, the final grade they would have received using the
@@ -30,17 +33,7 @@
                             <span style="font-weight:bold;">Difference</span>
                             columns are not visible to students. Click the
                             <span style="font-weight:bold;"><i class="bi bi-download"></i> Export</span>
-                            button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, you must
-                            <a href="https://community.canvaslms.com/t5/Instructor-Guide/How-do-I-override-a-student-s-final-grade-in-the-Gradebook/ta-p/946"
-                               target="_blank"
-                               rel="noopener noreferrer">enable the Final Grade Override</a>
-                            in the settings on the
-                            <a href="{{ canvas_domain }}courses/{{ course.id }}/gradebook"
-                               target="_blank"
-                               rel="noopener noreferrer">Grades page in Canvas</a>.
-                            After the
-                            <span style="font-weight:bold;">Final Grade Override</span>
-                            is enabled, verify your grades to make sure they are calculated as expected, and click
+                            button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
                             <span style="font-weight:bold;">Send to Canvas</span>.
                         </p>
                         <table id="final" class="table table-striped mb-3 nowrap" width="100%">
