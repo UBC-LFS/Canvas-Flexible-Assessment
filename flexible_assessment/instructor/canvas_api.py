@@ -285,7 +285,7 @@ class FlexCanvas(Canvas):
         """
         # Makes the API call
         query_response = canvas.graphql(query, variables={"course_id": course_id})
-        query_flattened = _flatten_dict(query_response)
+        query_flattened = self._flatten_dict(query_response)
         groups = query_flattened.get("data.course.assignment_groups.groups", None)
         if groups is None:
             raise PermissionDenied
@@ -306,7 +306,7 @@ class FlexCanvas(Canvas):
             if all(rule is None for rule in rules.values()):
                 rules = None
             
-            group_flattened = _flatten_dict(group_data)
+            group_flattened = self._flatten_dict(group_data)
             # Get list of assignments for each group
             assignments = group_flattened.pop("assignment_list.assignments", None)
             if assignments is None:
@@ -322,7 +322,7 @@ class FlexCanvas(Canvas):
 
             # Add scores for each assignment to user_id, converts them into a percentage.
             for assignment in assignments:
-                assignment_flattened = _flatten_dict(assignment)
+                assignment_flattened = self._flatten_dict(assignment)
                 max_score = assignment_flattened.get("max_score", None)
                 submissions = assignment_flattened.get("submission_list.submissions", None)
 
@@ -358,7 +358,7 @@ class FlexCanvas(Canvas):
             # Once group scores are calculated, update assignment grades
             updated_grades = []
             for grade in grades:
-                grade_flattened = _flatten_dict(grade)
+                grade_flattened = self._flatten_dict(grade)
                 user_id = grade_flattened.get("enrollment.user.user_id", None)
                 enrollment_id = grade_flattened.get("enrollment._id", None)
                 if user_id is None:
