@@ -222,7 +222,7 @@ class FlexCanvas(Canvas):
         #print(user_scores)
         return user_scores
 
-    def get_flat_groups_and_enrollments(self, canvas, course_id):
+    def get_flat_groups_and_enrollments(self, course_id):
         """Gets Canvas assignment groups and student enrollment data
 
         Parameters
@@ -284,7 +284,7 @@ class FlexCanvas(Canvas):
     }
         """
         # Makes the API call
-        query_response = canvas.graphql(query, variables={"course_id": course_id})
+        query_response = self.graphql(query, variables={"course_id": course_id})
         query_flattened = self._flatten_dict(query_response)
         groups = query_flattened.get("data.course.assignment_groups.groups", None)
         if groups is None:
