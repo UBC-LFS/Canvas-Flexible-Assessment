@@ -222,7 +222,7 @@ class FlexCanvas(Canvas):
         #print(user_scores)
         return user_scores
 
-    def get_flat_groups_and_enrollments(canvas, course_id):
+    def get_flat_groups_and_enrollments(self, canvas, course_id):
         """Gets Canvas assignment groups and student enrollment data
 
         Parameters
