@@ -304,7 +304,7 @@ class AssessmentGroupView(views.InstructorFormView):
             return response
 
         # Set the session variable to flat if weight_option is equal_weights
-        print(form.cleaned_data)
+        #print(form.cleaned_data)
         self._update_assessments_and_groups(form)
         if weight_option == 'equal_weights':
             self.request.session['flat'] = True

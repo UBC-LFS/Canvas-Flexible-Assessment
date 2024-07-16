@@ -41,6 +41,8 @@
                                     {% for assessment in course.assessment_set.all|dictsort:"order" %}
                                         <th class="assessment text-center align-middle" style="font-size: 110%;">
                                             {{ assessment.title }}
+                                            <br>
+                                            ({{ assessment.default }}%)
                                         </th>
                                     {% endfor %}
                                     <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Comment</th>

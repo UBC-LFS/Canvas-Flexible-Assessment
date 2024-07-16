@@ -178,7 +178,7 @@ class AssessmentGroupForm(forms.Form):
 
         self.fields.update(assessment_fields)
 
-        # Add the grade_type field
+        # Add the weight_option field
         self.fields['weight_option'] = forms.ChoiceField(
             choices=[
                 ('default', 'Default: assignments within groups are weighted according to the amount of Points they contribute to the group total'),
@@ -188,8 +188,6 @@ class AssessmentGroupForm(forms.Form):
             initial='default',
             label='Weight Option'
         )
-
-
 
 class AssessmentBaseFormSet(BaseModelFormSet):
     def get_queryset(self):

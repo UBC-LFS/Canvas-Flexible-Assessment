@@ -105,7 +105,7 @@ class MockFlexCanvas(MockCanvas):
 
     def get_groups_and_enrollments(self, course_id):
         dict = {k: v.asdict() for k, v in self.groups_dict.items()}
-        return dict, {} 
+        return dict, {}
 
     #TODO: Make this work legit in the Mock Canvas enviroment
     def get_flat_groups_and_enrollments(self, course_id):

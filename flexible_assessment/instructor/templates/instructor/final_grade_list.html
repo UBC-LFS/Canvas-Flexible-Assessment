@@ -28,7 +28,7 @@
                             <span style="font-weight:bold;">Default Total</span>
                             and
                             <span style="font-weight:bold;">Difference</span>
-                            columns are not visible to students. Click the
+                            columns are not visible to students. Click thegit
                             <span style="font-weight:bold;"><i class="bi bi-download"></i> Export</span>
                             button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
                             <span style="font-weight:bold;">Send to Canvas</span>.
@@ -53,12 +53,12 @@
                                         <th class="assessment text-center align-middle" style="font-size: 110%;">
                                             {{ assessment.title }}
                                             <br>
-                                            ({% get_group_weight groups assessment.group %}%)
+                                            (Grade %)
                                         </th>
                                         <th class="assessment text-center align-middle" style="font-size: 110%;">
                                             {{ assessment.title }}
                                             <br>
-                                            (Chosen %)
+                                            ({{ assessment.default }}%)
                                         </th>
                                     {% endfor %}
                                 </tr>
