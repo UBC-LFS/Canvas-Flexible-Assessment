@@ -44,7 +44,7 @@
                                 </thead>
                                 <tbody>
                                     {% for field in form.visible_fields %}
-                                        {% if field.name != "flat" %}
+                                        {% if field.name != "weight_option" %}
                                         <tr>
                                             <td class="text-center align-middle">{{ field.label }}</td>
                                             <td class="align-middle">
@@ -55,14 +55,15 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                            <p class="fw-light m-0">
+                                Select how to calculate the weights of assignments within assignment groups: <br/><br/>
+                            </p>
+                            {{ form.weight_option }}
+                            <br/>        
                             <div class="d-flex align-items-center justify-content-between">
                                 <button class="btn btn-primary float-end" type="submit">
                                     Continue <i class="bi bi-chevron-right"></i>
-                                </button>
-                                <div class="form-check">
-                                    <input type="checkbox" name="flat" class="form-check-input" id="id_flat">
-                                    <label class="form-check-label" for="id_flat">Assignments within groups have equal weight</label>
-                                </div>
+                                </button>                       
                             </div>
                         </div>
                     </div>

@@ -282,7 +282,7 @@ class AssessmentGroupView(views.InstructorFormView):
             HttpResponseRedirect if form is valid,
             TemplateResponse if error in form
         """
-        flat = form.cleaned_data.pop('flat', None)
+        weight_option = form.cleaned_data.pop('weight_option', 'default')
 
         matched_groups = form.cleaned_data.values()
 
@@ -303,10 +303,10 @@ class AssessmentGroupView(views.InstructorFormView):
             response = super().form_invalid(form)
             return response
 
-        # Set the session variable to flat is the check box is ticked upon form validation.
+        # Set the session variable to flat if weight_option is equal_weights
         print(form.cleaned_data)
         self._update_assessments_and_groups(form)
-        if flat:
+        if weight_option == 'equal_weights':
             self.request.session['flat'] = True
         else:
             self.request.session['flat'] = False
