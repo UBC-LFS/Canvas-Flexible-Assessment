@@ -16,6 +16,10 @@ def assessment_filter(flex_set, assessment_id):
 def comment_filter(comment_set, course_id):
     return comment_set.get(course__id=course_id)
 
+@register.filter
+def has_null_flex_assessment(flex_assessments, course):
+    return flex_assessments.filter(assessment__course=course, flex__isnull=True).exists()
+
 
 @register.filter
 def to_str(value):
