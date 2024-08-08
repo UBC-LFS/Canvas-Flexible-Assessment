@@ -16,22 +16,58 @@
                     </div>
                     <div class="card-body pt-2 pb-3">
                         <p class="fw-light pb-2">
-                            The table below shows students' desired percentages, the grades from the Assignment Groups in Canvas, their final grade calculated using their percentages in the
+                            {% comment %} The table below shows students' desired percentages, the grades from the Assignment Groups in Canvas, their final grade calculated using their percentages in the
                             <span style="font-weight:bold;">Override</span>
                             column, the final grade they would have received using the
                             <span style="font-weight:bold;">Default</span>
                             scheme, and the
                             <span style="font-weight:bold;">Difference</span>
-                            between them. The
+                            between them.<span id="dots" onclick="show_more()">...</span>
+                            <span id="more" style="display:none">
+                            The
                             <span style="font-weight:bold;">Difference</span>
                             for students who did not choose desired percentages will be zero and appear in italics. The
                             <span style="font-weight:bold;">Default Total</span>
                             and
                             <span style="font-weight:bold;">Difference</span>
-                            columns are not visible to students. Click thegit
+                            columns are not visible to students. Click the
                             <span style="font-weight:bold;"><i class="bi bi-download"></i> Export</span>
                             button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
                             <span style="font-weight:bold;">Send to Canvas</span>.
+                            </span> {% endcomment %}
+                            <div id="accordion">
+                                <div class="card">
+                                  <div class="card-header">
+                                    <a class="btn" data-bs-toggle="collapse" href="#collapseOne">
+                                    Show instructions
+                                    </a>
+                                  </div>
+                                  <div id="collapseOne" class="collapse" data-bs-parent="#accordion">
+                                    <div class="card-body">
+                                        <p>The table below shows students' desired percentages, the grades from the Assignment Groups in Canvas, their final grade calculated using their percentages in the
+                                        <span style="font-weight:bold;">Override</span>
+                                        column, the final grade they would have received using the
+                                        <span style="font-weight:bold;">Default</span>
+                                        scheme, and the
+                                        <span style="font-weight:bold;">Difference</span>
+                                        between them.<span id="dots">...</span>
+                                        <span id="more" style="display:none">
+                                        The
+                                        <span style="font-weight:bold;">Difference</span>
+                                        for students who did not choose desired percentages will be zero and appear in italics. The
+                                        <span style="font-weight:bold;">Default Total</span>
+                                        and
+                                        <span style="font-weight:bold;">Difference</span>
+                                        columns are not visible to students. Click the
+                                        <span style="font-weight:bold;"><i class="bi bi-download"></i> Export</span>
+                                        button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
+                                        <span style="font-weight:bold;">Send to Canvas</span>.
+                                        </span> </p>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="show_more()" id="myBtn">Read more</button>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
                         </p>
                         <table id="final" class="table table-striped mb-3 nowrap" width="100%">
                             <thead>
@@ -57,7 +93,7 @@
                                             <br>
                                             (Grade %)
                                         </th>
-                                        <th class="assessment text-center align-middle" style="font-size: 110%;">
+                                        <th class="assessment text-center align-middle" style="font-size: 110%;" data-bs-toggle="tooltip" title="(Default Weight%)">
                                             {{ assessment.title }}
                                             <br>
                                             ({{ assessment.default }}%)
@@ -217,7 +253,27 @@
         if (error_str)
             alert(error_str);
     });
-    
 
+    function show_more() {
+        var dots = document.getElementById("dots");
+        var moreText = document.getElementById("more");
+        var btnText = document.getElementById("myBtn");
+      
+        if (dots.style.display === "none") {
+          dots.style.display = "inline";
+          btnText.innerHTML = "Read more";
+          moreText.style.display = "none";
+        } else {
+          dots.style.display = "none";
+          btnText.innerHTML = "Read less";
+          moreText.style.display = "inline";
+        }
+      }
+
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+    
     </script>
 {% endblock %}
