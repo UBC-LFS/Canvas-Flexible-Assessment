@@ -45,9 +45,8 @@
                                 <p>Click the <b><i class="bi bi-download"></i> Export</span></b> button in the top-right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
                                     <b>Send to Canvas</b>.</p>
                                 </div>
-                                <span onclick="show_more()" id="myBtn" style="text-decoration: underline">Instructions</span>
+                                <span onclick="show_more()" id="myBtn" style="text-decoration: underline">Show Instructions</span>
                                 {% comment %} <button type="button" class="btn btn-secondary btn-sm" onclick="show_more()" id="myBtn">Read more</button> {% endcomment %}
-                            </div>
                         </p>
                         <table id="final" class="table table-striped mb-3 nowrap" width="100%">
                             <thead>
@@ -240,10 +239,10 @@
         
         if (moreText.is(":hidden")) {
             moreText.fadeIn();
-            // btnText.text("Read less"); // Uncomment this line if you want to change the button text
+            btnText.text("Hide Instructions"); 
         } else {
             moreText.fadeOut();
-            // btnText.text("Read more"); // Uncomment this line if you want to change the button text
+            btnText.text("Show Instructions"); 
         }
     }
 
