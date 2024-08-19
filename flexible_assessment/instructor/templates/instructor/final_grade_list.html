@@ -16,37 +16,15 @@
                     </div>
                     <div class="card-body pt-2 pb-3">
                         <p class="fw-light pb-2">
-                            {% comment %} The table below shows students' desired percentages, the grades from the Assignment Groups in Canvas, their final grade calculated using their percentages in the
-                            <span style="font-weight:bold;">Override</span>
-                            column, the final grade they would have received using the
-                            <span style="font-weight:bold;">Default</span>
-                            scheme, and the
-                            <span style="font-weight:bold;">Difference</span>
-                            between them.<span id="dots" onclick="show_more()">...</span>
-                            <span id="more" style="display:none">
-                            The
-                            <span style="font-weight:bold;">Difference</span>
-                            for students who did not choose desired percentages will be zero and appear in italics. The
-                            <span style="font-weight:bold;">Default Total</span>
-                            and
-                            <span style="font-weight:bold;">Difference</span>
-                            columns are not visible to students. Click the
-                            <span style="font-weight:bold;"><i class="bi bi-download"></i> Export</span>
-                            button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
-                            <span style="font-weight:bold;">Send to Canvas</span>.
-                            </span> {% endcomment %}
-                                {% comment %} <p>The table below shows all the students enrolled in your course along with their <b>Override Total</b>, <b>Default Total</b>,
-                                    and the <b>Difference</b> between the two.</p> {% endcomment %}
-                                <div id="more" style="display:none">
-                                <p>The <b>Override Total</b> is the total grade when factoring in the student's chosen percentages while the <b>Default Total</b> uses the default weights for each assignment group.
-                                    The <b>Default Total</b> and <b>Difference</b> columns are not visible to students.</p>
-                                <p>Next to these you can see whether the student <b>Chose Percentages</b> or not, as well as the assignment group <b>Grade</b> followed by the <b>Weight</b> for each group. 
-                                    The default <b>Weight</b> is listed in parenthesis; (... %).</p>
-                                <p>Click the <b><i class="bi bi-download"></i> Export</span></b> button in the top-right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
-                                    <b>Send to Canvas</b>.</p>
-                                </div>
-                                <span onclick="show_more()" id="myBtn" style="text-decoration: underline">Show Instructions</span>
-                                {% comment %} <button type="button" class="btn btn-secondary btn-sm" onclick="show_more()" id="myBtn">Read more</button> {% endcomment %}
+                            <div id="more" style="display:none">
+                            <p>The <b>Override Total</b> is the total grade when factoring in the student's chosen percentages while the <b>Default Total</b> uses the default weights for each assignment group.
+                                The <b>Default Total</b> and <b>Difference</b> columns are not visible to students.</p>
+                            <p>Next to these you can see whether the student <b>Chose Percentages</b> or not, as well as the assignment group <b>Grade</b> followed by the <b>Weight</b> for each group. 
+                                The default <b>Weight</b> is listed in parenthesis; (... %).</p>
+                            <p>Click the <b><i class="bi bi-download"></i> Export</span></b> button in the top-right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
+                                <b>Send to Canvas</b>.</p>
+                            </div>
+                            <span onclick="show_more()" id="myBtn" style="text-decoration: underline">Show Instructions</span>
                         </p>
                         <table id="final" class="table table-striped mb-3 nowrap" width="100%">
                             <thead>
