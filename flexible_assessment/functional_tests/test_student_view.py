@@ -13,21 +13,34 @@ from datetime import datetime, timedelta
 from flexible_assessment.tests.test_data import DATA
 
 import flexible_assessment.tests.mock_classes as mock_classes
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 
 
 class TestStudentViews(StaticLiveServerTestCase):
     fixtures = DATA
 
     def setUp(self):
-        self.browser = webdriver.Chrome(
-            service=ChromeService(ChromeDriverManager().install())
+        chromeOptions = webdriver.ChromeOptions()
+        chromeOptions.add_experimental_option(
+            "prefs", {"profile.managed_default_content_settings.images": 2}
         )
+        chromeOptions.add_argument("--no-sandbox")
+        chromeOptions.add_argument("--disable-setuid-sandbox")
+
+        chromeOptions.add_argument("--remote-debugging-port=9222")  # this
+
+        chromeOptions.add_argument("--disable-dev-shm-using")
+        chromeOptions.add_argument("--disable-extensions")
+        chromeOptions.add_argument("--disable-gpu")
+        chromeOptions.add_argument("start-maximized")
+        chromeOptions.add_argument("disable-infobars")
+
+        self.browser = webdriver.Chrome(options=chromeOptions)
         user = UserProfile.objects.get(login_id="test_student1")
         self.client = Client()
         self.client.force_login(user)
-        self.browser_teacher = webdriver.Chrome(
-            service=ChromeService(ChromeDriverManager().install())
-        )
+        self.browser_teacher = webdriver.Chrome(options=chromeOptions)
         self.login_teacher()
 
     def tearDown(self):
