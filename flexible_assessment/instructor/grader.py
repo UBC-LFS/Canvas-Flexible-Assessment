@@ -1,26 +1,20 @@
 from flexible_assessment.models import UserProfile, Roles
+from decimal import Decimal, ROUND_HALF_UP
+
+
+def round_half_up(value, digits=2):
+    """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
+    d = Decimal(str(value))  # Convert to Decimal
+    return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
 
 def get_default_total(groups, student):
-    """Calculates default total grade for student using assignment groups
-
-    Parameters
-    ----------
-    groups : dict
-        Assignment groups retrieved from Canvas API
-    student : UserProfile
-        Student object
-
-    Returns
-    -------
-    float
-        Default final grade for student
-    """
-
+    """Calculates default total grade for student using assignment groups"""
     student_id = student.user_id
     student_id_str = str(student_id)
     scores = []
     weights = []
+
     for assessment in groups.values():
         grades = assessment["grade_list"]["grades"]
         for curr_id, score in grades:
@@ -35,9 +29,49 @@ def get_default_total(groups, student):
 
     for score, weight in score_weight:
         overall += score * weight / 100
+
     overall = overall / sum(weights) * 100.0 if sum(weights) != 0.0 else 0.0
 
-    return round(overall, 2)
+    return round_half_up(overall, 2)
+
+
+# def get_default_total(groups, student):
+#     """Calculates default total grade for student using assignment groups
+
+#     Parameters
+#     ----------
+#     groups : dict
+#         Assignment groups retrieved from Canvas API
+#     student : UserProfile
+#         Student object
+
+#     Returns
+#     -------
+#     float
+#         Default final grade for student
+#     """
+
+#     student_id = student.user_id
+#     student_id_str = str(student_id)
+#     scores = []
+#     weights = []
+#     for assessment in groups.values():
+#         grades = assessment["grade_list"]["grades"]
+#         for curr_id, score in grades:
+#             if student_id_str == curr_id:
+#                 if score is not None:
+#                     scores.append(score)
+#                     weights.append(assessment["group_weight"])
+#                 break
+
+#     score_weight = zip(scores, weights)
+#     overall = 0
+
+#     for score, weight in score_weight:
+#         overall += score * weight / 100
+#     overall = overall / sum(weights) * 100.0 if sum(weights) != 0.0 else 0.0
+
+#     return round(overall, 2)
 
 
 def valid_flex(student, course):
@@ -52,33 +86,61 @@ def valid_flex(student, course):
     return (not null_flex_assessments) and (flex_sum == 100)
 
 
+# def get_override_total(groups, student, course):
+#     """Calculates override grade for student using assignment groups
+#     and applying flex allocations. If any flex assessment is null or
+#     do not all sum to 100%, then None is returned.
+
+#     Parameters
+#     ----------
+#     groups : dict
+#         Assignment groups retrieved from Canvas API
+#     student : UserProfile
+#         Student object
+#     course : Course
+#         Course object
+
+#     Returns
+#     -------
+#     Union[float, None]
+#         Override final grade for student or None if
+#         student does not have a valid flex allocation
+#     """
+
+#     if not valid_flex(student, course):
+#         return None
+
+#     scores = []
+#     flex_set = []
+#     assessments = course.assessment_set.all()
+#     for assessment in assessments:
+#         flex = assessment.flexassessment_set.filter(user=student).first().flex
+#         score = get_score(groups, assessment.group, student)
+
+#         if score is not None:
+#             scores.append(score)
+#             flex_set.append(float(flex))
+
+#     score_weight = zip(scores, flex_set)
+#     overall = 0
+
+#     for score, weight in score_weight:
+#         overall += score * weight / 100
+
+#     overall = overall / sum(flex_set) * 100.0 if sum(flex_set) != 0.0 else 0.0
+
+#     return round(overall, 2)
+
+
 def get_override_total(groups, student, course):
-    """Calculates override grade for student using assignment groups
-    and applying flex allocations. If any flex assessment is null or
-    do not all sum to 100%, then None is returned.
-
-    Parameters
-    ----------
-    groups : dict
-        Assignment groups retrieved from Canvas API
-    student : UserProfile
-        Student object
-    course : Course
-        Course object
-
-    Returns
-    -------
-    Union[float, None]
-        Override final grade for student or None if
-        student does not have a valid flex allocation
-    """
-
+    """Calculates override grade for student using assignment groups and flex allocations"""
     if not valid_flex(student, course):
         return None
 
     scores = []
     flex_set = []
     assessments = course.assessment_set.all()
+
     for assessment in assessments:
         flex = assessment.flexassessment_set.filter(user=student).first().flex
         score = get_score(groups, assessment.group, student)
@@ -95,7 +157,8 @@ def get_override_total(groups, student, course):
 
     overall = overall / sum(flex_set) * 100.0 if sum(flex_set) != 0.0 else 0.0
 
-    return round(overall, 2)
+    # Use custom rounding function
+    return round_half_up(overall, 2)
 
 
 def get_averages(groups, course):
