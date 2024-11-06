@@ -8,6 +8,9 @@ def round_half_up(value, digits=2):
     return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
 
+from decimal import Decimal
+
+
 def get_default_total(groups, student):
     """Calculates default total grade for student using assignment groups"""
     student_id = student.user_id
@@ -24,13 +27,16 @@ def get_default_total(groups, student):
                     weights.append(assessment["group_weight"])
                 break
 
-    score_weight = zip(scores, weights)
-    overall = 0
+    # Convert weights to Decimal to avoid type mismatch
+    score_weight = zip(scores, [Decimal(w) for w in weights])
+    overall = Decimal(0)
 
     for score, weight in score_weight:
-        overall += score * weight / 100
+        overall += score * weight / Decimal(100)
 
-    overall = overall / sum(weights) * 100.0 if sum(weights) != 0.0 else 0.0
+    # Sum of weights also needs to be Decimal to avoid type mismatch
+    total_weight = sum(Decimal(w) for w in weights)
+    overall = overall / total_weight * Decimal(100) if total_weight != 0 else Decimal(0)
 
     return round_half_up(overall, 2)
 
