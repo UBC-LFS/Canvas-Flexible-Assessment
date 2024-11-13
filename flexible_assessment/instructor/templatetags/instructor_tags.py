@@ -190,7 +190,7 @@ from decimal import Decimal, ROUND_HALF_UP
 @register.simple_tag()
 def get_student_grades(groups, student, course):
     # Get the default total, and ensure it's a Decimal
-    default = Decimal(grader.get_default_total(groups, student))
+    default = grader.get_default_total(groups, student)
     default_str = str(default) + "%"
 
     # Get the override total, and ensure it's a Decimal (or None)

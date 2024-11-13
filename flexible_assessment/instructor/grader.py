@@ -148,22 +148,29 @@ def get_override_total(groups, student, course):
     assessments = course.assessment_set.all()
 
     for assessment in assessments:
-        flex = assessment.flexassessment_set.filter(user=student).first().flex
+        # Ensure that flex is a Decimal for consistent precision
+        flex = Decimal(assessment.flexassessment_set.filter(user=student).first().flex)
         score = get_score(groups, assessment.group, student)
 
         if score is not None:
-            scores.append(score)
-            flex_set.append(float(flex))
+            scores.append(Decimal(score))  # Ensure score is Decimal
+            flex_set.append(flex)  # Use Decimal directly
 
     score_weight = zip(scores, flex_set)
-    overall = 0
+    overall = Decimal(0)
 
+    # Use Decimal for all calculations here
     for score, weight in score_weight:
-        overall += score * weight / 100
+        overall += (score * weight) / Decimal(100)
 
-    overall = overall / sum(flex_set) * 100.0 if sum(flex_set) != 0.0 else 0.0
+    # Ensure the final division uses Decimal for precision
+    total_flex = sum(flex_set)
+    if total_flex != Decimal(0):
+        overall = (overall / total_flex) * Decimal(100)
+    else:
+        overall = Decimal(0)
 
-    # Use custom rounding function
+    # Use custom rounding function that works with Decimal
     return round_half_up(overall, 2)
 
 
@@ -208,7 +215,9 @@ def get_averages(groups, course):
     averages = []
     for curr_list in [overrides, defaults, diffs]:
         averages.append(
-            round(sum(curr_list) / len(curr_list), 2) if len(curr_list) != 0 else 0
+            round_half_up(sum(curr_list) / len(curr_list), 2)
+            if len(curr_list) != 0
+            else 0
         )
 
     return averages
