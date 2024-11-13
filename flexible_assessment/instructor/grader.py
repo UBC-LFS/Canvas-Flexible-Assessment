@@ -170,6 +170,7 @@ def get_override_total(groups, student, course):
     else:
         overall = Decimal(0)
 
+    print(f"printing before the rounding {overall}")
     # Use custom rounding function that works with Decimal
     return round_half_up(overall, 2)
 
