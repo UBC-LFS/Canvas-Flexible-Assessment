@@ -16,9 +16,12 @@ def assessment_filter(flex_set, assessment_id):
 def comment_filter(comment_set, course_id):
     return comment_set.get(course__id=course_id)
 
+
 @register.filter
 def has_null_flex_assessment(flex_assessments, course):
-    return flex_assessments.filter(assessment__course=course, flex__isnull=True).exists()
+    return flex_assessments.filter(
+        assessment__course=course, flex__isnull=True
+    ).exists()
 
 
 @register.filter
@@ -167,19 +170,45 @@ def get_score(groups, group_id, student):
     return str(score) + "%" if score is not None else None
 
 
+# @register.simple_tag()
+# def get_student_grades(groups, student, course):
+#     default = grader.get_default_total(groups, student)
+#     default_str = str(default) + "%"
+#     override = grader.get_override_total(groups, student, course)
+#     if override is not None:
+#         override_str = str(override) + "%"
+#         diff = round(override - default, 2)
+#         prefix = "+" if diff > 0 else ""
+#         diff_str = prefix + str(diff) + "%"
+#         return ("overriden", override_str, default_str, diff_str)
+#     else:
+#         return ("used-default", default_str, default_str, "0.00%")
+
+from decimal import Decimal, ROUND_HALF_UP
+
+
 @register.simple_tag()
 def get_student_grades(groups, student, course):
-    default = grader.get_default_total(groups, student)
+    # Get the default total, and ensure it's a Decimal
+    default = Decimal(grader.get_default_total(groups, student))
     default_str = str(default) + "%"
+
+    # Get the override total, and ensure it's a Decimal (or None)
     override = grader.get_override_total(groups, student, course)
+
     if override is not None:
-        override_str = str(override) + "%"
-        diff = round(override - default, 2)
+        override = Decimal(override)  # Convert override to Decimal if it's not already
+
+        # Calculate the difference and apply "round half up" rounding to 2 decimal places
+        diff = (override - default).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        # Determine whether to add a prefix based on the diff
         prefix = "+" if diff > 0 else ""
         diff_str = prefix + str(diff) + "%"
-        return ("overriden", override_str, default_str, diff_str)
+
+        return ("overriden", str(override) + "%", str(default) + "%", diff_str)
     else:
-        return ("used-default", default_str, default_str, "0.00%")
+        return ("used-default", str(default) + "%", str(default) + "%", "0.00%")
 
 
 @register.simple_tag()
