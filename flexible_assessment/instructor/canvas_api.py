@@ -396,8 +396,8 @@ class FlexCanvas(Canvas):
                         if total_assignments
                         else 0
                     )
-                    # updated_grades.append((user_id, round_half_up(flat_group_score, 2)))
-                    updated_grades.append((user_id, flat_group_score))
+                    updated_grades.append((user_id, round_half_up(flat_group_score, 3)))
+                    # updated_grades.append((user_id, flat_group_score))
                 else:
                     # Keep the original score if no submissions were found
                     score = grade_flattened["current_score"]
