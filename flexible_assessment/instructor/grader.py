@@ -38,9 +38,9 @@ def get_default_total(groups, student):
     total_weight = sum(Decimal(w) for w in weights)
     overall = overall / total_weight * Decimal(100) if total_weight != 0 else Decimal(0)
 
-    return overall
+    # return overall
 
-    # return round_half_up(overall, 2)
+    return round_half_up(overall, 3)
 
 
 # def get_default_total(groups, student):
@@ -174,8 +174,8 @@ def get_override_total(groups, student, course):
 
     print(f"printing before the rounding {overall}")
     # Use custom rounding function that works with Decimal
-    return overall
-    # return round_half_up(overall, 2)
+    # return overall
+    return round_half_up(overall, 3)
 
 
 def get_averages(groups, course):
