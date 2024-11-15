@@ -167,6 +167,7 @@ def get_flex_difference(course):
 @register.simple_tag()
 def get_score(groups, group_id, student):
     score = grader.get_score(groups, group_id, student)
+    score = round_half_up(score, 2)
     return str(score) + "%" if score is not None else None
 
 
