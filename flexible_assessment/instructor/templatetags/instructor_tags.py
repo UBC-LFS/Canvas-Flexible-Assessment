@@ -188,6 +188,8 @@ from decimal import Decimal, ROUND_HALF_UP
 
 
 def round_half_up(value, digits=2):
+    if value is None:
+        return None
     """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
     d = Decimal(str(value))  # Convert to Decimal
     return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
