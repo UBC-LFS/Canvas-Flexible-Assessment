@@ -28,12 +28,13 @@ class CSVWriter(Writer):
 
     def __init__(self, filename, course):
         super().__init__("text/csv")
-        self._response[
-            "Content-Disposition"
-        ] = "attachment; filename=" + "{}_{}_{}.csv".format(
-            filename,
-            course.title.replace(" ", "-"),
-            timezone.localtime().strftime("%Y-%m-%dT%H%M"),
+        self._response["Content-Disposition"] = (
+            "attachment; filename="
+            + "{}_{}_{}.csv".format(
+                filename,
+                course.title.replace(" ", "-"),
+                timezone.localtime().strftime("%Y-%m-%dT%H%M"),
+            )
         )
 
         self._writer = csv.writer(self._response, delimiter=",")
@@ -47,12 +48,13 @@ class LogWriter(Writer):
 
     def __init__(self, filename, course):
         super().__init__("text/plain")
-        self._response[
-            "Content-Disposition"
-        ] = "attachment; filename=" + "{}_{}_{}.txt".format(
-            filename,
-            course.title.replace(" ", "-"),
-            timezone.localtime().strftime("%Y-%m-%dT%H%M"),
+        self._response["Content-Disposition"] = (
+            "attachment; filename="
+            + "{}_{}_{}.txt".format(
+                filename,
+                course.title.replace(" ", "-"),
+                timezone.localtime().strftime("%Y-%m-%dT%H%M"),
+            )
         )
 
         self._writer = self._response
@@ -85,7 +87,9 @@ def students_csv(course, students):
 
     csv_writer = CSVWriter("Students", course)
 
-    assessments = [assessment for assessment in course.assessment_set.all().order_by('order')]
+    assessments = [
+        assessment for assessment in course.assessment_set.all().order_by("order")
+    ]
     header = (
         ["Student"] + [assessment.title for assessment in assessments] + ["Comment"]
     )
@@ -106,6 +110,17 @@ def students_csv(course, students):
         csv_writer.write(values)
 
     return csv_writer.get_response()
+
+
+from decimal import Decimal, ROUND_HALF_UP
+
+
+def round_half_up(value, digits=2):
+    if value is None:
+        return None
+    """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
+    d = Decimal(str(value))  # Convert to Decimal
+    return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
 
 def grades_csv(course, students, groups):
@@ -138,14 +153,14 @@ def grades_csv(course, students, groups):
         default_total = grader.get_default_total(groups, student)
 
         if override_total is not None:
-            values.append(round(override_total, 2))
-            values.append(round(default_total, 2))
+            values.append(round_half_up(override_total, 2))
+            values.append(round_half_up(default_total, 2))
             diff = override_total - default_total
-            values.append(round(diff, 2))
+            values.append(round_half_up(diff, 2))
             values.append("Yes")
         else:
-            values.append(round(default_total, 2))
-            values.append(round(default_total, 2))
+            values.append(round_half_up(default_total, 2))
+            values.append(round_half_up(default_total, 2))
             values.append("")
             values.append("No")
 
