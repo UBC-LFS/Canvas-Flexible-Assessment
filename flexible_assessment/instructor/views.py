@@ -83,6 +83,9 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
         return response
 
 
+from decimal import Decimal, ROUND_HALF_UP
+
+
 class FinalGradeListView(views.ExportView, views.InstructorListView):
     """ListView for student final grades with default and override scores"""
 
@@ -166,17 +169,19 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         context = super().get_context_data(**kwargs)
         course_id = self.kwargs["course_id"]
         # Access the session variable to determine which method to call
-        flat_grade = self.request.session.get('flat', False) == True
+        flat_grade = self.request.session.get("flat", False) == True
         if flat_grade:
             # If 'flat' is true, call a method that handles flat grades
-            groups, _ = FlexCanvas(self.request).get_flat_groups_and_enrollments(course_id)
+            groups, _ = FlexCanvas(self.request).get_flat_groups_and_enrollments(
+                course_id
+            )
         else:
             # If 'flat' is false or not set, call the standard method
             groups, _ = FlexCanvas(self.request).get_groups_and_enrollments(course_id)
         context["groups"] = groups
 
         context["canvas_domain"] = settings.CANVAS_DOMAIN
-       
+
         return context
 
     def _submit_final_grades(self, course_id, canvas):
@@ -193,6 +198,13 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                 },
             )
 
+        def round_half_up(value, digits=2):
+            if value is None:
+                return None
+            """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
+            d = Decimal(str(value))  # Convert to Decimal
+            return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
+
         course = models.Course.objects.get(pk=course_id)
         groups, enrollments = canvas.get_groups_and_enrollments(course_id)
 
@@ -206,6 +218,8 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             override = grader.get_override_total(
                 groups, student, course
             ) or grader.get_default_total(groups, student)
+
+            override = round_half_up(override, 2)
 
             t = Thread(
                 target=_set_override,
@@ -282,7 +296,7 @@ class AssessmentGroupView(views.InstructorFormView):
             HttpResponseRedirect if form is valid,
             TemplateResponse if error in form
         """
-        weight_option = form.cleaned_data.pop('weight_option', 'default')
+        weight_option = form.cleaned_data.pop("weight_option", "default")
 
         matched_groups = form.cleaned_data.values()
 
@@ -304,12 +318,12 @@ class AssessmentGroupView(views.InstructorFormView):
             return response
 
         # Set the session variable to flat if weight_option is equal_weights
-        #print(form.cleaned_data)
+        # print(form.cleaned_data)
         self._update_assessments_and_groups(form)
-        if weight_option == 'equal_weights':
-            self.request.session['flat'] = True
+        if weight_option == "equal_weights":
+            self.request.session["flat"] = True
         else:
-            self.request.session['flat'] = False
+            self.request.session["flat"] = False
 
         response = super().form_valid(form)
         return response
