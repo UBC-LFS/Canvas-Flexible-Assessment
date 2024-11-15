@@ -187,10 +187,17 @@ def get_score(groups, group_id, student):
 from decimal import Decimal, ROUND_HALF_UP
 
 
+def round_half_up(value, digits=2):
+    """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
+    d = Decimal(str(value))  # Convert to Decimal
+    return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
+
+
 @register.simple_tag()
 def get_student_grades(groups, student, course):
     # Get the default total, and ensure it's a Decimal
     default = grader.get_default_total(groups, student)
+    default = round_half_up(default, 2)
     default_str = str(default) + "%"
 
     # Get the override total, and ensure it's a Decimal (or None)
