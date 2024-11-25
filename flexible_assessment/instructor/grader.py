@@ -42,7 +42,7 @@ def get_default_total(groups, student):
 
     # return overall
 
-    return round_half_up(overall, 2)
+    return float(round_half_up(overall, 2))
     # return round_half_up(overall, 2)
 
 
@@ -178,7 +178,7 @@ def get_override_total(groups, student, course):
     print(f"printing before the rounding {overall}")
     # Use custom rounding function that works with Decimal
     # return overall
-    return round_half_up(overall, 2)
+    return float(round_half_up(overall, 2))
     # return round_half_up(overall, 2)
 
 
