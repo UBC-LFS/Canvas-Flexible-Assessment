@@ -83,6 +83,9 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
         return response
 
 
+from decimal import Decimal, ROUND_HALF_UP
+
+
 class FinalGradeListView(views.ExportView, views.InstructorListView):
     """ListView for student final grades with default and override scores"""
 
@@ -195,6 +198,13 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                 },
             )
 
+        def round_half_up(value, digits=2):
+            if value is None:
+                return None
+            """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
+            d = Decimal(str(value))  # Convert to Decimal
+            return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
+
         course = models.Course.objects.get(pk=course_id)
         groups, enrollments = canvas.get_groups_and_enrollments(course_id)
 
@@ -208,6 +218,8 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             override = grader.get_override_total(
                 groups, student, course
             ) or grader.get_default_total(groups, student)
+
+            override = round_half_up(override, 2)
 
             t = Thread(
                 target=_set_override,
