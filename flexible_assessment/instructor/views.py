@@ -22,7 +22,7 @@ from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect
 
 from instructor.canvas_api import FlexCanvas
-
+from decimal import Decimal, ROUND_HALF_UP
 from . import grader, writer
 from .forms import (
     AssessmentFileForm,
@@ -35,6 +35,14 @@ from .forms import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def round_half_up(value, digits=2):
+    if value is None:
+        return None
+    """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
+    d = Decimal(str(value))  # Convert to Decimal
+    return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
 
 class InstructorHome(views.InstructorTemplateView):
@@ -205,9 +213,9 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             student = models.UserProfile.objects.filter(pk=student_id).first()
             if not student:
                 continue
-            override = round(
+            override = round_half_up(
                 grader.get_override_total(groups, student, course), 2
-            ) or round(grader.get_default_total(groups, student), 2)
+            ) or round_half_up(grader.get_default_total(groups, student), 2)
 
             t = Thread(
                 target=_set_override,
