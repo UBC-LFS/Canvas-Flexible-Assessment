@@ -213,9 +213,10 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             student = models.UserProfile.objects.filter(pk=student_id).first()
             if not student:
                 continue
-            override = round_half_up(
-                grader.get_override_total(groups, student, course), 2
-            ) or round_half_up(grader.get_default_total(groups, student), 2)
+            override = grader.get_override_total(
+                groups, student, course
+            ) or grader.get_default_total(groups, student)
+            override = round_half_up(override, 2)
 
             t = Thread(
                 target=_set_override,
