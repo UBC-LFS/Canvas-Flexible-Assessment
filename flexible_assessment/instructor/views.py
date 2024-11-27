@@ -20,7 +20,6 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect
-
 from instructor.canvas_api import FlexCanvas
 from decimal import Decimal, ROUND_HALF_UP
 from . import grader, writer
@@ -193,6 +192,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         """Uploads final override grades in batches to Canvas"""
 
         def _set_override(student_name, enrollment_id, override, incomplete):
+            override = round_half_up(override)
             canvas.set_override(enrollment_id, override, incomplete)
             logger.info(
                 "Submitted %s final grade to Canvas",
