@@ -140,23 +140,6 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                     reverse("instructor:final_grades", kwargs={"course_id": course_id})
                 )
 
-            # Change Starts Here
-            flat_grade = self.request.session.get("flat", False) == True
-            if flat_grade:
-                # If flat grading is enabled, use the flat grading method
-                groups, _ = FlexCanvas(self.request).get_flat_groups_and_enrollments(
-                    course_id
-                )
-                logger.info("Using flat grading for course", extra=log_extra)
-            else:
-                # If not flat grading, use the standard grading method
-                groups, _ = FlexCanvas(self.request).get_groups_and_enrollments(
-                    course_id
-                )
-                logger.info("Using standard grading for course", extra=log_extra)
-
-            # Ends here
-
             success = self._submit_final_grades(course_id, canvas)
             if not success:
                 messages.error(
@@ -221,7 +204,21 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             )
 
         course = models.Course.objects.get(pk=course_id)
-        groups, enrollments = canvas.get_groups_and_enrollments(course_id)
+        # groups, enrollments = canvas.get_groups_and_enrollments(course_id)
+
+        # Change Starts Here
+        flat_grade = self.request.session.get("flat", False) == True
+        if flat_grade:
+            # If flat grading is enabled, use the flat grading method
+            groups, enrollments = FlexCanvas(
+                self.request
+            ).get_flat_groups_and_enrollments(course_id)
+        else:
+            # If not flat grading, use the standard grading method
+            groups, enrollments = FlexCanvas(self.request).get_groups_and_enrollments(
+                course_id
+            )
+        # Ends here
 
         threads = []
         incomplete = [False]
