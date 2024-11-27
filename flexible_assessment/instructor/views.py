@@ -204,9 +204,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             )
 
         course = models.Course.objects.get(pk=course_id)
-        # groups, enrollments = canvas.get_groups_and_enrollments(course_id)
 
-        # Change Starts Here
         flat_grade = self.request.session.get("flat", False) == True
         if flat_grade:
             # If flat grading is enabled, use the flat grading method
@@ -218,7 +216,6 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             groups, enrollments = FlexCanvas(self.request).get_groups_and_enrollments(
                 course_id
             )
-        # Ends here
 
         threads = []
         incomplete = [False]
