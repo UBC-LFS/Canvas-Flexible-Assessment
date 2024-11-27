@@ -139,7 +139,6 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                 return HttpResponseRedirect(
                     reverse("instructor:final_grades", kwargs={"course_id": course_id})
                 )
-            context = self.get_context_data(**kwargs)
             success = self._submit_final_grades(course_id, canvas)
             if not success:
                 messages.error(
