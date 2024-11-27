@@ -116,7 +116,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
 
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
-        self.get_context_data(course_id=course_id)
+        self.get_context_data()
 
         log_extra = {"course": str(course), "user": request.session["display_name"]}
 
