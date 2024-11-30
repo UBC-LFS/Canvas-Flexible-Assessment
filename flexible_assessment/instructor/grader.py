@@ -42,8 +42,8 @@ def get_default_total(groups, student):
     # return round_half_up(overall, 5)
     # return overall
 
-    return float(round_half_up(overall, 3))
-    # return float(overall)
+    # return float(round_half_up(overall, 3))
+    return float(overall)
 
 
 # def get_default_total(groups, student):
@@ -180,8 +180,8 @@ def get_override_total(groups, student, course):
     # return round_half_up(overall, 5)
 
     # return overall
-    return float(round_half_up(overall, 3))
-    # return float(overall)
+    # return float(round_half_up(overall, 3))
+    return float(overall)
 
 
 def get_averages(groups, course):
