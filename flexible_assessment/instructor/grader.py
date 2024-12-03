@@ -30,16 +30,16 @@ def get_default_total(groups, student):
                 break
 
     # Convert weights to Decimal to avoid type mismatch
-    score_weight = zip(scores, [Decimal(w) for w in weights])
+    score_weight = zip(scores, weights)
     overall = Decimal(0)
 
     for score, weight in score_weight:
         overall += score * weight / Decimal(100)
 
     # Sum of weights also needs to be Decimal to avoid type mismatch
-    total_weight = sum(Decimal(w) for w in weights)
+    total_weight = sum(weights)
     overall = overall / total_weight * Decimal(100) if total_weight != 0 else Decimal(0)
-    return round_half_up(overall, 5)
+    return round_half_up(overall, 3)
     # return overall
 
     # return float(round_half_up(overall, 3))
@@ -177,7 +177,7 @@ def get_override_total(groups, student, course):
 
     print(f"printing before the rounding {overall}")
 
-    return round_half_up(overall, 5)
+    return round_half_up(overall, 3)
 
     # return overall
     # return float(round_half_up(overall, 3))
