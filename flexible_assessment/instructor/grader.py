@@ -26,7 +26,7 @@ def get_default_total(groups, student):
             if student_id_str == curr_id:
                 if score is not None:
                     scores.append(Decimal(score))
-                    weights.append(assessment["group_weight"])
+                    weights.append(Decimal(assessment["group_weight"]))
                 break
 
     # Convert weights to Decimal to avoid type mismatch
