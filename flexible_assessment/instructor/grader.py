@@ -39,11 +39,13 @@ def get_default_total(groups, student):
     # Sum of weights also needs to be Decimal to avoid type mismatch
     total_weight = sum(Decimal(w) for w in weights)
     overall = overall / total_weight * Decimal(100) if total_weight != 0 else Decimal(0)
+    overall = round_half_up(overall, 5)
+    return float(overall)
     # return round_half_up(overall, 5)
     # return overall
 
     # return float(round_half_up(overall, 3))
-    return overall
+    # return overall
 
 
 # def get_default_total(groups, student):
