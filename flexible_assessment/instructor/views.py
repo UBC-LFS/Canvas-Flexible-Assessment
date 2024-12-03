@@ -192,7 +192,9 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         """Uploads final override grades in batches to Canvas"""
 
         def _set_override(student_name, enrollment_id, override, incomplete):
-            override = float(round_half_up(override))
+            override = round_half_up(override, 2)
+            override = float(override)
+
             canvas.set_override(enrollment_id, override, incomplete)
             logger.info(
                 "Submitted %s final grade to Canvas",
