@@ -200,7 +200,7 @@ def round_half_up(value, digits=2):
 def get_student_grades(groups, student, course):
     # Get the default total, and ensure it's a Decimal
     default = grader.get_default_total(groups, student)
-    default = round_half_up(default, 2)
+    # default = round_half_up(default, 2)
     default_str = str(default) + "%"
 
     # Get the override total, and ensure it's a Decimal (or None)
