@@ -50,7 +50,7 @@
                                             ({{ assessment.default }}%)
                                         </th>
                                     {% endfor %}
-                                    <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Comment</th>
+                                    <th class="text-center align-middle" style="width: 40%; font-size: 110%;">Comment</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -83,6 +83,7 @@
                                             {% comment %} <td class="text-center align-middle text-break" style="text-align: left; word-wrap: break-word; white-space: normal">{{ user_comment.comment }}</td> {% endcomment %}
                                             <td class="text-break"
                                                 style="text-align: left;
+                                                       width: 40%;
                                                        overflow-wrap: break-word;
                                                        white-space: normal">{{ user_comment.comment }}</td>
                                         {% endwith %}
