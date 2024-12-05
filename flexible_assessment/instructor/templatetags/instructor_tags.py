@@ -18,6 +18,13 @@ def comment_filter(comment_set, course_id):
 
 
 @register.filter
+def has_null_flex_assessment(flex_assessments, course):
+    return flex_assessments.filter(
+        assessment__course=course, flex__isnull=True
+    ).exists()
+
+
+@register.filter
 def to_str(value):
     return str(value) + "%" if value is not None else None
 
@@ -160,22 +167,61 @@ def get_flex_difference(course):
 @register.simple_tag()
 def get_score(groups, group_id, student):
     score = grader.get_score(groups, group_id, student)
+    score = round_half_up(score, 2)
     return str(score) + "%" if score is not None else None
+
+
+# @register.simple_tag()
+# def get_student_grades(groups, student, course):
+#     default = grader.get_default_total(groups, student)
+#     default_str = str(default) + "%"
+#     override = grader.get_override_total(groups, student, course)
+#     if override is not None:
+#         override_str = str(override) + "%"
+#         diff = round(override - default, 2)
+#         prefix = "+" if diff > 0 else ""
+#         diff_str = prefix + str(diff) + "%"
+#         return ("overriden", override_str, default_str, diff_str)
+#     else:
+#         return ("used-default", default_str, default_str, "0.00%")
+
+from decimal import Decimal, ROUND_HALF_UP
+
+
+def round_half_up(value, digits=2):
+    if value is None:
+        return None
+    """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
+    d = Decimal(str(value))  # Convert to Decimal
+    return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
 
 @register.simple_tag()
 def get_student_grades(groups, student, course):
+    # Get the default total, and ensure it's a Decimal
     default = grader.get_default_total(groups, student)
+    default = round_half_up(default, 3)
+    default = round_half_up(default, 2)
     default_str = str(default) + "%"
+
+    # Get the override total, and ensure it's a Decimal (or None)
     override = grader.get_override_total(groups, student, course)
+    override = round_half_up(override, 3)
+    override = round_half_up(override, 2)
+
     if override is not None:
-        override_str = str(override) + "%"
-        diff = round(override - default, 2)
+        override = Decimal(override)  # Convert override to Decimal if it's not already
+
+        # Calculate the difference and apply "round half up" rounding to 2 decimal places
+        diff = (override - default).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        # Determine whether to add a prefix based on the diff
         prefix = "+" if diff > 0 else ""
         diff_str = prefix + str(diff) + "%"
-        return ("overriden", override_str, default_str, diff_str)
+
+        return ("overriden", str(override) + "%", str(default) + "%", diff_str)
     else:
-        return ("used-default", default_str, default_str, "0.00%")
+        return ("used-default", str(default) + "%", str(default) + "%", "0.00%")
 
 
 @register.simple_tag()

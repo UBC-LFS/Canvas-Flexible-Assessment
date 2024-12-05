@@ -16,49 +16,47 @@
                     </div>
                     <div class="card-body pt-2 pb-3">
                         <p class="fw-light pb-2">
-                            The table below shows students' desired percentages, the grades from the Assignment Groups in Canvas, their final grade calculated using their percentages in the
-                            <span style="font-weight:bold;">Override</span>
-                            column, the final grade they would have received using the
-                            <span style="font-weight:bold;">Default</span>
-                            scheme, and the
-                            <span style="font-weight:bold;">Difference</span>
-                            between them. The
-                            <span style="font-weight:bold;">Difference</span>
-                            for students who did not choose desired percentages will be zero and appear in italics. The
-                            <span style="font-weight:bold;">Default Total</span>
-                            and
-                            <span style="font-weight:bold;">Difference</span>
-                            columns are not visible to students. Click thegit
-                            <span style="font-weight:bold;"><i class="bi bi-download"></i> Export</span>
-                            button in the top right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
-                            <span style="font-weight:bold;">Send to Canvas</span>.
+                            <div id="more" style="display:none">
+                                <p>
+                                    The <b>Override Total</b> is the total grade when factoring in the student's chosen percentages while the <b>Default Total</b> uses the default weights for each assignment group.
+                                    The <b>Default Total</b> and <b>Difference</b> columns are not visible to students.
+                                </p>
+                                <p>
+                                    Next to these you can see whether the student <b>Chose Percentages</b> or not, as well as the assignment group <b>Grade</b> followed by the <b>Weight</b> for each group.
+                                    The default <b>Weight</b> is listed in parenthesis; (... %).
+                                </p>
+                                <p>
+                                    Click the <b><i class="bi bi-download"></i> Export</span></b> button in the top-right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
+                                    <b>Send to Canvas</b>.
+                                </p>
+                            </div>
+                            <span onclick="show_more()" id="myBtn" style="text-decoration: underline">Show Instructions</span>
                         </p>
                         <table id="final" class="table table-striped mb-3 nowrap" width="100%">
                             <thead>
                                 <tr>
                                     <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Override Total</th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Default Total</th>
+                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Difference</th>
                                     <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
-                                        Override Total
-                                    </th>
-                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
-                                        Default Total
-                                    </th>
-                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
-                                        Difference
-                                    </th>
-                                    <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
-                                        Chose Percentages?
+                                        Chose
+                                        <br>
+                                        Percentages?
                                     </th>
                                     {% for assessment in course.assessment_set.all|dictsort:"order" %}
                                         <th class="assessment text-center align-middle" style="font-size: 110%;">
                                             {{ assessment.title }}
                                             <br>
-                                            (Grade %)
+                                            Grade %
                                         </th>
-                                        <th class="assessment text-center align-middle" style="font-size: 110%;">
+                                        <th class="assessment text-center align-middle"
+                                            style="font-size: 110%"
+                                            data-bs-toggle="tooltip"
+                                            title="Default Weight">
                                             {{ assessment.title }}
                                             <br>
-                                            ({{ assessment.default }}%)
+                                            Weight % ({{ assessment.default }}%)
                                         </th>
                                     {% endfor %}
                                 </tr>
@@ -85,9 +83,7 @@
                                             {% get_score groups assessment.group student as score %}
                                             <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>
                                             {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
-                                                <td class="text-center align-middle">
-                                                    {{ flex_assessment.flex|to_str|default_if_none:default_weight }}
-                                                </td>
+                                                <td class="text-center align-middle">{{ flex_assessment.flex|to_str|default_if_none:default_weight }}</td>
                                             {% endwith %}
                                         {% endfor %}
                                     </tr>
@@ -215,7 +211,24 @@
         if (error_str)
             alert(error_str);
     });
-    
 
+    function show_more() {
+        var moreText = $("#more");
+        var btnText = $("#myBtn");
+        
+        if (moreText.is(":hidden")) {
+            moreText.fadeIn();
+            btnText.text("Hide Instructions"); 
+        } else {
+            moreText.fadeOut();
+            btnText.text("Show Instructions"); 
+        }
+    }
+
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+    
     </script>
 {% endblock %}

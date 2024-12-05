@@ -30,6 +30,7 @@ class TestViews(TestCase):
             assessments[2].id.hex: 3,
             assessments[3].id.hex: 4,
             "fdsfds": 5,  # This doesn't raise an error, but it shouldn't matter since the form data gets cleaned before sending to canvas
+            "weight_option": "default",  # Have to add this to get rid of the error
         }
 
         # Get instructor_home first to set up display_name session data
@@ -63,11 +64,13 @@ class TestViews(TestCase):
             assessments[1].id.hex: 2,
             assessments[2].id.hex: 3,
             assessments[3].id.hex: "-",
+            "weight_option": "default",  # Have to add this to get rid of the error
         }
 
         # Get instructor_home first to set up display_name session data
         instructor_home_url = reverse("instructor:instructor_home", args=[course_id])
         response = self.client.get(instructor_home_url)
+
         response = self.client.post(
             reverse("instructor:group_form", args=[course_id]), data=data
         )
@@ -96,6 +99,7 @@ class TestViews(TestCase):
             assessments[1].id.hex: 2,
             assessments[2].id.hex: 3,
             assessments[3].id.hex: 4,
+            "weight_option": "default",  # Have to add this to get rid of the error
         }
         # Get instructor_home first to set up display_name session data
         instructor_home_url = reverse("instructor:instructor_home", args=[course_id])

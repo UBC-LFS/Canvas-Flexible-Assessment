@@ -4,6 +4,7 @@ from django.forms import BaseModelFormSet, ModelForm, modelformset_factory
 from django.utils import timezone
 from flexible_assessment.models import Assessment, Course, FlexAssessment
 import flexible_assessment.utils as utils
+from django.utils.safestring import mark_safe
 
 
 class StudentAssessmentBaseForm(forms.Form):
@@ -181,8 +182,8 @@ class AssessmentGroupForm(forms.Form):
         # Add the weight_option field
         self.fields['weight_option'] = forms.ChoiceField(
             choices=[
-                ('default', 'Default: assignments within groups are weighted according to the amount of Points they contribute to the group total'),
-                ('equal_weights', 'Equal Weight: assignments within groups are weighted equally regardless of the amount of Points they contribute to the group total')
+                ('default', mark_safe('<b>Proportional (Default)</b>: assignments within groups are weighted according to the amount of Points they contribute to the group total')),
+                ('equal_weights', mark_safe('<b>Equal</b>: assignments within groups are weighted equally regardless of the amount of Points they contribute to the group total'))
             ],
             widget=forms.RadioSelect,
             initial='default',
