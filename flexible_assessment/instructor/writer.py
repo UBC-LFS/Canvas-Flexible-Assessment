@@ -150,7 +150,9 @@ def grades_csv(course, students, groups):
         values.append("{}, {}".format(student.display_name, student.login_id))
 
         override_total = grader.get_override_total(groups, student, course)
+        override_total = round_half_up(override_total, 3)
         default_total = grader.get_default_total(groups, student)
+        default_total = round_half_up(default_total, 3)
 
         if override_total is not None:
             values.append(round_half_up(override_total, 2))
