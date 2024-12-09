@@ -35,16 +35,17 @@ class TestForms(TestCase):
             assessments[1].id.hex: 3,
             assessments[2].id.hex: 3,
             assessments[3].id.hex: 4,
+            "weight_option": "default",  # Had to add this to avoid error
         }
-
         form = AssessmentGroupForm(
             canvas_course=course, assessments=assessments, data=data
         )
-
         self.assertTrue(form.is_valid())
 
         assessments_2 = []
-        data_2 = {}
+        data_2 = {
+            "weight_option": "default",  # Had to add this to avoid error
+        }
         form = AssessmentGroupForm(
             canvas_course=course, assessments=assessments_2, data=data_2
         )

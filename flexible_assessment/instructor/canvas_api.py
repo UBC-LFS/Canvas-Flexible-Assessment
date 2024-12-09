@@ -7,6 +7,13 @@ from canvasapi.exceptions import CanvasException
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from oauth.oauth import get_oauth_token
+from decimal import Decimal, ROUND_HALF_UP
+
+
+def round_half_up(value, digits=2):
+    """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
+    d = Decimal(str(value))  # Convert the float to a Decimal
+    return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
 
 class FlexCanvas(Canvas):
@@ -27,18 +34,16 @@ class FlexCanvas(Canvas):
 
     def set_override_true(self, course_id):
         """Sets 'allow final grade override' in Canvas course
-        
+
         Parameters
         ----------
         course_id : int
             Canvas course ID
         """
 
-        param = {'allow_final_grade_override' : 'true' }
+        param = {"allow_final_grade_override": "true"}
         url = f"{self.base_url}/api/v1/courses/{course_id}/settings"
-        headers = {
-            "Authorization": f"Bearer {self.access_token}"
-        }
+        headers = {"Authorization": f"Bearer {self.access_token}"}
 
         response = requests.put(url, headers=headers, params=param)
         response.raise_for_status()
@@ -181,45 +186,62 @@ class FlexCanvas(Canvas):
 
         for user_id, assignments in data.items():
             # Create list of dictionaries (a tuple) out of nested dictionary
-            score_dict = {list(assignment.keys())[0]: list(assignment.values())[0] for assignment in assignments}
-            
+            score_dict = {
+                list(assignment.keys())[0]: list(assignment.values())[0]
+                for assignment in assignments
+            }
+
             # Extracting scores that should never be dropped
             if rules["neverDrop"]:
                 neverdrop = []
                 for aid in rules["neverDrop"]:
                     neverdrop.append(aid["_id"])
-                never_drop_scores = {aid: score for aid, score in score_dict.items() if aid in neverdrop}
+                never_drop_scores = {
+                    aid: score for aid, score in score_dict.items() if aid in neverdrop
+                }
                 # Extracting scores that can potentially be dropped
-                droppable_scores = {aid: score for aid, score in score_dict.items() if aid not in neverdrop}
+                droppable_scores = {
+                    aid: score
+                    for aid, score in score_dict.items()
+                    if aid not in neverdrop
+                }
             else:
                 never_drop_scores = {}
                 droppable_scores = {aid: score for aid, score in score_dict.items()}
 
             # Sorting droppable scores by score, descending order
-            sorted_droppable_scores = sorted(droppable_scores.items(), key=lambda item: item[1])
+            sorted_droppable_scores = sorted(
+                droppable_scores.items(), key=lambda item: item[1]
+            )
 
             # Drop given number of highest scores from droppable assignments
             if "dropHighest" in rules and rules["dropHighest"]:
                 highest_drop_count = rules["dropHighest"]
                 if highest_drop_count < len(sorted_droppable_scores):
-                    sorted_droppable_scores = sorted_droppable_scores[:-highest_drop_count]
+                    sorted_droppable_scores = sorted_droppable_scores[
+                        :-highest_drop_count
+                    ]
 
             # Drop given number of lowest scores from droppable assignments
             if "dropLowest" in rules and rules["dropLowest"]:
                 lowest_drop_count = rules["dropLowest"]
                 if lowest_drop_count < len(sorted_droppable_scores):
-                    sorted_droppable_scores = sorted_droppable_scores[lowest_drop_count:]
+                    sorted_droppable_scores = sorted_droppable_scores[
+                        lowest_drop_count:
+                    ]
 
             # Combine the scores from neverDrop with the remaining droppable scores
-            final_scores = list(never_drop_scores.values()) + [score for _, score in sorted_droppable_scores]
+            final_scores = list(never_drop_scores.values()) + [
+                score for _, score in sorted_droppable_scores
+            ]
 
             # Calculate total_score as the sum of all the undropped scores
             total_score = sum(final_scores)
 
             # Store the computed total score for each user
             user_scores[user_id] = total_score
-        
-        #print(user_scores)
+
+        # print(user_scores)
         return user_scores
 
     def get_flat_groups_and_enrollments(self, course_id):
@@ -297,15 +319,15 @@ class FlexCanvas(Canvas):
         for group in groups:
             id = group.pop("group_id", None)
             group_dict[id] = group
-            
+
         # Iterate over each assignment group.
         for group_data in group_dict.values():
             # Collect special grading rules for each assignment group
-            rules = group_data.pop('rules')
+            rules = group_data.pop("rules")
             # If rules = None you skip the extra processing
             if all(rule is None for rule in rules.values()):
                 rules = None
-            
+
             group_flattened = self._flatten_dict(group_data)
             # Get list of assignments for each group
             assignments = group_flattened.pop("assignment_list.assignments", None)
@@ -317,14 +339,16 @@ class FlexCanvas(Canvas):
 
             # Gets the grades for each assignment, will be editing this to accomodate a flat grading system
             grades = group_flattened.get("grade_list.grades", [])
-            
+
             user_scores = {}
 
             # Add scores for each assignment to user_id, converts them into a percentage.
             for assignment in assignments:
                 assignment_flattened = self._flatten_dict(assignment)
                 max_score = assignment_flattened.get("max_score", None)
-                submissions = assignment_flattened.get("submission_list.submissions", None)
+                submissions = assignment_flattened.get(
+                    "submission_list.submissions", None
+                )
 
                 # If no submissions of max_score == 0, skip assignment and do not factor it into grade
                 if max_score == 0 or max_score is None or submissions is None:
@@ -354,7 +378,7 @@ class FlexCanvas(Canvas):
                     total_assignments -= rules["dropHighest"]
                 if rules["dropLowest"]:
                     total_assignments -= rules["dropLowest"]
-            
+
             # Once group scores are calculated, update assignment grades
             updated_grades = []
             for grade in grades:
@@ -367,15 +391,22 @@ class FlexCanvas(Canvas):
 
                 if user_id in user_scores:
                     # Calculate the average score and convert it to percentage
-                    flat_group_score = (user_scores[user_id] / total_assignments) * 100 if total_assignments else 0
-                    updated_grades.append((user_id, round(flat_group_score, 2)))
+                    flat_group_score = (
+                        (user_scores[user_id] / total_assignments) * 100
+                        if total_assignments
+                        else 0
+                    )
+                    # updated_grades.append((user_id, round_half_up(flat_group_score, 3)))
+                    updated_grades.append((user_id, flat_group_score))
                 else:
                     # Keep the original score if no submissions were found
                     score = grade_flattened["current_score"]
                     updated_grades.append((user_id, score))
 
             group_data["grade_list"]["grades"] = updated_grades
-            group_data.pop("assignment_list", None)  # Remove assignment list as requested
+            group_data.pop(
+                "assignment_list", None
+            )  # Remove assignment list as requested
 
         return group_dict, user_enrollment_dict
 

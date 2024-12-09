@@ -134,7 +134,7 @@
                         <h3 class="card-header">Welcome Instructions</h3>
                         <div class="card-body pt-2 pb-3">
                             <p class="fw-light m-0 pb-1">
-                                This is a message that will appear at the top of the students' screens where they decide their weights.
+                                This message will appear at the top of the students' screens where they decide their weights.
                             </p>
                             {% bootstrap_field date_form.welcome_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
                         </div>
@@ -163,9 +163,14 @@
                         </div>
                         <div class="card-body pt-2 pb-3">
                             <p class="fw-light m-0 pb-1">
-                                Click the <b style="font-weight: bold">+Assessment</b> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible.
-                                The <b style="font-weight: bold;">Default %</b> will be used for students who do not enter desired percentages. The <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> values define the range of weights students will be able to enter.
-                                If you do not want an assessment to be flexible, leave the <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> fields blank or equal to the <b style="font-weight: bold;">Default %</b>. The default values for all assessments <u>must add up to 100%</u>.
+                                <div id="more" style="display:none">
+                                <p>Click the <b style="font-weight: bold">+Assessment</b> button to add all of the assessments in your course. If you have several assessments within a category, enter the category name (e.g. Quizzes, Discussions) unless you want to make the individual assessments within the category flexible. </p>
+                                <p>The <b style="font-weight: bold;">Default %</b> will be used for students who do not enter desired percentages. The <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> values define the range of weights students will be able to enter. </p>
+                                <p>If you do not want an assessment to be flexible, leave the <b style="font-weight: bold;">Minimum %</b> and <b style="font-weight: bold;">Maximum %</b> fields blank or equal to the <b style="font-weight: bold;">Default %</b>. The default values for all assessments <u>must add up to 100%</u>. </p>
+                                <p>If you already enabled and entered weights for Assignment Groups on the Assignments page in Canvas, select the option "<b>Hide Assignment Group Weights in Canvas</b>". This option prevents students from seeing incorrect weights in their view of Grades.</p> 
+                                <p>Select the option "<b>Hide Subtotal grades for Assignment Groups and Final grades</b>" to hide overall grades for the Assignment Groups and Final Grades. This option prevents students from seeing possible incorrect Final Grade calculations before you have exported the recalculated Final Grades from the Flexible Assessment app. </p>
+                                </div>
+                                <span onclick="show_more()" id="myBtn" style="text-decoration: underline">Show Instructions</span>
                             </p>
                             <div class="d-flex align-items-center justify-content-between">
                                 <p class="fw-light m-0">{% bootstrap_formset_errors formset %}</p>
@@ -215,9 +220,6 @@
                                 </h5>
                             </div>
                             <div class="d-flex flex-column">
-                                <p class="fw-light m-0 pb-1">
-                                    If you already enabled and entered weights for Assignment Groups on the Assignments page in Canvas, select the first option below to hide these weights. This option prevents students from seeing incorrect weights in their view of Grades. Select the second option below to hide overall grades for the Assignment Groups and Final Grades. This option prevents students from seeing possible incorrect Final Grade calculations before you have exported the recalculated Final Grades from the Flexible Assessment app.
-                                </p>
                                 {% bootstrap_field options_form.hide_weights wrapper_class="mb-1" %}
                                 {% bootstrap_field options_form.hide_total wrapper_class="mb-1" %}
                             </div>
@@ -245,7 +247,7 @@
                     <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                         <h4 class="card-header">Availability</h4>
                         <div class="card-body pt-2 pb-3">
-                            <p class="fw-light m-0">These are the dates for when students will be able to enter their desired percentages.</p>
+                            <p class="fw-light m-0">These are the dates when students will be able to enter their desired percentages.</p>
                             <table class='table table-borderless mb-2'>
                                 <tr>
                                     <th class="pb-0" style="font-size: 110%;">Open Date</th>
@@ -493,5 +495,19 @@
         $("#id_ordering-ordering").val(ids_list.toString());
 
     }
+
+    function show_more() {
+        var moreText = $("#more");
+        var btnText = $("#myBtn");
+        
+        if (moreText.is(":hidden")) {
+            moreText.fadeIn();
+            btnText.text("Hide Instructions"); 
+        } else {
+            moreText.fadeOut();
+            btnText.text("Show Instructions"); 
+        }
+    }
+    
     </script>
 {% endblock %}

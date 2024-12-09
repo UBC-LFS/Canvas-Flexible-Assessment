@@ -20,9 +20,8 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect
-
 from instructor.canvas_api import FlexCanvas
-
+from decimal import Decimal, ROUND_HALF_UP
 from . import grader, writer
 from .forms import (
     AssessmentFileForm,
@@ -35,6 +34,14 @@ from .forms import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def round_half_up(value, digits=2):
+    if value is None:
+        return None
+    """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
+    d = Decimal(str(value))  # Convert to Decimal
+    return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
 
 class InstructorHome(views.InstructorTemplateView):
@@ -166,23 +173,29 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         context = super().get_context_data(**kwargs)
         course_id = self.kwargs["course_id"]
         # Access the session variable to determine which method to call
-        flat_grade = self.request.session.get('flat', False) == True
+        flat_grade = self.request.session.get("flat", False) == True
         if flat_grade:
             # If 'flat' is true, call a method that handles flat grades
-            groups, _ = FlexCanvas(self.request).get_flat_groups_and_enrollments(course_id)
+            groups, _ = FlexCanvas(self.request).get_flat_groups_and_enrollments(
+                course_id
+            )
         else:
             # If 'flat' is false or not set, call the standard method
             groups, _ = FlexCanvas(self.request).get_groups_and_enrollments(course_id)
         context["groups"] = groups
 
         context["canvas_domain"] = settings.CANVAS_DOMAIN
-       
+
         return context
 
     def _submit_final_grades(self, course_id, canvas):
         """Uploads final override grades in batches to Canvas"""
 
         def _set_override(student_name, enrollment_id, override, incomplete):
+            override = round_half_up(override, 3)
+            override = round_half_up(override, 2)
+            override = float(override)
+
             canvas.set_override(enrollment_id, override, incomplete)
             logger.info(
                 "Submitted %s final grade to Canvas",
@@ -194,7 +207,18 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             )
 
         course = models.Course.objects.get(pk=course_id)
-        groups, enrollments = canvas.get_groups_and_enrollments(course_id)
+
+        flat_grade = self.request.session.get("flat", False) == True
+        if flat_grade:
+            # If flat grading is enabled, use the flat grading method
+            groups, enrollments = FlexCanvas(
+                self.request
+            ).get_flat_groups_and_enrollments(course_id)
+        else:
+            # If not flat grading, use the standard grading method
+            groups, enrollments = FlexCanvas(self.request).get_groups_and_enrollments(
+                course_id
+            )
 
         threads = []
         incomplete = [False]
@@ -282,7 +306,7 @@ class AssessmentGroupView(views.InstructorFormView):
             HttpResponseRedirect if form is valid,
             TemplateResponse if error in form
         """
-        weight_option = form.cleaned_data.pop('weight_option', 'default')
+        weight_option = form.cleaned_data.pop("weight_option", "default")
 
         matched_groups = form.cleaned_data.values()
 
@@ -304,12 +328,12 @@ class AssessmentGroupView(views.InstructorFormView):
             return response
 
         # Set the session variable to flat if weight_option is equal_weights
-        #print(form.cleaned_data)
+        # print(form.cleaned_data)
         self._update_assessments_and_groups(form)
-        if weight_option == 'equal_weights':
-            self.request.session['flat'] = True
+        if weight_option == "equal_weights":
+            self.request.session["flat"] = True
         else:
-            self.request.session['flat'] = False
+            self.request.session["flat"] = False
 
         response = super().form_valid(form)
         return response

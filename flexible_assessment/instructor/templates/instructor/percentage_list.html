@@ -38,6 +38,11 @@
                             <thead>
                                 <tr>
                                     <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
+                                    <th class="text-center align-middle" style="width: 25%; font-size: 110%;">
+                                        Chose
+                                        <br>
+                                        Percentages
+                                    </th>
                                     {% for assessment in course.assessment_set.all|dictsort:"order" %}
                                         <th class="assessment text-center align-middle" style="font-size: 110%;">
                                             {{ assessment.title }}
@@ -45,7 +50,7 @@
                                             ({{ assessment.default }}%)
                                         </th>
                                     {% endfor %}
-                                    <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Comment</th>
+                                    <th class="text-center align-middle" style="width: 40%; font-size: 110%;">Comment</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -54,15 +59,33 @@
                                         <td class="text-center align-middle text-break">
                                             <a href="{% url 'instructor:override_student_form_percentage' course.id student.user_id %}?previous=percentages">{{ student.display_name }}</a>
                                         </td>
+                                        {% with student.flexassessment_set.all|has_null_flex_assessment:course as null_flex %}
+                                            <td class="text-center align-middle">
+                                                {% if null_flex %}
+                                                    No
+                                                {% else %}
+                                                    Yes
+                                                {% endif %}
+                                            </td>
+                                        {% endwith %}
                                         {% for assessment in course.assessment_set.all|dictsort:"order" %}
                                             {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
                                                 <td class="text-center align-middle">
-                                                    {{ flex_assessment.flex|to_str|default_if_none:"-" }}
+                                                    {% if flex_assessment.flex is None %}
+                                                        <span style="color: grey; font-style: italic;">{{ assessment.default }}%</span>
+                                                    {% else %}
+                                                        {{ flex_assessment.flex|to_str }}
+                                                    {% endif %}
                                                 </td>
                                             {% endwith %}
                                         {% endfor %}
                                         {% with student.usercomment_set.all|comment_filter:course.id as user_comment %}
-                                            <td class="text-center align-middle text-break">{{ user_comment.comment }}</td>
+                                            {% comment %} <td class="text-center align-middle text-break" style="text-align: left; word-wrap: break-word; white-space: normal">{{ user_comment.comment }}</td> {% endcomment %}
+                                            <td class="text-break"
+                                                style="text-align: left;
+                                                       width: 40%;
+                                                       overflow-wrap: break-word;
+                                                       white-space: normal">{{ user_comment.comment }}</td>
                                         {% endwith %}
                                     </tr>
                                 {% endfor %}
@@ -86,6 +109,9 @@
                 { orderable: false, targets: colspan+1 }
             ]            
         });
+
+        $('.used-default').css('color', 'gray');
+        $('.used-default').css('font-style', 'italic');
     });
     </script>
 {% endblock %}
