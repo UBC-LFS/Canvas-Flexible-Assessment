@@ -76,7 +76,7 @@ def course_log(course):
             lines = f.readlines()
             for line in lines:
                 res = re.search(r"\[(.*?)\]", line)
-                if res.group(1) == str(course):
+                if res and res.group(1) == str(course):
                     log_writer.write(line)
 
     return log_writer.get_response()
