@@ -1,0 +1,10 @@
+[52883:52883:0116/142133.665283:WARNING:gpu_memory_buffer_support_x11.cc(49)] dri3 extension not supported.
+[52883:52883:0116/142133.667592:WARNING:sandbox_linux.cc(430)] InitializeSandbox() called with multiple threads in process gpu-process.
+[52883:52883:0116/142133.669115:WARNING:viz_main_impl.cc(85)] VizNullHypothesis is disabled (not a warning)
+[52841:52841:0116/142133.710404:WARNING:account_consistency_mode_manager.cc(77)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[52841:52914:0116/142133.768941:ERROR:socket_posix.cc(147)] bind() failed: Address already in use (98)
+[52841:52996:0116/142133.904133:ERROR:object_proxy.cc(576)] Failed to call method: org.freedesktop.DBus.Properties.Get: object_path= /org/freedesktop/UPower: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[52841:52996:0116/142133.904182:WARNING:property.cc(149)] DaemonVersion: GetAndBlock: failed.
+[52841:52996:0116/142133.904754:ERROR:object_proxy.cc(576)] Failed to call method: org.freedesktop.UPower.GetDisplayDevice: object_path= /org/freedesktop/UPower: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[52841:52996:0116/142133.905924:ERROR:object_proxy.cc(576)] Failed to call method: org.freedesktop.UPower.EnumerateDevices: object_path= /org/freedesktop/UPower: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[52841:52841:0116/142133.930771:WARNING:idle_linux.cc(110)] None of the known D-Bus ScreenSaver services could be used.
