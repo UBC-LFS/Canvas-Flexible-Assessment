@@ -280,6 +280,7 @@ class FlexCanvas(Canvas):
                             _id
                             max_score: pointsPossible
                             name
+                            published   # to check for unpublished assignments to filter out
                             submission_list: submissionsConnection {
                                 submissions: nodes {
                                     score
@@ -345,6 +346,12 @@ class FlexCanvas(Canvas):
             # Add scores for each assignment to user_id, converts them into a percentage.
             for assignment in assignments:
                 assignment_flattened = self._flatten_dict(assignment)
+
+                published = assignment_flattened.get("published", True)
+                if published is False:  # filter out unpublished assignments
+                    total_assignments -= 1
+                    continue
+
                 max_score = assignment_flattened.get("max_score", None)
                 submissions = assignment_flattened.get(
                     "submission_list.submissions", None

@@ -1,0 +1,12 @@
+[33691:33691:0123/104949.952814:WARNING:gpu_memory_buffer_support_x11.cc(49)] dri3 extension not supported.
+[33691:33691:0123/104949.954222:WARNING:sandbox_linux.cc(430)] InitializeSandbox() called with multiple threads in process gpu-process.
+[33691:33691:0123/104949.955844:WARNING:viz_main_impl.cc(85)] VizNullHypothesis is disabled (not a warning)
+[33645:33645:0123/104950.000086:WARNING:account_consistency_mode_manager.cc(77)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[33645:33721:0123/104950.078248:ERROR:socket_posix.cc(147)] bind() failed: Address already in use (98)
+[33645:33820:0123/104950.211479:ERROR:object_proxy.cc(576)] Failed to call method: org.freedesktop.DBus.Properties.Get: object_path= /org/freedesktop/UPower: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[33645:33820:0123/104950.211607:WARNING:property.cc(149)] DaemonVersion: GetAndBlock: failed.
+[33645:33820:0123/104950.211940:ERROR:object_proxy.cc(576)] Failed to call method: org.freedesktop.UPower.GetDisplayDevice: object_path= /org/freedesktop/UPower: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[33645:33820:0123/104950.212288:ERROR:object_proxy.cc(576)] Failed to call method: org.freedesktop.UPower.EnumerateDevices: object_path= /org/freedesktop/UPower: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[33645:33645:0123/104950.222470:WARNING:idle_linux.cc(110)] None of the known D-Bus ScreenSaver services could be used.
+[33645:33645:0123/104950.674237:WARNING:CONSOLE(53)] "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu", source: https://www.google.com/logos/2024/moon/moon_january-r1/moon_january.js (53)
+[33645:33645:0123/104950.674783:WARNING:CONSOLE(54)] "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://goo.gl/7K7WLu", source: https://www.google.com/logos/2024/moon/moon_january-r1/moon_january.js (54)
