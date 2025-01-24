@@ -5,4 +5,5 @@ from django.conf import settings
 
 
 class TestFlexCanvas(TestCase):
+    # need to test that get_flat_groups_and_enrollments() ignores unpublished assignments
     pass
