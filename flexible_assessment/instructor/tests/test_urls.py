@@ -40,7 +40,7 @@ class TestUrls(TestCase):
         url = reverse(f"instructor:{url_name}", args=[course_id])
 
         response = self.client.get(url)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_instructor_home_url_valid_for_admins(self):
         user = UserProfile.objects.get(login_id="admin")
@@ -49,7 +49,7 @@ class TestUrls(TestCase):
         instructor_home_url = reverse("instructor:instructor_home", args=[course.id])
 
         response = self.client.get(instructor_home_url)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_instructor_home_url_valid_for_tas(self):
         user = UserProfile.objects.get(login_id="test_ta1")
@@ -58,7 +58,7 @@ class TestUrls(TestCase):
         instructor_home_url = reverse("instructor:instructor_home", args=[course.id])
 
         response = self.client.get(instructor_home_url)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_instructor_home_url_invalid_for_students(self):
         self.url_invalid_for_student("instructor_home")
@@ -117,14 +117,14 @@ class TestUrls(TestCase):
         )
 
         response = self.client.get(url)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_override_student_form_final_url_valid_for_instructor(self):
         course_id = self.login_instructor("test_instructor1", "test_course1")
         url = reverse("instructor:override_student_form_final", args=[course_id, 1])
 
         response = self.client.get(url)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     @mock_classes.use_mock_canvas()
     def test_group_form_url_valid_for_instructor(self, mocked_flex_canvas_instance):
@@ -162,13 +162,13 @@ class TestUrls(TestCase):
         url = reverse("instructor:instructor_home", args=[1000])
 
         response = self.client.get(url)
-        self.assertEquals(response.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
     def test_instructor_tries_access_nonexistant_course(self):
         course_id = self.login_instructor("test_instructor1", "test_course1")
         instructor_home_url = reverse("instructor:instructor_home", args=[999])
         response = self.client.get(instructor_home_url)
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     def test_instructor_tries_override_student_nonexistant_student(self):
         course_id = self.login_instructor("test_instructor1", "test_course1")
@@ -176,7 +176,7 @@ class TestUrls(TestCase):
             "instructor:override_student_form_percentage", args=[course_id, 9999]
         )
         response = self.client.get(url)
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     # # TODO: They should probably be routed to course_setup page instead of being able to access these pages
     # def test_accessing_urls_when_course_setup_not_complete(self):
@@ -184,4 +184,4 @@ class TestUrls(TestCase):
     #     url = reverse('instructor:file_upload', args=[course_id])
     #     response = self.client.get(url)
 
-    #     self.assertEquals(response.status_code, 302)
+    #     self.assertEqual(response.status_code, 302)
