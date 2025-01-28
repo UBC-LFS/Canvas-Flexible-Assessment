@@ -281,6 +281,8 @@ class FlexCanvas(Canvas):
                             max_score: pointsPossible
                             name
                             published   # to check for unpublished assignments to filter out
+                            gradingType # to check for assignments with gradingType = not_graded
+                            omitFromFinalGrade # to check for assignments that should not be factored into the final grade
                             submission_list: submissionsConnection {
                                 submissions: nodes {
                                     score
@@ -348,7 +350,15 @@ class FlexCanvas(Canvas):
                 assignment_flattened = self._flatten_dict(assignment)
 
                 published = assignment_flattened.get("published", True)
-                if published is False:  # filter out unpublished assignments
+                grading_type = assignment_flattened.get("gradingType", None)
+                omit_from_final_grade = assignment_flattened.get(
+                    "omitFromFinalGrade", False
+                )
+                if (
+                    published is False
+                    or grading_type == "not_graded"
+                    or omit_from_final_grade
+                ):  # filter out unpublished assignments
                     total_assignments -= 1
                     continue
 
