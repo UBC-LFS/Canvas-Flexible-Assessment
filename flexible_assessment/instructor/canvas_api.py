@@ -127,21 +127,21 @@ class FlexCanvas(Canvas):
         """
 
         query = """query AssignmentGroupQuery($course_id: ID) {
-  course(id: $course_id) {
-    assignment_groups: assignmentGroupsConnection {
-      groups: nodes {
-        group_id: _id
-        group_name: name
-        group_weight: groupWeight
-        grade_list: gradesConnection {
-          grades: nodes {
-            current_score: currentScore
-            enrollment {
-              user {
-                user_id: _id
-                display_name: name
-              }
-              _id
+                    course(id: $course_id) {
+                        assignment_groups: assignmentGroupsConnection {
+                        groups: nodes {
+                            group_id: _id
+                            group_name: name
+                            group_weight: groupWeight
+                            grade_list: gradesConnection {
+                            grades: nodes {
+                                current_score: currentScore
+                                enrollment {
+                                user {
+                                    user_id: _id
+                                    display_name: name
+                                }
+                                _id
             } } } } } } }"""
 
         query_response = self.graphql(query, variables={"course_id": course_id})
