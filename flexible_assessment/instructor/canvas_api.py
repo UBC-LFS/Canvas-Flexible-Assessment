@@ -342,6 +342,8 @@ class FlexCanvas(Canvas):
 
             # Gets the grades for each assignment, will be editing this to accomodate a flat grading system
             grades = group_flattened.get("grade_list.grades", [])
+            if grades is None:
+                raise PermissionDenied
 
             user_scores = {}
 

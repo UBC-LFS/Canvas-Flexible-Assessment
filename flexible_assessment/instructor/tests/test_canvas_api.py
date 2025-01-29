@@ -1,6 +1,7 @@
 from django.test import TestCase
 from unittest.mock import patch, MagicMock
 from instructor.canvas_api import FlexCanvas
+from django.core.exceptions import PermissionDenied
 
 
 class TestFlexCanvas(TestCase):
@@ -803,3 +804,163 @@ class TestFlexCanvas(TestCase):
         self.assertEqual(
             round(group_dict["537055"]["grade_list"]["grades"][4][1], 2), 76
         )
+
+    @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
+    @patch("instructor.canvas_api.get_oauth_token")  # Mock OAuth token retrieval
+    def test_get_flat_groups_and_enrollments_no_groups(
+        self, mock_get_oauth_token, mock_graphql
+    ):
+        # Mock request
+        mock_request = MagicMock()
+        mock_request.session = {}  # If get_oauth_token accesses session
+        mock_request.user = MagicMock()  # If user-related data is needed
+
+        # Mock OAuth token retrieval
+        mock_get_oauth_token.return_value = "mock_token"
+
+        # Mock the API response with no assignment groups
+        mock_graphql.return_value = {
+            "data": {"course": {"assignment_groups": {"groups": None}}}
+        }
+
+        # Initialize FlexCanvas
+        flex_canvas = FlexCanvas(mock_request)
+
+        # test when value is None
+        with self.assertRaises(PermissionDenied):
+            group_dict, user_enrollment_dict = (
+                flex_canvas.get_flat_groups_and_enrollments(123)
+            )
+
+        # test when value is empty list
+        mock_graphql.return_value = {
+            "data": {"course": {"assignment_groups": {"groups": []}}}
+        }
+
+        group_dict, user_enrollment_dict = flex_canvas.get_flat_groups_and_enrollments(
+            123
+        )
+
+        # Assertions
+        self.assertEqual(len(group_dict), 0)
+        self.assertEqual(len(user_enrollment_dict), 0)
+
+    @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
+    @patch("instructor.canvas_api.get_oauth_token")  # Mock OAuth token retrieval
+    def test_get_flat_groups_and_enrollments_invalid_assignments(
+        self, mock_get_oauth_token, mock_graphql
+    ):
+        # Mock request
+        mock_request = MagicMock()
+        mock_request.session = {}  # If get_oauth_token accesses session
+        mock_request.user = MagicMock()  # If user-related data is needed
+
+        # Mock OAuth token retrieval
+        mock_get_oauth_token.return_value = "mock_token"
+
+        # Mock the API response with invalid assignments
+        mock_graphql.return_value = {
+            "data": {
+                "course": {
+                    "assignment_groups": {
+                        "groups": [
+                            {
+                                "rules": {
+                                    "dropHighest": None,
+                                    "dropLowest": None,
+                                    "neverDrop": None,
+                                },
+                                "group_id": "537054",
+                                "group_name": "Quizzes",
+                                "group_weight": 10,
+                                "assignment_list": {
+                                    "assignments": [
+                                        {
+                                            "_id": "2088526",
+                                            "max_score": None,  # Invalid max_score
+                                            "name": "Q1",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {"submissions": []},
+                                        }
+                                    ]
+                                },
+                                "grade_list": {"grades": []},
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        # Initialize FlexCanvas
+        flex_canvas = FlexCanvas(mock_request)
+
+        # Call function
+        group_dict, user_enrollment_dict = flex_canvas.get_flat_groups_and_enrollments(
+            123
+        )
+
+        # Assertions
+        self.assertEqual(len(group_dict), 1)
+        self.assertEqual(len(user_enrollment_dict), 0)
+        self.assertEqual(group_dict["537054"]["grade_list"]["grades"], [])
+
+    @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
+    @patch("instructor.canvas_api.get_oauth_token")  # Mock OAuth token retrieval
+    def test_get_flat_groups_and_enrollments_no_grades(
+        self, mock_get_oauth_token, mock_graphql
+    ):
+        # Mock request
+        mock_request = MagicMock()
+        mock_request.session = {}  # If get_oauth_token accesses session
+        mock_request.user = MagicMock()  # If user-related data is needed
+
+        # Mock OAuth token retrieval
+        mock_get_oauth_token.return_value = "mock_token"
+
+        # Mock the API response with invalid assignments
+        mock_graphql.return_value = {
+            "data": {
+                "course": {
+                    "assignment_groups": {
+                        "groups": [
+                            {
+                                "rules": {
+                                    "dropHighest": None,
+                                    "dropLowest": None,
+                                    "neverDrop": None,
+                                },
+                                "group_id": "537054",
+                                "group_name": "Quizzes",
+                                "group_weight": 10,
+                                "assignment_list": {
+                                    "assignments": [
+                                        {
+                                            "_id": "2088526",
+                                            "max_score": None,  # Invalid max_score
+                                            "name": "Q1",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {"submissions": []},
+                                        }
+                                    ]
+                                },
+                                "grade_list": {"grades": None},
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        # Initialize FlexCanvas
+        flex_canvas = FlexCanvas(mock_request)
+
+        # Assertions
+        with self.assertRaises(PermissionDenied):
+            group_dict, user_enrollment_dict = (
+                flex_canvas.get_flat_groups_and_enrollments(123)
+            )
