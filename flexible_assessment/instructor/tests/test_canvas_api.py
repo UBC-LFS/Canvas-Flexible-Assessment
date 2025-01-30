@@ -504,10 +504,10 @@ class TestFlexCanvas(TestCase):
             round(group_dict["537055"]["grade_list"]["grades"][4][1], 2), 76
         )
 
-        import pprint
+        # import pprint
 
-        pprint.pprint(user_enrollment_dict)
-        pprint.pprint(group_dict)
+        # pprint.pprint(user_enrollment_dict)
+        # pprint.pprint(group_dict)
 
     @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
     @patch("instructor.canvas_api.get_oauth_token")  # Mock OAuth token retrieval
@@ -1304,6 +1304,135 @@ class TestFlexCanvas(TestCase):
         # Jane Doe's grade for quizzes after dropping the lowest score
         self.assertEqual(
             round(group_dict["537054"]["grade_list"]["grades"][0][1], 2), 70
+        )
+
+    @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
+    @patch("instructor.canvas_api.get_oauth_token")  # Mock OAuth token retrieval
+    def test_get_flat_groups_and_enrollments_edge_cases(
+        self, mock_get_oauth_token, mock_graphql
+    ):
+        # Mock request
+        mock_request = MagicMock()
+        mock_request.session = {}  # If get_oauth_token accesses session
+        mock_request.user = MagicMock()  # If user-related data is needed
+
+        # Mock OAuth token retrieval
+        mock_get_oauth_token.return_value = "mock_token"
+
+        # Mock the API response with drop lowest rule
+        mock_graphql.return_value = {
+            "data": {
+                "course": {
+                    "assignment_groups": {
+                        "groups": [
+                            {
+                                "rules": {
+                                    "dropHighest": None,
+                                    "dropLowest": 1,
+                                    "neverDrop": None,
+                                },
+                                "group_id": "537054",
+                                "group_name": "Quizzes",
+                                "group_weight": 10,
+                                "assignment_list": {
+                                    "assignments": [
+                                        {
+                                            "_id": "2088526",
+                                            "max_score": 10,
+                                            "name": "Q1",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 0, "user_id": "357363"},
+                                                    {"score": 10, "user_id": "357364"},
+                                                ]
+                                            },
+                                        },
+                                        {
+                                            "_id": "2088527",
+                                            "max_score": 10,
+                                            "name": "Q2",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 0, "user_id": "357363"},
+                                                    {"score": 10, "user_id": "357364"},
+                                                ]
+                                            },
+                                        },
+                                        {
+                                            "_id": "2088528",
+                                            "max_score": 20,
+                                            "name": "Q2",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 0, "user_id": "357363"},
+                                                    {"score": 20, "user_id": "357364"},
+                                                ]
+                                            },
+                                        },
+                                    ]
+                                },
+                                "grade_list": {
+                                    "grades": [
+                                        {
+                                            "current_score": 0,
+                                            "enrollment": {
+                                                "_id": "9432892",
+                                                "user": {
+                                                    "user_id": "357363",
+                                                    "display_name": "Jane Doe",
+                                                },
+                                            },
+                                        },
+                                        {
+                                            "current_score": 100,
+                                            "enrollment": {
+                                                "_id": "9432893",
+                                                "user": {
+                                                    "user_id": "357364",
+                                                    "display_name": "John Smith",
+                                                },
+                                            },
+                                        },
+                                    ]
+                                },
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        # Initialize FlexCanvas
+        flex_canvas = FlexCanvas(mock_request)
+
+        # Call function
+        group_dict, user_enrollment_dict = flex_canvas.get_flat_groups_and_enrollments(
+            123
+        )
+
+        # Assertions
+        self.assertEqual(user_enrollment_dict["357363"], "9432892")
+        self.assertEqual(user_enrollment_dict["357364"], "9432893")
+        self.assertEqual(len(user_enrollment_dict), 2)
+        self.assertIn("537054", group_dict)
+        self.assertEqual(len(group_dict), 1)
+
+        # Check calculated grades after dropping the lowest score
+        # Jane Doe's grade for quizzes after dropping the lowest score
+        self.assertEqual(
+            round(group_dict["537054"]["grade_list"]["grades"][0][1], 2), 0
+        )
+        self.assertEqual(
+            round(group_dict["537054"]["grade_list"]["grades"][1][1], 2), 100
         )
 
 
