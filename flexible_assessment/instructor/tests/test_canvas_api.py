@@ -4,6 +4,7 @@ from instructor.canvas_api import FlexCanvas
 from django.core.exceptions import PermissionDenied
 
 
+# primarily testing the two functions that are used to get the groups and enrollments
 class TestFlexCanvas(TestCase):
 
     @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
@@ -964,3 +965,354 @@ class TestFlexCanvas(TestCase):
             group_dict, user_enrollment_dict = (
                 flex_canvas.get_flat_groups_and_enrollments(123)
             )
+
+    @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
+    @patch("instructor.canvas_api.get_oauth_token")  # Mock OAuth token retrieval
+    def test_get_flat_groups_and_enrollments_drop_lowest(
+        self, mock_get_oauth_token, mock_graphql
+    ):
+        # Mock request
+        mock_request = MagicMock()
+        mock_request.session = {}  # If get_oauth_token accesses session
+        mock_request.user = MagicMock()  # If user-related data is needed
+
+        # Mock OAuth token retrieval
+        mock_get_oauth_token.return_value = "mock_token"
+
+        # Mock the API response with drop lowest rule
+        mock_graphql.return_value = {
+            "data": {
+                "course": {
+                    "assignment_groups": {
+                        "groups": [
+                            {
+                                "rules": {
+                                    "dropHighest": None,
+                                    "dropLowest": 1,
+                                    "neverDrop": None,
+                                },
+                                "group_id": "537054",
+                                "group_name": "Quizzes",
+                                "group_weight": 10,
+                                "assignment_list": {
+                                    "assignments": [
+                                        {
+                                            "_id": "2088526",
+                                            "max_score": 10,
+                                            "name": "Q1",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 8, "user_id": "357363"},
+                                                ]
+                                            },
+                                        },
+                                        {
+                                            "_id": "2088527",
+                                            "max_score": 10,
+                                            "name": "Q2",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 7, "user_id": "357363"},
+                                                ]
+                                            },
+                                        },
+                                        {
+                                            "_id": "2088528",
+                                            "max_score": 20,
+                                            "name": "Q2",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 18, "user_id": "357363"},
+                                                ]
+                                            },
+                                        },
+                                    ]
+                                },
+                                "grade_list": {
+                                    "grades": [
+                                        {
+                                            "current_score": 70,
+                                            "enrollment": {
+                                                "_id": "9432892",
+                                                "user": {
+                                                    "user_id": "357363",
+                                                    "display_name": "Jane Doe",
+                                                },
+                                            },
+                                        }
+                                    ]
+                                },
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        # Initialize FlexCanvas
+        flex_canvas = FlexCanvas(mock_request)
+
+        # Call function
+        group_dict, user_enrollment_dict = flex_canvas.get_flat_groups_and_enrollments(
+            123
+        )
+
+        # Assertions
+        self.assertEqual(user_enrollment_dict["357363"], "9432892")
+        self.assertEqual(len(user_enrollment_dict), 1)
+        self.assertIn("537054", group_dict)
+        self.assertEqual(len(group_dict), 1)
+
+        # Check calculated grades after dropping the lowest score
+        # Jane Doe's grade for quizzes after dropping the lowest score
+        self.assertEqual(
+            round(group_dict["537054"]["grade_list"]["grades"][0][1], 2), 85
+        )
+
+    @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
+    @patch("instructor.canvas_api.get_oauth_token")  # Mock OAuth token retrieval
+    def test_get_flat_groups_and_enrollments_drop_highest(
+        self, mock_get_oauth_token, mock_graphql
+    ):
+        # Mock request
+        mock_request = MagicMock()
+        mock_request.session = {}  # If get_oauth_token accesses session
+        mock_request.user = MagicMock()  # If user-related data is needed
+
+        # Mock OAuth token retrieval
+        mock_get_oauth_token.return_value = "mock_token"
+
+        # Mock the API response with drop lowest rule
+        mock_graphql.return_value = {
+            "data": {
+                "course": {
+                    "assignment_groups": {
+                        "groups": [
+                            {
+                                "rules": {
+                                    "dropHighest": 1,
+                                    "dropLowest": None,
+                                    "neverDrop": None,
+                                },
+                                "group_id": "537054",
+                                "group_name": "Quizzes",
+                                "group_weight": 10,
+                                "assignment_list": {
+                                    "assignments": [
+                                        {
+                                            "_id": "2088526",
+                                            "max_score": 10,
+                                            "name": "Q1",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 8, "user_id": "357363"},
+                                                ]
+                                            },
+                                        },
+                                        {
+                                            "_id": "2088527",
+                                            "max_score": 10,
+                                            "name": "Q2",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 7, "user_id": "357363"},
+                                                ]
+                                            },
+                                        },
+                                        {
+                                            "_id": "2088528",
+                                            "max_score": 20,
+                                            "name": "Q2",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 18, "user_id": "357363"},
+                                                ]
+                                            },
+                                        },
+                                    ]
+                                },
+                                "grade_list": {
+                                    "grades": [
+                                        {
+                                            "current_score": 70,
+                                            "enrollment": {
+                                                "_id": "9432892",
+                                                "user": {
+                                                    "user_id": "357363",
+                                                    "display_name": "Jane Doe",
+                                                },
+                                            },
+                                        }
+                                    ]
+                                },
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        # Initialize FlexCanvas
+        flex_canvas = FlexCanvas(mock_request)
+
+        # Call function
+        group_dict, user_enrollment_dict = flex_canvas.get_flat_groups_and_enrollments(
+            123
+        )
+
+        # Assertions
+        self.assertEqual(user_enrollment_dict["357363"], "9432892")
+        self.assertEqual(len(user_enrollment_dict), 1)
+        self.assertIn("537054", group_dict)
+        self.assertEqual(len(group_dict), 1)
+
+        # Check calculated grades after dropping the lowest score
+        # Jane Doe's grade for quizzes after dropping the lowest score
+        self.assertEqual(
+            round(group_dict["537054"]["grade_list"]["grades"][0][1], 2), 75
+        )
+
+    @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
+    @patch("instructor.canvas_api.get_oauth_token")  # Mock OAuth token retrieval
+    def test_get_flat_groups_and_enrollments_drop_never_drop(
+        self, mock_get_oauth_token, mock_graphql
+    ):
+        # Mock request
+        mock_request = MagicMock()
+        mock_request.session = {}  # If get_oauth_token accesses session
+        mock_request.user = MagicMock()  # If user-related data is needed
+
+        # Mock OAuth token retrieval
+        mock_get_oauth_token.return_value = "mock_token"
+
+        # Mock the API response with drop lowest rule
+        mock_graphql.return_value = {
+            "data": {
+                "course": {
+                    "assignment_groups": {
+                        "groups": [
+                            {
+                                "rules": {
+                                    "dropHighest": None,
+                                    "dropLowest": 1,
+                                    "neverDrop": [
+                                        {
+                                            "_id": "2088526",
+                                        },
+                                    ],
+                                },
+                                "group_id": "537054",
+                                "group_name": "Quizzes",
+                                "group_weight": 10,
+                                "assignment_list": {
+                                    "assignments": [
+                                        {
+                                            "_id": "2088526",
+                                            "max_score": 10,
+                                            "name": "Q1",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 5, "user_id": "357363"},
+                                                ]
+                                            },
+                                        },
+                                        {
+                                            "_id": "2088527",
+                                            "max_score": 10,
+                                            "name": "Q2",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 7, "user_id": "357363"},
+                                                ]
+                                            },
+                                        },
+                                        {
+                                            "_id": "2088528",
+                                            "max_score": 20,
+                                            "name": "Q2",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 18, "user_id": "357363"},
+                                                ]
+                                            },
+                                        },
+                                    ]
+                                },
+                                "grade_list": {
+                                    "grades": [
+                                        {
+                                            "current_score": 70,
+                                            "enrollment": {
+                                                "_id": "9432892",
+                                                "user": {
+                                                    "user_id": "357363",
+                                                    "display_name": "Jane Doe",
+                                                },
+                                            },
+                                        }
+                                    ]
+                                },
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        # Initialize FlexCanvas
+        flex_canvas = FlexCanvas(mock_request)
+
+        # Call function
+        group_dict, user_enrollment_dict = flex_canvas.get_flat_groups_and_enrollments(
+            123
+        )
+
+        # Assertions
+        self.assertEqual(user_enrollment_dict["357363"], "9432892")
+        self.assertEqual(len(user_enrollment_dict), 1)
+        self.assertIn("537054", group_dict)
+        self.assertEqual(len(group_dict), 1)
+
+        # Check calculated grades after dropping the lowest score
+        # Jane Doe's grade for quizzes after dropping the lowest score
+        self.assertEqual(
+            round(group_dict["537054"]["grade_list"]["grades"][0][1], 2), 70
+        )
+
+
+# TODO: delete the note below
+# I've made some changes and tested them in canvas_api - the function get_flat_groups_and_enrollments should no longer be
+# affected by unpublished or ungraded assignments.
+
+
+# The next major bug is the issue of the random columns. I've found two possible causes that I'll investigate:
+# 1. GraphQL may not necessarily be deterministic - the queries may return the columns in a different order each time
+# 2. The function get_flat_groups_and_enrollments might not be ordering the groups consistently - check to see if/where the
+# groups are ordered before being displayed
