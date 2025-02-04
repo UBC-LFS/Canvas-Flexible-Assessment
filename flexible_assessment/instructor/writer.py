@@ -128,7 +128,7 @@ def grades_csv(course, students, groups):
 
     csv_writer = CSVWriter("Grades", course)
 
-    assessments = [assessment for assessment in course.assessment_set.all()]
+    assessments = list(course.assessment_set.all().order_by("order"))
 
     titles = []
     for assessment in assessments:
@@ -166,7 +166,7 @@ def grades_csv(course, students, groups):
             values.append("")
             values.append("No")
 
-        for assessment in assessments:
+        for assessment in assessments:  # check sorting of assessments here
             score = grader.get_score(groups, assessment.group, student)
             values.append(score)
 
