@@ -189,7 +189,7 @@ def assessments_csv(course):
 
     csv_writer = CSVWriter("Assessments", course)
 
-    assessments = [assessment for assessment in course.assessment_set.all()]
+    assessments = list(course.assessment_set.all().order_by("order"))
     header = ("Assessment", "Default", "Minimum", "Maximum")
 
     csv_writer.write(header)
