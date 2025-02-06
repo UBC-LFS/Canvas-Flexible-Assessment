@@ -606,6 +606,38 @@ class TestInstructorViews(StaticLiveServerTestCase):
         self.assertEqual(A1_order, 1)
         self.assertEqual(A4_order, 0)
 
+        print("OK")
+
+        final_grades_button = self.browser.find_element(
+            By.XPATH, '//a[contains(text(), "Final Grades")]'
+        )
+        final_grades_button.send_keys(Keys.ENTER)
+
+        # Locate all <select> elements
+        select_elements = self.browser.find_elements(By.TAG_NAME, "select")
+
+        select_1 = Select(select_elements[1])
+        select_1.select_by_visible_text("test_group1")
+
+        select_2 = Select(select_elements[3])
+        select_2.select_by_visible_text("test_group2")
+
+        select_3 = Select(select_elements[2])
+        select_3.select_by_visible_text("test_group3")
+
+        select_4 = Select(select_elements[0])
+        select_4.select_by_visible_text("test_group4")
+
+        continue_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Continue")]'
+        )
+        continue_button.send_keys(Keys.ENTER)
+
+        # TODO upate test_reordering to check that the columns are rendered in order
+        while True:
+            if input("Press Enter to continue") == "":
+                break
+
     @tag("slow")
     @mock_classes.use_mock_canvas()
     def test_min_max_auto(self, mocked_flex_canvas_instance):
