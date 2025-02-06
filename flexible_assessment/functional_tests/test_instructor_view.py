@@ -608,6 +608,8 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         print("OK")
 
+        # front-end test begins here
+
         final_grades_button = self.browser.find_element(
             By.XPATH, '//a[contains(text(), "Final Grades")]'
         )
@@ -633,10 +635,46 @@ class TestInstructorViews(StaticLiveServerTestCase):
         )
         continue_button.send_keys(Keys.ENTER)
 
-        # TODO upate test_reordering to check that the columns are rendered in order
-        while True:
-            if input("Press Enter to continue") == "":
-                break
+        # Locate the <thead> element
+        thead_element = self.browser.find_element(By.TAG_NAME, "thead")
+
+        # Find all <th> elements within the <thead>
+        th_elements = thead_element.find_elements(By.TAG_NAME, "th")
+
+        assessment_list = []
+
+        # Iterate through each <th> element and print its text
+        for index in range(5, len(th_elements), 2):
+            th = th_elements[index]
+            aria_label = th.get_attribute("aria-label").strip()
+            assessment_list.append(aria_label)
+
+        self.assertIn("A4", assessment_list[0], "A4 not in order")
+        self.assertIn("A1", assessment_list[1], "A1 not in order")
+        self.assertIn("A3", assessment_list[2], "A3 not in order")
+        self.assertIn("A2", assessment_list[3], "A2 not in order")
+
+        table_element = self.browser.find_element(By.ID, "final")
+        td_elements = table_element.find_elements(By.TAG_NAME, "td")
+
+        student_weights = []
+        # Iterate through each <td> element and print its text
+        for index in range(10, len(td_elements), 2):
+            td = td_elements[index]
+            student_weights.append(td.text)
+
+        self.assertEqual(
+            "0.00%", student_weights[0], "student choice for A4 not in order"
+        )
+        self.assertEqual(
+            "25.00%", student_weights[1], "student choice for A1 not in order"
+        )
+        self.assertEqual(
+            "50.00%", student_weights[2], "student choice for A3 not in order"
+        )
+        self.assertEqual(
+            "25.00%", student_weights[3], "student choice for A2 not in order"
+        )
 
     @tag("slow")
     @mock_classes.use_mock_canvas()
