@@ -22,6 +22,10 @@ import flexible_assessment.tests.mock_classes as mock_classes
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
+import os
+import pandas as pd
+import shutil
+
 
 class TestInstructorViews(StaticLiveServerTestCase):
     fixtures = DATA
@@ -42,6 +46,20 @@ class TestInstructorViews(StaticLiveServerTestCase):
         chromeOptions.add_argument("start-maximized")
         chromeOptions.add_argument("disable-infobars")
 
+        # for testing csv download
+        self.download_dir = os.path.join(os.getcwd(), "downloads")
+        os.makedirs(self.download_dir, exist_ok=True)
+
+        chromeOptions.add_experimental_option(
+            "prefs",
+            {
+                "download.default_directory": self.download_dir,  # Set download location
+                "download.prompt_for_download": False,  # Disable prompt
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": True,
+            },
+        )
+
         self.browser = webdriver.Chrome(options=chromeOptions)
 
         user = models.UserProfile.objects.get(login_id="test_instructor1")
@@ -51,6 +69,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         self.login_url = reverse("login")
 
     def tearDown(self):
+        shutil.rmtree(self.download_dir, ignore_errors=True)
         self.browser.close()
 
     def launch_new_user(self, course_data):
@@ -497,6 +516,8 @@ class TestInstructorViews(StaticLiveServerTestCase):
         3. Check that the updated positions are correct
         4. Add a new assessment and move it to the top
         5. Check that the order of all assessments has changed
+        6. Check that the assessment order is reflected in the front-end
+        7. Check that the assessment order is reflected in the csv download
         """
         print("---------------------test_reordering-------------------------------")
 
@@ -615,7 +636,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         )
         final_grades_button.send_keys(Keys.ENTER)
 
-        # Locate all <select> elements
+        # Locate all <select> elements and enter appropriate assignment
         select_elements = self.browser.find_elements(By.TAG_NAME, "select")
 
         select_1 = Select(select_elements[1])
@@ -635,15 +656,12 @@ class TestInstructorViews(StaticLiveServerTestCase):
         )
         continue_button.send_keys(Keys.ENTER)
 
-        # Locate the <thead> element
         thead_element = self.browser.find_element(By.TAG_NAME, "thead")
 
-        # Find all <th> elements within the <thead>
         th_elements = thead_element.find_elements(By.TAG_NAME, "th")
 
         assessment_list = []
 
-        # Iterate through each <th> element and print its text
         for index in range(5, len(th_elements), 2):
             th = th_elements[index]
             aria_label = th.get_attribute("aria-label").strip()
@@ -658,7 +676,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         td_elements = table_element.find_elements(By.TAG_NAME, "td")
 
         student_weights = []
-        # Iterate through each <td> element and print its text
+
         for index in range(10, len(td_elements), 2):
             td = td_elements[index]
             student_weights.append(td.text)
@@ -674,6 +692,61 @@ class TestInstructorViews(StaticLiveServerTestCase):
         )
         self.assertEqual(
             "25.00%", student_weights[3], "student choice for A2 not in order"
+        )
+
+        # download csv and compare with pandas
+        download_button = self.browser.find_element(
+            By.CLASS_NAME, "btn-outline-primary"
+        )
+
+        filename = os.path.join(
+            self.download_dir,
+            f"Grades_test_course3_{datetime.now().strftime("%Y-%m-%dT%H%M")}.csv",
+        )
+
+        download_button.click()
+
+        timeout = 5
+
+        while not os.path.exists(filename) and timeout > 0:
+            time.sleep(1)
+            timeout -= 1
+
+        self.assertTrue(os.path.exists(filename), "CSV file was not downloaded")
+
+        df = pd.read_csv(filename, header=0)
+
+        # Drop extra rows that might not match the expected structure
+        df = df[df["Student"].notna()]
+
+        # Strip spaces in column names (just in case)
+        df.columns = df.columns.str.strip()
+
+        # Select only columns from "A4 Grade %" onwards
+        start_col = "A4 Grade %"
+        df_filtered = df.loc[:, start_col:]
+
+        expected_data_filtered = pd.DataFrame(
+            {
+                "A4 Grade %": [50, None, None],
+                "A4 Weight % (0.0%)": [0.0, None, None],
+                "A1 Grade %": [50, None, None],
+                "A1 Weight % (25.0%)": [25.0, None, None],
+                "A3 Grade %": [50, None, None],
+                "A3 Weight % (50.0%)": [50.0, None, None],
+                "A2 Grade %": [50, None, None],
+                "A2 Weight % (25.0%)": [25.0, None, None],
+            }
+        )
+
+        # Ensure NaNs are treated consistently
+        df_filtered = df_filtered.fillna("")
+        expected_data_filtered = expected_data_filtered.fillna("")
+
+        # Compare the DataFrames
+        pd.testing.assert_frame_equal(
+            df_filtered.reset_index(drop=True),
+            expected_data_filtered.reset_index(drop=True),
         )
 
     @tag("slow")

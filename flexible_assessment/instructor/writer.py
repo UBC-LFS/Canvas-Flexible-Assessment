@@ -87,9 +87,8 @@ def students_csv(course, students):
 
     csv_writer = CSVWriter("Students", course)
 
-    assessments = [
-        assessment for assessment in course.assessment_set.all().order_by("order")
-    ]
+    assessments = list(course.assessment_set.all().order_by("order"))
+
     header = (
         ["Student"] + [assessment.title for assessment in assessments] + ["Comment"]
     )
@@ -132,10 +131,10 @@ def grades_csv(course, students, groups):
 
     titles = []
     for assessment in assessments:
+        titles.append(f"{assessment.title} Grade %")
         titles.append(
-            f"{assessment.title} ({grader.get_group_weight(groups, assessment.group)}%)"
+            f"{assessment.title} Weight % ({grader.get_group_weight(groups, assessment.group)}%)"
         )
-        titles.append(f"{assessment.title} (Chosen %)")
 
     header = (
         ["Student"]
@@ -163,10 +162,10 @@ def grades_csv(course, students, groups):
         else:
             values.append(round_half_up(default_total, 2))
             values.append(round_half_up(default_total, 2))
-            values.append("")
+            values.append("0")
             values.append("No")
 
-        for assessment in assessments:  # check sorting of assessments here
+        for assessment in assessments:
             score = grader.get_score(groups, assessment.group, student)
             values.append(score)
 
