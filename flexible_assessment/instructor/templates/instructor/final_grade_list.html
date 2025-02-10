@@ -30,7 +30,10 @@
                                     <b>Send to Canvas</b>.
                                 </p>
                             </div>
-                            <span onclick="show_more()" id="myBtn" style="text-decoration: underline">Show Instructions</span>
+                            <span onclick="show_more()"
+                                  id="myBtn"
+                                  style="text-decoration: underline;
+                                         cursor: pointer">Show Instructions</span>
                         </p>
                         <table id="final" class="table table-striped mb-3 nowrap" width="100%">
                             <thead>
@@ -219,12 +222,18 @@
         var moreText = $("#more");
         var btnText = $("#myBtn");
         
+        function change_text(text) {
+            btnText.text(text);
+        }
+        
         if (moreText.is(":hidden")) {
-            moreText.fadeIn();
-            btnText.text("Hide Instructions"); 
+            moreText.fadeIn({duration: 400});
+            change_text("Hide Instructions");
         } else {
-            moreText.fadeOut();
-            btnText.text("Show Instructions"); 
+            moreText.fadeOut({duration: 400, complete: function() {
+                    btnText.text("Show Instructions");
+                }
+            });
         }
     }
 
