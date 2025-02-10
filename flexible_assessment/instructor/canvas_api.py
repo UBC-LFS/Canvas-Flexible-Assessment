@@ -217,17 +217,37 @@ class FlexCanvas(Canvas):
                 droppable_scores.items(), key=lambda item: item[1]
             )
 
-            # Drop given number of highest scores from droppable assignments
-            if "dropHighest" in rules and rules["dropHighest"]:
+            # Design: if there are rules for dropping highest and lowest scores, only drop if it's possible to satisfy both rules
+            # Otherwise, if there is only one rule, drop only if you can satisfy it
+            if (
+                "dropHighest" in rules
+                and rules["dropHighest"]
+                and "dropLowest" in rules
+                and rules["dropLowest"]
+            ):
+                highest_drop_count = rules["dropHighest"]
+                lowest_drop_count = rules["dropLowest"]
+                if highest_drop_count + lowest_drop_count < len(
+                    sorted_droppable_scores
+                ):
+                    sorted_droppable_scores = sorted_droppable_scores[
+                        :-highest_drop_count
+                    ]
+                    user_drop_status[user_id] += highest_drop_count
+                    sorted_droppable_scores = sorted_droppable_scores[
+                        lowest_drop_count:
+                    ]
+                    user_drop_status[user_id] += lowest_drop_count
+            elif (
+                "dropHighest" in rules and rules["dropHighest"]
+            ):  # case where dropLowest not found or equals null
                 highest_drop_count = rules["dropHighest"]
                 if highest_drop_count < len(sorted_droppable_scores):
                     sorted_droppable_scores = sorted_droppable_scores[
                         :-highest_drop_count
                     ]
                     user_drop_status[user_id] += highest_drop_count
-
-            # Drop given number of lowest scores from droppable assignments
-            if "dropLowest" in rules and rules["dropLowest"]:
+            elif "dropLowest" in rules and rules["dropLowest"]:
                 lowest_drop_count = rules["dropLowest"]
                 if lowest_drop_count < len(sorted_droppable_scores):
                     sorted_droppable_scores = sorted_droppable_scores[
