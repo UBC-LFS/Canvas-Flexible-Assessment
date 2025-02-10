@@ -1459,14 +1459,3 @@ class TestFlexCanvas(TestCase):
         self.assertEqual(
             round(group_dict["537054"]["grade_list"]["grades"][1][1], 2), 100
         )
-
-
-# TODO: delete the note below
-# I've made some changes and tested them in canvas_api - the function get_flat_groups_and_enrollments should no longer be
-# affected by unpublished or ungraded assignments.
-
-
-# The next major bug is the issue of the random columns. I've found two possible causes that I'll investigate:
-# 1. GraphQL may not necessarily be deterministic - the queries may return the columns in a different order each time
-# 2. The function get_flat_groups_and_enrollments might not be ordering the groups consistently - check to see if/where the
-# groups are ordered before being displayed

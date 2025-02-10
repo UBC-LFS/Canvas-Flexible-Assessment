@@ -181,7 +181,7 @@ class FlexCanvas(Canvas):
 
         return group_dict, user_enrollment_dict
 
-    def calculate_user_scores(self, data, rules):
+    def calculate_user_scores(self, data, rules, user_drop_status):
         user_scores = {}
 
         for user_id, assignments in data.items():
@@ -190,6 +190,9 @@ class FlexCanvas(Canvas):
                 list(assignment.keys())[0]: list(assignment.values())[0]
                 for assignment in assignments
             }
+
+            # initialize user_drop_status for each user
+            user_drop_status[user_id] = 0
 
             # Extracting scores that should never be dropped
             if rules["neverDrop"]:
@@ -221,6 +224,7 @@ class FlexCanvas(Canvas):
                     sorted_droppable_scores = sorted_droppable_scores[
                         :-highest_drop_count
                     ]
+                    user_drop_status[user_id] += highest_drop_count
 
             # Drop given number of lowest scores from droppable assignments
             if "dropLowest" in rules and rules["dropLowest"]:
@@ -229,6 +233,7 @@ class FlexCanvas(Canvas):
                     sorted_droppable_scores = sorted_droppable_scores[
                         lowest_drop_count:
                     ]
+                    user_drop_status[user_id] += lowest_drop_count
 
             # Combine the scores from neverDrop with the remaining droppable scores
             final_scores = list(never_drop_scores.values()) + [
@@ -395,18 +400,18 @@ class FlexCanvas(Canvas):
                     user_total_assignments[user_id] += 1
 
             # If no rules, skip extra processing
+
+            # user_drop_status is a dictionary of user ids, and the number of dropped assignments for that user
+            user_drop_status = {}
+
             if rules:
-                user_scores = self.calculate_user_scores(user_scores, rules)
-                if rules["dropHighest"]:
-                    user_total_assignments = {
-                        k: v - rules["dropHighest"]
-                        for k, v in user_total_assignments.items()
-                    }
-                if rules["dropLowest"]:
-                    user_total_assignments = {
-                        k: v - rules["dropLowest"]
-                        for k, v in user_total_assignments.items()
-                    }
+                user_scores = self.calculate_user_scores(
+                    user_scores, rules, user_drop_status
+                )
+                user_total_assignments = {
+                    k: v - user_drop_status[k]
+                    for k, v in user_total_assignments.items()
+                }
 
             # Once group scores are calculated, update assignment grades
             updated_grades = []
