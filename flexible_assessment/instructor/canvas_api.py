@@ -337,8 +337,8 @@ class FlexCanvas(Canvas):
             if assignments is None:
                 raise PermissionDenied
 
-            # Get total amount of assignment (for normalizing the grade)
-            total_assignments = len(assignments)
+            # Have dictionary storing total assignments per user
+            user_total_assignments = {}
 
             # Gets the grades for each assignment, will be editing this to accomodate a flat grading system
             grades = group_flattened.get("grade_list.grades", [])
@@ -356,12 +356,13 @@ class FlexCanvas(Canvas):
                 omit_from_final_grade = assignment_flattened.get(
                     "omitFromFinalGrade", False
                 )
+                not_empty = assignment_flattened.get("submission_list.submissions")
                 if (
                     published is False
                     or grading_type == "not_graded"
                     or omit_from_final_grade
+                    or not not_empty
                 ):  # filter out unpublished assignments
-                    total_assignments -= 1
                     continue
 
                 max_score = assignment_flattened.get("max_score", None)
@@ -371,7 +372,6 @@ class FlexCanvas(Canvas):
 
                 # If no submissions of max_score == 0, skip assignment and do not factor it into grade
                 if max_score == 0 or max_score is None or submissions is None:
-                    total_assignments -= 1
                     continue
 
                 assignment_id = assignment["_id"]
@@ -390,13 +390,23 @@ class FlexCanvas(Canvas):
                     else:
                         user_scores[user_id] = user_scores.get(user_id, 0) + flat_score
 
+                    if user_id not in user_total_assignments:
+                        user_total_assignments[user_id] = 0
+                    user_total_assignments[user_id] += 1
+
             # If no rules, skip extra processing
             if rules:
                 user_scores = self.calculate_user_scores(user_scores, rules)
                 if rules["dropHighest"]:
-                    total_assignments -= rules["dropHighest"]
+                    user_total_assignments = {
+                        k: v - rules["dropHighest"]
+                        for k, v in user_total_assignments.items()
+                    }
                 if rules["dropLowest"]:
-                    total_assignments -= rules["dropLowest"]
+                    user_total_assignments = {
+                        k: v - rules["dropLowest"]
+                        for k, v in user_total_assignments.items()
+                    }
 
             # Once group scores are calculated, update assignment grades
             updated_grades = []
@@ -411,8 +421,9 @@ class FlexCanvas(Canvas):
                 if user_id in user_scores:
                     # Calculate the average score and convert it to percentage
                     flat_group_score = (
-                        (user_scores[user_id] / total_assignments) * 100
-                        if total_assignments
+                        # perhaps here, loop through all assignments and count number of assignments without submission
+                        (user_scores[user_id] / user_total_assignments[user_id]) * 100
+                        if user_total_assignments[user_id]
                         else 0
                     )
                     # updated_grades.append((user_id, round_half_up(flat_group_score, 3)))

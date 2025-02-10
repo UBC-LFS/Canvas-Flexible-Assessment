@@ -95,6 +95,15 @@ class TestFlexCanvas(TestCase):
                                             "omitFromFinalGrade": False,
                                             "submission_list": {"submissions": []},
                                         },
+                                        {
+                                            "_id": "2088570",
+                                            "max_score": 30,
+                                            "name": "Q5 - empty",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {"submissions": []},
+                                        },
                                     ]
                                 },
                                 "grade_list": {
@@ -401,7 +410,20 @@ class TestFlexCanvas(TestCase):
                                                     {"score": 46, "user_id": "357495"},
                                                 ]
                                             },
-                                        }
+                                        },
+                                        {
+                                            "_id": "2088571",
+                                            "max_score": 50,
+                                            "name": "Final 2 - Partially graded",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 3, "user_id": "357399"}
+                                                ]
+                                            },
+                                        },
                                     ]
                                 },
                                 "grade_list": {
@@ -495,7 +517,7 @@ class TestFlexCanvas(TestCase):
         self.assertEqual(
             round(group_dict["537053"]["grade_list"]["grades"][0][1], 2), 62.5
         )
-        # John Smith's grade for quizzes,  with an unpublished assignment
+        # John Smith's grade for quizzes,  with an unpublished assignment and an empty (prof has not graded any submissions) assignment
         self.assertEqual(
             round(group_dict["537054"]["grade_list"]["grades"][1][1], 2), 65.56
         )
@@ -503,11 +525,14 @@ class TestFlexCanvas(TestCase):
         self.assertEqual(
             round(group_dict["537055"]["grade_list"]["grades"][4][1], 2), 76
         )
-
-        # import pprint
-
-        # pprint.pprint(user_enrollment_dict)
-        # pprint.pprint(group_dict)
+        # John Smith's grade for finals, which have been partially graded (John was graded)
+        self.assertEqual(
+            round(group_dict["537056"]["grade_list"]["grades"][0][1], 2), 20
+        )
+        # Jane Doe's grade for finals, which have been partially graded (Jane was ungraded)
+        self.assertEqual(
+            round(group_dict["537056"]["grade_list"]["grades"][1][1], 2), 82
+        )
 
     @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
     @patch("instructor.canvas_api.get_oauth_token")  # Mock OAuth token retrieval
