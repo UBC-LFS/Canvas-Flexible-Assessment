@@ -599,9 +599,9 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         return HttpResponseRedirect(self.get_success_url())
 
-    def get_invalid_flex_students(self, course):
+    def get_overridden_students(self, course):
         """
-        Retrieves all assessments for the course and finds students with invalid flexes.
+        Retrieves all assessments for the course and finds students that were overridden
 
         Parameters
         ----------
@@ -610,18 +610,19 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         Returns
         -------
-        invalid_flex_students : set
-            A set of students with invalid flexes.
+        overridden_students : set
+            A set of students with overridden flexes.
         """
 
-        assessments = models.Assessment.objects.filter(course=course).order_by("order")
-        invalid_flex_students = set()
+        flex_assessments = models.FlexAssessment.objects.filter(
+            assessment__course=course, override=True
+        )
 
-        for assessment in assessments:
-            curr_conflict_students = assessment.check_valid_flex() or set()
-            invalid_flex_students = invalid_flex_students.union(curr_conflict_students)
+        user_ids = flex_assessments.values_list("user", flat=True)
+        users = models.UserProfile.objects.filter(user_id__in=user_ids)
+        overridden_students = set(users)
 
-        return invalid_flex_students
+        return overridden_students
 
     def _set_flex_availability(self, date_form, course):
         """
@@ -768,10 +769,8 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
     def _save_assessments(self, forms, course, ignore_conflicts):
         assessments = []
-        ### TODO - this is currently buggy - it seems to be called twice, meaning non-overridden students are treated as overridden
-        # students that currently have invalid flexes were overridden by the teacher - no need to check for these ones
-        overridden_students = self.get_invalid_flex_students(course)
-        print(overridden_students)
+        # overridden students shouldn't be considered as conflicting
+        overridden_students = self.get_overridden_students(course)
         conflict_students = set()
         for form in forms:
             assessment = form.save(commit=False)
