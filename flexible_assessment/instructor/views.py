@@ -599,6 +599,30 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         return HttpResponseRedirect(self.get_success_url())
 
+    def get_invalid_flex_students(self, course):
+        """
+        Retrieves all assessments for the course and finds students with invalid flexes.
+
+        Parameters
+        ----------
+        course : Course
+            The course object for which to retrieve assessments and check flex validity.
+
+        Returns
+        -------
+        invalid_flex_students : set
+            A set of students with invalid flexes.
+        """
+
+        assessments = models.Assessment.objects.filter(course=course).order_by("order")
+        invalid_flex_students = set()
+
+        for assessment in assessments:
+            curr_conflict_students = assessment.check_valid_flex() or set()
+            invalid_flex_students = invalid_flex_students.union(curr_conflict_students)
+
+        return invalid_flex_students
+
     def _set_flex_availability(self, date_form, course):
         """
         Sets the time period in which students are able to select the assessment weights
@@ -744,6 +768,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
     def _save_assessments(self, forms, course, ignore_conflicts):
         assessments = []
+        ### TODO - this is currently buggy - it seems to be called twice, meaning non-overridden students are treated as overridden
+        # students that currently have invalid flexes were overridden by the teacher - no need to check for these ones
+        overridden_students = self.get_invalid_flex_students(course)
+        print(overridden_students)
         conflict_students = set()
         for form in forms:
             assessment = form.save(commit=False)
@@ -751,7 +779,9 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             assessment.course = course
 
             curr_conflict_students = assessment.check_valid_flex()
-            conflict_students = conflict_students.union(curr_conflict_students)
+            conflict_students = conflict_students.union(
+                curr_conflict_students
+            ).difference(overridden_students)
 
             if curr_conflict_students and not ignore_conflicts:
                 messages.warning(
