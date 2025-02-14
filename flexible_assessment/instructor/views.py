@@ -777,10 +777,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             assessments.append(assessment)
             assessment.course = course
 
-            curr_conflict_students = assessment.check_valid_flex()
-            conflict_students = conflict_students.union(
-                curr_conflict_students
-            ).difference(overridden_students)
+            curr_conflict_students = assessment.check_valid_flex().difference(
+                overridden_students
+            )
+            conflict_students = conflict_students.union(curr_conflict_students)
 
             if curr_conflict_students and not ignore_conflicts:
                 messages.warning(
