@@ -751,6 +751,113 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
     @tag("slow")
     @mock_classes.use_mock_canvas()
+    def test_override_and_submit(self, mocked_flex_canvas_instance):
+        """In course 3 the teacher is setting up flexible assessment for the first time
+        The teacher will override a student response and then change the flexes and resubmit
+        1. Navigate to Course Setup and create 3 assessments
+        2. Submit. navigate to the student page and override the student response
+        3. Navigate back to Course Setup and change weights, forcing non-overridden students to change
+        4. Navigate back to students page and check if flexes are correct for overridden and non-overridden students
+        """
+        print(
+            "---------------------test_override_and_submit-------------------------------"
+        )
+
+        session_id = self.client.session.session_key
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[1])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[1])
+        )
+
+        student_choices_button = self.browser.find_element(
+            By.XPATH, '//a[contains(text(), "Student Choices")]'
+        )
+
+        student_choices_button.click()
+
+        test_student_1_button = self.browser.find_element(By.LINK_TEXT, "test_student1")
+
+        test_student_1_button.click()
+
+        inputs = self.browser.find_elements(By.TAG_NAME, "input")
+        values = ["100", "0", "0", "0"]
+
+        for index, value in enumerate(values):
+            inputs[index + 1].clear()
+            inputs[index + 1].send_keys(
+                value
+            )  # There is 1 hidden inputs we need to skip over
+
+        submit_student_override_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Submit")]'
+        )
+
+        submit_student_override_button.click()
+
+        assessments_button = self.browser.find_element(
+            by=By.XPATH, value='//a[contains(text(), "Assessments")]'
+        )
+
+        assessments_button.click()
+
+        inputs = self.browser.find_elements(By.TAG_NAME, "input")
+
+        inputs = self.browser.find_elements(
+            By.TAG_NAME, "input"
+        )  # Get all input elements
+
+        inputs[14].clear()
+        inputs[14].send_keys("30")
+
+        update_button = self.browser.find_element(
+            By.XPATH, "//button[normalize-space(text())='Update']"
+        )
+        self.browser.execute_script("arguments[0].click();", update_button)
+
+        alert = WebDriverWait(self.browser, 5).until(EC.alert_is_present())
+        self.assertIn(
+            "3 flex allocations are out of range for assignment2",
+            alert.text.split("\n")[0],
+        )
+        alert.accept()
+
+        student_choices_button = self.browser.find_element(
+            by=By.XPATH, value='//a[contains(text(), "Student Choices")]'
+        )
+
+        student_choices_button.click()
+
+        # Find all rows in the table (except the header)
+        rows = self.browser.find_elements(By.XPATH, "//table//tbody//tr")
+
+        for i in range(0, len(rows)):
+            # Get the second column (td)
+            row_values = rows[i].find_elements(By.TAG_NAME, "td")
+            chose_percentages = row_values[1].text.strip()
+            a1_choice = row_values[2].text
+            a2_choice = row_values[3].text
+            a3_choice = row_values[4].text
+            a4_choice = row_values[5].text
+
+            if i == 0:
+                self.assertEqual(chose_percentages, "Yes")
+                self.assertEqual(a1_choice, "100.00%")
+                self.assertEqual(a2_choice, "0.00%")
+                self.assertEqual(a3_choice, "0.00%")
+                self.assertEqual(a4_choice, "0.00%")
+            else:
+                self.assertEqual(chose_percentages, "No")
+                self.assertEqual(a1_choice, "20.00%")
+                self.assertEqual(a2_choice, "30.00%")
+                self.assertEqual(a3_choice, "25.00%")
+                self.assertEqual(a4_choice, "25.00%")
+
+    @tag("slow")
+    @mock_classes.use_mock_canvas()
     def test_min_max_auto(self, mocked_flex_canvas_instance):
         """In course 3 the teacher is setting up flexible assessment for the first time
         The teacher will set up a course and leave the min and max for one of them empty
