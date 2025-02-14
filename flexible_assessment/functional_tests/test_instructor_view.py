@@ -21,6 +21,7 @@ import time
 import flexible_assessment.tests.mock_classes as mock_classes
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import TimeoutException
 
 import os
 import pandas as pd
@@ -790,13 +791,34 @@ class TestInstructorViews(StaticLiveServerTestCase):
             inputs[index + 1].clear()
             inputs[index + 1].send_keys(
                 value
-            )  # There is 1 hidden inputs we need to skip over
+            )  # There is 1 hidden input we need to skip over
 
         submit_student_override_button = self.browser.find_element(
             By.XPATH, '//button[contains(text(), "Submit")]'
         )
 
         submit_student_override_button.click()
+
+        assessments_button = self.browser.find_element(
+            by=By.XPATH, value='//a[contains(text(), "Assessments")]'
+        )
+
+        assessments_button.click()
+
+        # try submitting assessment without changing anything
+        update_button = self.browser.find_element(
+            By.XPATH, "//button[normalize-space(text())='Update']"
+        )
+        self.browser.execute_script("arguments[0].click();", update_button)
+
+        # no alert should pop up, since we shouldn't count the overridden student
+        try:
+            WebDriverWait(self.browser, 5).until(EC.alert_is_present())
+            self.fail(
+                "An unexpected alert appeared, but none was expected."
+            )  # Fail if alert appears
+        except TimeoutException:
+            pass  # Test passes if no alert appears
 
         assessments_button = self.browser.find_element(
             by=By.XPATH, value='//a[contains(text(), "Assessments")]'
