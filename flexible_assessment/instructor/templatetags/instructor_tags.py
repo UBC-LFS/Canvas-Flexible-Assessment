@@ -14,7 +14,7 @@ def assessment_filter(flex_set, assessment_id):
 
 @register.filter
 def comment_filter(comment_set, course_id):
-    return comment_set.get(course__id=course_id)
+    return comment_set.filter(course__id=course_id).first()
 
 
 @register.filter

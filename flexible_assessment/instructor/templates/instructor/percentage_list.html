@@ -85,7 +85,9 @@
                                                 style="text-align: left;
                                                        width: 40%;
                                                        overflow-wrap: break-word;
-                                                       white-space: normal">{{ user_comment.comment }}</td>
+                                                       white-space: normal">
+                                                {% if user_comment %}{{ user_comment.comment }}{% endif %}
+                                            </td>
                                         {% endwith %}
                                     </tr>
                                 {% endfor %}
