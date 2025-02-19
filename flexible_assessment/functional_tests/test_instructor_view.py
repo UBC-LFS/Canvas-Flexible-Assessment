@@ -8,6 +8,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver import ActionChains
 import flexible_assessment.models as models
+import instructor.writer as writer
 from django.urls import reverse
 from django.test import Client, tag
 from django.http import HttpResponseRedirect
@@ -877,6 +878,63 @@ class TestInstructorViews(StaticLiveServerTestCase):
                 self.assertEqual(a2_choice, "30.00%")
                 self.assertEqual(a3_choice, "25.00%")
                 self.assertEqual(a4_choice, "25.00%")
+
+    @tag("slow")
+    @mock_classes.use_mock_canvas()
+    def test_logs(self, mocked_flex_canvas_instance):
+        """In course 1 the teacher is exporting the logs
+        For some reason, there seem to be (out of order/duplicate) log entries that are only on the production server.
+        I've added some duplicate entries and some out of order entries in the file flexible_assessment/log/info.log to simulate this.
+        The log files are ignored in gitignore, so to get this test to work, you'll need to make some entries on your own machine
+        1.
+        """
+        print("---------------------test_logs-------------------------------")
+
+        session_id = self.client.session.session_key
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[1])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[1])
+        )
+        # 1
+        self.browser.find_element(By.LINK_TEXT, "Student Choices").click()
+
+        self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Export")]'
+        ).click()
+
+        self.browser.find_element(By.LINK_TEXT, "Change Log").click()
+
+        filename = os.path.join(
+            self.download_dir,
+            f"Log_test_course1_{datetime.now().strftime("%Y-%m-%dT%H%M")}.txt",
+        )
+        timeout = 5
+
+        while not os.path.exists(filename) and timeout > 0:
+            time.sleep(1)
+            timeout -= 1
+
+        self.assertTrue(os.path.exists(filename), "TXT file was not downloaded")
+
+        file = open(filename, "r")
+        seen_lines = set()
+        prev_line = None
+
+        for line in file:
+            self.assertFalse(line in seen_lines, "duplicate line found")
+            if prev_line:
+                self.assertTrue(
+                    writer.parse_timestamp(prev_line) <= writer.parse_timestamp(line),
+                    "lines out of order",
+                )
+            seen_lines.add(line)
+            prev_line = line
+
+        file.close()
 
     @tag("slow")
     @mock_classes.use_mock_canvas()
