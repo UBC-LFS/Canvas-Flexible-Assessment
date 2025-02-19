@@ -44,6 +44,10 @@ def round_half_up(value, digits=2):
     return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
 
+def should_show_page(course):
+    return course.close is not None
+
+
 class InstructorHome(views.InstructorTemplateView):
     template_name = "instructor/instructor_home.html"
 
@@ -65,16 +69,14 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
-        # Check if the course is closed - same criteria for rendering other elements in base template
-        if course.close is None:
+        if should_show_page(course):
+            response = super().get(request, *args, **kwargs)
+            return response
+        else:
             # Redirect to InstructorHome view if course is closed
             return HttpResponseRedirect(
                 reverse("instructor:instructor_home", kwargs={"course_id": course_id})
             )
-
-        # Continue with normal processing otherwise
-        response = super().get(request, *args, **kwargs)
-        return response
 
     def export_list(self):
         students = self.get_queryset()
@@ -109,6 +111,19 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
     """ListView for student final grades with default and override scores"""
 
     template_name = "instructor/final_grade_list.html"
+
+    def get(self, request, *args, **kwargs):
+        course_id = self.kwargs["course_id"]
+        course = models.Course.objects.get(pk=course_id)
+
+        if should_show_page(course):
+            response = super().get(request, *args, **kwargs)
+            return response
+        else:
+            # Redirect to InstructorHome view if course is closed
+            return HttpResponseRedirect(
+                reverse("instructor:instructor_home", kwargs={"course_id": course_id})
+            )
 
     def export_list(self):
         students = self.get_queryset()
@@ -271,6 +286,19 @@ class AssessmentGroupView(views.InstructorFormView):
     template_name = "instructor/assessment_group_form.html"
     form_class = AssessmentGroupForm
     success_reverse_name = "instructor:final_grades"
+
+    def get(self, request, *args, **kwargs):
+        course_id = self.kwargs["course_id"]
+        course = models.Course.objects.get(pk=course_id)
+
+        if should_show_page(course):
+            response = super().get(request, *args, **kwargs)
+            return response
+        else:
+            # Redirect to InstructorHome view if course is closed
+            return HttpResponseRedirect(
+                reverse("instructor:instructor_home", kwargs={"course_id": course_id})
+            )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
