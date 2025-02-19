@@ -178,10 +178,10 @@ class TestUrls(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
-    # # TODO: They should probably be routed to course_setup page instead of being able to access these pages
-    # def test_accessing_urls_when_course_setup_not_complete(self):
-    #     course_id = self.login_instructor("test_instructor1", "test_course2")
-    #     url = reverse('instructor:file_upload', args=[course_id])
-    #     response = self.client.get(url)
-
-    #     self.assertEqual(response.status_code, 302)
+    # TODO: They should probably be routed to course_setup page instead of being able to access these pages
+    def test_accessing_urls_when_course_setup_not_complete(self):
+        course_id = self.login_instructor("test_instructor1", "test_course2")
+        url = reverse("instructor:percentage_list", args=[course_id])
+        response = self.client.get(url)
+        print(response)
+        self.assertEqual(response.status_code, 302)

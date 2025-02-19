@@ -61,6 +61,21 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
 
     template_name = "instructor/percentage_list.html"
 
+    def get(self, request, *args, **kwargs):
+        course_id = self.kwargs["course_id"]
+        course = models.Course.objects.get(pk=course_id)
+
+        # Check if the course is closed - same criteria for rendering other elements in base template
+        if course.close is None:
+            # Redirect to InstructorHome view if course is closed
+            return HttpResponseRedirect(
+                reverse("instructor:instructor_home", kwargs={"course_id": course_id})
+            )
+
+        # Continue with normal processing otherwise
+        response = super().get(request, *args, **kwargs)
+        return response
+
     def export_list(self):
         students = self.get_queryset()
         course_id = self.kwargs["course_id"]
