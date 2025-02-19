@@ -63,6 +63,17 @@ class LogWriter(Writer):
         self._writer.write(line)
 
 
+from datetime import datetime
+
+
+def parse_timestamp(line):
+    """Extracts timestamp from log line, assuming format 'YYYY-MM-DD HH:MM:SS,mmm'."""
+    match = re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}", line)
+    if match:
+        return datetime.strptime(match.group(), "%Y-%m-%d %H:%M:%S,%f")
+    return None  # Return None if no timestamp is found
+
+
 def course_log(course):
     log_writer = LogWriter("Log", course)
 
@@ -71,12 +82,15 @@ def course_log(course):
     except FileNotFoundError:
         return log_writer.get_response()
 
+    seen_lines = set()
+
     for log_file_name in log_file_names:
         with open(os.path.join(settings.LOG_DIR, log_file_name)) as f:
             lines = f.readlines()
             for line in lines:
                 res = re.search(r"\[(.*?)\]", line)
-                if res and res.group(1) == str(course):
+                if res and res.group(1) == str(course) and line not in seen_lines:
+                    seen_lines.add(line)
                     log_writer.write(line)
 
     return log_writer.get_response()
