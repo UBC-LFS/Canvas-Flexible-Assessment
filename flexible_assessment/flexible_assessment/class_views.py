@@ -77,7 +77,7 @@ class GenericView(LoginRequiredMixin, UserPassesTestMixin):
         if user_course.role in Instructor.permitted_roles:
             messages.info(
                 self.request,
-                "You have been automatically redirected back to the page you have permisisons to view (Instructor)",
+                "You have been automatically redirected back to the page you have permissions to view (Instructor)",
             )
             return HttpResponseRedirect(
                 reverse("instructor:instructor_home", kwargs={"course_id": course_id})
@@ -85,7 +85,7 @@ class GenericView(LoginRequiredMixin, UserPassesTestMixin):
         elif user_course.role in Student.permitted_roles:
             messages.info(
                 self.request,
-                "You have been automatically redirected back to the page you have permisisons to view (Student)",
+                "You have been automatically redirected back to the page you have permissions to view (Student)",
             )
             return HttpResponseRedirect(
                 reverse("student:student_home", kwargs={"course_id": course_id})
