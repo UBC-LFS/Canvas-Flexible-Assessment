@@ -206,6 +206,9 @@ class StudentAssessmentView(views.StudentFormView):
         # replace linebreaks in the log comment with \n so logs aren't broken
         log_comment = "\\n".join(comment.splitlines())
 
+        # remove ' character to ensure log comment isn't escaped
+        log_comment.replace("'", "")
+
         if old_comment != comment:
             logger.info("Updated comment to '%s'", log_comment, extra=log_extra)
 
@@ -213,7 +216,7 @@ class StudentAssessmentView(views.StudentFormView):
         return response
 
     def old_flex_outside_bounds(self, assessment_id, user_id):
-        # A flex can only be set outside of it's normal bounds by an instructor.
+        # A flex can only be set outside of its normal bounds by an instructor.
         assessment = models.Assessment.objects.get(pk=assessment_id)
         flex_assessment = assessment.flexassessment_set.filter(
             user__user_id=user_id
