@@ -203,8 +203,11 @@ class StudentAssessmentView(views.StudentFormView):
         user_comment.comment = comment
         user_comment.save()
 
+        # replace linebreaks in the log comment with \n so logs aren't broken
+        log_comment = "\\n".join(comment.splitlines())
+
         if old_comment != comment:
-            logger.info("Updated comment to '%s'", comment, extra=log_extra)
+            logger.info("Updated comment to '%s'", log_comment, extra=log_extra)
 
         response = super().form_valid(form)
         return response
