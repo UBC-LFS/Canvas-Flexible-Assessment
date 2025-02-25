@@ -147,6 +147,7 @@ class TestViews(TestCase):
         import os
         from django.conf import settings
 
+        # note - may need to change filepath if your log file is different
         log_file_path = os.path.join(settings.BASE_DIR, "log", "info.log")
         with open(log_file_path) as f:
             for line in f:

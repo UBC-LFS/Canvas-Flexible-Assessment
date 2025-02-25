@@ -161,7 +161,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                 )
 
                 logger.info(
-                    "Allow Final Grade Override setting" "not checked in Canvas",
+                    "Allow Final Grade Override setting" " not checked in Canvas",
                     extra=log_extra,
                 )
 
