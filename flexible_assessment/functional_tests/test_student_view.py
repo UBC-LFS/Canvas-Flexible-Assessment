@@ -382,14 +382,27 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.browser_teacher.find_element(By.LINK_TEXT, "Assessments").click()
 
         date_field = self.browser_teacher.find_element(By.NAME, "date-close")
+
         yesterday = datetime.now() - timedelta(1)
-        date_field.send_keys(datetime.strftime(yesterday, "%m-%d-%Y"))
+        formatted_date = yesterday.strftime("%Y-%m-%d")
+
+        # Use JavaScript to set values and trigger Flatpickr events
+        self.browser.execute_script(
+            "arguments[0]._flatpickr.setDate(arguments[1], true);",
+            date_field,
+            formatted_date,
+        )
+
+        # Set the time
+        time_string = "14:45"  # 2:45 PM in 24-hour format
+        self.browser.execute_script(
+            "arguments[0]._flatpickr.setDate(arguments[1] + ' ' + arguments[2], true);",
+            date_field,
+            formatted_date,
+            time_string,
+        )
 
         self.browser_teacher.fullscreen_window()
-        update_button = self.browser_teacher.find_element(
-            By.XPATH, '//button[contains(text(), "Update")]'
-        )
-        update_button.send_keys(Keys.ENTER)
 
         # 3
         self.assertTrue(submit.is_enabled())
