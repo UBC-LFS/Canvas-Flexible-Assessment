@@ -1058,14 +1058,42 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         tomorrow = datetime.now() + timedelta(1)
 
-        open_date_field.send_keys(datetime.strftime(tomorrow, "%m-%d-%Y"))
-        open_date_field.send_keys(Keys.TAB)
-        open_date_field.send_keys("0245PM")
+        open_date_field = self.browser.find_element(By.NAME, "date-open")
+        date_field = self.browser.find_element(By.NAME, "date-close")
 
-        date_field.send_keys(datetime.strftime(tomorrow, "%m-%d-%Y"))
-        date_field.send_keys(Keys.TAB)
-        date_field.send_keys("0245PM")
+        tomorrow = datetime.now() + timedelta(days=1)
+        formatted_date = tomorrow.strftime(
+            "%Y-%m-%d"
+        )  # Flatpickr expects YYYY-MM-DD format
 
+        # Use JavaScript to set values and trigger Flatpickr events
+        self.browser.execute_script(
+            "arguments[0]._flatpickr.setDate(arguments[1], true);",
+            open_date_field,
+            formatted_date,
+        )
+        self.browser.execute_script(
+            "arguments[0]._flatpickr.setDate(arguments[1], true);",
+            date_field,
+            formatted_date,
+        )
+
+        # Set the time (if your Flatpickr includes time selection)
+        time_string = "14:45"  # 2:45 PM in 24-hour format
+        self.browser.execute_script(
+            "arguments[0]._flatpickr.setDate(arguments[1] + ' ' + arguments[2], true);",
+            open_date_field,
+            formatted_date,
+            time_string,
+        )
+        self.browser.execute_script(
+            "arguments[0]._flatpickr.setDate(arguments[1] + ' ' + arguments[2], true);",
+            date_field,
+            formatted_date,
+            time_string,
+        )
+
+        # Click update button
         update_button = self.browser.find_element(
             By.XPATH, '//button[contains(text(), "Update")]'
         )
