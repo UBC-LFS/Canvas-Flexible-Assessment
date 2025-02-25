@@ -70,6 +70,18 @@
             font-size: 30px;
         }
     </style>
+    <!-- FLatpicker -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            flatpickr("input[type=datetime-local]", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+            });
+        });
+    </script>
     <!-- Modal -->
     <div class="modal fade"
          id="exampleModal"

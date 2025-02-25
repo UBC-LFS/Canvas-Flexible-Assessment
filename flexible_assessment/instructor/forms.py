@@ -18,7 +18,7 @@ class StudentAssessmentBaseForm(forms.Form):
 
         flex_assessments = FlexAssessment.objects.filter(
             user__user_id=self.user_id, assessment__course_id=self.course_id
-        ).order_by('assessment__order')
+        ).order_by("assessment__order")
 
         flex_fields = {}
         for fa in flex_assessments:
@@ -60,7 +60,8 @@ class StudentAssessmentBaseForm(forms.Form):
 
 class OptionsForm(forms.Form):
     hide_total = forms.BooleanField(
-        required=False, label="Hide Subtotal grades for Assignment Groups and Final grades"
+        required=False,
+        label="Hide Subtotal grades for Assignment Groups and Final grades",
     )
     ignore_conflicts = forms.BooleanField(required=False)
     hide_weights = forms.BooleanField(
@@ -74,12 +75,14 @@ class OptionsForm(forms.Form):
         self.initial["hide_total"] = hide_total
         self.initial["hide_weights"] = hide_weights
 
+
 class OrderingForm(forms.Form):
-    ordering = forms.CharField(widget = forms.HiddenInput())
-    
+    ordering = forms.CharField(widget=forms.HiddenInput())
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['ordering'].required = False
+        self.fields["ordering"].required = False
+
 
 class CourseSettingsForm(ModelForm):
     """Form to set flexible assessment availability for students."""
@@ -180,15 +183,26 @@ class AssessmentGroupForm(forms.Form):
         self.fields.update(assessment_fields)
 
         # Add the weight_option field
-        self.fields['weight_option'] = forms.ChoiceField(
+        self.fields["weight_option"] = forms.ChoiceField(
             choices=[
-                ('default', mark_safe('<b>Proportional (Default)</b>: assignments within groups are weighted according to the amount of Points they contribute to the group total')),
-                ('equal_weights', mark_safe('<b>Equal</b>: assignments within groups are weighted equally regardless of the amount of Points they contribute to the group total'))
+                (
+                    "default",
+                    mark_safe(
+                        "<b>Proportional (Default)</b>: assignments within groups are weighted according to the amount of Points they contribute to the group total"
+                    ),
+                ),
+                (
+                    "equal_weights",
+                    mark_safe(
+                        "<b>Equal</b>: assignments within groups are weighted equally regardless of the amount of Points they contribute to the group total"
+                    ),
+                ),
             ],
             widget=forms.RadioSelect,
-            initial='default',
-            label='Weight Option'
+            initial="default",
+            label="Weight Option",
         )
+
 
 class AssessmentBaseFormSet(BaseModelFormSet):
     def get_queryset(self):
