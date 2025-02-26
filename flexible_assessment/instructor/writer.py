@@ -101,8 +101,24 @@ def course_log(course):
     # sort logs by timestamp
     logs.sort(key=lambda x: x[0], reverse=True)
 
+    log_writer.write("Course, Time, Message, User\n")
+
     for log in logs:
-        log_writer.write(log[1])
+
+        pattern = (
+            r"\[(.*?)\] - (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - (.*?) \| (.*)"
+        )
+
+        match = re.match(pattern, log[1])
+        line = None
+
+        if match:
+            course, timestamp, message, user = match.groups()
+            line = f'"{course}", "{timestamp}", "{message}", "{user}"\n'
+        else:
+            line = f"Failed to match pattern: {log[1]}"
+
+        log_writer.write(line)
 
     return log_writer.get_response()
 
