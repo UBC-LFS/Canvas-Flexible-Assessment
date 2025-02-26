@@ -99,7 +99,7 @@ def course_log(course):
                     logs.append((timestamp, line))
 
     # sort logs by timestamp
-    logs.sort(key=lambda x: x[0])
+    logs.sort(key=lambda x: x[0], reverse=True)
 
     for log in logs:
         log_writer.write(log[1])
