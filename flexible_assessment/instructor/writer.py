@@ -1,6 +1,7 @@
 import csv
 import os
 import re
+from datetime import datetime
 from abc import ABC, abstractmethod
 
 from django.conf import settings
@@ -43,29 +44,6 @@ class CSVWriter(Writer):
         self._writer.writerow(line)
 
 
-class LogWriter(Writer):
-    """Writer for exporting logs as a csv response"""
-
-    def __init__(self, filename, course):
-        super().__init__("text/csv")
-        self._response["Content-Disposition"] = (
-            "attachment; filename="
-            + "{}_{}_{}.csv".format(
-                filename,
-                course.title.replace(" ", "-"),
-                timezone.localtime().strftime("%Y-%m-%dT%H%M"),
-            )
-        )
-
-        self._writer = self._response
-
-    def write(self, line):
-        self._writer.write(line)
-
-
-from datetime import datetime
-
-
 def parse_timestamp(line):
     """Extracts timestamp from log line, assuming format 'YYYY-MM-DD HH:MM:SS[,.]mmm'."""
     match = re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[,.]\d{3}", line)
@@ -76,7 +54,7 @@ def parse_timestamp(line):
 
 
 def course_log(course):
-    log_writer = LogWriter("Log", course)
+    csv_writer = CSVWriter("Log", course)
 
     # list of tuples (timestamp, line)
     logs = []
@@ -84,7 +62,7 @@ def course_log(course):
     try:
         log_file_names = sorted(os.listdir(settings.LOG_DIR))
     except FileNotFoundError:
-        return log_writer.get_response()
+        return csv_writer.get_response()
 
     # Set to keep track of seen lines to avoid duplicates
     seen_lines = set()
@@ -102,7 +80,8 @@ def course_log(course):
     # sort logs by timestamp
     logs.sort(key=lambda x: x[0], reverse=True)
 
-    log_writer.write("Course, Time, Message, User\n")
+    first_row = ["Course"] + ["Time"] + ["Message"] + ["User"]
+    csv_writer.write(first_row)
 
     for log in logs:
 
@@ -121,23 +100,16 @@ def course_log(course):
 
         if match_full:
             course, timestamp, message, user = match_full.groups()
-            timestamp = timestamp.replace(",", ".")
-            course = course.replace(",", "|")
-            message = message.replace(",", "|")
-            user = user.replace(",", "|")
-            line = f'"{course}", "{timestamp}", "{message}", "{user}"\n'
+            line = [course, timestamp, message, user]
         elif match_partial:
             course, timestamp, message = match_partial.groups()
-            timestamp = timestamp.replace(",", ".")
-            course = course.replace(",", "|")
-            message = message.replace(",", "|")
-            line = f'"{course}", "{timestamp}", "{message}", ""\n'
+            line = [course, timestamp, message]
         else:
-            line = f"Failed to match pattern: {log[1]}"
+            line = [f"Failed to match pattern: {log[1]}"]
 
-        log_writer.write(line)
+        csv_writer.write(line)
 
-    return log_writer.get_response()
+    return csv_writer.get_response()
 
 
 def students_csv(course, students):
