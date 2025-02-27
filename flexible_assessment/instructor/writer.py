@@ -67,10 +67,11 @@ from datetime import datetime
 
 
 def parse_timestamp(line):
-    """Extracts timestamp from log line, assuming format 'YYYY-MM-DD HH:MM:SS,mmm'."""
-    match = re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}", line)
+    """Extracts timestamp from log line, assuming format 'YYYY-MM-DD HH:MM:SS[,.]mmm'."""
+    match = re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[,.]\d{3}", line)
     if match:
-        return datetime.strptime(match.group(), "%Y-%m-%d %H:%M:%S,%f")
+        timestamp_str = match.group().replace(",", ".")
+        return datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S.%f")
     return None  # Return None if no timestamp is found
 
 
@@ -120,9 +121,16 @@ def course_log(course):
 
         if match_full:
             course, timestamp, message, user = match_full.groups()
+            timestamp = timestamp.replace(",", ".")
+            course = course.replace(",", "|")
+            message = message.replace(",", "|")
+            user = user.replace(",", "|")
             line = f'"{course}", "{timestamp}", "{message}", "{user}"\n'
         elif match_partial:
             course, timestamp, message = match_partial.groups()
+            timestamp = timestamp.replace(",", ".")
+            course = course.replace(",", "|")
+            message = message.replace(",", "|")
             line = f'"{course}", "{timestamp}", "{message}", ""\n'
         else:
             line = f"Failed to match pattern: {log[1]}"
