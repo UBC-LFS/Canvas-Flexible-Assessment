@@ -44,13 +44,13 @@ class CSVWriter(Writer):
 
 
 class LogWriter(Writer):
-    """Writer for exporting logs to a plain text file response"""
+    """Writer for exporting logs as a csv response"""
 
     def __init__(self, filename, course):
-        super().__init__("text/plain")
+        super().__init__("text/csv")
         self._response["Content-Disposition"] = (
             "attachment; filename="
-            + "{}_{}_{}.txt".format(
+            + "{}_{}_{}.csv".format(
                 filename,
                 course.title.replace(" ", "-"),
                 timezone.localtime().strftime("%Y-%m-%dT%H%M"),
@@ -105,16 +105,25 @@ def course_log(course):
 
     for log in logs:
 
-        pattern = (
+        pattern_full = (
             r"\[(.*?)\] - (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - (.*?) \| (.*)"
         )
 
-        match = re.match(pattern, log[1])
+        pattern_partial = (
+            r"\[(.*?)\] - (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - (.*)"
+        )
+
+        match_full = re.match(pattern_full, log[1])
+        match_partial = re.match(pattern_partial, log[1])
+
         line = None
 
-        if match:
-            course, timestamp, message, user = match.groups()
+        if match_full:
+            course, timestamp, message, user = match_full.groups()
             line = f'"{course}", "{timestamp}", "{message}", "{user}"\n'
+        elif match_partial:
+            course, timestamp, message = match_partial.groups()
+            line = f'"{course}", "{timestamp}", "{message}", ""\n'
         else:
             line = f"Failed to match pattern: {log[1]}"
 

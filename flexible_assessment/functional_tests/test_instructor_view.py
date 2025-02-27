@@ -950,7 +950,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         filename = os.path.join(
             self.download_dir,
-            f"Log_test_course1_{datetime.now().strftime("%Y-%m-%dT%H%M")}.txt",
+            f"Log_test_course1_{datetime.now().strftime("%Y-%m-%dT%H%M")}.csv",
         )
         timeout = 5
 
@@ -958,23 +958,24 @@ class TestInstructorViews(StaticLiveServerTestCase):
             time.sleep(1)
             timeout -= 1
 
-        self.assertTrue(os.path.exists(filename), "TXT file was not downloaded")
+        self.assertTrue(os.path.exists(filename), "CSV file was not downloaded")
 
-        file = open(filename, "r")
         seen_lines = set()
         prev_line = None
 
-        for line in file:
-            self.assertFalse(line in seen_lines, "duplicate line found")
-            if prev_line:
-                self.assertTrue(
-                    writer.parse_timestamp(prev_line) <= writer.parse_timestamp(line),
-                    "lines out of order",
-                )
-            seen_lines.add(line)
-            prev_line = line
-
-        file.close()
+        with open(filename, "r") as file:
+            # skip header column
+            next(file)
+            for line in file:
+                self.assertFalse(line in seen_lines, "duplicate line found")
+                if prev_line:
+                    self.assertTrue(
+                        writer.parse_timestamp(prev_line)
+                        >= writer.parse_timestamp(line),
+                        "lines out of order",
+                    )
+                seen_lines.add(line)
+                prev_line = line
 
     @tag("slow")
     @mock_classes.use_mock_canvas()
