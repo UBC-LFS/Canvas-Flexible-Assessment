@@ -404,8 +404,10 @@ class FlexCanvas(Canvas):
                 for submission in submissions:
                     score = submission["score"]
                     user_id = submission["user_id"]
-                    if user_id is None or score is None:
+                    if user_id is None:
                         raise PermissionDenied
+                    if score is None:
+                        continue
 
                     flat_score = score / max_score if max_score else 0
                     if rules:
@@ -419,11 +421,10 @@ class FlexCanvas(Canvas):
                         user_total_assignments[user_id] = 0
                     user_total_assignments[user_id] += 1
 
-            # If no rules, skip extra processing
-
             # user_drop_status is a dictionary of user ids, and the number of dropped assignments for that user
             user_drop_status = {}
 
+            # If no rules, skip extra processing
             if rules:
                 user_scores = self.calculate_user_scores(
                     user_scores, rules, user_drop_status

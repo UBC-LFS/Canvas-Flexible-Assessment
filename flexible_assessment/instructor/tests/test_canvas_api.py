@@ -1932,3 +1932,127 @@ class TestFlexCanvas(TestCase):
         self.assertEqual(
             round(group_dict["537054"]["grade_list"]["grades"][0][1], 2), 70
         )
+
+    @patch("instructor.canvas_api.FlexCanvas.graphql")  # Mock the GraphQL call
+    @patch("instructor.canvas_api.get_oauth_token")  # Mock OAuth token retrieval
+    def test_get_flat_groups_and_enrollments_score_none(
+        self, mock_get_oauth_token, mock_graphql
+    ):
+        # Mock request
+        mock_request = MagicMock()
+        mock_request.session = {}  # If get_oauth_token accesses session
+        mock_request.user = MagicMock()  # If user-related data is needed
+
+        # Mock OAuth token retrieval
+        mock_get_oauth_token.return_value = "mock_token"
+
+        # Mock the API response with empty grade submissions
+        mock_graphql.return_value = {
+            "data": {
+                "course": {
+                    "assignment_groups": {
+                        "groups": [
+                            {
+                                "rules": {
+                                    "dropHighest": 0,
+                                    "dropLowest": 0,
+                                    "neverDrop": None,
+                                },
+                                "group_id": "537054",
+                                "group_name": "Quizzes",
+                                "group_weight": 10,
+                                "assignment_list": {
+                                    "assignments": [
+                                        {
+                                            "_id": "2088526",
+                                            "max_score": 10,
+                                            "name": "Q1",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 8, "user_id": "357363"},
+                                                    {"score": 8, "user_id": "357364"},
+                                                ]
+                                            },
+                                        },
+                                        {
+                                            "_id": "2088527",
+                                            "max_score": 10,
+                                            "name": "Q2",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 7, "user_id": "357363"},
+                                                    {"score": 4, "user_id": "357364"},
+                                                ]
+                                            },
+                                        },
+                                        {
+                                            "_id": "2088528",
+                                            "max_score": 20,
+                                            "name": "Q3",
+                                            "published": True,
+                                            "gradingType": "points",
+                                            "omitFromFinalGrade": False,
+                                            "submission_list": {
+                                                "submissions": [
+                                                    {"score": 18, "user_id": "357363"},
+                                                    {
+                                                        "score": None,
+                                                        "user_id": "357364",
+                                                    },
+                                                ]
+                                            },
+                                        },
+                                    ]
+                                },
+                                "grade_list": {
+                                    "grades": [
+                                        {
+                                            "current_score": 80,
+                                            "enrollment": {
+                                                "_id": "9432892",
+                                                "user": {
+                                                    "user_id": "357363",
+                                                    "display_name": "Jane Doe",
+                                                },
+                                            },
+                                        },
+                                        {
+                                            "current_score": 70,
+                                            "enrollment": {
+                                                "_id": "9432893",
+                                                "user": {
+                                                    "user_id": "357364",
+                                                    "display_name": "John Smith",
+                                                },
+                                            },
+                                        },
+                                    ]
+                                },
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        # Initialize FlexCanvas
+        flex_canvas = FlexCanvas(mock_request)
+
+        # Call function
+        group_dict, user_enrollment_dict = flex_canvas.get_flat_groups_and_enrollments(
+            123
+        )
+
+        # Assertions
+        self.assertEqual(
+            round(group_dict["537054"]["grade_list"]["grades"][0][1], 2), 80
+        )
+        self.assertEqual(
+            round(group_dict["537054"]["grade_list"]["grades"][1][1], 2), 60
+        )
