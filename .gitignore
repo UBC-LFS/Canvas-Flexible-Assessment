@@ -10,3 +10,4 @@ env/
 venv
 cookies
 downloads/
+.cookies/
