@@ -539,7 +539,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         4. Add a new assessment and move it to the top
         5. Check that the order of all assessments has changed
         6. Check that the assessment order is reflected in the front-end
-        7. Check that the assessment order is reflected in the csv download
+        7. Check that the assessment order is reflected in the csv download # TODO - csv export is being changed - update this test accordingly
         """
         print("---------------------test_reordering-------------------------------")
 

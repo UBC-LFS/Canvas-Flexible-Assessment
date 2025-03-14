@@ -120,7 +120,10 @@ def students_csv(course, students):
     assessments = list(course.assessment_set.all().order_by("order"))
 
     header = (
-        ["Student"] + [assessment.title for assessment in assessments] + ["Comment"]
+        ["Student"]
+        + ["Chose Percentages"]
+        + [assessment.title for assessment in assessments]
+        + ["Comment"]
     )
 
     csv_writer.write(header)
@@ -129,11 +132,22 @@ def students_csv(course, students):
         values = []
         values.append("{}, {}".format(student.display_name, student.login_id))
 
+        # if first flex doens't exist, student didn't choose flexes
+        first_flex = student.flexassessment_set.get(assessment=assessments[0]).flex
+        if first_flex is None:
+            values.append("No")
+        else:
+            values.append("Yes")
+
         for assessment in assessments:
             flex = student.flexassessment_set.get(assessment=assessment).flex
+            if flex is None:
+                flex = assessment.default
             values.append(flex)
 
         comment = student.usercomment_set.get(course=course).comment
+        # if comment == "":
+        #    comment = "no comment entered for " + str(student.display_name)
         values.append(comment)
 
         csv_writer.write(values)
