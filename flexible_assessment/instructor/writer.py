@@ -123,7 +123,7 @@ def students_csv(course, students):
         ["Student"]
         + ["Chose Percentages"]
         + [assessment.title for assessment in assessments]
-        + ["Comment"]
+        + ["Comments"]
     )
 
     csv_writer.write(header)

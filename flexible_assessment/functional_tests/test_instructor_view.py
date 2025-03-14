@@ -1268,7 +1268,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
                 "assignment2",
                 "assignment3",
                 "assignment4",
-                "Comment",
+                "Comments",
             ],
             [
                 "test_student1, test_student1",
@@ -1356,7 +1356,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         import csv
 
         expected_data = [
-            ["Student", "Chose Percentages", "assignmentA", "assignmentB", "Comment"],
+            ["Student", "Chose Percentages", "assignmentA", "assignmentB", "Comments"],
             ["test_student1, test_student1", "No", "50.00", "50.00", ""],
         ]
 
