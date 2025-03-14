@@ -539,7 +539,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         4. Add a new assessment and move it to the top
         5. Check that the order of all assessments has changed
         6. Check that the assessment order is reflected in the front-end
-        7. Check that the assessment order is reflected in the csv download # TODO - csv export is being changed - update this test accordingly
+        7. Check that the assessment order is reflected in the csv download
         """
         print("---------------------test_reordering-------------------------------")
 
@@ -1217,3 +1217,150 @@ class TestInstructorViews(StaticLiveServerTestCase):
         c_open = models.Course.objects.get(id=3).open.replace(tzinfo=None)
         self.assertTrue(abs((c_close - tomorrow).days) > 1)
         self.assertTrue(abs((c_open - tomorrow).days) <= 1)
+
+    @tag("slow")
+    @mock_classes.use_mock_canvas()
+    def test_percentages_export_course_1(self, mocked_flex_canvas_instance):
+        """In course 1 the teacher is exporting percentages export
+        1.
+        """
+        print(
+            "---------------------test_percentage_export-------------------------------"
+        )
+
+        session_id = self.client.session.session_key
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[1])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[1])
+        )
+        # 1
+        self.browser.find_element(By.LINK_TEXT, "Student Choices").click()
+
+        self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Export")]'
+        ).click()
+
+        self.browser.find_element(By.LINK_TEXT, "Percentages").click()
+
+        filename = os.path.join(
+            self.download_dir,
+            f"Students_test_course1_{datetime.now().strftime("%Y-%m-%dT%H%M")}.csv",
+        )
+        timeout = 5
+
+        while not os.path.exists(filename) and timeout > 0:
+            time.sleep(1)
+            timeout -= 1
+
+        self.assertTrue(os.path.exists(filename), "CSV file was not downloaded")
+
+        import csv
+
+        expected_data = [
+            [
+                "Student",
+                "Chose Percentages",
+                "assignment1",
+                "assignment2",
+                "assignment3",
+                "assignment4",
+                "Comment",
+            ],
+            [
+                "test_student1, test_student1",
+                "Yes",
+                "25.00",
+                "25.00",
+                "25.00",
+                "25.00",
+                "Today was an exciting day, filled with unexpected surprises. I met some incredible people, learned a lot of new things, and enjoyed the small moments that make life so beautiful. It was a perfect balance of productivity and relaxation. Looking forward to what tomorrow will bring!",
+            ],
+            [
+                "test_student2, test_student2",
+                "Yes",
+                "25.00",
+                "25.00",
+                "25.00",
+                "25.00",
+                "student 2 comment",
+            ],
+            [
+                "test_student3, test_student3",
+                "Yes",
+                "25.00",
+                "25.00",
+                "25.00",
+                "25.00",
+                "student 3 comment",
+            ],
+            [
+                "test_student4, test_student4",
+                "Yes",
+                "25.00",
+                "25.00",
+                "25.00",
+                "25.00",
+                "student 4 comment",
+            ],
+        ]
+
+        with open(filename, newline="", encoding="utf-8") as f:
+            reader = list(csv.reader(f))
+
+        self.assertEqual(reader, expected_data)
+
+    @tag("slow")
+    @mock_classes.use_mock_canvas()
+    def test_percentages_export_course_4(self, mocked_flex_canvas_instance):
+        """In course 4 the teacher is exporting percentages export - the student didn't choose so it should use the defaults
+        1.
+        """
+        print(
+            "---------------------test_percentage_export-------------------------------"
+        )
+
+        session_id = self.client.session.session_key
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[4])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[4])
+        )
+        # 1
+        self.browser.find_element(By.LINK_TEXT, "Student Choices").click()
+
+        self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Export")]'
+        ).click()
+
+        self.browser.find_element(By.LINK_TEXT, "Percentages").click()
+
+        filename = os.path.join(
+            self.download_dir,
+            f"Students_test_course4_{datetime.now().strftime("%Y-%m-%dT%H%M")}.csv",
+        )
+        timeout = 5
+
+        while not os.path.exists(filename) and timeout > 0:
+            time.sleep(1)
+            timeout -= 1
+
+        self.assertTrue(os.path.exists(filename), "CSV file was not downloaded")
+
+        import csv
+
+        expected_data = [
+            ["Student", "Chose Percentages", "assignmentA", "assignmentB", "Comment"],
+            ["test_student1, test_student1", "No", "50.00", "50.00", ""],
+        ]
+
+        with open(filename, newline="", encoding="utf-8") as f:
+            reader = list(csv.reader(f))
+
+        self.assertEqual(reader, expected_data)
