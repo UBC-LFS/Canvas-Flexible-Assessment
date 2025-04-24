@@ -29,6 +29,7 @@ INTERNAL_IPS = [INTERNAL_IP, "127.0.0.1"]
 INSTALLED_APPS = [
     "flexible_assessment.apps.FlexConfig",
     "instructor.apps.InstructorConfig",
+    "due_dates.apps.DueDatesConfig",
     "student.apps.StudentConfig",
     "oauth.apps.OAuthConfig",
     "django.contrib.admin",

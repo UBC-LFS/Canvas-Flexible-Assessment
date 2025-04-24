@@ -13,4 +13,5 @@ urlpatterns = [
     path("jwks/", views.get_jwks, name="jwks"),
     path("login/", views.login, name="login"),
     path("oauth/", include("oauth.urls")),
+    path("due_dates/", include("due_dates.urls"))
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
