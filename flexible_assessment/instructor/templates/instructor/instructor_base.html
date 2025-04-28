@@ -72,6 +72,9 @@
                rel="noopener noreferrer"><i class="bi bi-info-circle me-2"></i> About</a>
             <a class="nav-link {% block nav_item_help %}{% endblock nav_item_help %}"
                href="{% url 'instructor:instructor_help' course.id %}"><i class="bi bi-question-circle me-2"></i> Help</a>
+            <hr>
+            <a class="nav-link {% block nav_item_due_dates %}{% endblock nav_item_due_dates %}"
+               href="{% url 'due_dates:due_dates_home' course.id %}"><i class="bi bi-clock me-2"></i> Due Dates</a>
         </nav>
     {% endblock %}
 </div>

@@ -1,25 +1,90 @@
-<!DOCTYPE html>
+{% extends "instructor/instructor_base.html" %}
+{% block nav_item_due_dates %}
+active
+{% endblock nav_item_due_dates %}
+{% block content %}
+<div
+  class="container-fluid d-flex justify-content-center align-items-center pt-5 pb-5">
+  <h1>
+    <b>Flexible Due Dates</b>
+  </h1>
+</div>
+<div class="pb-5 d-flex align-items-center justify-content-center">
+  <div class="col-10">
+    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+      <div class="card-body p-4">
+        <p>
+          Welcome to Flexible Due Dates, a sub-application within the larger
+          Flexible Assessments Canvas Integration.
+        </p>
+        <p>
+          This system was created as part of a Teaching & Learning Enhancement
+          Fund (TLEF) project to streamline the process of modifying quiz
+          extensions and due dates for students with CFA accomodations
+        </p>
+        <p>
+          For more information, see our
+          <a
+            href="https://github.com/UBC-LFS/Canvas-Flexible-Assessment/wiki/Instructor-Guide"
+            target="_blank"
+            rel="noopener noreferrer">About</a> page.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
-<html lang="en">
+<div class="pb-5 d-flex align-items-center justify-content-center">
+  <div class="col-10">
+    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+      <div
+        class="card-header d-flex align-items-center justify-content-between">
+        <h3 class="mb-0">Instructions</h3>
+      </div>
+      <div class="card-body p-4">
+        <ol>
+          <li class="p-2 fs-5">
+            <h4>Upload Documents</h4>
+            <ol class="fs-6 lh-lg" type="a">
+              <li>
+                Filler text here.
+              </li>
+              <li>
+                Some more filler instructions.
+              </li>
+            </ol>
+          </li>
+          <li class="p-2 fs-5">
+            <h4>Confirm Changes</h4>
+            <ol class="fs-6 lh-lg" type="a">
+              <li>
+                Filler text here.
+              </li>
+              <li>
+                Some more filler instructions.
+              </li>
+            </ol>
+          </li>
+          <li class="p-2 fs-5">
+            <h4>View Results</h4>
+            <ol class="fs-6 lh-lg" type="a">
+              <li>
+                Filler text here.
+              </li>
+              <li>
+                Some more filler instructions.
+              </li>
+            </ol>
+          </li>
+        </ol>
+        <p>
+          Please contact <a
+            href="mailto: it@landfood.ubc.ca">it@landfood.ubc.ca</a> for more
+          information.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
-<head>
-
-  <meta charset="UTF-8" />
-
-  <title>Hello, world!</title>
-
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-  <meta name="description" content="" />
-
-  <link rel="icon" href="favicon.png">
-
-</head>
-
-<body>
-
-  <h1>Hello, world!</h1>
-
-</body>
-
-</html>
+{% endblock %}

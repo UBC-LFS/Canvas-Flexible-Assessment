@@ -84,7 +84,6 @@
                                             {% endif %}
                                         </td>
                                         {% for assessment in course.assessment_set.all|dictsort:"order" %}
-                                            <!-- TODO: sorted here now - now perhaps implement in view and also fix csv export -->
                                             {% get_group_weight_percentage groups assessment.group as default_weight %}
                                             {% get_score groups assessment.group student as score %}
                                             <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>
