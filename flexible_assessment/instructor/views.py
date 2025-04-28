@@ -1130,6 +1130,9 @@ class ImportAssessmentView(views.InstructorFormView):
             data = []
             reader = csv.reader(csv_file)
             headers = next(reader, None)
+            headers = [
+                h.strip() for h in headers
+            ]  # strip whitespace in case instructor puts space between items
             if headers != ["Assessment", "Default", "Minimum", "Maximum"]:
                 return super().form_invalid(form)
 
@@ -1137,6 +1140,7 @@ class ImportAssessmentView(views.InstructorFormView):
                 if len(row) != 4:
                     return super().form_invalid(form)
                 try:
+                    row = [r.strip() for r in row]
                     int(row[1])
                     int(row[2])
                     int(row[3])
