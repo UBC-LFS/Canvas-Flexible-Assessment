@@ -743,7 +743,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         filename = os.path.join(
             self.download_dir,
-            f"Grades_test_course3_{datetime.now().strftime("%Y-%m-%dT%H%M")}.csv",
+            f"Grades_test_course3_{datetime.now().strftime('%Y-%m-%dT%H%M')}.csv",
         )
 
         download_button.click()
@@ -950,7 +950,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         filename = os.path.join(
             self.download_dir,
-            f"Log_test_course1_{datetime.now().strftime("%Y-%m-%dT%H%M")}.csv",
+            f"Log_test_course1_{datetime.now().strftime('%Y-%m-%dT%H%M')}.csv",
         )
         timeout = 5
 
@@ -1248,7 +1248,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         filename = os.path.join(
             self.download_dir,
-            f"Students_test_course1_{datetime.now().strftime("%Y-%m-%dT%H%M")}.csv",
+            f"Students_test_course1_{datetime.now().strftime('%Y-%m-%dT%H%M')}.csv",
         )
         timeout = 5
 
@@ -1343,7 +1343,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         filename = os.path.join(
             self.download_dir,
-            f"Students_test_course4_{datetime.now().strftime("%Y-%m-%dT%H%M")}.csv",
+            f"Students_test_course4_{datetime.now().strftime('%Y-%m-%dT%H%M')}.csv",
         )
         timeout = 5
 
