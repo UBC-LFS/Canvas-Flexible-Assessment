@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "instructor.apps.InstructorConfig",
     "student.apps.StudentConfig",
     "oauth.apps.OAuthConfig",
+    "accommodations.apps.AccommodationsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

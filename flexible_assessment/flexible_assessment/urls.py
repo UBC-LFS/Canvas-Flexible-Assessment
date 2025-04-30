@@ -8,6 +8,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("flexible_assessment/student/", include("student.urls")),
     path("flexible_assessment/instructor/", include("instructor.urls")),
+    path("accommodations/", include("accommodations.urls")),
     path("admin/", admin.site.urls),
     path(
         "launch/flexible_assessment/",
