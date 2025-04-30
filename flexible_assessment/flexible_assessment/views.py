@@ -48,7 +48,7 @@ def login(request):
 
 
 @require_POST
-def launch(request):
+def launch_flexible_assessment(request):
     tool_conf = lti.get_tool_conf()
     launch_data_storage = lti.get_launch_data_storage()
     message_launch = DjangoMessageLaunch(
