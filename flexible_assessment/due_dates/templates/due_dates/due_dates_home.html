@@ -29,10 +29,15 @@ active
             target="_blank"
             rel="noopener noreferrer">About</a> page.
         </p>
+        <div class="text-center">
+          <a href="{% url 'due_dates:due_dates_students' course.id %}" style="border-radius: 0.5em" class="btn btn-primary mt-3 px-3 py-1 fs-5">Start</a>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<!--
 
 <div class="pb-5 d-flex align-items-center justify-content-center">
   <div class="col-10">
@@ -44,7 +49,7 @@ active
       <div class="card-body p-4">
         <ol>
           <li class="p-2 fs-5">
-            <h4>Upload Documents</h4>
+            <h4>Add Student Extensions</h4>
             <ol class="fs-6 lh-lg" type="a">
               <li>
                 Filler text here.
@@ -86,5 +91,7 @@ active
     </div>
   </div>
 </div>
+
+-->
 
 {% endblock %}

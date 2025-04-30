@@ -1,0 +1,41 @@
+{% extends "instructor/instructor_base.html" %}
+{% block nav_item_due_dates %}
+active
+{% endblock nav_item_due_dates %}
+{% block content %}
+<div class="mt-5 mb-5">
+    <div class="d-flex align-items-center justify-content-center">
+        <div class="col-9">
+            <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
+                    <h3 class="mb-0">Student Extensions</h3>
+                </div>
+                <div class="card-body pt-2 pb-3">
+                    <p class="fw-light m-0 pb-2">
+                        The table below shows the students' extensions. To populate the table, you may:
+                    </p>
+                    <ul class="fw-light m-0 pb-2">
+                        <li>Manually add students</li>
+                        <li>Upload a CSV file, where each row contains a student number followed by the corresponding
+                            extension</li>
+                        <li>Upload a folder of PDF files taken from the CFA</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex flex-column align-items-center justify-content-center pt-4">
+        <div class="d-flex justify-content-between col-9 pb-4">
+            <a href="{% url 'due_dates:due_dates_home' course.id %}" style="border-radius: 0.5em"
+                class="btn btn-secondary"><i class="bi bi-chevron-left"></i> Back</a>
+            <a class="btn btn-primary" style="border-radius: 0.5em"
+                href="{% url 'due_dates:due_dates_quizzes' course.id %}">
+                Next
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+</div>
+
+{% endblock %}
