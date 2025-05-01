@@ -61,7 +61,7 @@ def launch_flexible_assessment(request):
     ]
     course_id = canvas_fields["course_id"]
     logger.info(
-        "Inside Launch with request",
+        "Inside Flexible Assessment Launch with request",
         extra={
             "course": canvas_fields,
             "user": canvas_fields["user_display_name"],
@@ -74,7 +74,7 @@ def launch_flexible_assessment(request):
 
         course = models.Course.objects.get(pk=course_id)
         logger.info(
-            "Admin login",
+            "Admin login for Flexible Assessment",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
@@ -89,7 +89,7 @@ def launch_flexible_assessment(request):
 
         course = models.Course.objects.get(pk=course_id)
         logger.info(
-            "Instructor login",
+            "Instructor login for Flexible Assessment",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
@@ -104,7 +104,7 @@ def launch_flexible_assessment(request):
 
         course = models.Course.objects.get(pk=course_id)
         logger.info(
-            "TA login",
+            "TA login for Flexible Assessment",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
@@ -119,7 +119,7 @@ def launch_flexible_assessment(request):
 
         course = models.Course.objects.get(pk=course_id)
         logger.info(
-            "Student login",
+            "Student login for Flexible Assessment",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
@@ -150,7 +150,7 @@ def launch_accommodations(request):
     ]
     course_id = canvas_fields["course_id"]
     logger.info(
-        "Inside Launch with request",
+        "Inside Accommodations Launch with request",
         extra={
             "course": canvas_fields,
             "user": canvas_fields["user_display_name"],
@@ -163,7 +163,7 @@ def launch_accommodations(request):
 
         course = models.Course.objects.get(pk=course_id)
         logger.info(
-            "Admin login",
+            "Admin login for Accommodations",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
@@ -178,7 +178,7 @@ def launch_accommodations(request):
 
         course = models.Course.objects.get(pk=course_id)
         logger.info(
-            "Instructor login",
+            "Instructor login for Accommodations",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
@@ -193,7 +193,7 @@ def launch_accommodations(request):
 
         course = models.Course.objects.get(pk=course_id)
         logger.info(
-            "TA login",
+            "TA login for Accommodations",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
@@ -208,7 +208,7 @@ def launch_accommodations(request):
 
         course = models.Course.objects.get(pk=course_id)
         logger.info(
-            "Student login",
+            "Student login for Accommodations",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
