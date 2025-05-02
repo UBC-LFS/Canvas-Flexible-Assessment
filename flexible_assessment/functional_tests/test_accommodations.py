@@ -139,4 +139,4 @@ class TestInstructorViews(StaticLiveServerTestCase):
             + reverse("accommodations:accommodations_home", args=[1])
         )
 
-        input("Press Enter in this terminal to continue")
+        input("Press Enter in this terminal to continue\n")

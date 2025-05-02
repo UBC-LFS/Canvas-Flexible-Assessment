@@ -137,7 +137,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
             self.live_server_url + reverse("instructor:instructor_home", args=[1])
         )
 
-        input("Press Enter in this terminal to continue")
+        input("Press Enter in this terminal to continue\n")
 
     @tag("slow", "view", "double_view")
     @mock_classes.use_mock_canvas()
