@@ -67,7 +67,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         user = models.UserProfile.objects.get(login_id="test_instructor1")
         self.client = Client()
         self.client.force_login(user)
-        self.launch_url = reverse("launch")
+        self.launch_url = reverse("launch_flexible_assessment")
         self.login_url = reverse("login")
 
     def tearDown(self):
