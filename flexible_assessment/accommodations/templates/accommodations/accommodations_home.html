@@ -36,7 +36,7 @@
     </head>
     <body>
         <div class="container mt-4">
-            <h2 class="text-center">Student Accommodations</h2>
+            <h2 class="text-center">Accommodations</h2>
             <div class="row justify-content-center">
                 <div class="col-lg-6 col-md-8">
                     <!-- PDF upload -->
@@ -145,7 +145,8 @@
                 entryList.appendChild(clone)
             }
 
-            const prefillData = {{ accommodations_json }};
+            // prefill table with existing accommodations from previous session
+            const prefillData = {{ accommodations_json|safe}};
             prefillData.forEach(([studentNumber, multiplier]) => {
                 createRow(studentNumber, multiplier);
             });
