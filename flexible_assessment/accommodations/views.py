@@ -1,15 +1,23 @@
 from django.shortcuts import render
 from django.urls import reverse
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.http import (
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseRedirect,
+    JsonResponse,
+)
 from django.shortcuts import redirect
 from django.utils.safestring import mark_safe
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 
 import flexible_assessment.class_views as views
 import flexible_assessment.utils as utils
 
 from flexible_assessment.models import Course
 
+import fitz
+import re
 import json
 
 
@@ -98,3 +106,46 @@ def quizzes(request, *args, **kwargs):
         + str(request.session.get("accommodations", "no accommodations in session"))
         + "</h1>"
     )
+
+
+@require_POST
+def upload_pdfs(request, course_id):
+    uploaded_files = request.FILES.getlist("pdf_files")
+    parsed_data = []
+
+    for f in uploaded_files:
+        try:
+            # Read file into memory
+            pdf_bytes = f.read()
+            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+
+            text = ""
+            for page in doc:
+                text += page.get_text()
+
+            # Match 8-digit student number
+            student_match = re.search(r"\b\d{8}\b", text)
+            # Match multiplier (1.25x, 1.5x, 2x, etc.)
+            multiplier_match = re.search(
+                r"\b(1\.25|1\.5|2(?:\.0)?)x\b", text, re.IGNORECASE
+            )
+
+            student_number = student_match.group() if student_match else None
+            multiplier = multiplier_match.group(1) if multiplier_match else None
+
+            if multiplier == "2":
+                multiplier = "2.0"
+
+            if student_number and multiplier:
+                parsed_data.append((student_number, multiplier))
+            else:
+                parsed_data.append(
+                    ("error", f"{f.name} is missing student or multiplier.")
+                )
+
+        except Exception as e:
+            parsed_data.append(("error", f"{f.name} failed to process: {str(e)}"))
+
+    print(parsed_data)
+
+    return JsonResponse({"results": parsed_data})

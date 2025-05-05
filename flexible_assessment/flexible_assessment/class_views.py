@@ -10,7 +10,7 @@ from django.core.exceptions import (
 from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 
 from flexible_assessment.view_roles import Instructor, Student
 
@@ -161,6 +161,6 @@ class StudentFormView(FormView):
 class AccommodationsListView(InstructorListView):
     # Accommodations list view requires instructor permissions, has access to course students, and does not redirect if students try to access it
     def handle_no_permission(self):
-        raise PermissionDenied(
-            "You do not have the right permissions to view this page"
+        return HttpResponseForbidden(
+            "You do not have permission to access this app. If you are an instructor, you can access the app through Canvas navigation."
         )

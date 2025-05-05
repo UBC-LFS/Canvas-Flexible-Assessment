@@ -124,7 +124,7 @@
         {% endif %}
         <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const form = document.getElementById("accommodations-form");
+            const accommodations_form = document.getElementById("accommodations-form");
             const entryList = document.getElementById("entry-list");
             const addBtn = document.getElementById("add-entry");
             const template = document.querySelector("table.d-none #entry-template");
@@ -166,7 +166,7 @@
             });
 
             // check at least one entry on submission
-            form.addEventListener("submit", function (e) {
+            accommodations_form.addEventListener("submit", function (e) {
                 console.log("listened")
                 const rowCount = entryList.querySelectorAll("tr").length;
                 if (rowCount === 0) {
@@ -174,6 +174,58 @@
                     alert("Please add at least one accommodation entry before submitting.");
                 }
             });
+
+            // fill rows from JSON data
+            function fillFromPDFS(response) {
+                if (response.results && Array.isArray(response.results)) {
+                    response.results.forEach(item => {
+                        if (Array.isArray(item) && item.length === 2) {
+                            const [studentNumber, multiplier] = item;
+                            createRow(studentNumber, multiplier);
+                        } else if (item.error) {
+                            console.warn(item.error);
+                            alert(item.error);  // Replace with custom display if desired
+                        }
+                    });
+                } else {
+                    alert("Error uploading PDFs - make sure format is correct");
+                }
+            }
+
+            // Upload PDFs to server
+            function uploadPDFs() {
+                const files = document.getElementById("pdf-file").files;
+
+                if (!files.length) {
+                    alert("Please select at least one PDF to upload.");
+                    return;
+                }
+                
+                const formData = new FormData();
+
+                for (let i = 0; i < files.length; i++) {
+                    formData.append("pdf_files", files[i]);
+                }
+
+                // Get CSRF token from the page
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                $.ajax({
+                    url: "{% url 'accommodations:upload_pdfs' course.id %}",
+                    method: "POST",
+                    headers: { "X-CSRFToken": csrftoken },
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: fillFromPDFS,
+                    error: function (xhr, status, error) {
+                        console.error("Upload failed:", error);
+                    }
+                });
+            }
+
+            document.getElementById("upload-btn").addEventListener("click", uploadPDFs);
+
         });
         </script>
     </body>
