@@ -14,7 +14,7 @@ from django.test import Client, tag
 from django.http import HttpResponseRedirect
 from datetime import datetime, timedelta
 import dateutil
-from flexible_assessment.tests.test_data import DATA
+from flexible_assessment.tests.test_data import ACCOMMODATIONS_DATA
 from unittest.mock import patch, MagicMock, ANY
 import instructor.views as views
 import time
@@ -30,7 +30,7 @@ import shutil
 
 
 class TestInstructorViews(StaticLiveServerTestCase):
-    fixtures = DATA
+    fixtures = ACCOMMODATIONS_DATA
 
     def setUp(self):
         chromeOptions = webdriver.ChromeOptions()
@@ -64,7 +64,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         self.browser = webdriver.Chrome(options=chromeOptions)
 
-        user = models.UserProfile.objects.get(login_id="test_instructor1")
+        user = models.UserProfile.objects.get(login_id="10000007")
         self.client = Client()
         self.client.force_login(user)
         self.launch_url = reverse("launch_accommodations")
