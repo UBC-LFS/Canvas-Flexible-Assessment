@@ -156,3 +156,11 @@ class InstructorFormView(FormView):
 
 class StudentFormView(FormView):
     allowed_view_role = Student
+
+
+class AccommodationsListView(InstructorListView):
+    # Accommodations list view requires instructor permissions, has access to course students, and does not redirect if students try to access it
+    def handle_no_permission(self):
+        raise PermissionDenied(
+            "You do not have the right permissions to view this page"
+        )

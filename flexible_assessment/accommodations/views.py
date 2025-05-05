@@ -13,14 +13,16 @@ from flexible_assessment.models import Course
 import json
 
 
-class AccommodationsHome(views.InstructorListView):
+class AccommodationsHome(views.AccommodationsListView):
     template_name = "accommodations/accommodations_home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         accommodations = self.request.session.get("accommodations", [])
         context["accommodations"] = accommodations
-        context["accommodations_json"] = mark_safe(json.dumps(accommodations))
+        context["accommodations_json"] = mark_safe(
+            json.dumps(accommodations)
+        )  # pass to template as json for javascript to use
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
         return context
 
@@ -46,7 +48,10 @@ class AccommodationsHome(views.InstructorListView):
         student_numbers = request.POST.getlist("student_number")
         multipliers = request.POST.getlist("multiplier")
 
-        # Check if data is formatted properly
+        seen_ids = set()
+        duplicate_ids = []
+
+        # Check if data is formatted properly - if not, redirect back to form with error messages
         if len(student_numbers) != len(multipliers):
             errors.append(
                 f"Number of student numbers does not equal number of multipliers"
@@ -65,8 +70,13 @@ class AccommodationsHome(views.InstructorListView):
                 if mult not in {"1.25", "1.5", "2.0"}:
                     errors.append(f"Invalid multiplier '{mult}' for student {sn}")
 
-            if len(student_numbers) != len(set(student_numbers)):
-                errors.append(f"Duplicate student numbers exist")
+                if sn in seen_ids:
+                    duplicate_ids.append(sn)
+                else:
+                    seen_ids.add(sn)
+
+            for duplicate in duplicate_ids:
+                errors.append(f"Duplicate entries found for student: {duplicate}")
 
         if errors:
             for error in errors:
