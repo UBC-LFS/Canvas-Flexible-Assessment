@@ -128,6 +128,7 @@
             const entryList = document.getElementById("entry-list");
             const addBtn = document.getElementById("add-entry");
             const template = document.querySelector("table.d-none #entry-template");
+            const MAX_SIZE_MB = 10; // max size of all file uploads - 5 MB should be roughly 50 PDFs given their current format
 
             function createRow(studentNumber = "", multiplier = "") {
                 const clone = template.cloneNode(true);
@@ -178,19 +179,35 @@
             // fill rows from JSON data
             function fillFromPDFS(response) {
                 if (response.results && Array.isArray(response.results)) {
+                    // Check for invalid student numbers first
+                    const invalidItems = response.results.filter(item => {
+                        if (Array.isArray(item) && item.length === 2) {
+                            const [studentNumber] = item;
+                            return !/^\d{8}$/.test(studentNumber);  // expects exactly 8 digits
+                        }
+                        return false;
+                    });
+
+                    if (invalidItems.length > 0) {
+                        alert("Error: One or more PDF submissions was invalid.");
+                        return;  
+                    }
+
+                    // Safe to proceed
                     response.results.forEach(item => {
                         if (Array.isArray(item) && item.length === 2) {
                             const [studentNumber, multiplier] = item;
                             createRow(studentNumber, multiplier);
                         } else if (item.error) {
                             console.warn(item.error);
-                            alert(item.error);  // Replace with custom display if desired
+                            alert(item.error);
                         }
                     });
                 } else {
                     alert("Error uploading PDFs - make sure format is correct");
                 }
             }
+
 
             // Upload PDFs to server
             function uploadPDFs() {
@@ -202,10 +219,18 @@
                 }
                 
                 const formData = new FormData();
+                let fileSizeSum = 0;
 
                 for (let i = 0; i < files.length; i++) {
                     formData.append("pdf_files", files[i]);
+                    fileSizeSum += files[i].size
                 }
+
+                if (fileSizeSum > MAX_SIZE_MB * 1024 * 1024) {
+                    alert("Please upload no more than " + MAX_SIZE_MB + " MB at once.");
+                    return;
+                }
+                
 
                 // Get CSRF token from the page
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;

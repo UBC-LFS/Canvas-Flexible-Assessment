@@ -119,6 +119,10 @@ def upload_pdfs(request, course_id):
             pdf_bytes = f.read()
             doc = fitz.open(stream=pdf_bytes, filetype="pdf")
 
+            if not (f.name.lower().endswith(".pdf") and pdf_bytes.startswith(b"%PDF")):
+                parsed_data.append(("error", f"{f.name} is not a PDF."))
+                continue
+
             text = ""
             for page in doc:
                 text += page.get_text()
