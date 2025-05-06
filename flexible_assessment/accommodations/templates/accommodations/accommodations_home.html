@@ -36,9 +36,8 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                border: 2px solid  #007bff;
+                border: 2px dashed  #000e1c;
                 border-radius: 0.5rem;
-                background-color: #f1f1f1;
                 padding: 2rem;
                 text-align: center;
                 cursor: pointer;
@@ -68,13 +67,16 @@
     <body>
         <div class="container mt-4">
             <h2 class="text-center">Accommodations</h2>
-            <div class="row justify-content-center">
+            <div class="row justify-content-center mt-4">
                 <div class="col-lg-6 col-md-8">
                     <!-- PDF upload -->
                     <form id="pdf-upload-form" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label for="pdf-file" class="form-label">Upload PDFs</label>
+                            <h4>Upload PDF Files from CfA</h4>
+                            <label for="pdf-file" class="form-label my-2">
+                                Please upload the files you received from the Centre for Accessibility.
+                            </label>
                             <div id="drop-area">
                                 <p>Drag & drop PDF files here, or click to select</p>
                                 <input type="file"
@@ -95,6 +97,7 @@
                         <div class="row justify-content-between my-4">
                             <div class="col-auto">
                                 <button type="button" class="btn btn-secondary" id="add-entry">Add Manually</button>
+                                <button type="button" class="btn btn-danger mx-2" id="remove-all">Remove All</button>
                             </div>
                             <div class="col-auto">
                                 <button type="submit" class="btn btn-primary">Next</button>
@@ -102,7 +105,7 @@
                         </div>
                         <!-- Table with no initial rows -->
                         <table class="table table-striped text-center align-middle">
-                            <thead class="table">
+                            <thead class="table" id="entry-header" style="display:none">
                                 <tr>
                                     <th style="width: 40%">Student Number</th>
                                     <th style="width: 40%">Multiplier</th>
@@ -159,8 +162,15 @@
             const accommodations_form = document.getElementById("accommodations-form");
             const entryList = document.getElementById("entry-list");
             const addBtn = document.getElementById("add-entry");
+            const removeAllBtn = document.getElementById("remove-all");
             const template = document.querySelector("table.d-none #entry-template");
             const MAX_SIZE_MB = 10; // max size of all file uploads - 5 MB should be roughly 50 PDFs given their current format
+
+            function toggleTableHeader() {
+                const header = document.getElementById("entry-header");
+                const rowCount = entryList.querySelectorAll("tr").length;
+                header.style.display = rowCount > 0 ? "" : "none";
+            }
 
             function createRow(studentNumber = "", multiplier = "") {
                 const clone = template.cloneNode(true);
@@ -176,6 +186,7 @@
 
                 clone.classList.remove("d-none");
                 entryList.appendChild(clone)
+                toggleTableHeader();
             }
 
             // prefill table with existing accommodations from previous session
@@ -189,6 +200,14 @@
                 createRow();
             });
 
+            removeAllBtn.addEventListener("click", function() {
+                const entryList = document.getElementById("entry-list");
+                while (entryList.firstChild) {
+                    entryList.removeChild(entryList.lastChild);
+                }
+                toggleTableHeader();
+            });
+
             // remove rows
             entryList.addEventListener("click", function (e) {
                 const removeBtn = e.target.closest(".remove-entry");
@@ -196,6 +215,7 @@
                     const row = removeBtn.closest("tr");
                     if (row) row.remove();
                 }
+                toggleTableHeader();
             });
 
             // check at least one entry on submission
