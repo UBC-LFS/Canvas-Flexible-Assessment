@@ -43,7 +43,7 @@
                     <form id="pdf-upload-form" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label for="pdf-file" class="form-label">Upload PDF(s)</label>
+                            <label for="pdf-file" class="form-label">Upload PDFs</label>
                             <input type="file"
                                    id="pdf-file"
                                    name="pdf_files"
@@ -52,7 +52,7 @@
                                    accept="application/pdf"
                                    autocomplete="off">
                         </div>
-                        <button type="button" class="btn btn-info" id="upload-btn">Upload PDFs</button>
+                        <button type="button" class="btn btn-info" id="upload-btn">Submit</button>
                     </form>
                     <form id="accommodations-form"
                           method="post"
@@ -61,7 +61,7 @@
                         <!-- Button Row -->
                         <div class="row justify-content-between my-4">
                             <div class="col-auto">
-                                <button type="button" class="btn btn-secondary" id="add-entry">Add Accommodation</button>
+                                <button type="button" class="btn btn-secondary" id="add-entry">Add Manually</button>
                             </div>
                             <div class="col-auto">
                                 <button type="submit" class="btn btn-primary">Next</button>
