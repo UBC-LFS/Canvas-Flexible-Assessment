@@ -100,14 +100,6 @@ class AccommodationsHome(views.AccommodationsListView):
         )
 
 
-def quizzes(request, *args, **kwargs):
-    return HttpResponse(
-        "<h1>Accommodations: "
-        + str(request.session.get("accommodations", "no accommodations in session"))
-        + "</h1>"
-    )
-
-
 @require_POST
 def upload_pdfs(request, course_id):
     uploaded_files = request.FILES.getlist("pdf_files")
@@ -153,3 +145,51 @@ def upload_pdfs(request, course_id):
     print(parsed_data)
 
     return JsonResponse({"results": parsed_data})
+
+
+def quizzes(request, *args, **kwargs):
+    return HttpResponse(
+        "<h1>Accommodations: "
+        + str(request.session.get("accommodations", "no accommodations in session"))
+        + "</h1>"
+    )
+
+
+class AccommodationsQuizzes(views.AccommodationsListView):
+    template_name = "accommodations/accommodations_quizzes.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        accommodations = self.request.session.get("accommodations", [])
+        context["accommodations"] = accommodations
+        context["accommodations_json"] = mark_safe(
+            json.dumps(accommodations)
+        )  # pass to template as json for javascript to use
+        context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+        return context
+
+    def get(self, request, *args, **kwargs):
+        # should require that accommodations exist in context data - if not, redirect back to home
+        response = super().get(request, *args, **kwargs)
+        course_id = self.kwargs["course_id"]
+        accommodations = request.session.get("accommodations", None)
+
+        # if redirected, update students in database
+        login_redirect = request.GET.get("login_redirect")
+        if login_redirect:
+            course = self.get_context_data().get("course", "")
+            utils.update_students(request, course)
+
+        if accommodations == None or accommodations == []:
+            messages.error(
+                request,
+                "Please set student accommodations before trying to access the quiz page.",
+            )
+            return HttpResponseRedirect(
+                reverse(
+                    "accommodations:accommodations_home",
+                    kwargs={"course_id": course_id},
+                )
+            )
+
+        return response

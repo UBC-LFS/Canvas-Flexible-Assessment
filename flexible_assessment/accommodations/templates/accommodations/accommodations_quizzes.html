@@ -1,0 +1,89 @@
+{% extends "accommodations/accommodations_base.html" %}
+{% load django_bootstrap5 %}
+{% bootstrap_messages %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+{% block content %}
+    <div class="container my-4">
+        <h2 class="text-center">Accommodations</h2>
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-6 col-md-8">
+                <form id="pdf-upload-form" enctype="multipart/form-data" method="post">
+                    {% csrf_token %}
+                    <div class="my-3">
+                        <h4>Select Quizzes</h4>
+                        <label class="form-label my-3">
+                            Please select the quizzes in your course that you would like to apply accommodations to:
+                        </label>
+                        <!-- Select All Checkbox -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="select-all">
+                            <label class="form-check-label fw-bold" for="select-all">Select All</label>
+                        </div>
+                        <!-- Individual Quiz Checkboxes -->
+                        <div class="ms-3">
+                            <div class="form-check">
+                                <input class="form-check-input quiz-checkbox"
+                                       type="checkbox"
+                                       name="quizzes"
+                                       value="1"
+                                       id="quiz1">
+                                <label class="form-check-label" for="quiz1">Quiz 1</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input quiz-checkbox"
+                                       type="checkbox"
+                                       name="quizzes"
+                                       value="2"
+                                       id="quiz2">
+                                <label class="form-check-label" for="quiz2">Quiz 2</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input quiz-checkbox"
+                                       type="checkbox"
+                                       name="quizzes"
+                                       value="3"
+                                       id="quiz3">
+                                <label class="form-check-label" for="quiz3">Quiz 3</label>
+                            </div>
+                        </div>
+                        <!-- Buttons -->
+                        <div class="mt-4 d-flex justify-content-between">
+                            <!-- Back button using JavaScript -->
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    onclick="window.location.href='{% url 'accommodations:accommodations_home' course.id %}'">
+                                Back
+                            </button>
+                            <!-- Next button -->
+                            <button type="submit" class="btn btn-primary">Next</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Select All Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectAll = document.getElementById('select-all');
+        const checkboxes = document.querySelectorAll('.quiz-checkbox');
+
+        selectAll.addEventListener('change', function () {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', () => {
+                if (!cb.checked) {
+                    selectAll.checked = false;
+                } else if (Array.from(checkboxes).every(cb => cb.checked)) {
+                    selectAll.checked = true;
+                }
+            });
+        });
+    });
+    </script>
+{% endblock %}
