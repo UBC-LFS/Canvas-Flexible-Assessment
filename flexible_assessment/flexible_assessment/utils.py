@@ -24,14 +24,16 @@ def update_students(request, course):
     students_canvas_ids = [
         student.__getattribute__("id") for student in students_canvas
     ]
-    students_db_ids = [student.user_id for student in students_db]
-    students_login_ids = [student.login_id for student in students_db]
+    students_db_user_ids = [student.user_id for student in students_db]
+    students_db_login_ids = [student.login_id for student in students_db]
+    students_db_names = [student.display_name for student in students_db]
 
-    # here, include students to update - that is, students with new IDs (add) or new SIS IDs (update)
+    # here, include students to update - that is, newly added students or students whose SIS ID or name changed
     students_to_update = list(
         filter(
-            lambda student: student.__getattribute__("id") not in students_db_ids
-            or student.__getattribute__("sis_user_id") not in students_login_ids,
+            lambda student: student.__getattribute__("id") not in students_db_user_ids
+            or student.__getattribute__("sis_user_id") not in students_db_login_ids
+            or student.__getattribute__("name") not in students_db_names,
             students_canvas,
         )
     )

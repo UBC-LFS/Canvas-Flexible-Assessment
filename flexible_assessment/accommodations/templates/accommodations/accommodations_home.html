@@ -31,6 +31,37 @@
             input[type="number"] {
                 -moz-appearance: textfield;
             }
+
+            #drop-area {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 2px solid  #007bff;
+                border-radius: 0.5rem;
+                background-color: #f1f1f1;
+                padding: 2rem;
+                text-align: center;
+                cursor: pointer;
+                transition: background-color 0.2s, border-color 0.2s;
+                height: 200px;
+            }
+
+            #drop-area.dragover {
+                background-color: #e0f3ff;
+                border-color: #0056b3;
+            }
+
+            #drop-area p {
+                margin: 0;
+                font-size: 1rem;
+                color: #333;
+            }
+
+            .hidden-input {
+                display: none;
+            }
+
+            
         </style>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     </head>
@@ -44,15 +75,17 @@
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="pdf-file" class="form-label">Upload PDFs</label>
-                            <input type="file"
-                                   id="pdf-file"
-                                   name="pdf_files"
-                                   multiple
-                                   class="form-control"
-                                   accept="application/pdf"
-                                   autocomplete="off">
+                            <div id="drop-area">
+                                <p>Drag & drop PDF files here, or click to select</p>
+                                <input type="file"
+                                       id="pdf-file"
+                                       name="pdf_files"
+                                       multiple
+                                       class="hidden-input"
+                                       accept="application/pdf"
+                                       autocomplete="off">
+                            </div>
                         </div>
-                        <button type="button" class="btn btn-info" id="upload-btn">Submit</button>
                     </form>
                     <form id="accommodations-form"
                           method="post"
@@ -101,7 +134,6 @@
                                         <option value="1.25">1.25x</option>
                                         <option value="1.5">1.5x</option>
                                         <option value="2.0">2.0x</option>
-                                        <option value="3.0">Error</option>
                                     </select>
                                 </td>
                                 <td class="text-center align-middle">
@@ -249,7 +281,40 @@
                 });
             }
 
-            document.getElementById("upload-btn").addEventListener("click", uploadPDFs);
+            const dropArea = document.getElementById("drop-area");
+            const fileInput = document.getElementById("pdf-file");
+
+            // Trigger file input when clicking the drop area
+            dropArea.addEventListener("click", () => fileInput.click());
+            // Automatically upload when files are selected via click
+            fileInput.addEventListener("change", () => {
+                if (fileInput.files.length > 0) {
+                    uploadPDFs();
+                }
+            });
+
+            // Handle drag over
+            dropArea.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropArea.classList.add("dragover");
+            });
+
+            // Handle drag leave
+            dropArea.addEventListener("dragleave", () => {
+                dropArea.classList.remove("dragover");
+            });
+
+            // Handle drop
+            dropArea.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropArea.classList.remove("dragover");
+
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                }
+
+                uploadPDFs();
+            });
 
         });
         </script>
