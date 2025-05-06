@@ -20,6 +20,8 @@ import fitz
 import re
 import json
 
+from instructor.canvas_api import FlexCanvas
+
 
 class AccommodationsHome(views.AccommodationsListView):
     template_name = "accommodations/accommodations_home.html"
@@ -147,14 +149,6 @@ def upload_pdfs(request, course_id):
     return JsonResponse({"results": parsed_data})
 
 
-def quizzes(request, *args, **kwargs):
-    return HttpResponse(
-        "<h1>Accommodations: "
-        + str(request.session.get("accommodations", "no accommodations in session"))
-        + "</h1>"
-    )
-
-
 class AccommodationsQuizzes(views.AccommodationsListView):
     template_name = "accommodations/accommodations_quizzes.html"
 
@@ -192,4 +186,22 @@ class AccommodationsQuizzes(views.AccommodationsListView):
                 )
             )
 
-        return response
+        canvas = FlexCanvas(request)
+        course = canvas.get_course(course_id)  # You'll need the course ID
+        quizzes = course.get_quizzes()
+
+        quiz_list = []
+        testing_html = ""
+        for quiz in quizzes:
+            quiz_data = {
+                "id": quiz.id,
+                "title": quiz.title,
+                "time_limit": quiz.time_limit,  # in minutes, or None
+                "due_at": quiz.due_at,  # ISO8601 string or None
+                "unlock_at": quiz.unlock_at,  # when quiz becomes available
+                "lock_at": quiz.lock_at,  # when quiz is no longer available
+            }
+            quiz_list.append(quiz_data)
+            testing_html += "<h1>" + str(quiz_data) + "</h1>"
+
+        return HttpResponse(testing_html)
