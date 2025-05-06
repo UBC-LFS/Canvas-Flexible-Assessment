@@ -25,16 +25,19 @@ def update_students(request, course):
         student.__getattribute__("id") for student in students_canvas
     ]
     students_db_ids = [student.user_id for student in students_db]
+    students_login_ids = [student.login_id for student in students_db]
 
-    students_to_add = list(
+    # here, include students to update - that is, students with new IDs (add) or new SIS IDs (update)
+    students_to_update = list(
         filter(
-            lambda student: student.__getattribute__("id") not in students_db_ids,
+            lambda student: student.__getattribute__("id") not in students_db_ids
+            or student.__getattribute__("sis_user_id") not in students_login_ids,
             students_canvas,
         )
     )
     students_to_delete = students_db.exclude(user_id__in=students_canvas_ids)
 
-    for student in students_to_add:
+    for student in students_to_update:
         canvas_fields = {}
         canvas_fields["user_id"] = student.__getattribute__("id")
         canvas_fields["login_id"] = student.__getattribute__("sis_user_id")
@@ -54,12 +57,19 @@ def update_students(request, course):
         students_to_delete.delete()
 
 
+# will create new user profile or update existing profile if needed
 def set_user_profile(user_id, login_id, display_name):
-    user_set = models.UserProfile.objects.filter(pk=user_id)
-    if not user_set.exists():
-        user = models.UserProfile.objects.create_user(user_id, login_id, display_name)
+    user, created = models.UserProfile.objects.get_or_create(pk=user_id)
+    if not created:
+        if user.login_id != login_id:
+            user.login_id = login_id
+        if user.display_name != display_name:
+            user.display_name = display_name
+        user.save()
     else:
-        user = user_set.first()
+        user.login_id = login_id
+        user.display_name = display_name
+        user.save()
     return user
 
 
