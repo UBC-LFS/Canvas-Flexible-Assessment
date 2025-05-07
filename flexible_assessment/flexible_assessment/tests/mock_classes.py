@@ -20,6 +20,10 @@ def use_mock_canvas(location="instructor.views.FlexCanvas"):
     return decorator
 
 
+def use_mock_canvas_in_accommodations():
+    return use_mock_canvas(location="accommodations.views.FlexCanvas")
+
+
 class MockUser(object):
     def __init__(self, name, id):
         self.name = name

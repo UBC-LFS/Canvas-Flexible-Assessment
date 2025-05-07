@@ -89,7 +89,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         ), patch(
             "flexible_assessment.models.Course.objects.get"
         ) as mock_course_get:
-            response = client.post(reverse("launch"))
+            response = client.post(reverse("launch_flexible_assessment"))
 
         session_id = client.session.session_key
         chromeOptions = webdriver.ChromeOptions()

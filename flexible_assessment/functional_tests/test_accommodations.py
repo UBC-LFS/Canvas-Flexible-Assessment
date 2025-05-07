@@ -89,7 +89,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         ), patch(
             "flexible_assessment.models.Course.objects.get"
         ) as mock_course_get:
-            response = client.post(reverse("launch"))
+            response = client.post(reverse("launch_accommodations"))
 
         session_id = client.session.session_key
         chromeOptions = webdriver.ChromeOptions()
@@ -115,7 +115,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         return browser
 
     @tag("slow", "view", "accommodations")
-    @mock_classes.use_mock_canvas()
+    @mock_classes.use_mock_canvas_in_accommodations()
     @patch.object(views.FinalGradeListView, "_submit_final_grades")
     def test_view_page(self, mocked_flex_canvas_instance, mock_submit_final_grades):
         """Note, this is designed to work with the fixture data for course 1."""

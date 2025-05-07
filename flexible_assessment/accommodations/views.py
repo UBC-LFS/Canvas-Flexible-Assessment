@@ -46,6 +46,8 @@ class AccommodationsHome(views.AccommodationsListView):
         if login_redirect:
             course = self.get_context_data().get("course", "")
             utils.update_students(request, course)
+        # canvas = FlexCanvas(request) # TESTING IF MOCK CANVAS WORKS - IT DOES
+        # print(canvas.get_course(1).__getattribute__("name"))
         return response
 
     def post(self, request, *args, **kwargs):
