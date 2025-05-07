@@ -6,6 +6,16 @@
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
 {% block content %}
+    <style>
+        #quiz-card {
+            transition: background-color 0.1s, border-color 0.1s;
+        }
+
+        #quiz-card:hover {
+            background-color: #e0f3ff;
+            border-color: #0056b3;
+        }
+    </style>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
         <div class="row justify-content-center mt-4">
@@ -18,35 +28,46 @@
                             Please select the quizzes in your course that you would like to apply accommodations to:
                         </label>
                         <!-- Select All Checkbox -->
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="select-all">
-                            <label class="form-check-label fw-bold" for="select-all">Select All</label>
+                        <div class="form-check d-flex align-items-center mb-3">
+                            <input class="form-check-input me-3" type="checkbox" id="select-all">
+                            <label class="form-check-label fw-bold fs-4 mb-0" for="select-all">Select All</label>
                         </div>
                         <!-- Individual Quiz Checkboxes -->
+                        <!-- Individual Quiz Checkboxes -->
                         <div class="ms-3">
-                            <div class="form-check">
-                                <input class="form-check-input quiz-checkbox"
-                                       type="checkbox"
-                                       name="quizzes"
-                                       value="1"
-                                       id="quiz1">
-                                <label class="form-check-label" for="quiz1">Quiz 1</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input quiz-checkbox"
-                                       type="checkbox"
-                                       name="quizzes"
-                                       value="2"
-                                       id="quiz2">
-                                <label class="form-check-label" for="quiz2">Quiz 2</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input quiz-checkbox"
-                                       type="checkbox"
-                                       name="quizzes"
-                                       value="3"
-                                       id="quiz3">
-                                <label class="form-check-label" for="quiz3">Quiz 3</label>
+                            <div class="row g-3">
+                                {% for quiz in quizzes %}
+                                    <div class="col-12">
+                                        <div class="card quiz-card shadow-sm p-1"
+                                             id="quiz-card"
+                                             data-checkbox-id="quiz{{ quiz.id }}">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <input class="form-check-input me-2 quiz-checkbox"
+                                                           type="checkbox"
+                                                           name="quizzes"
+                                                           value="{{ quiz.id }}"
+                                                           id="quiz{{ quiz.id }}">
+                                                    <label class="form-check-label fs-5 fw-bold mb-0" for="quiz{{ quiz.id }}">{{ quiz.title }}</label>
+                                                </div>
+                                                <ul class="list-unstyled ms-4">
+                                                    <li>
+                                                        <strong>Time Limit:</strong> {{ quiz.time_limit_readable|default:"No time limit" }}
+                                                    </li>
+                                                    <li>
+                                                        <strong>Due At:</strong> {{ quiz.due_at_readable|default:"No due date" }}
+                                                    </li>
+                                                    <li>
+                                                        <strong>Unlock At:</strong> {{ quiz.unlock_at_readable|default:"Not set" }}
+                                                    </li>
+                                                    <li>
+                                                        <strong>Lock At:</strong> {{ quiz.lock_at_readable|default:"Not set" }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
                             </div>
                         </div>
                         <!-- Buttons -->
@@ -70,6 +91,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const selectAll = document.getElementById('select-all');
         const checkboxes = document.querySelectorAll('.quiz-checkbox');
+        const cards = document.querySelectorAll('.quiz-card');
 
         selectAll.addEventListener('change', function () {
             checkboxes.forEach(cb => cb.checked = this.checked);
@@ -81,6 +103,22 @@
                     selectAll.checked = false;
                 } else if (Array.from(checkboxes).every(cb => cb.checked)) {
                     selectAll.checked = true;
+                }
+            });
+        });
+
+        cards.forEach(card => {
+            card.classList.add('cursor-pointer');
+
+            card.addEventListener('click', function (e) {
+                // Prevent double toggle when clicking directly on input/label
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
+
+                const checkboxId = card.getAttribute('data-checkbox-id');
+                const checkbox = document.getElementById(checkboxId);
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));  // sync with Select All logic
                 }
             });
         });

@@ -10,6 +10,7 @@ from django.shortcuts import redirect
 from django.utils.safestring import mark_safe
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+from django.utils.timezone import get_current_timezone
 
 import flexible_assessment.class_views as views
 import flexible_assessment.utils as utils
@@ -19,6 +20,8 @@ from flexible_assessment.models import Course
 import fitz
 import re
 import json
+
+from dateutil import parser
 
 from instructor.canvas_api import FlexCanvas
 
@@ -149,22 +152,51 @@ def upload_pdfs(request, course_id):
     return JsonResponse({"results": parsed_data})
 
 
+def readable_time_limit(minutes):
+    if not minutes:
+        return "Not set"
+    if minutes < 60:
+        return str(minutes) + "m"
+    else:
+        hours = minutes // 60
+        remainder_minutes = minutes % 60
+        if remainder_minutes == 0:
+            return str(hours) + "h"
+        else:
+            return str(hours) + "h " + str(remainder_minutes) + "m"
+
+
+def readable_datetime(iso_string):
+    if not iso_string:
+        return "Not set"
+    try:
+        dt = parser.isoparse(iso_string)
+        dt = dt.astimezone(
+            get_current_timezone()
+        )  # Convert to local timezone if needed
+        return dt.strftime("%b %-d, %Y at %-I:%M %p")
+    except Exception:
+        return iso_string  # fallback in case of parsing error
+
+
 class AccommodationsQuizzes(views.AccommodationsListView):
     template_name = "accommodations/accommodations_quizzes.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         accommodations = self.request.session.get("accommodations", [])
+        quizzes = self.request.session.get("quizzes", [])
+
         context["accommodations"] = accommodations
         context["accommodations_json"] = mark_safe(
             json.dumps(accommodations)
         )  # pass to template as json for javascript to use
+        context["quizzes"] = quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
         return context
 
     def get(self, request, *args, **kwargs):
         # should require that accommodations exist in context data - if not, redirect back to home
-        response = super().get(request, *args, **kwargs)
         course_id = self.kwargs["course_id"]
         accommodations = request.session.get("accommodations", None)
 
@@ -191,7 +223,7 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         quizzes = course.get_quizzes()
 
         quiz_list = []
-        testing_html = ""
+
         for quiz in quizzes:
             quiz_data = {
                 "id": quiz.id,
@@ -200,8 +232,19 @@ class AccommodationsQuizzes(views.AccommodationsListView):
                 "due_at": quiz.due_at,  # ISO8601 string or None
                 "unlock_at": quiz.unlock_at,  # when quiz becomes available
                 "lock_at": quiz.lock_at,  # when quiz is no longer available
+                "time_limit_readable": readable_time_limit(quiz.time_limit),
+                "due_at_readable": readable_datetime(quiz.due_at),
+                "unlock_at_readable": readable_datetime(quiz.unlock_at),
+                "lock_at_readable": readable_datetime(quiz.lock_at),
             }
             quiz_list.append(quiz_data)
-            testing_html += "<h1>" + str(quiz_data) + "</h1>"
 
-        return HttpResponse(testing_html)
+        quiz_list = sorted(
+            quiz_list, key=lambda quiz: (quiz["title"] or "").strip().lower()
+        )
+
+        request.session["quizzes"] = quiz_list
+
+        response = super().get(request, *args, **kwargs)
+
+        return response
