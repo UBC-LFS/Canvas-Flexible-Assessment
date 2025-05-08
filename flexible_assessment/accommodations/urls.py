@@ -13,5 +13,10 @@ urlpatterns = [
         views.AccommodationsQuizzes.as_view(),
         name="accommodations_quizzes",
     ),
+    path(
+        "<int:course_id>/confirm",
+        views.AccommodationsConfirm.as_view(),
+        name="accommodations_confirm",
+    ),
     path("<int:course_id>/upload_pdfs", views.upload_pdfs, name="upload_pdfs"),
 ]

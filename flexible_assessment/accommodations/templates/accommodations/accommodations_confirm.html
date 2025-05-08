@@ -1,0 +1,84 @@
+{% extends "accommodations/accommodations_base.html" %}
+{% load django_bootstrap5 %}
+{% bootstrap_messages %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+{% block content %}
+    <style>
+        #quiz-card {
+            transition: background-color 0.1s, border-color 0.1s;
+        }
+
+        #quiz-card:hover {
+            background-color: #e0f3ff;
+            border-color: #0056b3;
+        }
+
+        .underline-if-exists {
+            text-decoration: underline;
+        }
+    </style>
+    <div class="container my-4">
+        <h2 class="text-center">Accommodations</h2>
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-6 col-md-8">
+                <h4>Confirm Accommodations for Multiplier Groups</h4>
+                <label class="form-label my-3">Verify the accommodations listed and choose to add time before or after.</label>
+                <div class="ms-3">
+                    <div class="row g-3">
+                        {% for quiz in selected_quizzes %}
+                            <div class="col-12">
+                                <div class="card quiz-card shadow-sm p-1"
+                                     id="quiz-card"
+                                     data-checkbox-id="quiz{{ quiz.id }}">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-1 mt-0">
+                                            <input class="form-check-input me-2 quiz-checkbox"
+                                                   type="checkbox"
+                                                   name="quizzes"
+                                                   value="{{ quiz.id }}"
+                                                   id="quiz{{ quiz.id }}">
+                                            <label class="form-check-label fs-5 fw-bold mb-0 d-flex w-100 align-items-center"
+                                                   for="quiz{{ quiz.id }}">
+                                                <span>{{ quiz.title }}</span>
+                                                <i class="bi ms-auto {% if quiz.published %}bi-check-circle-fill text-success{% else %}bi-ban{% endif %}"></i>
+                                            </label>
+                                        </div>
+                                        <ul class="list-unstyled ms-4 mb-0">
+                                            <li>
+                                                Time Limit:
+                                                <span class="{% if not quiz.time_limit_readable %}text-muted {% else %} underline-if-exists{% endif %}">
+                                                    {{ quiz.time_limit_readable|default:"No time limit set" }}
+                                                </span>
+                                            </li>
+                                            <li>
+                                                Quiz Open From:
+                                                <span class="{% if not quiz.unlock_at_readable %}text-muted {% else %} underline-if-exists{% endif %}">
+                                                    {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                </span>
+                                                to
+                                                <span class="{% if not quiz.lock_at_readable %}text-muted {% else %} underline-if-exists{% endif %}">
+                                                    {{ quiz.lock_at_readable|default:"No time set" }}
+                                                </span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if messages %}
+        <ul class="messages" hidden>
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <script></script>
+{% endblock %}

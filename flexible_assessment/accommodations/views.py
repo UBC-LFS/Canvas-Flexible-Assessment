@@ -215,12 +215,12 @@ class AccommodationsQuizzes(views.AccommodationsListView):
     def post(self, request, *args, **kwargs):
         course_id = self.kwargs["course_id"]
         quiz_list = request.session["quizzes"]
-        chosen_quiz_ids = request.POST.getlist("quizzes")
-        chosen_quizzes = list(
-            filter(lambda quiz: str(quiz["id"]) in chosen_quiz_ids, quiz_list)
+        selected_quiz_ids = request.POST.getlist("quizzes")
+        selected_quizzes = list(
+            filter(lambda quiz: str(quiz["id"]) in selected_quiz_ids, quiz_list)
         )
 
-        if len(chosen_quizzes) == 0:
+        if len(selected_quizzes) == 0:
             messages.error(
                 request,
                 "No quizzes selected - please select at least one quiz before submitting.",
@@ -232,14 +232,83 @@ class AccommodationsQuizzes(views.AccommodationsListView):
                 )
             )
 
-        return HttpResponse(
-            "<h1>Quiz List"
-            + str(quiz_list)
-            + "</h1>"
-            + "<h1>Chosen Quiz IDs"
-            + str(chosen_quiz_ids)
-            + "</h1>"
-            + "<h1>Chosen Quizzes"
-            + str(chosen_quizzes)
-            + "</h1>"
+        request.session["selected_quizzes"] = selected_quizzes
+
+        return HttpResponseRedirect(
+            reverse(
+                "accommodations:accommodations_confirm", kwargs={"course_id": course_id}
+            )
         )
+
+
+class AccommodationsConfirm(views.AccommodationsListView):
+    template_name = "accommodations/accommodations_confirm.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        multiplier_groups = self.request.session.get("multiplier_groups", [])
+        selected_quizzes = self.request.session.get("selected_quizzes", [])
+
+        context["multiplier_groups"] = multiplier_groups
+        context["selected_quizzes"] = selected_quizzes
+        context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+        return context
+
+    def get(self, request, *args, **kwargs):
+        # should require that accommodations, selected quizzes exist in context data - if not, redirect back to home
+        course_id = self.kwargs["course_id"]
+        accommodations = request.session.get("accommodations", None)
+        selected_quizzes = request.session.get("selected_quizzes", None)
+
+        # if redirected, update students in database
+        login_redirect = request.GET.get("login_redirect")
+        if login_redirect:
+            course = self.get_context_data().get("course", "")
+            utils.update_students(request, course)
+
+        if accommodations == None or accommodations == []:
+            messages.error(
+                request,
+                "Please set student accommodations before trying to access the submission page.",
+            )
+            return HttpResponseRedirect(
+                reverse(
+                    "accommodations:accommodations_home",
+                    kwargs={"course_id": course_id},
+                )
+            )
+        elif selected_quizzes == None or selected_quizzes == []:
+            messages.error(
+                request,
+                "Please select at least one quiz before trying to access the submission page.",
+            )
+            return HttpResponseRedirect(
+                reverse(
+                    "accommodations:accommodations_home",
+                    kwargs={"course_id": course_id},
+                )
+            )
+
+        multiplier_groups = {}
+
+        student_names_by_id = {}
+        students = self.get_queryset()
+        for student in students:
+            student_names_by_id[student.login_id] = student.display_name
+
+        for acc in accommodations:
+            id = acc[0]
+            multiplier = acc[1]
+            student = (id, student_names_by_id[id])
+            if multiplier in multiplier_groups:
+                multiplier_groups[multiplier].append(student)
+            else:
+                multiplier_groups[multiplier] = [student]
+
+        request.session["multiplier_groups"] = multiplier_groups
+
+        response = super().get(request, *args, **kwargs)
+
+        return HttpResponse("<p>" + str(multiplier_groups) + "</p>")
+
+        return response
