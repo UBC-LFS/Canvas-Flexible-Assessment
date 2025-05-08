@@ -219,6 +219,19 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         chosen_quizzes = list(
             filter(lambda quiz: str(quiz["id"]) in chosen_quiz_ids, quiz_list)
         )
+
+        if len(chosen_quizzes) == 0:
+            messages.error(
+                request,
+                "No quizzes selected - please select at least one quiz before submitting.",
+            )
+            return HttpResponseRedirect(
+                reverse(
+                    "accommodations:accommodations_quizzes",
+                    kwargs={"course_id": course_id},
+                )
+            )
+
         return HttpResponse(
             "<h1>Quiz List"
             + str(quiz_list)

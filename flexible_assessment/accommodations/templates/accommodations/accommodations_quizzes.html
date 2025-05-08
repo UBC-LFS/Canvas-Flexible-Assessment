@@ -100,7 +100,13 @@
             </div>
         </div>
     </div>
-    <!-- Select All Script -->
+    {% if messages %}
+        <ul class="messages" hidden>
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const selectAll = document.getElementById('select-all');
