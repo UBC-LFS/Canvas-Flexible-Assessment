@@ -52,15 +52,17 @@
                                                            name="quizzes"
                                                            value="{{ quiz.id }}"
                                                            id="quiz{{ quiz.id }}">
-                                                    <label class="form-check-label fs-5 fw-bold mb-0" for="quiz{{ quiz.id }}">
-                                                        {{ quiz.title }} <i class="bi {% if quiz.published %}bi-check-circle-fill text-success{% else %}bi-ban{% endif %} ml-1"></i>
+                                                    <label class="form-check-label fs-5 fw-bold mb-0 d-flex w-100 align-items-center"
+                                                           for="quiz{{ quiz.id }}">
+                                                        <span>{{ quiz.title }}</span>
+                                                        <i class="bi ms-auto {% if quiz.published %}bi-check-circle-fill text-success{% else %}bi-ban{% endif %}"></i>
                                                     </label>
                                                 </div>
                                                 <ul class="list-unstyled ms-4 mb-0">
                                                     <li>
                                                         Time Limit:
                                                         <span class="{% if not quiz.time_limit_readable %}text-muted {% else %} underline-if-exists{% endif %}">
-                                                            {{ quiz.time_limit_readable|default:"No time limit" }}
+                                                            {{ quiz.time_limit_readable|default:"No time limit set" }}
                                                         </span>
                                                     </li>
                                                     <li>

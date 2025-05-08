@@ -107,7 +107,9 @@ class AccommodationsHome(views.AccommodationsListView):
             print("{} => {}".format(key, value))
 
         logger.info(
-            "Accommodations submitted for " + str(len(accommodations)) + " students",
+            "Instructor has uploaded accommodations (not yet submitted on Canvas) for "
+            + str(len(accommodations))
+            + " students",
             extra={"course": str(course), "user": request.session["display_name"]},
         )
 
