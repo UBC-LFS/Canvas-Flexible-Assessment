@@ -15,6 +15,10 @@
             background-color: #e0f3ff;
             border-color: #0056b3;
         }
+
+        .underline-if-exists {
+            text-decoration: underline;
+        }
     </style>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
@@ -42,26 +46,32 @@
                                              id="quiz-card"
                                              data-checkbox-id="quiz{{ quiz.id }}">
                                             <div class="card-body">
-                                                <div class="d-flex align-items-center mb-2">
+                                                <div class="d-flex align-items-center mb-1 mt-0">
                                                     <input class="form-check-input me-2 quiz-checkbox"
                                                            type="checkbox"
                                                            name="quizzes"
                                                            value="{{ quiz.id }}"
                                                            id="quiz{{ quiz.id }}">
-                                                    <label class="form-check-label fs-5 fw-bold mb-0" for="quiz{{ quiz.id }}">{{ quiz.title }}</label>
+                                                    <label class="form-check-label fs-5 fw-bold mb-0" for="quiz{{ quiz.id }}">
+                                                        {{ quiz.title }} <i class="bi {% if quiz.published %}bi-check-circle-fill text-success{% else %}bi-ban{% endif %} ml-1"></i>
+                                                    </label>
                                                 </div>
-                                                <ul class="list-unstyled ms-4">
+                                                <ul class="list-unstyled ms-4 mb-0">
                                                     <li>
-                                                        <strong>Time Limit:</strong> {{ quiz.time_limit_readable|default:"No time limit" }}
+                                                        Time Limit:
+                                                        <span class="{% if not quiz.time_limit_readable %}text-muted {% else %} underline-if-exists{% endif %}">
+                                                            {{ quiz.time_limit_readable|default:"No time limit" }}
+                                                        </span>
                                                     </li>
                                                     <li>
-                                                        <strong>Due At:</strong> {{ quiz.due_at_readable|default:"No due date" }}
-                                                    </li>
-                                                    <li>
-                                                        <strong>Unlock At:</strong> {{ quiz.unlock_at_readable|default:"Not set" }}
-                                                    </li>
-                                                    <li>
-                                                        <strong>Lock At:</strong> {{ quiz.lock_at_readable|default:"Not set" }}
+                                                        Quiz Open From:
+                                                        <span class="{% if not quiz.unlock_at_readable %}text-muted {% else %} underline-if-exists{% endif %}">
+                                                            {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                        </span>
+                                                        to
+                                                        <span class="{% if not quiz.lock_at_readable %}text-muted {% else %} underline-if-exists{% endif %}">
+                                                            {{ quiz.lock_at_readable|default:"No time set" }}
+                                                        </span>
                                                     </li>
                                                 </ul>
                                             </div>

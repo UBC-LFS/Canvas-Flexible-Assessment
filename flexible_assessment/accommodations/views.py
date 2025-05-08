@@ -156,7 +156,7 @@ def upload_pdfs(request, course_id):
 
 def readable_time_limit(minutes):
     if not minutes:
-        return "Not set"
+        return None
     if minutes < 60:
         return str(minutes) + "m"
     else:
@@ -170,7 +170,7 @@ def readable_time_limit(minutes):
 
 def readable_datetime(iso_string):
     if not iso_string:
-        return "Not set"
+        return None
     try:
         dt = parser.isoparse(iso_string)
         dt = dt.astimezone(
@@ -233,7 +233,9 @@ class AccommodationsQuizzes(views.AccommodationsListView):
                 "time_limit": quiz.time_limit,  # in minutes, or None
                 "due_at": quiz.due_at,  # ISO8601 string or None
                 "unlock_at": quiz.unlock_at,  # when quiz becomes available
-                "lock_at": quiz.lock_at,  # when quiz is no longer available
+                "lock_at": quiz.lock_at,  # when quiz is no longer available,
+                "published": quiz.published,
+                "points_possible": quiz.points_possible,
                 "time_limit_readable": readable_time_limit(quiz.time_limit),
                 "due_at_readable": readable_datetime(quiz.due_at),
                 "unlock_at_readable": readable_datetime(quiz.unlock_at),
