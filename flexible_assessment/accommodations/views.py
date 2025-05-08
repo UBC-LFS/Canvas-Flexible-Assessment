@@ -297,13 +297,19 @@ class AccommodationsConfirm(views.AccommodationsListView):
             student_names_by_id[student.login_id] = student.display_name
 
         for acc in accommodations:
-            id = acc[0]
+            student_id = acc[0]
             multiplier = acc[1]
-            student = (id, student_names_by_id[id])
+            student = (student_id, student_names_by_id[student_id])
             if multiplier in multiplier_groups:
                 multiplier_groups[multiplier].append(student)
             else:
                 multiplier_groups[multiplier] = [student]
+
+        for multiplier in multiplier_groups:
+            student_list = multiplier_groups[multiplier]
+            student_list = sorted(
+                multiplier_groups, key=lambda student: student[1]
+            )  # sort by display name
 
         request.session["multiplier_groups"] = multiplier_groups
 
