@@ -24,7 +24,9 @@
         <h2 class="text-center">Accommodations</h2>
         <div class="row justify-content-center mt-4">
             <div class="col-lg-6 col-md-8">
-                <form id="pdf-upload-form" enctype="multipart/form-data" method="post">
+                <form id="quiz-upload-form"
+                      method="post"
+                      action="{% url 'accommodations:accommodations_quizzes' course.id %}">
                     {% csrf_token %}
                     <div class="my-3">
                         <h4>Select Quizzes</h4>
@@ -100,40 +102,56 @@
     </div>
     <!-- Select All Script -->
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const selectAll = document.getElementById('select-all');
-        const checkboxes = document.querySelectorAll('.quiz-checkbox');
-        const cards = document.querySelectorAll('.quiz-card');
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.quiz-checkbox');
+            const cards = document.querySelectorAll('.quiz-card');
 
-        selectAll.addEventListener('change', function () {
-            checkboxes.forEach(cb => cb.checked = this.checked);
-        });
+            const quizForm = document.getElementById("quiz-upload-form");
 
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', () => {
-                if (!cb.checked) {
-                    selectAll.checked = false;
-                } else if (Array.from(checkboxes).every(cb => cb.checked)) {
-                    selectAll.checked = true;
+            // on submitting form, make sure at least one quiz is selected
+            quizForm.addEventListener("submit", function (e) {
+                let none_checked = true;
+                checkboxes.forEach(cb => {
+                    if (cb.checked) {
+                        none_checked = false;
+                    }
+                });
+                if (none_checked) {
+                    e.preventDefault();
+                    alert("Please select at least one quiz before submitting.");
                 }
             });
-        });
 
-        cards.forEach(card => {
-            card.classList.add('cursor-pointer');
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => cb.checked = this.checked);
+            });
 
-            card.addEventListener('click', function (e) {
-                // Prevent double toggle when clicking directly on input/label
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    if (!cb.checked) {
+                        selectAll.checked = false;
+                    } else if (Array.from(checkboxes).every(cb => cb.checked)) {
+                        selectAll.checked = true;
+                    }
+                });
+            });
 
-                const checkboxId = card.getAttribute('data-checkbox-id');
-                const checkbox = document.getElementById(checkboxId);
-                if (checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                    checkbox.dispatchEvent(new Event('change'));  // sync with Select All logic
-                }
+            cards.forEach(card => {
+                card.classList.add('cursor-pointer');
+
+                card.addEventListener('click', function (e) {
+                    // Prevent double toggle when clicking directly on input/label
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
+
+                    const checkboxId = card.getAttribute('data-checkbox-id');
+                    const checkbox = document.getElementById(checkboxId);
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change'));  // sync with Select All logic
+                    }
+                });
             });
         });
-    });
     </script>
 {% endblock %}

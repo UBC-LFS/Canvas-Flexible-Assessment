@@ -103,9 +103,6 @@ class AccommodationsHome(views.AccommodationsListView):
 
         course = models.Course.objects.get(pk=course_id)
 
-        for key, value in request.session.items():
-            print("{} => {}".format(key, value))
-
         logger.info(
             "Instructor has uploaded accommodations (not yet submitted on Canvas) for "
             + str(len(accommodations))
@@ -214,3 +211,22 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         response = super().get(request, *args, **kwargs)
 
         return response
+
+    def post(self, request, *args, **kwargs):
+        course_id = self.kwargs["course_id"]
+        quiz_list = request.session["quizzes"]
+        chosen_quiz_ids = request.POST.getlist("quizzes")
+        chosen_quizzes = list(
+            filter(lambda quiz: str(quiz["id"]) in chosen_quiz_ids, quiz_list)
+        )
+        return HttpResponse(
+            "<h1>Quiz List"
+            + str(quiz_list)
+            + "</h1>"
+            + "<h1>Chosen Quiz IDs"
+            + str(chosen_quiz_ids)
+            + "</h1>"
+            + "<h1>Chosen Quizzes"
+            + str(chosen_quizzes)
+            + "</h1>"
+        )
