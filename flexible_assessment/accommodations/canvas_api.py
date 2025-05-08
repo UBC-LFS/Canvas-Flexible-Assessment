@@ -63,6 +63,8 @@ class AccommodationsCanvas(Canvas):
         super().__init__(base_url, access_token)
 
     def get_quiz_data(self, course_id):
+        # TODO - extended this to work with New Quizzes as well, add field in quiz data specifying if quiz is New
+
         course = self.get_course(course_id)  # You'll need the course ID
         quizzes = course.get_quizzes()
 

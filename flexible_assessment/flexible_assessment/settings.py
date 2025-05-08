@@ -200,6 +200,10 @@ LOGGING = {
             "handlers": ["console", "file"],
             "level": "INFO",
         },
+        "accommodations": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+        },
         "instructor": {
             "handlers": ["console", "file"],
             "level": "INFO",

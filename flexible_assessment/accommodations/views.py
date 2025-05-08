@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 
 import flexible_assessment.class_views as views
+import flexible_assessment.models as models
 import flexible_assessment.utils as utils
 
 from flexible_assessment.models import Course
@@ -19,8 +20,12 @@ from flexible_assessment.models import Course
 import fitz
 import re
 import json
+import logging
 
 from accommodations.canvas_api import AccommodationsCanvas
+
+
+logger = logging.getLogger(__name__)
 
 
 class AccommodationsHome(views.AccommodationsListView):
@@ -93,7 +98,18 @@ class AccommodationsHome(views.AccommodationsListView):
                 messages.error(request, error)
             return redirect("accommodations:accommodations_home", kwargs["course_id"])
 
-        request.session["accommodations"] = list(zip(student_numbers, multipliers))
+        accommodations = list(zip(student_numbers, multipliers))
+        request.session["accommodations"] = accommodations
+
+        course = models.Course.objects.get(pk=course_id)
+
+        for key, value in request.session.items():
+            print("{} => {}".format(key, value))
+
+        logger.info(
+            "Accommodations submitted for " + str(len(accommodations)) + " students",
+            extra={"course": str(course), "user": request.session["display_name"]},
+        )
 
         return HttpResponseRedirect(
             reverse(

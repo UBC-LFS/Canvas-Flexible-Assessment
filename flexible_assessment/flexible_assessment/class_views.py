@@ -36,7 +36,7 @@ class GenericView(LoginRequiredMixin, UserPassesTestMixin):
     Attributes
     ----------
     allowed_view_role : ViewRole
-        Used for defining the test function for UserPassesTesMixin
+        Used for defining the test function for UserPassesTestMixin
     raise_exception : bool
         From LoginRequiredMixin, set to True so that exception is
         thrown if user is not logged in
@@ -164,3 +164,15 @@ class AccommodationsListView(InstructorListView):
         return HttpResponseForbidden(
             "You do not have permission to access this app. If you are an instructor, you can access the app through Canvas navigation."
         )
+
+    def get_context_data(self, **kwargs):
+        # add display_name to context here so logs work
+        context = super().get_context_data(**kwargs)
+        context["display_name"] = self.request.session.get("display_name", "")
+        if context["display_name"] == "":
+            context["display_name"] = UserProfile.objects.get(
+                pk=self.request.session["_auth_user_id"]
+            ).display_name
+            self.request.session["display_name"] = context["display_name"]
+
+        return context
