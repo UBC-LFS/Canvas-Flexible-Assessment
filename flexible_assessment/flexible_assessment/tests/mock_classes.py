@@ -20,8 +20,23 @@ def use_mock_canvas(location="instructor.views.FlexCanvas"):
     return decorator
 
 
-def use_mock_canvas_in_accommodations():
-    return use_mock_canvas(location="accommodations.views.FlexCanvas")
+def use_mock_canvas_in_accommodations(
+    location="accommodations.views.AccommodationsCanvas",
+):
+    """Decorate a function that replaces AccommodationsCanvas with MockAccommodationsCanvas and pass the instance of MockAccommodationsCanvas to the function
+    Note: Since this passes in MockClass.return_value, you must add this argument to your function signature
+    See https://stackoverflow.com/a/42581103 for an explanation of this code"""
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            with patch(location) as MockClass:
+                MockClass.return_value = MockAccommodationsCanvas()
+                func(*args, MockClass.return_value, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 class MockUser(object):
@@ -143,3 +158,10 @@ class MockFlexCanvas(MockCanvas):
 
     def get_calendar_event(self, calendar_event):
         return self.calendar_item
+
+
+class MockAccommodationsCanvas(MockCanvas):
+    """This is used to mock AccommodationsCanvas since AccommodationsCanvas requires Canvas authentication to use the Canvas api"""
+
+    def __init__(self):
+        super().__init__()

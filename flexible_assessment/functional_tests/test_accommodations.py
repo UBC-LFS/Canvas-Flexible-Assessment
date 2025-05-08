@@ -124,10 +124,6 @@ class TestInstructorViews(StaticLiveServerTestCase):
         )
         session_id = self.client.session.session_key
 
-        mocked_flex_canvas_instance.groups_dict["2"].grade_list = {
-            "grades": [("1", 50), ("2", 10), ("3", 50), ("4", 60)]
-        }
-
         self.browser.get(
             self.live_server_url
             + reverse("accommodations:accommodations_home", args=[1])
