@@ -284,37 +284,20 @@ class AccommodationsConfirm(views.AccommodationsListView):
             )
             return HttpResponseRedirect(
                 reverse(
-                    "accommodations:accommodations_home",
+                    "accommodations:accommodations_quizzes",
                     kwargs={"course_id": course_id},
                 )
             )
 
-        multiplier_groups = {}
-
-        student_names_by_id = {}
         students = self.get_queryset()
-        for student in students:
-            student_names_by_id[student.login_id] = student.display_name
+        canvas = AccommodationsCanvas(request)
 
-        for acc in accommodations:
-            student_id = acc[0]
-            multiplier = acc[1]
-            student = (student_id, student_names_by_id[student_id])
-            if multiplier in multiplier_groups:
-                multiplier_groups[multiplier].append(student)
-            else:
-                multiplier_groups[multiplier] = [student]
-
-        for multiplier in multiplier_groups:
-            student_list = multiplier_groups[multiplier]
-            student_list = sorted(
-                multiplier_groups, key=lambda student: student[1]
-            )  # sort by display name
+        multiplier_groups = canvas.get_multiplier_groups(accommodations, students)
 
         request.session["multiplier_groups"] = multiplier_groups
 
         response = super().get(request, *args, **kwargs)
 
-        return HttpResponse("<p>" + str(multiplier_groups) + "</p>")
+        # return HttpResponse("<p>" + str(multiplier_groups) + "</p>")
 
         return response

@@ -6,69 +6,65 @@
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
 {% block content %}
-    <style>
-        #quiz-card {
-            transition: background-color 0.1s, border-color 0.1s;
-        }
-
-        #quiz-card:hover {
-            background-color: #e0f3ff;
-            border-color: #0056b3;
-        }
-
-        .underline-if-exists {
-            text-decoration: underline;
-        }
-    </style>
+    <style></style>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
         <div class="row justify-content-center mt-4">
             <div class="col-lg-8 col-md-10">
                 <h4>Confirm Accommodations for Multiplier Groups</h4>
                 <label class="form-label my-3">Verify the accommodations listed and choose to add time before or after.</label>
-                <div class="ms-3">
-                    <div class="row g-3">
-                        {% for quiz in selected_quizzes %}
-                            <div class="col-12">
-                                <div class="card quiz-card shadow-sm p-1"
-                                     id="quiz-card"
-                                     data-checkbox-id="quiz{{ quiz.id }}">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-1 mt-0">
-                                            <input class="form-check-input me-2 quiz-checkbox"
-                                                   type="checkbox"
-                                                   name="quizzes"
-                                                   value="{{ quiz.id }}"
-                                                   id="quiz{{ quiz.id }}">
-                                            <label class="form-check-label fs-5 fw-bold mb-0 d-flex w-100 align-items-center"
-                                                   for="quiz{{ quiz.id }}">
-                                                <span>{{ quiz.title }}</span>
-                                                <i class="bi ms-auto {% if quiz.published %}bi-check-circle-fill text-success{% else %}bi-ban{% endif %}"></i>
-                                            </label>
-                                        </div>
-                                        <ul class="list-unstyled ms-4 mb-0">
-                                            <li>
-                                                Time Limit:
-                                                <span class="{% if not quiz.time_limit_readable %}text-muted {% else %} underline-if-exists{% endif %}">
-                                                    {{ quiz.time_limit_readable|default:"No time limit set" }}
-                                                </span>
-                                            </li>
-                                            <li>
-                                                Quiz Open From:
-                                                <span class="{% if not quiz.unlock_at_readable %}text-muted {% else %} underline-if-exists{% endif %}">
-                                                    {{ quiz.unlock_at_readable|default:"No time set" }}
-                                                </span>
-                                                to
-                                                <span class="{% if not quiz.lock_at_readable %}text-muted {% else %} underline-if-exists{% endif %}">
-                                                    {{ quiz.lock_at_readable|default:"No time set" }}
-                                                </span>
-                                            </li>
-                                        </ul>
-                                    </div>
+                <div class="row g-3">
+                    {% for multiplier, students in multiplier_groups %}
+                        <div class="card shadow-sm mb-4 px-0"
+                             style="border-radius: 1em;
+                                    overflow: hidden">
+                            <div class="card-header p-0">
+                                <div class="w-100 px-3 py-2">
+                                    <h3 class="mb-0">{{ multiplier }}x Time Multiplier</h3>
                                 </div>
                             </div>
-                        {% endfor %}
-                    </div>
+                            <div class="card-body">
+                                <!-- Student Table -->
+                                <h5>Students:</h5>
+                                <table class="table table-bordered table-sm mt-2">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Student ID</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for student_id, student_name in students %}
+                                            <tr>
+                                                <td>{{ student_name }}</td>
+                                                <td>{{ student_id }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <!-- Quiz Table -->
+                                <h5 class="mt-4">Quizzes:</h5>
+                                <table class="table table-bordered table-sm mt-2">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Open From</th>
+                                            <th>Due</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for quiz in selected_quizzes %}
+                                            <tr>
+                                                <td>{{ quiz.title }}</td>
+                                                <td>{{ quiz.unlock_at_readable|default:"N/A" }}</td>
+                                                <td>{{ quiz.lock_at_readable|default:"N/A" }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

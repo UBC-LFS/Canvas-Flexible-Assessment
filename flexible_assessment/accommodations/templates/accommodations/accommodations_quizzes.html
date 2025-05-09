@@ -16,6 +16,11 @@
             border-color: #0056b3;
         }
 
+        .quiz-card.selected {
+            background-color: #d1e7dd;  /* a light green, Bootstrap success background */
+            border-color: #0f5132;     /* matching border color */
+        }
+
         .underline-if-exists {
             text-decoration: underline;
         }
@@ -130,17 +135,41 @@
             });
 
             selectAll.addEventListener('change', function () {
-                checkboxes.forEach(cb => cb.checked = this.checked);
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                    const card = cb.closest('.quiz-card');
+                    if (this.checked) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
             });
 
+            // Set initial state based on any pre-checked boxes
             checkboxes.forEach(cb => {
                 cb.addEventListener('change', () => {
+                    const card = cb.closest('.quiz-card');
+                    if (cb.checked) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+
                     if (!cb.checked) {
                         selectAll.checked = false;
                     } else if (Array.from(checkboxes).every(cb => cb.checked)) {
                         selectAll.checked = true;
                     }
                 });
+            });
+
+            // Set initial state based on any pre-checked boxes
+            checkboxes.forEach(cb => {
+                const card = cb.closest('.quiz-card');
+                if (cb.checked) {
+                    card.classList.add('selected');
+                }
             });
 
             cards.forEach(card => {

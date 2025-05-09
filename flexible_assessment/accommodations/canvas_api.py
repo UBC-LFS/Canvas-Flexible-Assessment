@@ -92,3 +92,20 @@ class AccommodationsCanvas(Canvas):
         )
 
         return quiz_list
+
+    def get_multiplier_groups(self, accommodations, students):
+        multiplier_groups = {}
+        student_names_by_id = {s.login_id: s.display_name for s in students}
+
+        for student_id, multiplier in accommodations:
+            student = (student_id, student_names_by_id[student_id])
+            multiplier_groups.setdefault(multiplier, []).append(student)
+
+        # Sort each student list by name
+        for multiplier in multiplier_groups:
+            multiplier_groups[multiplier] = sorted(
+                multiplier_groups[multiplier], key=lambda student: student[1]
+            )
+
+        # Return as sorted list of tuples
+        return sorted(multiplier_groups.items(), key=lambda item: item[0])
