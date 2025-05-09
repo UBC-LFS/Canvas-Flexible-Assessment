@@ -66,6 +66,17 @@
                         </div>
                     {% endfor %}
                 </div>
+                <!-- Buttons -->
+                <div class="mt-4 d-flex justify-content-between py-0 my-0">
+                    <!-- Back button using JavaScript -->
+                    <button type="button"
+                            class="btn btn-secondary"
+                            onclick="window.location.href='{% url 'accommodations:accommodations_quizzes' course.id %}'">
+                        Back
+                    </button>
+                    <!-- Next button -->
+                    <button type="submit" class="btn btn-primary">Next</button>
+                </div>
             </div>
         </div>
     </div>

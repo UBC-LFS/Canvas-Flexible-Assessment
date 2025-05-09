@@ -171,12 +171,14 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         context = super().get_context_data(**kwargs)
         accommodations = self.request.session.get("accommodations", [])
         quizzes = self.request.session.get("quizzes", [])
+        selected_quizzes = self.request.session.get("selected_quizzes", [])
 
         context["accommodations"] = accommodations
         context["accommodations_json"] = mark_safe(
             json.dumps(accommodations)
         )  # pass to template as json for javascript to use
         context["quizzes"] = quizzes
+        context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
         return context
 
@@ -215,7 +217,7 @@ class AccommodationsQuizzes(views.AccommodationsListView):
     def post(self, request, *args, **kwargs):
         course_id = self.kwargs["course_id"]
         quiz_list = request.session["quizzes"]
-        selected_quiz_ids = request.POST.getlist("quizzes")
+        selected_quiz_ids = request.POST.getlist("selected_quizzes")
         selected_quizzes = list(
             filter(lambda quiz: str(quiz["id"]) in selected_quiz_ids, quiz_list)
         )
