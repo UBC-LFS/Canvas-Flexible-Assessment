@@ -11,89 +11,102 @@
         <h2 class="text-center">Accommodations</h2>
         <div class="row justify-content-center mt-4">
             <div class="col-lg-8 col-md-10">
-                <h4>Confirm Accommodations for Multiplier Groups</h4>
-                <label class="form-label my-3">Verify the accommodations listed and choose to add time before or after.</label>
-                <div class="row g-3">
-                    {% for multiplier, students in multiplier_groups %}
-                        <div class="card shadow-sm mb-4 px-0"
-                             style="border-radius: 1em;
-                                    overflow: hidden">
-                            <div class="card-header p-0">
-                                <div class="w-100 px-3 py-2">
-                                    <h3 class="mb-0">{{ multiplier }}x Time Multiplier</h3>
+                <form id="quiz-upload-form"
+                      method="post"
+                      action="{% url 'accommodations:accommodations_confirm' course.id %}">
+                    {% csrf_token %}
+                    <h4>Confirm Accommodations for Multiplier Groups</h4>
+                    <label class="form-label my-3">Verify the accommodations listed and choose to add time before or after.</label>
+                    <div class="row g-3">
+                        {% for multiplier, students in multiplier_groups %}
+                            <div class="card shadow-sm mb-4 px-0"
+                                 style="border-radius: 1em;
+                                        overflow: hidden">
+                                <div class="card-header p-0">
+                                    <div class="w-100 px-3 py-2">
+                                        <h3 class="mb-0">{{ multiplier }}x Time Multiplier</h3>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Student Table -->
+                                    <h5>Students:</h5>
+                                    <table class="table table-bordered table-sm mt-2"
+                                           style="table-layout: fixed">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Student ID</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student_id, student_name in students %}
+                                                <tr>
+                                                    <td>{{ student_name }}</td>
+                                                    <td>{{ student_id }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <!-- Quiz Table -->
+                                    <h5 class="mt-4">Quizzes:</h5>
+                                    <table class="table table-bordered table-sm mt-2">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Add Before</th>
+                                                <th>Add After</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for quiz in selected_quizzes %}
+                                                <tr>
+                                                    <td>{{ quiz.title }}</td>
+                                                    <td>
+                                                        <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
+                                                            {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
+                                                            {{ quiz.lock_at_readable|default:"No time set" }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <input class="form-check-input me-2 quiz-checkbox"
+                                                               type="checkbox"
+                                                               name="add_before_{{ multiplier }}"
+                                                               value="{{ quiz.id }}"
+                                                               id="quiz{{ quiz.id }}">
+                                                    </td>
+                                                    <td>
+                                                        <input class="form-check-input me-2 quiz-checkbox"
+                                                               type="checkbox"
+                                                               name="add_after_{{ multiplier }}"
+                                                               value="{{ quiz.id }}"
+                                                               id="quiz{{ quiz.id }}">
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <!-- Student Table -->
-                                <h5>Students:</h5>
-                                <table class="table table-bordered table-sm mt-2"
-                                       style="table-layout: fixed">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Student ID</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for student_id, student_name in students %}
-                                            <tr>
-                                                <td>{{ student_name }}</td>
-                                                <td>{{ student_id }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                                <!-- Quiz Table -->
-                                <h5 class="mt-4">Quizzes:</h5>
-                                <table class="table table-bordered table-sm mt-2">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Title</th>
-                                            <th>Start Date</th>
-                                            <th>End Date</th>
-                                            <th>Add Before</th>
-                                            <th>Add After</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for quiz in selected_quizzes %}
-                                            <tr>
-                                                <td>{{ quiz.title }}</td>
-                                                <td>
-                                                    <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
-                                                        {{ quiz.unlock_at_readable|default:"No time set" }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
-                                                        {{ quiz.lock_at_readable|default:"No time set" }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <input type="checkbox">
-                                                </td>
-                                                <td>
-                                                    <input type="checkbox">
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-                <!-- Buttons -->
-                <div class="mt-4 d-flex justify-content-between py-0 my-0">
-                    <!-- Back button using JavaScript -->
-                    <button type="button"
-                            class="btn btn-secondary"
-                            onclick="window.location.href='{% url 'accommodations:accommodations_quizzes' course.id %}'">
-                        Back
-                    </button>
-                    <!-- Next button -->
-                    <button type="submit" class="btn btn-primary">Next</button>
-                </div>
+                        {% endfor %}
+                    </div>
+                    <!-- Buttons -->
+                    <div class="mt-4 d-flex justify-content-between py-0 my-0">
+                        <!-- Back button using JavaScript -->
+                        <button type="button"
+                                class="btn btn-secondary"
+                                onclick="window.location.href='{% url 'accommodations:accommodations_quizzes' course.id %}'">
+                            Back
+                        </button>
+                        <!-- Next button -->
+                        <button type="submit" class="btn btn-primary">Next</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

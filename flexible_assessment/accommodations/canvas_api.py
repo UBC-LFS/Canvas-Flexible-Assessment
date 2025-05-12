@@ -38,12 +38,10 @@ def readable_datetime(iso_string):
         return None
     try:
         dt = parser.isoparse(iso_string)
-        dt = dt.astimezone(
-            get_current_timezone()
-        )  # Convert to local timezone if needed
-        return dt.strftime("%b %-d, %Y at %-I:%M %p")
+        dt = dt.astimezone(get_current_timezone())
+        return dt.strftime("%Y-%m-%d - %-I:%M%p")
     except Exception:
-        return iso_string  # fallback in case of parsing error
+        return iso_string
 
 
 class AccommodationsCanvas(Canvas):
@@ -58,6 +56,7 @@ class AccommodationsCanvas(Canvas):
 
         base_url = settings.CANVAS_DOMAIN
         access_token = get_oauth_token(request)
+
         self.base_url = base_url
         self.access_token = access_token
         super().__init__(base_url, access_token)

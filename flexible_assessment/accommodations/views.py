@@ -300,6 +300,15 @@ class AccommodationsConfirm(views.AccommodationsListView):
 
         response = super().get(request, *args, **kwargs)
 
-        # return HttpResponse("<p>" + str(multiplier_groups) + "</p>")
-
         return response
+
+    def post(self, request, *args, **kwargs):
+        adding_selections = {
+            "add_before_1.25": request.POST.getlist("add_before_1.25"),
+            "add_after_1.25": request.POST.getlist("add_after_1.25"),
+            "add_before_1.5": request.POST.getlist("add_before_1.5"),
+            "add_after_1.5": request.POST.getlist("add_after_1.5"),
+            "add_before_2.0": request.POST.getlist("add_before_2.0"),
+            "add_after_2.0": request.POST.getlist("add_after_2.0"),
+        }
+        return HttpResponse(str(adding_selections))
