@@ -303,12 +303,44 @@ class AccommodationsConfirm(views.AccommodationsListView):
         return response
 
     def post(self, request, *args, **kwargs):
-        adding_selections = {
-            "add_before_1.25": request.POST.getlist("add_before_1.25"),
-            "add_after_1.25": request.POST.getlist("add_after_1.25"),
-            "add_before_1.5": request.POST.getlist("add_before_1.5"),
-            "add_after_1.5": request.POST.getlist("add_after_1.5"),
-            "add_before_2.0": request.POST.getlist("add_before_2.0"),
-            "add_after_2.0": request.POST.getlist("add_after_2.0"),
-        }
-        return HttpResponse(str(adding_selections))
+        course_id = self.kwargs["course_id"]
+        accommodations = request.session.get("accommodations", None)
+        selected_quizzes = request.session.get("selected_quizzes", None)
+
+        students = self.get_queryset()
+        user_id_by_login_id = {
+            s.login_id: s.user_id for s in students
+        }  # dictionary mapping login IDs to student ids
+
+        # for testing
+        successful_quizzes = []
+
+        canvas = AccommodationsCanvas(request)
+        for quiz in selected_quizzes:
+            extensions = []  # list of dictionaries representing extensions
+            for acc in accommodations:
+                # acc is tuple of student_id, multiplier
+                extensions.append(
+                    {
+                        "user_id": user_id_by_login_id[acc[0]],
+                        "extra_time": int(
+                            int(quiz["time_limit"]) * (float(acc[1]) - 1.0)
+                        ),
+                    }
+                )
+            canvas_quiz = canvas.get_course(course_id).get_quiz(quiz["id"])
+
+            logger.info(
+                "Attempting to submit extensions for "
+                + str(len(accommodations))
+                + " students, for the quiz "
+                + canvas_quiz.title,
+                extra={"course": "testing", "user": request.session["display_name"]},
+            )
+
+            canvas_quiz.set_extensions(extensions)
+            successful_quizzes.append(quiz["title"])
+
+        return HttpResponse(
+            "Successfully set extensions for " + ", ".join(successful_quizzes)
+        )
