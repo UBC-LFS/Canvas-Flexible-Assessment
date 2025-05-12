@@ -38,56 +38,46 @@
                         <label class="form-label my-3">
                             Please select the quizzes in your course that you would like to apply accommodations to:
                         </label>
-                        <!-- Select All Checkbox -->
-                        <div class="form-check d-flex align-items-center mb-3">
-                            <input class="form-check-input me-3" type="checkbox" id="select-all">
-                            <label class="form-check-label fw-bold fs-4 mb-0" for="select-all">Select All</label>
-                        </div>
-                        <!-- Individual Quiz Checkboxes -->
                         <!-- Individual Quiz Checkboxes -->
                         <div class="ms-3">
                             <div class="row g-3">
-                                {% for quiz in quizzes %}
-                                    <div class="col-12">
-                                        <div class="card quiz-card shadow-sm p-1"
-                                             id="quiz-card"
-                                             data-checkbox-id="quiz{{ quiz.id }}">
-                                            <div class="card-body">
-                                                <div class="d-flex align-items-center mb-1 mt-0">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">
+                                                <input class="form-check-input me-3" type="checkbox" id="select-all">
+                                            </th>
+                                            <th scope="col">Quizzes</th>
+                                            <th scope="col">Start Date</th>
+                                            <th scope="col">End Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for quiz in quizzes %}
+                                            <tr>
+                                                <th scope="col">
                                                     <input class="form-check-input me-2 quiz-checkbox"
                                                            type="checkbox"
                                                            name="selected_quizzes"
                                                            value="{{ quiz.id }}"
                                                            id="quiz{{ quiz.id }}"
                                                            {% if quiz in selected_quizzes %}checked{% endif %}>
-                                                    <label class="form-check-label fs-5 fw-bold mb-0 d-flex w-100 align-items-center"
-                                                           for="quiz{{ quiz.id }}">
-                                                        <span>{{ quiz.title }}</span>
-                                                        <i class="bi ms-auto {% if quiz.published %}bi-check-circle-fill text-success{% else %}bi-ban{% endif %}"></i>
-                                                    </label>
-                                                </div>
-                                                <ul class="list-unstyled ms-4 mb-0">
-                                                    <li>
-                                                        Time Limit:
-                                                        <span class="{% if not quiz.time_limit_readable %}text-muted {% else %} underline-if-exists{% endif %}">
-                                                            {{ quiz.time_limit_readable|default:"No time limit set" }}
-                                                        </span>
-                                                    </li>
-                                                    <li>
-                                                        Quiz Open From:
-                                                        <span class="{% if not quiz.unlock_at_readable %}text-muted {% else %} underline-if-exists{% endif %}">
-                                                            {{ quiz.unlock_at_readable|default:"No time set" }}
-                                                        </span>
-                                                        to
-                                                        <span class="{% if not quiz.lock_at_readable %}text-muted {% else %} underline-if-exists{% endif %}">
-                                                            {{ quiz.lock_at_readable|default:"No time set" }}
-                                                        </span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
+                                                </th>
+                                                <td>{{ quiz.title }}</td>
+                                                <td>
+                                                    <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
+                                                        {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
+                                                        {{ quiz.lock_at_readable|default:"No time set" }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                         <!-- Buttons -->
@@ -117,8 +107,6 @@
         document.addEventListener('DOMContentLoaded', function () {
             const selectAll = document.getElementById('select-all');
             const checkboxes = document.querySelectorAll('.quiz-checkbox');
-            const cards = document.querySelectorAll('.quiz-card');
-
             const quizForm = document.getElementById("quiz-upload-form");
 
             // on submitting form, make sure at least one quiz is selected
@@ -138,24 +126,17 @@
             selectAll.addEventListener('change', function () {
                 checkboxes.forEach(cb => {
                     cb.checked = this.checked;
-                    const card = cb.closest('.quiz-card');
-                    if (this.checked) {
-                        card.classList.add('selected');
-                    } else {
-                        card.classList.remove('selected');
-                    }
                 });
             });
+
+            // check selectAll when page first loads
+            if (Array.from(checkboxes).every(cb => cb.checked)) {
+                selectAll.checked = true;
+            }
 
             
             checkboxes.forEach(cb => {
                 cb.addEventListener('change', () => {
-                    const card = cb.closest('.quiz-card');
-                    if (cb.checked) {
-                        card.classList.add('selected');
-                    } else {
-                        card.classList.remove('selected');
-                    }
 
                     if (!cb.checked) {
                         selectAll.checked = false;
@@ -165,30 +146,7 @@
                 });
             });
 
-            // Set initial state based on any pre-checked boxes
-            checkboxes.forEach(cb => {
-                const card = cb.closest('.quiz-card');
-                
-                if (cb.checked) {
-                    card.classList.add('selected');
-                }
-            });
 
-            cards.forEach(card => {
-                card.classList.add('cursor-pointer');
-
-                card.addEventListener('click', function (e) {
-                    // Prevent double toggle when clicking directly on input/label
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
-
-                    const checkboxId = card.getAttribute('data-checkbox-id');
-                    const checkbox = document.getElementById(checkboxId);
-                    if (checkbox) {
-                        checkbox.checked = !checkbox.checked;
-                        checkbox.dispatchEvent(new Event('change'));  // sync with Select All logic
-                    }
-                });
-            });
         });
     </script>
 {% endblock %}
