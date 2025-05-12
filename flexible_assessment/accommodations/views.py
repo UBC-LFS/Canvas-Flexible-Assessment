@@ -341,6 +341,19 @@ class AccommodationsConfirm(views.AccommodationsListView):
             canvas_quiz.set_extensions(extensions)
             successful_quizzes.append(quiz["title"])
 
+        # get adding settings from form
+        add_before = {
+            "1.25": request.POST.getlist("add_before_1.25"),
+            "1.5": request.POST.getlist("add_before_1.5"),
+            "2.0": request.POST.getlist("add_before_2.0"),
+        }
+
+        add_after = {
+            "1.25": request.POST.getlist("add_after_1.25"),
+            "1.5": request.POST.getlist("add_after_1.5"),
+            "2.0": request.POST.getlist("add_after_2.0"),
+        }
+
         return HttpResponse(
             "Successfully set extensions for " + ", ".join(successful_quizzes)
         )

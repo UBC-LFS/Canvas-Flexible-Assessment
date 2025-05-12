@@ -41,7 +41,7 @@
                         <!-- Individual Quiz Checkboxes -->
                         <div class="ms-3">
                             <div class="row g-3">
-                                <table class="table">
+                                <table class="table table-bordered">
                                     <thead>
                                         <tr>
                                             <th scope="col">
@@ -50,6 +50,7 @@
                                             <th scope="col">Quizzes ({{ quizzes|length }})</th>
                                             <th scope="col">Start Date</th>
                                             <th scope="col">End Date</th>
+                                            <th scope="col">Time Limit</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -72,6 +73,11 @@
                                                 <td>
                                                     <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
                                                         {{ quiz.lock_at_readable|default:"No time set" }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
+                                                        {{ quiz.time_limit_readable|default:"No time limit set" }}
                                                     </span>
                                                 </td>
                                             </tr>

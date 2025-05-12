@@ -55,6 +55,7 @@
                                                 <th>Title</th>
                                                 <th>Start Date</th>
                                                 <th>End Date</th>
+                                                <th>Time Limit</th>
                                                 <th>Add Before</th>
                                                 <th>Add After</th>
                                             </tr>
@@ -71,6 +72,11 @@
                                                     <td>
                                                         <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
                                                             {{ quiz.lock_at_readable|default:"No time set" }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
+                                                            {{ quiz.time_limit_readable|default:"No time limit set" }}
                                                         </span>
                                                     </td>
                                                     <td>
