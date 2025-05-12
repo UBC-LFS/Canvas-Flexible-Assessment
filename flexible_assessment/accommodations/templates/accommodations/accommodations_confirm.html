@@ -26,7 +26,8 @@
                             <div class="card-body">
                                 <!-- Student Table -->
                                 <h5>Students:</h5>
-                                <table class="table table-bordered table-sm mt-2">
+                                <table class="table table-bordered table-sm mt-2"
+                                       style="table-layout: fixed">
                                     <thead class="table-light">
                                         <tr>
                                             <th>Name</th>
@@ -48,16 +49,32 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>Title</th>
-                                            <th>Open From</th>
-                                            <th>Due</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Add Before</th>
+                                            <th>Add After</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for quiz in selected_quizzes %}
                                             <tr>
                                                 <td>{{ quiz.title }}</td>
-                                                <td>{{ quiz.unlock_at_readable|default:"N/A" }}</td>
-                                                <td>{{ quiz.lock_at_readable|default:"N/A" }}</td>
+                                                <td>
+                                                    <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
+                                                        {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
+                                                        {{ quiz.lock_at_readable|default:"No time set" }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox">
+                                                </td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
