@@ -96,8 +96,8 @@ class AccommodationsCanvas(Canvas):
         multiplier_groups = {}
         student_names_by_id = {s.login_id: s.display_name for s in students}
 
-        for student_id, multiplier in accommodations:
-            student = (student_id, student_names_by_id[student_id])
+        for student_id, multiplier, user_id in accommodations:
+            student = (student_id, student_names_by_id[student_id], user_id)
             multiplier_groups.setdefault(multiplier, []).append(student)
 
         # Sort each student list by name

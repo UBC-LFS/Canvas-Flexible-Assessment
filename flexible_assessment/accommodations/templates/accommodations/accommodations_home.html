@@ -178,7 +178,7 @@
 
             // prefill table with existing accommodations from previous session
             const prefillData = {{ accommodations_json|safe}};
-            prefillData.forEach(([studentNumber, multiplier]) => {
+            prefillData.forEach(([studentNumber, multiplier, _]) => {
                 createRow(studentNumber, multiplier);
             });
     

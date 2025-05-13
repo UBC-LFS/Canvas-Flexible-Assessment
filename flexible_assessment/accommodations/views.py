@@ -57,14 +57,17 @@ class AccommodationsHome(views.AccommodationsListView):
         # get valid student IDs from database
         valid_student_ids = []
         students = self.get_queryset()
-        for student in students:
-            valid_student_ids.append(student.login_id)
+        valid_student_ids = [s.login_id for s in students]
+        # dictionary mapping login ids to user ids
+        login_id_to_user_id = {s.login_id: s.user_id for s in students}
 
         student_numbers = request.POST.getlist("student_number")
         multipliers = request.POST.getlist("multiplier")
 
         seen_ids = set()
         duplicate_ids = []
+
+        accommodations = []
 
         # Check if data is formatted properly - if not, redirect back to form with error messages
         if len(student_numbers) != len(multipliers):
@@ -89,6 +92,7 @@ class AccommodationsHome(views.AccommodationsListView):
                     duplicate_ids.append(sn)
                 else:
                     seen_ids.add(sn)
+                    accommodations.append((sn, mult, login_id_to_user_id[sn]))
 
             for duplicate in duplicate_ids:
                 errors.append(f"Duplicate entries found for student: {duplicate}")
@@ -98,7 +102,7 @@ class AccommodationsHome(views.AccommodationsListView):
                 messages.error(request, error)
             return redirect("accommodations:accommodations_home", kwargs["course_id"])
 
-        accommodations = list(zip(student_numbers, multipliers))
+        # accommodations = list(zip(student_numbers, multipliers))
         request.session["accommodations"] = accommodations
 
         course = models.Course.objects.get(pk=course_id)
@@ -174,9 +178,6 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         selected_quizzes = self.request.session.get("selected_quizzes", [])
 
         context["accommodations"] = accommodations
-        context["accommodations_json"] = mark_safe(
-            json.dumps(accommodations)
-        )  # pass to template as json for javascript to use
         context["quizzes"] = quizzes
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
@@ -308,9 +309,6 @@ class AccommodationsConfirm(views.AccommodationsListView):
         selected_quizzes = request.session.get("selected_quizzes", None)
 
         students = self.get_queryset()
-        user_id_by_login_id = {
-            s.login_id: s.user_id for s in students
-        }  # dictionary mapping login IDs to student ids
 
         # for testing
         successful_quizzes = []
@@ -319,10 +317,10 @@ class AccommodationsConfirm(views.AccommodationsListView):
         for quiz in selected_quizzes:
             extensions = []  # list of dictionaries representing extensions
             for acc in accommodations:
-                # acc is tuple of student_id, multiplier
+                # acc is tuple of student_id, multiplier, login_id
                 extensions.append(
                     {
-                        "user_id": user_id_by_login_id[acc[0]],
+                        "user_id": acc[2],
                         "extra_time": int(
                             int(quiz["time_limit"]) * (float(acc[1]) - 1.0)
                         ),
