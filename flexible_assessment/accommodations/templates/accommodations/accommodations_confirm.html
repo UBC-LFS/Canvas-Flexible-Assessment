@@ -6,7 +6,11 @@
 {% bootstrap_javascript %}
 {% bootstrap_messages %}
 {% block content %}
-    <style></style>
+    <style>
+        input[type=checkbox][disabled] {
+            filter: invert(15%);
+        }
+    </style>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
         <div class="row justify-content-center mt-4">
@@ -84,14 +88,16 @@
                                                                type="checkbox"
                                                                name="add_before_{{ multiplier }}"
                                                                value="{{ quiz.id }}"
-                                                               id="quiz{{ quiz.id }}">
+                                                               id="quiz{{ quiz.id }}"
+                                                               {% if quiz.unlock_at_readable is None %}disabled{% endif %}>
                                                     </td>
                                                     <td>
                                                         <input class="form-check-input me-2 quiz-checkbox"
                                                                type="checkbox"
                                                                name="add_after_{{ multiplier }}"
                                                                value="{{ quiz.id }}"
-                                                               id="quiz{{ quiz.id }}">
+                                                               id="quiz{{ quiz.id }}"
+                                                               {% if quiz.lock_at_readable is None %}disabled{% else %}checked{% endif %}>
                                                     </td>
                                                 </tr>
                                             {% endfor %}
