@@ -20,9 +20,11 @@
                       action="{% url 'accommodations:accommodations_confirm' course.id %}">
                     {% csrf_token %}
                     <h4>Confirm Accommodations for Multiplier Groups</h4>
-                    <label class="form-label my-3">Verify the accommodations listed and choose to add time before or after.</label>
+                    <label class="form-label my-3">
+                        Verify the accommodations listed. If a student's time limit after applying accommodations is longer than the current availability window, that student will be assigned a new availability window with an extended end date.
+                    </label>
                     <div class="row g-3">
-                        {% for multiplier, students in multiplier_groups %}
+                        {% for multiplier, students in multiplier_student_groups %}
                             <div class="card shadow-sm mb-4 px-0"
                                  style="border-radius: 1em;
                                         overflow: hidden">
@@ -60,67 +62,32 @@
                                                 <th>Start Date</th>
                                                 <th>End Date</th>
                                                 <th>Time Limit</th>
-                                                <th>Add Before</th>
-                                                <th>Add After</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for quiz in selected_quizzes %}
-                                                <tr>
-                                                    <td>{{ quiz.title }}</td>
-                                                    <td>
-                                                        <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
-                                                            {{ quiz.unlock_at_readable|default:"No time set" }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
-                                                            {{ quiz.lock_at_readable|default:"No time set" }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
-                                                            {{ quiz.time_limit_readable|default:"No time limit set" }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        {% if quiz.unlock_at_readable is None %}
-                                                            <div title="To add time before, the quiz must have a start date">
-                                                                <input class="form-check-input me-2 quiz-checkbox"
-                                                                       type="checkbox"
-                                                                       name="add_before_{{ multiplier }}"
-                                                                       value="{{ quiz.id }}"
-                                                                       id="quiz{{ quiz.id }}"
-                                                                       disabled>
-                                                            </div>
-                                                        {% else %}
-                                                            <input class="form-check-input me-2 quiz-checkbox"
-                                                                   type="checkbox"
-                                                                   name="add_before_{{ multiplier }}"
-                                                                   value="{{ quiz.id }}"
-                                                                   id="quiz{{ quiz.id }}">
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>
-                                                        {% if quiz.lock_at_readable is None %}
-                                                            <div title="To add time after, the quiz must have an end date">
-                                                                <input class="form-check-input me-2 quiz-checkbox"
-                                                                       type="checkbox"
-                                                                       name="add_after_{{ multiplier }}"
-                                                                       value="{{ quiz.id }}"
-                                                                       id="quiz{{ quiz.id }}"
-                                                                       disabled>
-                                                            </div>
-                                                        {% else %}
-                                                            <input class="form-check-input me-2 quiz-checkbox"
-                                                                   type="checkbox"
-                                                                   name="add_after_{{ multiplier }}"
-                                                                   value="{{ quiz.id }}"
-                                                                   id="quiz{{ quiz.id }}"
-                                                                   {% if quiz.unlock_at_readable %}checked{% endif %}>
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
+                                            {% for mult, quizzes in multiplier_quiz_groups.items %}
+                                                {% if mult == multiplier %}
+                                                    {% for quiz in quizzes %}
+                                                        <tr>
+                                                            <td>{{ quiz.title }}</td>
+                                                            <td>
+                                                                <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
+                                                                    {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
+                                                                    {{ quiz.lock_at_readable|default:"No time set" }}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
+                                                                    {{ quiz.time_limit_readable|default:"No time limit set" }} 🡢 {{ quiz.time_limit_new_readable }}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% endif %}
                                             {% endfor %}
                                         </tbody>
                                     </table>

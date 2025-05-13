@@ -249,10 +249,14 @@ class AccommodationsConfirm(views.AccommodationsListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        multiplier_groups = self.request.session.get("multiplier_groups", [])
+        multiplier_student_groups = self.request.session.get(
+            "multiplier_student_groups", []
+        )
+        multiplier_quiz_groups = self.request.session.get("multiplier_quiz_groups", {})
         selected_quizzes = self.request.session.get("selected_quizzes", [])
 
-        context["multiplier_groups"] = multiplier_groups
+        context["multiplier_student_groups"] = multiplier_student_groups
+        context["multiplier_quiz_groups"] = multiplier_quiz_groups
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
         return context
@@ -295,9 +299,14 @@ class AccommodationsConfirm(views.AccommodationsListView):
         students = self.get_queryset()
         canvas = AccommodationsCanvas(request)
 
-        multiplier_groups = canvas.get_multiplier_groups(accommodations, students)
+        multiplier_student_groups = canvas.get_multiplier_student_groups(
+            accommodations, students
+        )
 
-        request.session["multiplier_groups"] = multiplier_groups
+        multiplier_quiz_groups = canvas.get_multiplier_quiz_groups(selected_quizzes)
+
+        request.session["multiplier_student_groups"] = multiplier_student_groups
+        request.session["multiplier_quiz_groups"] = multiplier_quiz_groups
 
         response = super().get(request, *args, **kwargs)
 
@@ -340,24 +349,6 @@ class AccommodationsConfirm(views.AccommodationsListView):
             canvas_quiz.set_extensions(extensions)
             successful_quizzes.append(quiz["title"])
 
-        # get adding settings from form
-        add_before = {
-            "1.25": request.POST.getlist("add_before_1.25"),
-            "1.5": request.POST.getlist("add_before_1.5"),
-            "2.0": request.POST.getlist("add_before_2.0"),
-        }
-
-        add_after = {
-            "1.25": request.POST.getlist("add_after_1.25"),
-            "1.5": request.POST.getlist("add_after_1.5"),
-            "2.0": request.POST.getlist("add_after_2.0"),
-        }
-
         return HttpResponse(
-            "Successfully set extensions for "
-            + ", ".join(successful_quizzes)
-            + "<br>add_before: "
-            + str(add_before)
-            + "<br>add_after"
-            + str(add_after)
+            "Successfully set extensions for " + ", ".join(successful_quizzes)
         )

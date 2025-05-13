@@ -92,22 +92,52 @@ class AccommodationsCanvas(Canvas):
 
         return quiz_list
 
-    def get_multiplier_groups(self, accommodations, students):
-        multiplier_groups = {}
+    def get_multiplier_student_groups(self, accommodations, students):
+        multiplier_student_groups = {}
         student_names_by_id = {s.login_id: s.display_name for s in students}
 
         for student_id, multiplier, user_id in accommodations:
             student = (student_id, student_names_by_id[student_id], user_id)
-            multiplier_groups.setdefault(multiplier, []).append(student)
+            multiplier_student_groups.setdefault(multiplier, []).append(student)
 
         # Sort each student list by name
-        for multiplier in multiplier_groups:
-            multiplier_groups[multiplier] = sorted(
-                multiplier_groups[multiplier], key=lambda student: student[1]
+        for multiplier in multiplier_student_groups:
+            multiplier_student_groups[multiplier] = sorted(
+                multiplier_student_groups[multiplier], key=lambda student: student[1]
             )
 
         # Return as sorted list of tuples
-        return sorted(multiplier_groups.items(), key=lambda item: item[0])
+        return sorted(multiplier_student_groups.items(), key=lambda item: item[0])
+
+    def get_multiplier_quiz_groups(self, quizzes):
+        multiplier_quiz_groups = {}
+        for multiplier in ["1.25", "1.5", "2.0"]:
+            quizzes_multiplied = (
+                []
+            )  # the list of quizzes, but with new data from the multiplication
+            for quiz in quizzes:
+                time_limit_new = int(quiz["time_limit"] * float(multiplier))
+                quizzes_multiplied.append(
+                    {
+                        "id": quiz["id"],
+                        "title": quiz["title"],
+                        "time_limit": quiz["time_limit"],  # in minutes, or None
+                        "due_at": quiz["due_at"],  # ISO8601 string or None
+                        "unlock_at": quiz["unlock_at"],  # when quiz becomes available
+                        "lock_at": quiz["lock_at"],  # when quiz is no longer available,
+                        "published": quiz["published"],
+                        "points_possible": quiz["points_possible"],
+                        "time_limit_readable": readable_time_limit(quiz["time_limit"]),
+                        "due_at_readable": readable_datetime(quiz["due_at"]),
+                        "unlock_at_readable": readable_datetime(quiz["unlock_at"]),
+                        "lock_at_readable": readable_datetime(quiz["lock_at"]),
+                        # new, multiplier-specific fields added here
+                        "time_limit_new": time_limit_new,
+                        "time_limit_new_readable": readable_time_limit(time_limit_new),
+                    }
+                )
+            multiplier_quiz_groups[multiplier] = quizzes_multiplied
+        return multiplier_quiz_groups
 
     def add_time_extensions():
         pass
