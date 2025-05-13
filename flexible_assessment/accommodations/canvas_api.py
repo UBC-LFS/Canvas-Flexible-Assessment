@@ -108,3 +108,9 @@ class AccommodationsCanvas(Canvas):
 
         # Return as sorted list of tuples
         return sorted(multiplier_groups.items(), key=lambda item: item[0])
+
+    def add_time_extensions():
+        pass
+
+    def add_availabilities():
+        pass

@@ -327,13 +327,14 @@ class AccommodationsConfirm(views.AccommodationsListView):
                     }
                 )
             canvas_quiz = canvas.get_course(course_id).get_quiz(quiz["id"])
+            course = models.Course.objects.get(pk=course_id)
 
             logger.info(
                 "Attempting to submit extensions for "
                 + str(len(accommodations))
                 + " students, for the quiz "
                 + canvas_quiz.title,
-                extra={"course": "testing", "user": request.session["display_name"]},
+                extra={"course": str(course), "user": request.session["display_name"]},
             )
 
             canvas_quiz.set_extensions(extensions)
@@ -353,5 +354,10 @@ class AccommodationsConfirm(views.AccommodationsListView):
         }
 
         return HttpResponse(
-            "Successfully set extensions for " + ", ".join(successful_quizzes)
+            "Successfully set extensions for "
+            + ", ".join(successful_quizzes)
+            + "<br>add_before: "
+            + str(add_before)
+            + "<br>add_after"
+            + str(add_after)
         )
