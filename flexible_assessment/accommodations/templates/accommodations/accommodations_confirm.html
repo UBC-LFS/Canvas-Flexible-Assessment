@@ -84,20 +84,41 @@
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <input class="form-check-input me-2 quiz-checkbox"
-                                                               type="checkbox"
-                                                               name="add_before_{{ multiplier }}"
-                                                               value="{{ quiz.id }}"
-                                                               id="quiz{{ quiz.id }}"
-                                                               {% if quiz.unlock_at_readable is None %}disabled{% endif %}>
+                                                        {% if quiz.unlock_at_readable is None %}
+                                                            <div title="To add time before, the quiz must have a start date">
+                                                                <input class="form-check-input me-2 quiz-checkbox"
+                                                                       type="checkbox"
+                                                                       name="add_before_{{ multiplier }}"
+                                                                       value="{{ quiz.id }}"
+                                                                       id="quiz{{ quiz.id }}"
+                                                                       disabled>
+                                                            </div>
+                                                        {% else %}
+                                                            <input class="form-check-input me-2 quiz-checkbox"
+                                                                   type="checkbox"
+                                                                   name="add_before_{{ multiplier }}"
+                                                                   value="{{ quiz.id }}"
+                                                                   id="quiz{{ quiz.id }}">
+                                                        {% endif %}
                                                     </td>
                                                     <td>
-                                                        <input class="form-check-input me-2 quiz-checkbox"
-                                                               type="checkbox"
-                                                               name="add_after_{{ multiplier }}"
-                                                               value="{{ quiz.id }}"
-                                                               id="quiz{{ quiz.id }}"
-                                                               {% if quiz.lock_at_readable is None %}disabled{% else %}checked{% endif %}>
+                                                        {% if quiz.lock_at_readable is None %}
+                                                            <div title="To add time after, the quiz must have an end date">
+                                                                <input class="form-check-input me-2 quiz-checkbox"
+                                                                       type="checkbox"
+                                                                       name="add_after_{{ multiplier }}"
+                                                                       value="{{ quiz.id }}"
+                                                                       id="quiz{{ quiz.id }}"
+                                                                       disabled>
+                                                            </div>
+                                                        {% else %}
+                                                            <input class="form-check-input me-2 quiz-checkbox"
+                                                                   type="checkbox"
+                                                                   name="add_after_{{ multiplier }}"
+                                                                   value="{{ quiz.id }}"
+                                                                   id="quiz{{ quiz.id }}"
+                                                                   {% if quiz.unlock_at_readable %}checked{% endif %}>
+                                                        {% endif %}
                                                     </td>
                                                 </tr>
                                             {% endfor %}
