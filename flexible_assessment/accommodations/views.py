@@ -175,10 +175,12 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         context = super().get_context_data(**kwargs)
         accommodations = self.request.session.get("accommodations", [])
         quizzes = self.request.session.get("quizzes", [])
+        unavailable_quizzes = self.request.session.get("unavailable_quizzes", [])
         selected_quizzes = self.request.session.get("selected_quizzes", [])
 
         context["accommodations"] = accommodations
         context["quizzes"] = quizzes
+        context["unavailable_quizzes"] = unavailable_quizzes
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
         return context
@@ -207,9 +209,10 @@ class AccommodationsQuizzes(views.AccommodationsListView):
             )
 
         canvas = AccommodationsCanvas(request)
-        quiz_list = canvas.get_quiz_data(course_id)
+        quiz_list, unavailable_quiz_list = canvas.get_quiz_data(course_id)
 
         request.session["quizzes"] = quiz_list
+        request.session["unavailable_quizzes"] = unavailable_quiz_list
 
         response = super().get(request, *args, **kwargs)
 

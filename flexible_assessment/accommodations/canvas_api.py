@@ -11,7 +11,7 @@ from decimal import Decimal, ROUND_HALF_UP
 
 from dateutil import parser
 from django.utils.timezone import get_current_timezone
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 
 import math
 
@@ -45,6 +45,29 @@ def readable_datetime(iso_string):
         return dt.strftime("%Y-%m-%d - %-I:%M%p")
     except Exception:
         return iso_string
+
+
+def is_quiz_selectable(quiz):
+    # Return True if the quiz has a time limit,
+    # or if it has both unlock and lock dates and the lock date is in the future.
+
+    if quiz.get("time_limit") is not None:
+        return True
+
+    unlock_at = quiz.get("unlock_at")
+    lock_at = quiz.get("lock_at")
+
+    if unlock_at is not None and lock_at is not None:
+        try:
+            lock_time = datetime.fromisoformat(lock_at.replace("Z", "+00:00"))
+            now = datetime.now(timezone.utc)
+            if lock_time > now:
+                return True
+        except ValueError:
+            # If the lock_at date is malformed, treat quiz as not selectable
+            return False
+
+    return False
 
 
 def calculate_new_time_limit(time_limit, multiplier):
@@ -97,6 +120,7 @@ class AccommodationsCanvas(Canvas):
         quizzes = course.get_quizzes()
 
         quiz_list = []
+        unavailable_quiz_list = []
 
         for quiz in quizzes:
             quiz_data = {
@@ -113,13 +137,21 @@ class AccommodationsCanvas(Canvas):
                 "unlock_at_readable": readable_datetime(quiz.unlock_at),
                 "lock_at_readable": readable_datetime(quiz.lock_at),
             }
-            quiz_list.append(quiz_data)
+            if is_quiz_selectable(quiz_data):
+                quiz_list.append(quiz_data)
+            else:
+                unavailable_quiz_list.append(quiz_data)
 
         quiz_list = sorted(
             quiz_list, key=lambda quiz: (quiz["title"] or "").strip().lower()
         )
 
-        return quiz_list
+        unavailable_quiz_list = sorted(
+            unavailable_quiz_list,
+            key=lambda quiz: (quiz["title"] or "").strip().lower(),
+        )
+
+        return quiz_list, unavailable_quiz_list
 
     def get_multiplier_student_groups(self, accommodations, students):
         # returns a dictionary of multipliers, and list of student tuples, where each tuple has the login id, display name, and user id

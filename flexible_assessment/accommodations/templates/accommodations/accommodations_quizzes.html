@@ -84,6 +84,37 @@
                                         {% endfor %}
                                     </tbody>
                                 </table>
+                                <p>Unavailable quizzes:</p>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <th scope="col">Quizzes</th>
+                                        <th scope="col">Start Date</th>
+                                        <th scope="col">End Date</th>
+                                        <th scope="col">Time Limit</th>
+                                    </thead>
+                                    <tbody>
+                                        {% for quiz in unavailable_quizzes %}
+                                            <tr>
+                                                <td>{{ quiz.title }}</td>
+                                                <td>
+                                                    <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
+                                                        {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
+                                                        {{ quiz.lock_at_readable|default:"No time set" }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
+                                                        {{ quiz.time_limit_readable|default:"No time limit set" }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                         <!-- Buttons -->
