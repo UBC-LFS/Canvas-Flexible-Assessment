@@ -181,6 +181,7 @@ class AccommodationsCanvas(Canvas):
     def add_time_extensions(self, student_groups, quiz_groups, course_id):
         # pass in final student data, quiz data needed, both are grouped by multiplier
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
+        course = self.get_course(course_id)
         for multiplier in ["1.25", "1.5", "2.0"]:
             student_list = student_groups[multiplier]
             quiz_list = quiz_groups[multiplier]
@@ -198,8 +199,41 @@ class AccommodationsCanvas(Canvas):
                             ),
                         }
                     )
-                canvas_quiz = self.get_course(course_id).get_quiz(quiz["id"])
+                canvas_quiz = course.get_quiz(quiz["id"])
                 canvas_quiz.set_extensions(extensions)
 
-    def add_availabilities():
-        pass
+    def add_availabilities(self, student_groups, quiz_groups, course_id):
+        student_groups = dict(student_groups)  # convert from tuple list to dictionary
+        course = self.get_course(course_id)
+
+        for multiplier in ["1.25", "1.5", "2.0"]:
+            student_list = student_groups[multiplier]
+            student_user_id_list = [student[2] for student in student_list]
+
+            quiz_list = quiz_groups[multiplier]
+            for quiz in quiz_list:
+                if quiz["lock_at_new"] is None:
+                    break
+
+                canvas_quiz = course.get_quiz(quiz["id"])
+                quiz_assignment = course.get_assignment(canvas_quiz.id)
+
+                # Delete only matching overrides
+                assignment_overrides = quiz_assignment.get_overrides()
+                for override in assignment_overrides:
+                    override_student_ids = set(override.student_ids)
+                    if set(student_user_id_list) == override_student_ids:
+                        override.delete()
+
+                # Create a new override
+                quiz_assignment.create_override(
+                    assignment_override={
+                        "student_ids": student_user_id_list,
+                        "due_at": quiz["due_at"],
+                        "unlock_at": quiz["unlock_at"],
+                        "lock_at": quiz["lock_at_new"],
+                        "title": quiz[
+                            "lock_at_new"
+                        ],  # Optional: Can be removed or replaced
+                    }
+                )

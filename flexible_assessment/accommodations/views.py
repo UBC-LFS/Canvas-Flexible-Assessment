@@ -321,6 +321,9 @@ class AccommodationsConfirm(views.AccommodationsListView):
         canvas.add_time_extensions(
             multiplier_student_groups, multiplier_quiz_groups, course_id
         )
+        canvas.add_availabilities(
+            multiplier_student_groups, multiplier_quiz_groups, course_id
+        )
 
         # logger.info(
         #     "Attempting to submit extensions for "
