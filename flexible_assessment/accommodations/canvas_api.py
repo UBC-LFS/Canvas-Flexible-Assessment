@@ -22,6 +22,10 @@ def round_half_up(value, digits=2):
     return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
 
+def is_midnight(query_time):
+    return query_time.hour == 0 and query_time.minute == 0
+
+
 def readable_time_limit(minutes):
     if not minutes:
         return None
@@ -49,10 +53,7 @@ def readable_datetime(iso_string):
 
 def is_quiz_selectable(quiz):
     # Return True if the quiz has a time limit,
-    # or if it has both unlock and lock dates and the lock date is in the future.
-
-    if quiz.get("time_limit") is not None:
-        return True
+    # or if it has both unlock and lock dates and the lock date is in the past.
 
     unlock_at = quiz.get("unlock_at")
     lock_at = quiz.get("lock_at")
@@ -63,9 +64,15 @@ def is_quiz_selectable(quiz):
             now = datetime.now(timezone.utc)
             if lock_time > now:
                 return True
+            else:
+                return False
         except ValueError:
             # If the lock_at date is malformed, treat quiz as not selectable
             return False
+
+    # check this both unlock at and lock at are not available
+    if quiz.get("time_limit") is not None:
+        return True
 
     return False
 
@@ -90,6 +97,9 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new):
         if window_in_minutes < time_limit_new:
             # Set new lock_at to unlock_at + time_limit_new minutes
             new_lock_at = unlock_at_parsed + timedelta(minutes=time_limit_new)
+            if is_midnight(new_lock_at):
+                # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
+                new_lock_at = new_lock_at + timedelta(minutes=1)
             return new_lock_at.isoformat()
         return None
     else:
