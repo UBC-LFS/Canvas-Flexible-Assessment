@@ -178,8 +178,28 @@ class AccommodationsCanvas(Canvas):
             multiplier_quiz_groups[multiplier] = quizzes_multiplied
         return multiplier_quiz_groups
 
-    def add_time_extensions():
-        pass
+    def add_time_extensions(self, student_groups, quiz_groups, course_id):
+        # pass in final student data, quiz data needed, both are grouped by multiplier
+        student_groups = dict(student_groups)  # convert from tuple list to dictionary
+        for multiplier in ["1.25", "1.5", "2.0"]:
+            student_list = student_groups[multiplier]
+            quiz_list = quiz_groups[multiplier]
+            for quiz in quiz_list:
+                if quiz["time_limit_new"] is None:
+                    break
+                extensions = []
+                # student is a tuple of login id, display name, user id
+                for student in student_list:
+                    extensions.append(
+                        {
+                            "user_id": student[2],
+                            "extra_time": int(
+                                quiz["time_limit_new"] - quiz["time_limit"]
+                            ),
+                        }
+                    )
+                canvas_quiz = self.get_course(course_id).get_quiz(quiz["id"])
+                canvas_quiz.set_extensions(extensions)
 
     def add_availabilities():
         pass

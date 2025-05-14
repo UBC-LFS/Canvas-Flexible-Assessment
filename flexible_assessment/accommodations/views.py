@@ -314,41 +314,20 @@ class AccommodationsConfirm(views.AccommodationsListView):
 
     def post(self, request, *args, **kwargs):
         course_id = self.kwargs["course_id"]
-        accommodations = request.session.get("accommodations", None)
-        selected_quizzes = request.session.get("selected_quizzes", None)
-
-        students = self.get_queryset()
-
-        # for testing
-        successful_quizzes = []
+        multiplier_student_groups = request.session["multiplier_student_groups"]
+        multiplier_quiz_groups = request.session["multiplier_quiz_groups"]
 
         canvas = AccommodationsCanvas(request)
-        for quiz in selected_quizzes:
-            extensions = []  # list of dictionaries representing extensions
-            for acc in accommodations:
-                # acc is tuple of student_id, multiplier, login_id
-                extensions.append(
-                    {
-                        "user_id": acc[2],
-                        "extra_time": int(
-                            int(quiz["time_limit"]) * (float(acc[1]) - 1.0)
-                        ),
-                    }
-                )
-            canvas_quiz = canvas.get_course(course_id).get_quiz(quiz["id"])
-            course = models.Course.objects.get(pk=course_id)
-
-            logger.info(
-                "Attempting to submit extensions for "
-                + str(len(accommodations))
-                + " students, for the quiz "
-                + canvas_quiz.title,
-                extra={"course": str(course), "user": request.session["display_name"]},
-            )
-
-            canvas_quiz.set_extensions(extensions)
-            successful_quizzes.append(quiz["title"])
-
-        return HttpResponse(
-            "Successfully set extensions for " + ", ".join(successful_quizzes)
+        canvas.add_time_extensions(
+            multiplier_student_groups, multiplier_quiz_groups, course_id
         )
+
+        # logger.info(
+        #     "Attempting to submit extensions for "
+        #     + str(len(accommodations))
+        #     + " students, for the quiz "
+        #     + canvas_quiz.title,
+        #     extra={"course": str(course), "user": request.session["display_name"]},
+        # )
+
+        return HttpResponse("Success")
