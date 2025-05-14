@@ -12,6 +12,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from dateutil import parser
 from django.utils.timezone import get_current_timezone
 
+import math
+
 
 def round_half_up(value, digits=2):
     """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
@@ -42,6 +44,13 @@ def readable_datetime(iso_string):
         return dt.strftime("%Y-%m-%d - %-I:%M%p")
     except Exception:
         return iso_string
+
+
+def calculate_new_time_limit(time_limit, multiplier):
+    if time_limit and multiplier:
+        time_limit_new = time_limit * float(multiplier)
+        time_limit_new_rounded = int(math.ceil(time_limit_new))
+        return time_limit_new_rounded
 
 
 class AccommodationsCanvas(Canvas):
@@ -93,6 +102,7 @@ class AccommodationsCanvas(Canvas):
         return quiz_list
 
     def get_multiplier_student_groups(self, accommodations, students):
+        # returns a dictionary of multipliers, and list of student tuples, where each tuple has the login id, display name, and user id
         multiplier_student_groups = {}
         student_names_by_id = {s.login_id: s.display_name for s in students}
 
@@ -110,13 +120,17 @@ class AccommodationsCanvas(Canvas):
         return sorted(multiplier_student_groups.items(), key=lambda item: item[0])
 
     def get_multiplier_quiz_groups(self, quizzes):
+        # returns a dictionary of multipliers, and quiz lists, where each quiz list has the new time limit and locking time calculated
         multiplier_quiz_groups = {}
         for multiplier in ["1.25", "1.5", "2.0"]:
             quizzes_multiplied = (
                 []
             )  # the list of quizzes, but with new data from the multiplication
             for quiz in quizzes:
-                time_limit_new = int(quiz["time_limit"] * float(multiplier))
+                time_limit_new = calculate_new_time_limit(
+                    quiz["time_limit"], multiplier
+                )
+
                 quizzes_multiplied.append(
                     {
                         "id": quiz["id"],
