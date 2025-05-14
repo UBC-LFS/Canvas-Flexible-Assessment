@@ -79,11 +79,13 @@
                                                                 <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
                                                                     {{ quiz.lock_at_readable|default:"No time set" }}
                                                                 </span>
+                                                                {% if quiz.lock_at_new_readable %}🡢 {{ quiz.lock_at_new_readable }}{% endif %}
                                                             </td>
                                                             <td>
                                                                 <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
-                                                                    {{ quiz.time_limit_readable|default:"No time limit set" }} 🡢 {{ quiz.time_limit_new_readable }}
+                                                                    {{ quiz.time_limit_readable|default:"No time limit set" }}
                                                                 </span>
+                                                                {% if quiz.time_limit_new_readable %}🡢 {{ quiz.time_limit_new_readable }}{% endif %}
                                                             </td>
                                                         </tr>
                                                     {% endfor %}

@@ -11,6 +11,7 @@ from decimal import Decimal, ROUND_HALF_UP
 
 from dateutil import parser
 from django.utils.timezone import get_current_timezone
+from datetime import timedelta
 
 import math
 
@@ -51,6 +52,25 @@ def calculate_new_time_limit(time_limit, multiplier):
         time_limit_new = time_limit * float(multiplier)
         time_limit_new_rounded = int(math.ceil(time_limit_new))
         return time_limit_new_rounded
+    else:
+        return None
+
+
+def calculate_new_lock_at(unlock_at, lock_at, time_limit_new):
+    # unlock_at, lock_at are ISO8601 strings, time_limit_new is int (in minutes)
+    if unlock_at and lock_at and time_limit_new:  # only try if all values exist
+        unlock_at_parsed = parser.isoparse(unlock_at).astimezone(get_current_timezone())
+        lock_at_parsed = parser.isoparse(lock_at).astimezone(get_current_timezone())
+        window = lock_at_parsed - unlock_at_parsed
+        window_in_minutes = window.total_seconds() / 60
+
+        if window_in_minutes < time_limit_new:
+            # Set new lock_at to unlock_at + time_limit_new minutes
+            new_lock_at = unlock_at_parsed + timedelta(minutes=time_limit_new)
+            return new_lock_at.isoformat()
+        return None
+    else:
+        return None
 
 
 class AccommodationsCanvas(Canvas):
@@ -130,6 +150,9 @@ class AccommodationsCanvas(Canvas):
                 time_limit_new = calculate_new_time_limit(
                     quiz["time_limit"], multiplier
                 )
+                lock_at_new = calculate_new_lock_at(
+                    quiz["unlock_at"], quiz["lock_at"], time_limit_new
+                )
 
                 quizzes_multiplied.append(
                     {
@@ -148,6 +171,8 @@ class AccommodationsCanvas(Canvas):
                         # new, multiplier-specific fields added here
                         "time_limit_new": time_limit_new,
                         "time_limit_new_readable": readable_time_limit(time_limit_new),
+                        "lock_at_new": lock_at_new,
+                        "lock_at_new_readable": readable_datetime(lock_at_new),
                     }
                 )
             multiplier_quiz_groups[multiplier] = quizzes_multiplied
