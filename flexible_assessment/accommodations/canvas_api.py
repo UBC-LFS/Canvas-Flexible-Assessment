@@ -255,10 +255,10 @@ class AccommodationsCanvas(Canvas):
             quiz_list = quiz_groups[multiplier]
             for quiz in quiz_list:
                 if quiz["lock_at_new"] is None:
-                    break
+                    continue
 
                 canvas_quiz = course.get_quiz(quiz["id"])
-                quiz_assignment = course.get_assignment(canvas_quiz.id)
+                quiz_assignment = course.get_assignment(canvas_quiz.assignment_id)
 
                 # Delete only matching overrides
                 assignment_overrides = quiz_assignment.get_overrides()
@@ -268,14 +268,11 @@ class AccommodationsCanvas(Canvas):
                         override.delete()
 
                 # Create a new override
-                quiz_assignment.create_override(
+                result = quiz_assignment.create_override(
                     assignment_override={
                         "student_ids": student_user_id_list,
                         "due_at": quiz["due_at"],
                         "unlock_at": quiz["unlock_at"],
                         "lock_at": quiz["lock_at_new"],
-                        "title": quiz[
-                            "lock_at_new"
-                        ],  # Optional: Can be removed or replaced
                     }
                 )
