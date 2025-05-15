@@ -16,17 +16,27 @@ from datetime import timedelta, datetime, timezone
 import math
 
 
-def round_half_up(value, digits=2):
-    """Rounds a float to the specified number of digits using ROUND_HALF_UP"""
-    d = Decimal(str(value))  # Convert the float to a Decimal
-    return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
-
-
 def is_midnight(query_time):
+    """Checks if time is midnight
+    Parameters
+    ----------
+    query_time : datetime.datetime
+        datetime object
+    """
     return query_time.hour == 0 and query_time.minute == 0
 
 
 def readable_time_limit(minutes):
+    """Formats time in minutes to user-readable format
+
+    Parameters
+    ----------
+    minutes : int
+
+    Returns
+    -------
+    result : str or None if nothing passed in
+    """
     if not minutes:
         return None
     if minutes < 60:
@@ -41,6 +51,16 @@ def readable_time_limit(minutes):
 
 
 def readable_datetime(iso_string):
+    """Formats datetime to user-readable format
+
+    Parameters
+    ----------
+    minutes : str (formatted as ISO8601 string)
+
+    Returns
+    -------
+    result : str or None if nothing passed in
+    """
     if not iso_string:
         return None
     try:
@@ -52,9 +72,20 @@ def readable_datetime(iso_string):
 
 
 def is_quiz_selectable(quiz):
-    # Return True if the quiz has a time limit,
-    # or if it has both unlock and lock dates and the lock date is in the past.
+    """
+    Determines if a quiz is selectable based on time limit or lock/unlock dates.
 
+    Parameters
+    ----------
+    quiz : dict
+        A dictionary representing a Canvas quiz, containing 'unlock_at', 'lock_at', and 'time_limit'.
+
+    Returns
+    -------
+    bool
+        True if the quiz has a time limit or an unlock date and lock date, where the lock date is in the future;
+        otherwise False.
+    """
     unlock_at = quiz.get("unlock_at")
     lock_at = quiz.get("lock_at")
 
@@ -78,15 +109,49 @@ def is_quiz_selectable(quiz):
 
 
 def calculate_new_time_limit(time_limit, multiplier):
+    """
+    Calculates a new time limit by applying an accommodation multiplier.
+
+    Parameters
+    ----------
+    time_limit : int or float
+        Original time limit in minutes.
+    multiplier : float or str
+        Accommodation multiplier (e.g., 1.5 for 50% extra time).
+
+    Returns
+    -------
+    int or None
+        The new time limit rounded up to the nearest minute, or None if input is invalid.
+    """
     if time_limit and multiplier:
         time_limit_new = time_limit * float(multiplier)
-        time_limit_new_rounded = int(math.ceil(time_limit_new))
+        time_limit_new_rounded = int(
+            math.ceil(time_limit_new)
+        )  # round up instead of truncating
         return time_limit_new_rounded
     else:
         return None
 
 
 def calculate_new_lock_at(unlock_at, lock_at, time_limit_new):
+    """
+    Calculates a new lock time if the quiz window is shorter than the new time limit.
+
+    Parameters
+    ----------
+    unlock_at : str
+        ISO8601 formatted unlock datetime string.
+    lock_at : str
+        ISO8601 formatted lock datetime string.
+    time_limit_new : int
+        The new time limit in minutes.
+
+    Returns
+    -------
+    str or None
+        The new lock_at time in ISO8601 format, or None if no change is needed.
+    """
     # unlock_at, lock_at are ISO8601 strings, time_limit_new is int (in minutes)
     if unlock_at and lock_at and time_limit_new:  # only try if all values exist
         unlock_at_parsed = parser.isoparse(unlock_at).astimezone(get_current_timezone())
@@ -124,6 +189,22 @@ class AccommodationsCanvas(Canvas):
         super().__init__(base_url, access_token)
 
     def get_quiz_data(self, course_id):
+        """
+        Retrieves quizzes from a Canvas course and classifies them by availability.
+
+        Quizzes are separated into two groups: those that are selectable (i.e., have a time limit or are open)
+        and those that are unavailable (e.g., not published or outside availability window).
+
+        Parameters
+        ----------
+        course_id : int
+            The Canvas course ID.
+
+        Returns
+        -------
+        tuple of list of dict
+            A tuple (selectable_quizzes, unavailable_quizzes), where each list contains dictionaries with quiz metadata.
+        """
         # TODO - extended this to work with New Quizzes as well, add field in quiz data specifying if quiz is New
 
         course = self.get_course(course_id)  # You'll need the course ID
@@ -164,7 +245,21 @@ class AccommodationsCanvas(Canvas):
         return quiz_list, unavailable_quiz_list
 
     def get_multiplier_student_groups(self, accommodations, students):
-        # returns a dictionary of multipliers, and list of student tuples, where each tuple has the login id, display name, and user id
+        """
+        Groups students by time extension multiplier.
+
+        Parameters
+        ----------
+        accommodations : list of tuple of (str, str, int)
+            List of (login_id, multiplier, user_id) tuples.
+        students : list
+            List of Canvas user objects, each with 'login_id' and 'display_name' attributes.
+
+        Returns
+        -------
+        list of tuple
+            A list of (multiplier, students) tuples, sorted by multiplier. Each students list is sorted by name.
+        """
         multiplier_student_groups = {}
         student_names_by_id = {s.login_id: s.display_name for s in students}
 
@@ -182,7 +277,19 @@ class AccommodationsCanvas(Canvas):
         return sorted(multiplier_student_groups.items(), key=lambda item: item[0])
 
     def get_multiplier_quiz_groups(self, quizzes):
-        # returns a dictionary of multipliers, and quiz lists, where each quiz list has the new time limit and locking time calculated
+        """
+        Creates quiz variants with extended time and adjusted lock times for common multipliers.
+
+        Parameters
+        ----------
+        quizzes : list of dict
+            A list of quiz dictionaries containing keys like 'time_limit', 'unlock_at', 'lock_at', etc.
+
+        Returns
+        -------
+        dict of {str: list of dict}
+            Dictionary where each key is a multiplier (e.g., '1.5') and the value is a list of modified quiz dicts.
+        """
         multiplier_quiz_groups = {}
         for multiplier in ["1.25", "1.5", "2.0"]:
             quizzes_multiplied = (
@@ -221,7 +328,20 @@ class AccommodationsCanvas(Canvas):
         return multiplier_quiz_groups
 
     def add_time_extensions(self, student_groups, quiz_groups, course_id):
-        # pass in final student data, quiz data needed, both are grouped by multiplier
+        """
+        Applies extra time extensions to quizzes for students with accommodations.
+
+        Uses Canvas API to set `extra_time` for each quiz attempt based on multiplier.
+
+        Parameters
+        ----------
+        student_groups : list of tuple
+            List of (multiplier, students) tuples, where each student is a (login_id, name, user_id) tuple.
+        quiz_groups : dict of {str: list of dict}
+            Dictionary of quizzes grouped by multiplier, each with new time limits.
+        course_id : int
+            The Canvas course ID.
+        """
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
         course = self.get_course(course_id)
         for multiplier in ["1.25", "1.5", "2.0"]:
@@ -245,6 +365,20 @@ class AccommodationsCanvas(Canvas):
                 canvas_quiz.set_extensions(extensions)
 
     def add_availabilities(self, student_groups, quiz_groups, course_id):
+        """
+        Applies availability overrides to extend quiz access windows.
+
+        Removes matching overrides and replaces them with new ones using adjusted `lock_at` times.
+
+        Parameters
+        ----------
+        student_groups : list of tuple
+            List of (multiplier, students) tuples, where each student is a (login_id, name, user_id) tuple.
+        quiz_groups : dict of {str: list of dict}
+            Dictionary of quizzes grouped by multiplier, each with new lock times.
+        course_id : int
+            The Canvas course ID.
+        """
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
         course = self.get_course(course_id)
 
