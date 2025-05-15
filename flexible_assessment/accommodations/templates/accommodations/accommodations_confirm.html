@@ -69,7 +69,9 @@
                                                 {% if mult == multiplier %}
                                                     {% for quiz in quizzes %}
                                                         <tr>
-                                                            <td>{{ quiz.title }}</td>
+                                                            <td>
+                                                                <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                            </td>
                                                             <td>
                                                                 <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
                                                                     {{ quiz.unlock_at_readable|default:"No time set" }}
@@ -79,13 +81,13 @@
                                                                 <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
                                                                     {{ quiz.lock_at_readable|default:"No time set" }}
                                                                 </span>
-                                                                {% if quiz.lock_at_new_readable %}🡢 {{ quiz.lock_at_new_readable }}{% endif %}
+                                                                {% if quiz.lock_at_new_readable %}🡢 <span class="text-muted">{{ quiz.lock_at_new_readable }}</span>{% endif %}
                                                             </td>
                                                             <td>
                                                                 <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
                                                                     {{ quiz.time_limit_readable|default:"No time limit set" }}
                                                                 </span>
-                                                                {% if quiz.time_limit_new_readable %}🡢 {{ quiz.time_limit_new_readable }}{% endif %}
+                                                                {% if quiz.time_limit_new_readable %}🡢 <span class="text-muted">{{ quiz.time_limit_new_readable }}</span>{% endif %}
                                                             </td>
                                                         </tr>
                                                     {% endfor %}

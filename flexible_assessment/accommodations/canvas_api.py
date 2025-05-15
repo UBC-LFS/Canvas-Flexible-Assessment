@@ -15,6 +15,8 @@ from datetime import timedelta, datetime, timezone
 
 import math
 
+ACCOMMODATION_MULTIPLIERS = [1.25, 1.5, 2.0]
+
 
 def is_midnight(query_time):
     """Checks if time is midnight
@@ -222,6 +224,7 @@ class AccommodationsCanvas(Canvas):
                 "unlock_at": quiz.unlock_at,  # when quiz becomes available
                 "lock_at": quiz.lock_at,  # when quiz is no longer available,
                 "published": quiz.published,
+                "url": quiz.html_url,
                 "points_possible": quiz.points_possible,
                 "time_limit_readable": readable_time_limit(quiz.time_limit),
                 "due_at_readable": readable_datetime(quiz.due_at),
@@ -278,7 +281,7 @@ class AccommodationsCanvas(Canvas):
 
     def get_multiplier_quiz_groups(self, quizzes):
         """
-        Creates quiz variants with extended time and adjusted lock times for common multipliers.
+        Creates quiz variants with extended time limit and adjusted lock times for common multipliers.
 
         Parameters
         ----------
@@ -291,7 +294,8 @@ class AccommodationsCanvas(Canvas):
             Dictionary where each key is a multiplier (e.g., '1.5') and the value is a list of modified quiz dicts.
         """
         multiplier_quiz_groups = {}
-        for multiplier in ["1.25", "1.5", "2.0"]:
+        for multiplier in ACCOMMODATION_MULTIPLIERS:
+            multiplier = str(multiplier)
             quizzes_multiplied = (
                 []
             )  # the list of quizzes, but with new data from the multiplication
@@ -312,6 +316,7 @@ class AccommodationsCanvas(Canvas):
                         "unlock_at": quiz["unlock_at"],  # when quiz becomes available
                         "lock_at": quiz["lock_at"],  # when quiz is no longer available,
                         "published": quiz["published"],
+                        "url": quiz["url"],
                         "points_possible": quiz["points_possible"],
                         "time_limit_readable": readable_time_limit(quiz["time_limit"]),
                         "due_at_readable": readable_datetime(quiz["due_at"]),
@@ -329,7 +334,7 @@ class AccommodationsCanvas(Canvas):
 
     def add_time_extensions(self, student_groups, quiz_groups, course_id):
         """
-        Applies extra time extensions to quizzes for students with accommodations.
+        Applies extra time limit extensions to quizzes for students with accommodations.
 
         Uses Canvas API to set `extra_time` for each quiz attempt based on multiplier.
 
@@ -344,7 +349,8 @@ class AccommodationsCanvas(Canvas):
         """
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
         course = self.get_course(course_id)
-        for multiplier in ["1.25", "1.5", "2.0"]:
+        for multiplier in ACCOMMODATION_MULTIPLIERS:
+            multiplier = str(multiplier)
             student_list = student_groups[multiplier]
             quiz_list = quiz_groups[multiplier]
             for quiz in quiz_list:
@@ -382,7 +388,8 @@ class AccommodationsCanvas(Canvas):
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
         course = self.get_course(course_id)
 
-        for multiplier in ["1.25", "1.5", "2.0"]:
+        for multiplier in ACCOMMODATION_MULTIPLIERS:
+            multiplier = str(multiplier)
             student_list = student_groups[multiplier]
             student_user_id_list = [student[2] for student in student_list]
 

@@ -64,7 +64,9 @@
                                                            id="quiz{{ quiz.id }}"
                                                            {% if quiz in selected_quizzes %}checked{% endif %}>
                                                 </th>
-                                                <td>{{ quiz.title }}</td>
+                                                <td>
+                                                    <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                </td>
                                                 <td>
                                                     <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
                                                         {{ quiz.unlock_at_readable|default:"No time set" }}
@@ -84,8 +86,10 @@
                                         {% endfor %}
                                     </tbody>
                                 </table>
-                                <label class="form-label my-3">Unavailable Quizzes</label>
-                                <table class="table table-bordered">
+                                <label class="form-label mt-3">
+                                    These quizzes can not have accommodations applied to them. In order to be eligible for accommodations, a quiz must have a time limit and/or a valid start and end date.
+                                </label>
+                                <table class="table table-bordered mt-0">
                                     <thead>
                                         <th scope="col">Quizzes</th>
                                         <th scope="col">Start Date</th>
@@ -95,7 +99,9 @@
                                     <tbody>
                                         {% for quiz in unavailable_quizzes %}
                                             <tr>
-                                                <td>{{ quiz.title }}</td>
+                                                <td>
+                                                    <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                </td>
                                                 <td>
                                                     <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
                                                         {{ quiz.unlock_at_readable|default:"No time set" }}
