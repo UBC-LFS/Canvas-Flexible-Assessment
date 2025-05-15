@@ -7,22 +7,16 @@
 {% bootstrap_messages %}
 {% block content %}
     <style>
-        #quiz-card {
-            transition: background-color 0.1s, border-color 0.1s;
+        .disabled-table {
+            opacity: 0.6;
         }
 
-        #quiz-card:hover {
-            background-color: #e0f3ff;
-            border-color: #0056b3;
+        .disabled-table table {
+            background-color: #f8f9fa; /* Optional: light gray background */
         }
 
-        .quiz-card.selected {
-            background-color: #d1e7dd;  /* a light green, Bootstrap success background */
-            border-color: #0f5132;     /* matching border color */
-        }
-
-        .underline-if-exists {
-            text-decoration: underline;
+        .disabled-table a {
+            color: #5da5e5 !important; /* Muted link color */
         }
     </style>
     <div class="container my-4">
@@ -35,10 +29,10 @@
                     {% csrf_token %}
                     <div class="my-3">
                         <h4>Select Quizzes</h4>
-                        <label class="form-label my-3">
+                        <label class="form-label mb-3">
                             Please select the quizzes in your course that you would like to apply accommodations to:
                         </label>
-                        <!-- Individual Quiz Checkboxes -->
+                        <!-- Valid Quizzes -->
                         <div class="ms-3">
                             <div class="row g-3">
                                 <table class="table table-bordered">
@@ -86,15 +80,22 @@
                                         {% endfor %}
                                     </tbody>
                                 </table>
-                                <label class="form-label mt-3">
-                                    These quizzes can not have accommodations applied to them. In order to be eligible for accommodations, a quiz must have a time limit and/or a valid start and end date.
-                                </label>
-                                <table class="table table-bordered mt-0">
+                            </div>
+                        </div>
+                        <h4 class="mt-4">Quizzes without Current Dates/Times</h4>
+                        <label class="form-label mb-3">
+                            These quizzes cannot have accommodations applied to them. In order to be eligible for accommodations, a quiz must have a time limit and/or a valid start and end date.
+                        </label>
+                        <!--Invalid Quizzes-->
+                        <div class="ms-3 disabled-table">
+                            <div class="row g-3">
+                                <table class="table table-bordered">
                                     <thead>
                                         <th scope="col">Quizzes</th>
                                         <th scope="col">Start Date</th>
                                         <th scope="col">End Date</th>
                                         <th scope="col">Time Limit</th>
+                                        <th scope="col">Edit</th>
                                     </thead>
                                     <tbody>
                                         {% for quiz in unavailable_quizzes %}
@@ -116,6 +117,9 @@
                                                     <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
                                                         {{ quiz.time_limit_readable|default:"No time limit set" }}
                                                     </span>
+                                                </td>
+                                                <td class="text-center align-middle">
+                                                    <a href="{{ quiz.url }}/edit" target="_blank"><i class="bi bi-pencil-square"></i></a>
                                                 </td>
                                             </tr>
                                         {% endfor %}
