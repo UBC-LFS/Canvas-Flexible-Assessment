@@ -171,6 +171,8 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new):
                 new_lock_at = new_lock_at + timedelta(minutes=1)
             return new_lock_at.isoformat()
         return None
+    elif unlock_at and lock_at:  # rarer case - treat window as original time limit
+        return None
     else:
         return None
 
@@ -340,11 +342,13 @@ class AccommodationsCanvas(Canvas):
         course = self.get_course(course_id)
         for multiplier in ACCOMMODATION_MULTIPLIERS:
             multiplier = str(multiplier)
-            student_list = student_groups[multiplier]
+            student_list = student_groups.get(multiplier, None)
+            if student_list is None:
+                continue  # if no students for this multiplier, move on to next multiplier
             quiz_list = quiz_groups[multiplier]
             for quiz in quiz_list:
                 if quiz["time_limit_new"] is None:
-                    break
+                    continue
                 extensions = []
                 # student is a tuple of login id, display name, user id
                 for student in student_list:
@@ -379,7 +383,9 @@ class AccommodationsCanvas(Canvas):
 
         for multiplier in ACCOMMODATION_MULTIPLIERS:
             multiplier = str(multiplier)
-            student_list = student_groups[multiplier]
+            student_list = student_groups.get(multiplier, None)
+            if student_list is None:
+                continue  # if no students for this multiplier, move on to next multiplier
             student_user_id_list = [student[2] for student in student_list]
 
             quiz_list = quiz_groups[multiplier]
