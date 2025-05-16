@@ -155,7 +155,9 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new):
         The new lock_at time in ISO8601 format, or None if no change is needed.
     """
     # unlock_at, lock_at are ISO8601 strings, time_limit_new is int (in minutes)
-    if unlock_at and lock_at and time_limit_new:  # only try if all values exist
+    if (
+        unlock_at and lock_at and time_limit_new
+    ):  # normal case - extend lock at to match new time limit
         unlock_at_parsed = parser.isoparse(unlock_at).astimezone(get_current_timezone())
         lock_at_parsed = parser.isoparse(lock_at).astimezone(get_current_timezone())
         window = lock_at_parsed - unlock_at_parsed
@@ -307,28 +309,15 @@ class AccommodationsCanvas(Canvas):
                     quiz["unlock_at"], quiz["lock_at"], time_limit_new
                 )
 
-                quizzes_multiplied.append(
-                    {
-                        "id": quiz["id"],
-                        "title": quiz["title"],
-                        "time_limit": quiz["time_limit"],  # in minutes, or None
-                        "due_at": quiz["due_at"],  # ISO8601 string or None
-                        "unlock_at": quiz["unlock_at"],  # when quiz becomes available
-                        "lock_at": quiz["lock_at"],  # when quiz is no longer available,
-                        "published": quiz["published"],
-                        "url": quiz["url"],
-                        "points_possible": quiz["points_possible"],
-                        "time_limit_readable": readable_time_limit(quiz["time_limit"]),
-                        "due_at_readable": readable_datetime(quiz["due_at"]),
-                        "unlock_at_readable": readable_datetime(quiz["unlock_at"]),
-                        "lock_at_readable": readable_datetime(quiz["lock_at"]),
-                        # new, multiplier-specific fields added here
-                        "time_limit_new": time_limit_new,
-                        "time_limit_new_readable": readable_time_limit(time_limit_new),
-                        "lock_at_new": lock_at_new,
-                        "lock_at_new_readable": readable_datetime(lock_at_new),
-                    }
+                quiz_modified = quiz.copy()
+                quiz_modified["time_limit_new"] = time_limit_new
+                quiz_modified["time_limit_new_readable"] = readable_time_limit(
+                    time_limit_new
                 )
+                quiz_modified["lock_at_new"] = lock_at_new
+                quiz_modified["lock_at_new_readable"] = readable_datetime(lock_at_new)
+
+                quizzes_multiplied.append(quiz_modified)
             multiplier_quiz_groups[multiplier] = quizzes_multiplied
         return multiplier_quiz_groups
 
