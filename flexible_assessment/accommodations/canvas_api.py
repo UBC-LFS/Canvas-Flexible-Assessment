@@ -228,7 +228,7 @@ class AccommodationsCanvas(Canvas):
                 "unlock_at": quiz.unlock_at,  # when quiz becomes available
                 "lock_at": quiz.lock_at,  # when quiz is no longer available,
                 "published": quiz.published,
-                "url": quiz.html_url,
+                "url": quiz.html_url + "/edit",  # send edit link
                 "points_possible": quiz.points_possible,
                 "time_limit_readable": readable_time_limit(quiz.time_limit),
                 "due_at_readable": readable_datetime(quiz.due_at),
@@ -312,12 +312,14 @@ class AccommodationsCanvas(Canvas):
                 )
 
                 quiz_modified = quiz.copy()
-                quiz_modified["time_limit_new"] = time_limit_new
-                quiz_modified["time_limit_new_readable"] = readable_time_limit(
-                    time_limit_new
+                quiz_modified.update(
+                    {
+                        "time_limit_new": time_limit_new,
+                        "time_limit_new_readable": readable_time_limit(time_limit_new),
+                        "lock_at_new": lock_at_new,
+                        "lock_at_new_readable": readable_datetime(lock_at_new),
+                    }
                 )
-                quiz_modified["lock_at_new"] = lock_at_new
-                quiz_modified["lock_at_new_readable"] = readable_datetime(lock_at_new)
 
                 quizzes_multiplied.append(quiz_modified)
             multiplier_quiz_groups[multiplier] = quizzes_multiplied

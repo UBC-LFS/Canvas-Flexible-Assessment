@@ -7,17 +7,27 @@
 {% bootstrap_messages %}
 {% block content %}
     <style>
-        .disabled-table {
-            opacity: 0.6;
+        .disabled-table table {
+            background-color: #f8f9fa;
         }
 
-        .disabled-table table {
-            background-color: #f8f9fa; /* Optional: light gray background */
+        .disabled-table td,
+        .disabled-table th {
+            color: rgba(114, 114, 117, 0.5); /* Bootstrap body text, faded */
         }
 
         .disabled-table a {
-            color: #5da5e5 !important; /* Muted link color */
+            color: #0d6efd !important; /* Bootstrap primary link color */
         }
+
+        .disabled-table a:hover {
+            color: #0a58ca !important; /* Darker hover state */
+        }
+
+        /*
+        .disabled-table thead th {
+            border-bottom: 1px solid #dee2e6 !important; 
+        } */
     </style>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
@@ -95,7 +105,6 @@
                                         <th scope="col">Start Date</th>
                                         <th scope="col">End Date</th>
                                         <th scope="col">Time Limit</th>
-                                        <th scope="col">Edit</th>
                                     </thead>
                                     <tbody>
                                         {% for quiz in unavailable_quizzes %}
@@ -103,24 +112,9 @@
                                                 <td>
                                                     <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
                                                 </td>
-                                                <td>
-                                                    <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
-                                                        {{ quiz.unlock_at_readable|default:"No time set" }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
-                                                        {{ quiz.lock_at_readable|default:"No time set" }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
-                                                        {{ quiz.time_limit_readable|default:"No time limit set" }}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center align-middle">
-                                                    <a href="{{ quiz.url }}/edit" target="_blank"><i class="bi bi-pencil-square"></i></a>
-                                                </td>
+                                                <td>{{ quiz.unlock_at_readable|default:"No time set" }}</td>
+                                                <td>{{ quiz.lock_at_readable|default:"No time set" }}</td>
+                                                <td>{{ quiz.time_limit_readable|default:"No time limit set" }}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
