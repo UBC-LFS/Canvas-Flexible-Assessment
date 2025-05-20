@@ -17,7 +17,9 @@ import flexible_assessment.utils as utils
 
 from flexible_assessment.models import Course
 
-import fitz
+# import fitz
+from pypdf import PdfReader
+import io
 import re
 import json
 import logging
@@ -118,15 +120,17 @@ def upload_pdfs(request, course_id):
         try:
             # Read file into memory
             pdf_bytes = f.read()
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
 
             if not (f.name.lower().endswith(".pdf") and pdf_bytes.startswith(b"%PDF")):
                 parsed_data.append(("error", f"{f.name} is not a PDF."))
                 continue
 
+            # Load the PDF from bytes
+            reader = PdfReader(io.BytesIO(pdf_bytes))
+
             text = ""
-            for page in doc:
-                text += page.get_text()
+            for page in reader.pages:
+                text += page.extract_text() or ""
 
             # Match 8-digit student number
             student_match = re.search(r"\b\d{8}\b", text)
