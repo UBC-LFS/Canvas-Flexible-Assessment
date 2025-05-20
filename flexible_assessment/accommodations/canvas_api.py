@@ -136,7 +136,7 @@ def calculate_new_time_limit(time_limit, multiplier):
         return None
 
 
-def calculate_new_lock_at(unlock_at, lock_at, time_limit_new):
+def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
     """
     Calculates a new lock time if the quiz window is shorter than the new time limit.
 
@@ -148,6 +148,8 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new):
         ISO8601 formatted lock datetime string.
     time_limit_new : int
         The new time limit in minutes.
+    multiplier : float or str
+        Accommodation multiplier (e.g., 1.5 for 50% extra time).
 
     Returns
     -------
@@ -155,13 +157,14 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new):
         The new lock_at time in ISO8601 format, or None if no change is needed.
     """
     # unlock_at, lock_at are ISO8601 strings, time_limit_new is int (in minutes)
+    unlock_at_parsed = parser.isoparse(unlock_at).astimezone(get_current_timezone())
+    lock_at_parsed = parser.isoparse(lock_at).astimezone(get_current_timezone())
+    window = lock_at_parsed - unlock_at_parsed
+    window_in_minutes = window.total_seconds() / 60
+
     if (
         unlock_at and lock_at and time_limit_new
-    ):  # normal case - extend lock at to match new time limit
-        unlock_at_parsed = parser.isoparse(unlock_at).astimezone(get_current_timezone())
-        lock_at_parsed = parser.isoparse(lock_at).astimezone(get_current_timezone())
-        window = lock_at_parsed - unlock_at_parsed
-        window_in_minutes = window.total_seconds() / 60
+    ):  # normal case - extend lock at to match new time limit if necessary
 
         if window_in_minutes < time_limit_new:
             # Set new lock_at to unlock_at + time_limit_new minutes
@@ -171,8 +174,16 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new):
                 new_lock_at = new_lock_at + timedelta(minutes=1)
             return new_lock_at.isoformat()
         return None
-    elif unlock_at and lock_at:  # rarer case - treat window as original time limit
-        return None
+    elif (
+        unlock_at and lock_at and window_in_minutes <= 180
+    ):  # rarer case - no time limit, but unlock, lock at both exist and have a window less than 3 hours
+        multiplier = float(multiplier)
+        new_window_in_minutes = int(math.ceil(window_in_minutes * multiplier))
+        new_lock_at = unlock_at_parsed + timedelta(minutes=new_window_in_minutes)
+        if is_midnight(new_lock_at):
+            # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
+            new_lock_at = new_lock_at + timedelta(minutes=1)
+        return new_lock_at.isoformat()
     else:
         return None
 
@@ -308,8 +319,10 @@ class AccommodationsCanvas(Canvas):
                     quiz["time_limit"], multiplier
                 )
                 lock_at_new = calculate_new_lock_at(
-                    quiz["unlock_at"], quiz["lock_at"], time_limit_new
+                    quiz["unlock_at"], quiz["lock_at"], time_limit_new, multiplier
                 )
+
+                #  due_at_new = calculate_new_due_at(quiz["due_at"], lock_at_new)
 
                 quiz_modified = quiz.copy()
                 quiz_modified.update(
