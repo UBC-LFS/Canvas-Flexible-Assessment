@@ -187,9 +187,16 @@ LOGGING = {
     },
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "simple"},
-        "file": {
+        "flexible_assessment": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(LOG_DIR, "info.log"),
+            "filename": os.path.join(LOG_DIR, "flexible_assessment.log"),
+            "formatter": "simple",
+            "backupCount": 10,
+            "maxBytes": 5242880,
+        },
+        "accommodations": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOG_DIR, "accommodations.log"),
             "formatter": "simple",
             "backupCount": 10,
             "maxBytes": 5242880,
@@ -197,19 +204,19 @@ LOGGING = {
     },
     "loggers": {
         "flexible_assessment": {
-            "handlers": ["console", "file"],
+            "handlers": ["console", "flexible_assessment"],
             "level": "INFO",
         },
         "accommodations": {
-            "handlers": ["console", "file"],
+            "handlers": ["console", "accommodations"],
             "level": "INFO",
         },
         "instructor": {
-            "handlers": ["console", "file"],
+            "handlers": ["console", "flexible_assessment"],
             "level": "INFO",
         },
         "student": {
-            "handlers": ["console", "file"],
+            "handlers": ["console", "flexible_assessment"],
             "level": "INFO",
         },
     },

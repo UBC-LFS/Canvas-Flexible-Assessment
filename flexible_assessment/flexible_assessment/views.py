@@ -15,7 +15,8 @@ from pylti1p3.exception import LtiException
 
 from . import auth, lti, models, utils
 
-logger = logging.getLogger(__name__)
+flexible_assessment_logger = logging.getLogger("flexible_assessment")
+accommodations_logger = logging.getLogger("accommodations")
 
 
 # https://github.com/dmitry-viskov/pylti1.3-django-example/blob/master/game/game/views.py
@@ -31,7 +32,7 @@ def login(request):
         return oidc_login.enable_check_cookies().redirect(target_link_uri)
 
     except LtiException as e:
-        logger.error(
+        flexible_assessment_logger.error(
             f"OIDC login failed with LtiException: {e}",
             extra={"course": f"Request: {str(request)}", "user": "No user"},
         )
@@ -39,7 +40,7 @@ def login(request):
             "An error occurred during login: Likely due to a Canvas deployment ID key issue. Please contact it@landfood.ubc.ca for assistance. Please include your course code and the current time."
         )
     except Exception as e:
-        logger.error(
+        flexible_assessment_logger.error(
             f"OIDC login failed with a generic Exception: {e}",
             extra={"course": f"Request: {str(request)}", "user": "No user"},
         )
@@ -60,7 +61,7 @@ def launch_flexible_assessment(request):
         "https://purl.imsglobal.org" "/spec/lti/claim/custom"
     ]
     course_id = canvas_fields["course_id"]
-    logger.info(
+    flexible_assessment_logger.info(
         "Inside Flexible Assessment Launch with request",
         extra={
             "course": canvas_fields,
@@ -73,7 +74,7 @@ def launch_flexible_assessment(request):
         auth.authenticate_login(request, canvas_fields)
 
         course = models.Course.objects.get(pk=course_id)
-        logger.info(
+        flexible_assessment_logger.info(
             "Admin login for Flexible Assessment",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
@@ -88,7 +89,7 @@ def launch_flexible_assessment(request):
         auth.authenticate_login(request, canvas_fields)
 
         course = models.Course.objects.get(pk=course_id)
-        logger.info(
+        flexible_assessment_logger.info(
             "Instructor login for Flexible Assessment",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
@@ -103,7 +104,7 @@ def launch_flexible_assessment(request):
         auth.authenticate_login(request, canvas_fields)
 
         course = models.Course.objects.get(pk=course_id)
-        logger.info(
+        flexible_assessment_logger.info(
             "TA login for Flexible Assessment",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
@@ -118,7 +119,7 @@ def launch_flexible_assessment(request):
         auth.authenticate_login(request, canvas_fields)
 
         course = models.Course.objects.get(pk=course_id)
-        logger.info(
+        flexible_assessment_logger.info(
             "Student login for Flexible Assessment",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
@@ -128,7 +129,7 @@ def launch_flexible_assessment(request):
         )
 
     else:
-        logger.info(
+        flexible_assessment_logger.info(
             f"ROLE NOT DEFINED: {canvas_fields['role']}",
             extra={"course": course_id, "user": canvas_fields["user_display_name"]},
         )
@@ -149,7 +150,7 @@ def launch_accommodations(request):
         "https://purl.imsglobal.org" "/spec/lti/claim/custom"
     ]
     course_id = canvas_fields["course_id"]
-    logger.info(
+    accommodations_logger.info(
         "Inside Accommodations Launch with request",
         extra={
             "course": canvas_fields,
@@ -162,13 +163,15 @@ def launch_accommodations(request):
         auth.authenticate_login(request, canvas_fields)
 
         course = models.Course.objects.get(pk=course_id)
-        logger.info(
+        accommodations_logger.info(
             "Admin login for Accommodations",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
         return HttpResponseRedirect(
-            reverse("accommodations:accommodations_home", kwargs={"course_id": course_id})
+            reverse(
+                "accommodations:accommodations_home", kwargs={"course_id": course_id}
+            )
             + "?login_redirect=True"
         )
 
@@ -177,13 +180,15 @@ def launch_accommodations(request):
         auth.authenticate_login(request, canvas_fields)
 
         course = models.Course.objects.get(pk=course_id)
-        logger.info(
+        accommodations_logger.info(
             "Instructor login for Accommodations",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
         return HttpResponseRedirect(
-            reverse("accommodations:accommodations_home", kwargs={"course_id": course_id})
+            reverse(
+                "accommodations:accommodations_home", kwargs={"course_id": course_id}
+            )
             + "?login_redirect=True"
         )
 
@@ -192,13 +197,15 @@ def launch_accommodations(request):
         auth.authenticate_login(request, canvas_fields)
 
         course = models.Course.objects.get(pk=course_id)
-        logger.info(
+        accommodations_logger.info(
             "TA login for Accommodations",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
 
         return HttpResponseRedirect(
-            reverse("accommodations:accommodations_home", kwargs={"course_id": course_id})
+            reverse(
+                "accommodations:accommodations_home", kwargs={"course_id": course_id}
+            )
             + "?login_redirect=True"
         )
 
@@ -207,7 +214,7 @@ def launch_accommodations(request):
         auth.authenticate_login(request, canvas_fields)
 
         course = models.Course.objects.get(pk=course_id)
-        logger.info(
+        accommodations_logger.info(
             "Student login for Accommodations",
             extra={"course": str(course), "user": canvas_fields["user_display_name"]},
         )
@@ -217,7 +224,7 @@ def launch_accommodations(request):
         )
 
     else:
-        logger.info(
+        accommodations_logger.info(
             f"ROLE NOT DEFINED: {canvas_fields['role']}",
             extra={"course": course_id, "user": canvas_fields["user_display_name"]},
         )

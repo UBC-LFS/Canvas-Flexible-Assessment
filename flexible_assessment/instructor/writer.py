@@ -59,23 +59,17 @@ def course_log(course):
     # list of tuples (timestamp, line)
     logs = []
 
-    try:
-        log_file_names = sorted(os.listdir(settings.LOG_DIR))
-    except FileNotFoundError:
-        return csv_writer.get_response()
-
     # Set to keep track of seen lines to avoid duplicates
     seen_lines = set()
 
-    for log_file_name in log_file_names:
-        with open(os.path.join(settings.LOG_DIR, log_file_name)) as f:
-            lines = f.readlines()
-            for line in lines:
-                res = re.search(r"\[(.*?)\]", line)
-                if res and res.group(1) == str(course) and line not in seen_lines:
-                    seen_lines.add(line)
-                    timestamp = parse_timestamp(line)
-                    logs.append((timestamp, line))
+    with open(os.path.join(settings.LOG_DIR, "flexible_assessment.log")) as f:
+        lines = f.readlines()
+        for line in lines:
+            res = re.search(r"\[(.*?)\]", line)
+            if res and res.group(1) == str(course) and line not in seen_lines:
+                seen_lines.add(line)
+                timestamp = parse_timestamp(line)
+                logs.append((timestamp, line))
 
     # sort logs by timestamp
     logs.sort(key=lambda x: x[0], reverse=True)

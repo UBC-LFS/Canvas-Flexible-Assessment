@@ -924,7 +924,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
     def test_logs(self, mocked_flex_canvas_instance):
         """In course 1 the teacher is exporting the logs
         For some reason, there seem to be (out of order/duplicate) log entries that are only on the production server.
-        I've added some duplicate entries and some out of order entries in the file flexible_assessment/log/info.log to simulate this.
+        I've added some duplicate entries and some out of order entries in the file flexible_assessment/log/flexible_assessment.log to simulate this.
         The log files are ignored in gitignore, so to get this test to work, you'll need to make some entries on your own machine
         1.
         """
