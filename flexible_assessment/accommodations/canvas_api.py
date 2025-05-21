@@ -188,6 +188,38 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
         return None
 
 
+def calculate_new_due_at(due_at, lock_at_new, lock_at):
+    """
+    Calculates a new lock time if the quiz window is shorter than the new time limit.
+
+    Parameters
+    ----------
+    due_at : str
+        ISO8601 formatted due date datetime string.
+    lock_at_new : str
+        ISO8601 formatted lock datetime string.
+    lock_at : str
+        ISO8601 formatted lock datetime string.
+
+    Returns
+    -------
+    str or None
+        The new due_at time in ISO8601 format, or None if no change is needed.
+    """
+    if due_at is None:
+        return None
+    elif (
+        lock_at_new is not None
+    ):  # if there is a new lock time and due_at exists, set due_at to the new lock time
+        return lock_at_new
+    elif (
+        lock_at is not None
+    ):  # if there is an existing lock time and due_at exists, set due_at to the existing lock time
+        return lock_at
+    else:
+        return due_at
+
+
 class AccommodationsCanvas(Canvas):
     """Extends Canvas class for handling a Canvas course within
     an Accommodations context
@@ -322,6 +354,10 @@ class AccommodationsCanvas(Canvas):
                     quiz["unlock_at"], quiz["lock_at"], time_limit_new, multiplier
                 )
 
+                due_at_new = calculate_new_due_at(
+                    quiz["due_at"], lock_at_new, quiz["lock_at"]
+                )
+
                 #  due_at_new = calculate_new_due_at(quiz["due_at"], lock_at_new)
 
                 quiz_modified = quiz.copy()
@@ -331,6 +367,7 @@ class AccommodationsCanvas(Canvas):
                         "time_limit_new_readable": readable_time_limit(time_limit_new),
                         "lock_at_new": lock_at_new,
                         "lock_at_new_readable": readable_datetime(lock_at_new),
+                        "due_at_new": due_at_new,  # no need for readable since we don't display due_at valueu
                     }
                 )
 
@@ -425,5 +462,6 @@ class AccommodationsCanvas(Canvas):
                         "due_at": quiz["due_at"],
                         "unlock_at": quiz["unlock_at"],
                         "lock_at": quiz["lock_at_new"],
+                        "due_at": quiz["due_at_new"],
                     }
                 )
