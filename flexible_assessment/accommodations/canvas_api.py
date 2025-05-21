@@ -156,6 +156,12 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
     str or None
         The new lock_at time in ISO8601 format, or None if no change is needed.
     """
+
+    if (
+        unlock_at is None or lock_at is None
+    ):  # both unlock and lock at must exist to set new lock at
+        return None
+
     # unlock_at, lock_at are ISO8601 strings, time_limit_new is int (in minutes)
     unlock_at_parsed = parser.isoparse(unlock_at).astimezone(get_current_timezone())
     lock_at_parsed = parser.isoparse(lock_at).astimezone(get_current_timezone())
@@ -163,7 +169,7 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
     window_in_minutes = window.total_seconds() / 60
 
     if (
-        unlock_at and lock_at and time_limit_new
+        time_limit_new
     ):  # normal case - extend lock at to match new time limit if necessary
 
         if window_in_minutes < time_limit_new:
@@ -175,7 +181,7 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
             return new_lock_at.isoformat()
         return None
     elif (
-        unlock_at and lock_at and window_in_minutes <= 180
+        window_in_minutes <= 180
     ):  # rarer case - no time limit, but unlock, lock at both exist and have a window less than 3 hours
         multiplier = float(multiplier)
         new_window_in_minutes = int(math.ceil(window_in_minutes * multiplier))
@@ -184,7 +190,7 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
             # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
             new_lock_at = new_lock_at + timedelta(minutes=1)
         return new_lock_at.isoformat()
-    else:
+    else:  # if unlock, lock at both exist, but have a window greater than 3 hours, don't set a new lock at time
         return None
 
 
