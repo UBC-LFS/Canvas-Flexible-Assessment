@@ -17,8 +17,7 @@ import flexible_assessment.utils as utils
 
 from flexible_assessment.models import Course
 
-# import fitz
-from pypdf import PdfReader
+import pypdf
 import io
 import re
 import json
@@ -126,7 +125,7 @@ def upload_pdfs(request, course_id):
                 continue
 
             # Load the PDF from bytes
-            reader = PdfReader(io.BytesIO(pdf_bytes))
+            reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
 
             text = ""
             for page in reader.pages:
