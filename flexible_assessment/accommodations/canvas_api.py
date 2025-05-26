@@ -73,6 +73,30 @@ def readable_datetime(iso_string):
         return iso_string
 
 
+def get_time_window(unlock_at, lock_at):
+    """
+    Get the time window in minutes given the unlock_at and lock_at values of a quiz.
+
+    Parameters
+    ----------
+    unlock_at : str
+        A string representing the time a quiz unlocks (formatted as ISO8601 string)
+
+    lock_at : str
+        A string representing the time a quiz locks (formatted as ISO8601 string)
+
+    Returns
+    -------
+    int
+        An integer representing the number of minutes in the time window
+    """
+    unlock_at_parsed = parser.isoparse(unlock_at).astimezone(get_current_timezone())
+    lock_at_parsed = parser.isoparse(lock_at).astimezone(get_current_timezone())
+    window = lock_at_parsed - unlock_at_parsed
+    window_in_minutes = window.total_seconds() / 60
+    return window_in_minutes
+
+
 def is_quiz_selectable(quiz):
     """
     Determines if a quiz is selectable based on time limit or lock/unlock dates.
@@ -95,8 +119,17 @@ def is_quiz_selectable(quiz):
         try:
             lock_time = datetime.fromisoformat(lock_at.replace("Z", "+00:00"))
             now = datetime.now(timezone.utc)
-            if lock_time > now:
-                return True
+            if lock_time > now:  # check to make sure quiz locks in the future
+                # First case - valid unlock_at, lock_at, existing time limit - should return true
+                if quiz.get("time_limit") is not None:
+                    return True
+                else:
+                    # Second case - valid unlock_at, lock_at, no existing time limit - should only return true if time window is <= 3 hours
+                    time_window = get_time_window(unlock_at, lock_at)
+                    if time_window <= 180:
+                        return True
+                    else:
+                        return False
             else:
                 return False
         except ValueError:
@@ -165,8 +198,7 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
     # unlock_at, lock_at are ISO8601 strings, time_limit_new is int (in minutes)
     unlock_at_parsed = parser.isoparse(unlock_at).astimezone(get_current_timezone())
     lock_at_parsed = parser.isoparse(lock_at).astimezone(get_current_timezone())
-    window = lock_at_parsed - unlock_at_parsed
-    window_in_minutes = window.total_seconds() / 60
+    window_in_minutes = get_time_window(unlock_at, lock_at)
 
     if (
         time_limit_new
@@ -196,7 +228,7 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
 
 def calculate_new_due_at(due_at, lock_at_new, lock_at):
     """
-    Calculates a new lock time if the quiz window is shorter than the new time limit.
+    Calculates a new due time according to the existing due time and the new lock time.
 
     Parameters
     ----------
@@ -223,6 +255,7 @@ def calculate_new_due_at(due_at, lock_at_new, lock_at):
     ):  # if there is an existing lock time and due_at exists, set due_at to the existing lock time
         return lock_at
     else:
+        # if no original lock time but existing due time, keep due at the same
         return due_at
 
 
