@@ -77,7 +77,8 @@
                                                             </span>
                                                             {% if quiz.lock_at_new_readable %}
                                                                 <i class="bi bi-arrow-right"></i>
-                                                                <span class="{% if quiz.lock_at_status == "success" %}text-success{% else %}text-danger{% endif %}">{{ quiz.lock_at_new_readable }}</span>
+                                                                <span class="{% if quiz.lock_at_status == 'success' %}text-success{% else %}text-danger{% endif %}">{{ quiz.lock_at_new_readable }}</span>
+                                                                <i class="bi {% if quiz.lock_at_status == 'success' %}bi-check-lg{% else %}bi-x-lg{% endif %}"></i>
                                                             {% endif %}
                                                         </td>
                                                         <td>
@@ -85,7 +86,8 @@
                                                                 {{ quiz.time_limit_readable|default:"No time limit set" }}
                                                             </span>
                                                             {% if quiz.time_limit_new_readable %}
-                                                                <i class="bi bi-arrow-right"></i> <span class="{% if quiz.time_limit_status == "success" %}text-success{% else %}text-danger{% endif %}">{{ quiz.time_limit_new_readable }}</span>
+                                                                <i class="bi bi-arrow-right"></i> <span class="{% if quiz.time_limit_status == 'success' %}text-success{% else %}text-danger{% endif %}">{{ quiz.time_limit_new_readable }}</span>
+                                                                <i class="bi {% if quiz.time_limit_status == 'success' %}bi-check-lg{% else %}bi-x-lg{% endif %}"></i>
                                                             {% endif %}
                                                         </td>
                                                     </tr>
