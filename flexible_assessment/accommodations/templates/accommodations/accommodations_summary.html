@@ -1,0 +1,123 @@
+{% extends "accommodations/accommodations_base.html" %}
+{% load django_bootstrap5 %}
+{% bootstrap_messages %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+{% block content %}
+    <style>
+        input[type=checkbox][disabled] {
+            filter: invert(15%);
+        }
+    </style>
+    <div class="container my-4">
+        <h2 class="text-center">Accommodations</h2>
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-10 col-md-12">
+                <h4>Summary of Applied Accommodations for Multiplier Groups</h4>
+                <label class="form-label my-3">Verify that the accommodations listed have been applied correctly.</label>
+                <div class="row g-3">
+                    {% for multiplier, students in multiplier_student_groups %}
+                        <div class="card shadow-sm mb-4 px-0"
+                             style="border-radius: 1em;
+                                    overflow: hidden">
+                            <div class="card-header p-0">
+                                <div class="w-100 px-3 py-2">
+                                    <h3 class="mb-0">{{ multiplier }}x Time Multiplier</h3>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Student Table -->
+                                <h5>Students:</h5>
+                                <table class="table table-bordered table-sm mt-2"
+                                       style="table-layout: fixed">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Student ID</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for student_id, student_name, _ in students %}
+                                            <tr>
+                                                <td>{{ student_name }}</td>
+                                                <td>{{ student_id }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <!-- Quiz Table -->
+                                <h5 class="mt-4">Quizzes:</h5>
+                                <table class="table table-bordered table-sm mt-2">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Time Limit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for mult, quizzes in multiplier_quiz_groups_results.items %}
+                                            {% if mult == multiplier %}
+                                                {% for quiz in quizzes %}
+                                                    <tr>
+                                                        <td>
+                                                            <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                        </td>
+                                                        <td>
+                                                            <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
+                                                                {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
+                                                                {{ quiz.lock_at_readable|default:"No time set" }}
+                                                            </span>
+                                                            {% if quiz.lock_at_new_readable %}
+                                                                <i class="bi bi-arrow-right"></i>
+                                                                <span class="{% if quiz.lock_at_status == "success" %}text-success{% else %}text-danger{% endif %}">{{ quiz.lock_at_new_readable }}</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
+                                                                {{ quiz.time_limit_readable|default:"No time limit set" }}
+                                                            </span>
+                                                            {% if quiz.time_limit_new_readable %}
+                                                                <i class="bi bi-arrow-right"></i> <span class="{% if quiz.time_limit_status == "success" %}text-success{% else %}text-danger{% endif %}">{{ quiz.time_limit_new_readable }}</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <!-- Buttons -->
+                <div class="mt-4 d-flex justify-content-between py-0 my-0">
+                    <!-- Back button using JavaScript -->
+                    <button type="button"
+                            class="btn btn-secondary"
+                            onclick="window.location.href='{% url 'accommodations:accommodations_confirm' course.id %}'">
+                        Back
+                    </button>
+                    <!-- Next button -->
+                    <button type="submit" class="btn btn-primary">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if messages %}
+        <ul class="messages" hidden>
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <script></script>
+{% endblock %}

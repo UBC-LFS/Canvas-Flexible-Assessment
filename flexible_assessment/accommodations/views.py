@@ -334,7 +334,7 @@ class AccommodationsConfirm(views.AccommodationsListView):
                 results_string += (
                     "-----"
                     + quiz["title"]
-                    + "(time limit status: "
+                    + " (time limit status: "
                     + quiz["time_limit_status"]
                     + "), (lock at status: "
                     + quiz["lock_at_status"]
@@ -342,4 +342,66 @@ class AccommodationsConfirm(views.AccommodationsListView):
                     + "<br>"
                 )
 
-        return HttpResponse("Success<br>" + str(results_string))
+        request.session["multiplier_quiz_groups_results"] = (
+            multiplier_quiz_groups_results
+        )
+
+        # return HttpResponse("<h2>Success</h3><br>" + str(results_string))
+
+        return HttpResponseRedirect(
+            reverse(
+                "accommodations:accommodations_summary", kwargs={"course_id": course_id}
+            )
+        )
+
+
+class AccommodationsSummary(views.AccommodationsListView):
+    template_name = "accommodations/accommodations_summary.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        multiplier_student_groups = self.request.session.get(
+            "multiplier_student_groups", []
+        )
+        multiplier_quiz_groups_results = self.request.session.get(
+            "multiplier_quiz_groups_results", {}
+        )
+        selected_quizzes = self.request.session.get("selected_quizzes", [])
+
+        context["multiplier_student_groups"] = multiplier_student_groups
+        context["multiplier_quiz_groups_results"] = multiplier_quiz_groups_results
+        context["selected_quizzes"] = selected_quizzes
+        context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+        return context
+
+    def get(self, request, *args, **kwargs):
+        # should require that accommodations, selected quizzes exist in context data - if not, redirect back to home
+        course_id = self.kwargs["course_id"]
+        multiplier_quiz_groups_results = request.session.get(
+            "multiplier_quiz_groups_results", None
+        )
+
+        # if redirected, update students in database
+        login_redirect = request.GET.get("login_redirect")
+        if login_redirect:
+            course = self.get_context_data().get("course", "")
+            utils.update_students(request, course)
+
+        if (
+            multiplier_quiz_groups_results == None
+            or multiplier_quiz_groups_results == {}
+        ):
+            messages.error(
+                request,
+                "You can only access the summary page after confirming and submitting accommodations.",
+            )
+            return HttpResponseRedirect(
+                reverse(
+                    "accommodations:accommodations_home",
+                    kwargs={"course_id": course_id},
+                )
+            )
+
+        response = super().get(request, *args, **kwargs)
+
+        return response

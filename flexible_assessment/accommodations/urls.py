@@ -18,5 +18,10 @@ urlpatterns = [
         views.AccommodationsConfirm.as_view(),
         name="accommodations_confirm",
     ),
+    path(
+        "<int:course_id>/summary",
+        views.AccommodationsSummary.as_view(),
+        name="accommodations_summary",
+    ),
     path("<int:course_id>/upload_pdfs", views.upload_pdfs, name="upload_pdfs"),
 ]
