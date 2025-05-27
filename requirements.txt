@@ -2,7 +2,7 @@ canvasapi>=3.3.0
 cryptography==43.0.1
 Django==4.2.15
 django-bootstrap5==21.3
-psycopg2==2.9.3
+psycopg2-binary==2.9.6
 PyLTI1p3==2.0.0
 python-dotenv==1.0.1
 pytz==2022.1
