@@ -428,6 +428,11 @@ class AccommodationsCanvas(Canvas):
             Dictionary of quizzes grouped by multiplier, each with new time limits.
         course_id : int
             The Canvas course ID.
+
+        Returns
+        -------
+        dict of {str: list of dict}
+            Dictionary where each key is a multiplier (e.g., '1.5') and the value is a list of quiz dicts with the results of adding in Canvas.
         """
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
         course = self.get_course(course_id)
@@ -439,20 +444,28 @@ class AccommodationsCanvas(Canvas):
             quiz_list = quiz_groups[multiplier]
             for quiz in quiz_list:
                 if quiz["time_limit_new"] is None:
+                    quiz["time_limit_status"] = "N/A"
                     continue
-                extensions = []
-                # student is a tuple of login id, display name, user id
-                for student in student_list:
-                    extensions.append(
-                        {
-                            "user_id": student[2],
-                            "extra_time": int(
-                                quiz["time_limit_new"] - quiz["time_limit"]
-                            ),
-                        }
-                    )
-                canvas_quiz = course.get_quiz(quiz["id"])
-                canvas_quiz.set_extensions(extensions)
+                try:
+                    extensions = []
+                    # student is a tuple of login id, display name, user id
+                    for student in student_list:
+                        extensions.append(
+                            {
+                                "user_id": student[2],
+                                "extra_time": int(
+                                    quiz["time_limit_new"] - quiz["time_limit"]
+                                ),
+                            }
+                        )
+                    canvas_quiz = course.get_quiz(quiz["id"])
+                    canvas_quiz.set_extensions(extensions)
+                except:
+                    quiz["time_limit_status"] = "failure"
+                else:
+                    quiz["time_limit_status"] = "success"
+
+        return quiz_groups
 
     def add_availabilities(self, student_groups, quiz_groups, course_id):
         """
@@ -482,25 +495,33 @@ class AccommodationsCanvas(Canvas):
             quiz_list = quiz_groups[multiplier]
             for quiz in quiz_list:
                 if quiz["lock_at_new"] is None:
+                    quiz["lock_at_status"] = "N/A"
                     continue
 
-                canvas_quiz = course.get_quiz(quiz["id"])
-                quiz_assignment = course.get_assignment(canvas_quiz.assignment_id)
+                try:
+                    canvas_quiz = course.get_quiz(quiz["id"])
+                    quiz_assignment = course.get_assignment(canvas_quiz.assignment_id)
 
-                # Delete only matching overrides
-                assignment_overrides = quiz_assignment.get_overrides()
-                for override in assignment_overrides:
-                    override_student_ids = set(override.student_ids)
-                    if set(student_user_id_list) == override_student_ids:
-                        override.delete()
+                    # Delete only matching overrides
+                    assignment_overrides = quiz_assignment.get_overrides()
+                    for override in assignment_overrides:
+                        override_student_ids = set(override.student_ids)
+                        if set(student_user_id_list) == override_student_ids:
+                            override.delete()
 
-                # Create a new override
-                result = quiz_assignment.create_override(
-                    assignment_override={
-                        "student_ids": student_user_id_list,
-                        "due_at": quiz["due_at"],
-                        "unlock_at": quiz["unlock_at"],
-                        "lock_at": quiz["lock_at_new"],
-                        "due_at": quiz["due_at_new"],
-                    }
-                )
+                    # Create a new override
+                    result = quiz_assignment.create_override(
+                        assignment_override={
+                            "student_ids": student_user_id_list,
+                            "due_at": quiz["due_at"],
+                            "unlock_at": quiz["unlock_at"],
+                            "lock_at": quiz["lock_at_new"],
+                            "due_at": quiz["due_at_new"],
+                        }
+                    )
+                except:
+                    quiz["lock_at_status"] = "failure"
+                else:
+                    quiz["lock_at_status"] = "success"
+
+        return quiz_groups

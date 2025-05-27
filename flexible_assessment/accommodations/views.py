@@ -312,11 +312,11 @@ class AccommodationsConfirm(views.AccommodationsListView):
         multiplier_quiz_groups = request.session["multiplier_quiz_groups"]
 
         canvas = AccommodationsCanvas(request)
-        canvas.add_time_extensions(
+        multiplier_quiz_groups_results = canvas.add_time_extensions(
             multiplier_student_groups, multiplier_quiz_groups, course_id
         )
-        canvas.add_availabilities(
-            multiplier_student_groups, multiplier_quiz_groups, course_id
+        multiplier_quiz_groups_results = canvas.add_availabilities(
+            multiplier_student_groups, multiplier_quiz_groups_results, course_id
         )
 
         # logger.info(
@@ -327,4 +327,19 @@ class AccommodationsConfirm(views.AccommodationsListView):
         #     extra={"course": str(course), "user": request.session["display_name"]},
         # )
 
-        return HttpResponse("Success")
+        results_string = ""
+        for accommodation, quizzes in multiplier_quiz_groups_results.items():
+            results_string += "<h3>" + str(accommodation) + "</h3>" + "<br>"
+            for quiz in quizzes:
+                results_string += (
+                    "-----"
+                    + quiz["title"]
+                    + "(time limit status: "
+                    + quiz["time_limit_status"]
+                    + "), (lock at status: "
+                    + quiz["lock_at_status"]
+                    + ")"
+                    + "<br>"
+                )
+
+        return HttpResponse("Success<br>" + str(results_string))
