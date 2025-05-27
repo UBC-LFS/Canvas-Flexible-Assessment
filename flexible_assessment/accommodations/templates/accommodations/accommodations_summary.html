@@ -106,10 +106,15 @@
                     <button type="button"
                             class="btn btn-secondary"
                             onclick="window.location.href='{% url 'accommodations:accommodations_confirm' course.id %}'">
+                        <i class="bi bi-arrow-left me-2"></i>
                         Back
                     </button>
                     <!-- Next button -->
-                    <button type="submit" class="btn btn-primary">Next</button>
+                    <button type="button"
+                            class="btn btn-primary"
+                            onclick="window.location.href='{% url 'accommodations:accommodations_home' course.id %}'">
+                        Restart <i class="bi bi-arrow-clockwise ms-2"></i>
+                    </button>
                 </div>
             </div>
         </div>

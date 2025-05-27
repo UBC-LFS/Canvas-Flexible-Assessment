@@ -118,10 +118,13 @@
                         <button type="button"
                                 class="btn btn-secondary"
                                 onclick="window.location.href='{% url 'accommodations:accommodations_quizzes' course.id %}'">
+                            <i class="bi bi-arrow-left me-2"></i>
                             Back
                         </button>
                         <!-- Next button -->
-                        <button type="submit" class="btn btn-primary">Next</button>
+                        <button type="submit" class="btn btn-primary">
+                            Submit <i class="bi bi-upload ms-2"></i>
+                        </button>
                     </div>
                 </form>
             </div>
