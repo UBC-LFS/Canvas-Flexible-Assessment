@@ -78,7 +78,7 @@
                                                             {% if quiz.lock_at_new_readable %}
                                                                 <i class="bi bi-arrow-right"></i>
                                                                 <span class="{% if quiz.lock_at_status == 'success' %}text-success{% else %}text-danger{% endif %}">{{ quiz.lock_at_new_readable }}</span>
-                                                                <i class="bi {% if quiz.lock_at_status == 'success' %}bi-check-lg{% else %}bi-x-lg{% endif %}"></i>
+                                                                <i class="bi {% if quiz.lock_at_status == 'success' %}bi-check-lg text-success{% else %}bi-x-lg text-danger{% endif %}"></i>
                                                             {% endif %}
                                                         </td>
                                                         <td>
@@ -87,7 +87,7 @@
                                                             </span>
                                                             {% if quiz.time_limit_new_readable %}
                                                                 <i class="bi bi-arrow-right"></i> <span class="{% if quiz.time_limit_status == 'success' %}text-success{% else %}text-danger{% endif %}">{{ quiz.time_limit_new_readable }}</span>
-                                                                <i class="bi {% if quiz.time_limit_status == 'success' %}bi-check-lg{% else %}bi-x-lg{% endif %}"></i>
+                                                                <i class="bi {% if quiz.time_limit_status == 'success' %}bi-check-lg text-success{% else %}bi-x-lg text-danger{% endif %}"></i>
                                                             {% endif %}
                                                         </td>
                                                     </tr>
