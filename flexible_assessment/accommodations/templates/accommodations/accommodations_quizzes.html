@@ -31,49 +31,63 @@
 
         /* Tooltip container */
         .custom-tooltip {
-        position: relative;
-        display: inline-block;
+            position: relative;
+            display: inline-block;
         }
 
         /* Tooltip text */
         .custom-tooltip .tooltiptext {
-        visibility: hidden;
-        width: 200px;
-        background-color: #555;
-        color: #fff;
-        text-align: center;
-        padding: 5px 0;
-        border-radius: 6px;
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            padding: 8px 12px;
+            line-height: 1.4;
+            border-radius: 6px;
 
-        /* Position the tooltip text */
-        position: absolute;
-        z-index: 1;
-        bottom: 125%;
-        left: 50%;
-        margin-left: -100px;
+            /* Position the tooltip text */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
 
-        /* Fade in tooltip */
-        opacity: 0;
-        transition: opacity 0.3s;
+            /* Fade in tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
         /* Tooltip arrow */
         .custom-tooltip .tooltiptext::after {
-        content: "";
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        margin-left: -5px;
-        border-width: 5px;
-        border-style: solid;
-        border-color: #555 transparent transparent transparent;
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
         }
 
         /* Show the tooltip text when you mouse over the tooltip container */
         .custom-tooltip:hover .tooltiptext {
-        visibility: visible;
-        opacity: 1;
+            visibility: visible;
+            opacity: 1;
         }
+
+        /* Improve link readability inside tooltip */
+        .custom-tooltip .tooltiptext a {
+            color: #71e3f2; /* Light blue for good contrast */
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        .custom-tooltip .tooltiptext a:hover {
+            color: #a2eff9; /* Slightly lighter on hover */
+            text-decoration: none;
+        }
+
     </style>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
@@ -134,7 +148,7 @@
                                                     {% if quiz.should_warn %}
                                                         <div class="custom-tooltip">
                                                             <i class="bi bi-exclamation-triangle text-danger ms-1"></i>
-                                                            <span class="tooltiptext">Warning: quiz time limit exceeds the time between the start date and end date.</span>
+                                                            <span class="tooltiptext">Warning: quiz time limit exceeds the time between the start date and end date. <a href="{{ quiz.url }}" target="_blank">Edit Quiz.</a></span>
                                                         </div>
                                                     {% endif %}
                                                 </td>
