@@ -28,6 +28,52 @@
         .disabled-table thead th {
             border-bottom: 1px solid #dee2e6 !important; 
         } */
+
+        /* Tooltip container */
+        .custom-tooltip {
+        position: relative;
+        display: inline-block;
+        }
+
+        /* Tooltip text */
+        .custom-tooltip .tooltiptext {
+        visibility: hidden;
+        width: 200px;
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        padding: 5px 0;
+        border-radius: 6px;
+
+        /* Position the tooltip text */
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -100px;
+
+        /* Fade in tooltip */
+        opacity: 0;
+        transition: opacity 0.3s;
+        }
+
+        /* Tooltip arrow */
+        .custom-tooltip .tooltiptext::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #555 transparent transparent transparent;
+        }
+
+        /* Show the tooltip text when you mouse over the tooltip container */
+        .custom-tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+        }
     </style>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
@@ -85,6 +131,12 @@
                                                     <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
                                                         {{ quiz.time_limit_readable|default:"No time limit set" }}
                                                     </span>
+                                                    {% if quiz.should_warn %}
+                                                        <div class="custom-tooltip">
+                                                            <i class="bi bi-exclamation-triangle text-danger ms-1"></i>
+                                                            <span class="tooltiptext">Warning: quiz time limit exceeds the time between the start date and end date.</span>
+                                                        </div>
+                                                    {% endif %}
                                                 </td>
                                             </tr>
                                         {% endfor %}

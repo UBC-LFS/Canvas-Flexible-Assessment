@@ -169,6 +169,21 @@ def calculate_new_time_limit(time_limit, multiplier):
         return None
 
 
+def set_warn(quiz):
+    """
+    Sets the "should_warn" field in the quiz dictionary passed in
+
+    Parameters
+    ----------
+    quiz : dict
+        A dictionary representing a Canvas quiz
+    """
+    if quiz["unlock_at"] is not None and quiz["lock_at"] is not None:
+        time_window = get_time_window(quiz["unlock_at"], quiz["lock_at"])
+        if time_window < quiz["time_limit"]:
+            quiz["should_warn"] = True
+
+
 def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
     """
     Calculates a new lock time if the quiz window is shorter than the new time limit.
@@ -315,8 +330,10 @@ class AccommodationsCanvas(Canvas):
                 "due_at_readable": readable_datetime(quiz.due_at),
                 "unlock_at_readable": readable_datetime(quiz.unlock_at),
                 "lock_at_readable": readable_datetime(quiz.lock_at),
+                "should_warn": False,  # set this to true if the time window between start and end date is less than the time limit
             }
             if is_quiz_selectable(quiz_data):
+                set_warn(quiz_data)
                 quiz_list.append(quiz_data)
             else:
                 unavailable_quiz_list.append(quiz_data)
