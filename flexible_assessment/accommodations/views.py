@@ -312,20 +312,32 @@ class AccommodationsConfirm(views.AccommodationsListView):
         multiplier_quiz_groups = request.session["multiplier_quiz_groups"]
 
         canvas = AccommodationsCanvas(request)
-        multiplier_quiz_groups_results = canvas.add_time_extensions(
-            multiplier_student_groups, multiplier_quiz_groups, course_id
+        multiplier_quiz_groups_results, time_extension_status = (
+            canvas.add_time_extensions(
+                multiplier_student_groups, multiplier_quiz_groups, course_id
+            )
         )
-        multiplier_quiz_groups_results = canvas.add_availabilities(
-            multiplier_student_groups, multiplier_quiz_groups_results, course_id
+        multiplier_quiz_groups_results, availabilities_status = (
+            canvas.add_availabilities(
+                multiplier_student_groups, multiplier_quiz_groups_results, course_id
+            )
         )
 
-        # logger.info(
-        #     "Attempting to submit extensions for "
-        #     + str(len(accommodations))
-        #     + " students, for the quiz "
-        #     + canvas_quiz.title,
-        #     extra={"course": str(course), "user": request.session["display_name"]},
-        # )
+        if time_extension_status is False:
+            messages.error(
+                request,
+                "Errors were encountered when extending time limits.",
+            )
+        if availabilities_status is False:
+            messages.error(
+                request,
+                "Errors were encountered when extending end dates.",
+            )
+        if time_extension_status and availabilities_status:
+            messages.success(
+                request,
+                "All accommodations applied successfully.",
+            )
 
         results_string = ""
         for accommodation, quizzes in multiplier_quiz_groups_results.items():
@@ -345,8 +357,6 @@ class AccommodationsConfirm(views.AccommodationsListView):
         request.session["multiplier_quiz_groups_results"] = (
             multiplier_quiz_groups_results
         )
-
-        # return HttpResponse("<h2>Success</h3><br>" + str(results_string))
 
         return HttpResponseRedirect(
             reverse(

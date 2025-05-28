@@ -447,11 +447,17 @@ class AccommodationsCanvas(Canvas):
 
         Returns
         -------
-        dict of {str: list of dict}
-            Dictionary where each key is a multiplier (e.g., '1.5') and the value is a list of quiz dicts with the results of adding in Canvas.
+        tuple
+            A tuple (quiz_groups, status) where:
+            - quiz_groups : dict of {str: list of dict}
+                Updated quiz group data with 'time_limit_status' keys indicating success or failure.
+            - status : bool
+                Overall status indicating whether all extensions were applied successfully.
         """
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
         course = self.get_course(course_id)
+        status = True  # represents the status of adding - if any adds fail set to false
+
         for multiplier in ACCOMMODATION_MULTIPLIERS:
             multiplier = str(multiplier)
             student_list = student_groups.get(multiplier, None)
@@ -478,10 +484,11 @@ class AccommodationsCanvas(Canvas):
                     canvas_quiz.set_extensions(extensions)
                 except:
                     quiz["time_limit_status"] = "failure"
+                    status = False
                 else:
                     quiz["time_limit_status"] = "success"
 
-        return quiz_groups
+        return quiz_groups, status
 
     def add_availabilities(self, student_groups, quiz_groups, course_id):
         """
@@ -497,9 +504,19 @@ class AccommodationsCanvas(Canvas):
             Dictionary of quizzes grouped by multiplier, each with new lock times.
         course_id : int
             The Canvas course ID.
+
+        Returns
+        -------
+        tuple
+            A tuple (quiz_groups, status) where:
+            - quiz_groups : dict of {str: list of dict}
+                Updated quiz group data with 'lock_at_status' keys indicating success or failure.
+            - status : bool
+                Overall status indicating whether all availability overrides were applied successfully.
         """
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
         course = self.get_course(course_id)
+        status = True  # represents the status of adding - if any adds fail set to false
 
         for multiplier in ACCOMMODATION_MULTIPLIERS:
             multiplier = str(multiplier)
@@ -537,7 +554,8 @@ class AccommodationsCanvas(Canvas):
                     )
                 except:
                     quiz["lock_at_status"] = "failure"
+                    status = False
                 else:
                     quiz["lock_at_status"] = "success"
 
-        return quiz_groups
+        return quiz_groups, status
