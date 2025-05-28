@@ -15,7 +15,7 @@
         <h2 class="text-center">Accommodations</h2>
         <div class="row justify-content-center mt-4">
             <div class="col-lg-10 col-md-12">
-                <form id="quiz-upload-form"
+                <form id="accommodations-confirm-form"
                       method="post"
                       action="{% url 'accommodations:accommodations_confirm' course.id %}">
                     {% csrf_token %}
@@ -118,7 +118,7 @@
                         <button type="button"
                                 class="btn btn-secondary"
                                 onclick="window.location.href='{% url 'accommodations:accommodations_quizzes' course.id %}'">
-                            <i class="bi bi-arrow-left me-2"></i>
+                            <i class="bi bi-arrow-left me-1"></i>
                             Back
                         </button>
                         <!-- Next button -->

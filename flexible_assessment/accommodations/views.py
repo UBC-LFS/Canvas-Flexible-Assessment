@@ -405,3 +405,25 @@ class AccommodationsSummary(views.AccommodationsListView):
         response = super().get(request, *args, **kwargs)
 
         return response
+
+    def post(self, request, *args, **kwargs):
+        # post should clear session data
+        course_id = self.kwargs["course_id"]
+        login_data = [
+            "user_id",
+            "login_id",
+            "display_name",
+            "_auth_user_id",
+            "_auth_user_backend",
+            "_auth_user_hash",
+        ]  # keep these fields so user remains logged in
+        for key in list(
+            request.session.keys()
+        ):  # cast as list since modifying size of iterator breaks
+            if key not in login_data:
+                del request.session[key]
+        return HttpResponseRedirect(
+            reverse(
+                "accommodations:accommodations_home", kwargs={"course_id": course_id}
+            )
+        )

@@ -197,7 +197,6 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
 
     # unlock_at, lock_at are ISO8601 strings, time_limit_new is int (in minutes)
     unlock_at_parsed = parser.isoparse(unlock_at).astimezone(get_current_timezone())
-    lock_at_parsed = parser.isoparse(lock_at).astimezone(get_current_timezone())
     window_in_minutes = get_time_window(unlock_at, lock_at)
 
     if (
