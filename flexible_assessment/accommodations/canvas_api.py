@@ -434,6 +434,102 @@ class AccommodationsCanvas(Canvas):
             multiplier_quiz_groups[multiplier] = quizzes_multiplied
         return multiplier_quiz_groups
 
+    def get_existing_accommodations(
+        self, accommodations, students, multiplier_quiz_groups, course_id
+    ):
+        """
+        Creates quiz variants with extended time limit and adjusted lock times for common multipliers.
+
+        Parameters
+        ----------
+        accommodations : list of tuple of (str, str, int)
+            List of (login_id, multiplier, user_id) tuples.
+        students : list
+            List of Canvas user objects, each with 'login_id' and 'display_name' attributes.
+        multiplier_quiz_groups : dict of {str: list of dict}
+            Dictionary where each key is a multiplier (e.g., '1.5') and the value is a list of modified quiz dicts.
+        course_id : int
+            The Canvas course ID.
+
+        Returns
+        -------
+        list of dict
+            Each dict represents an existing accommodation override for a student, containing:
+            - login_id
+            - display_name
+            - user_id
+            - title
+            - url
+            - unlock_at
+            - unlock_at_readable
+            - lock_at
+            - lock_at_readable
+            - unlock_at_override
+            - unlock_at_override_readable
+            - lock_at_override
+            - lock_at_override_readable
+        """
+        course = self.get_course(course_id)
+
+        # Create a mapping of user_id to student info
+        student_tuples_by_user_id = {
+            s.user_id: (s.login_id, s.display_name, s.user_id) for s in students
+        }
+
+        # Map user_id to multiplier
+        user_id_to_multiplier = {
+            user_id: multiplier for _, multiplier, user_id in accommodations
+        }
+
+        all_overrides = []
+
+        # Use the quiz structure from one multiplier as reference (all groups are parallel)
+        reference_quiz_list = next(iter(multiplier_quiz_groups.values()))
+
+        for quiz_index, quiz in enumerate(reference_quiz_list):
+            canvas_quiz = course.get_quiz(quiz["id"])
+            quiz_assignment = course.get_assignment(canvas_quiz.assignment_id)
+            assignment_overrides = quiz_assignment.get_overrides()
+
+            for override in assignment_overrides:
+                for student_id in override.student_ids:
+                    if student_id not in user_id_to_multiplier:
+                        continue
+
+                    multiplier = user_id_to_multiplier[student_id]
+                    planned_quiz_list = multiplier_quiz_groups.get(multiplier)
+                    if not planned_quiz_list:
+                        continue
+
+                    planned_quiz = planned_quiz_list[quiz_index]
+                    if planned_quiz.get("lock_at_new") is None:
+                        continue  # App does not plan to override this quiz
+
+                    student_tuple = student_tuples_by_user_id[student_id]
+                    override_dict = {
+                        "login_id": student_tuple[0],
+                        "display_name": student_tuple[1],
+                        "user_id": student_tuple[2],
+                        "title": quiz["title"],
+                        "url": quiz["url"],
+                        "unlock_at": quiz["unlock_at"],
+                        "unlock_at_readable": quiz["unlock_at_readable"],
+                        "lock_at": quiz["lock_at"],
+                        "lock_at_readable": quiz["lock_at_readable"],
+                        "unlock_at_override": override.unlock_at,
+                        "unlock_at_override_readable": readable_datetime(
+                            override.unlock_at
+                        ),
+                        "lock_at_override": override.lock_at,
+                        "lock_at_override_readable": readable_datetime(
+                            override.lock_at
+                        ),
+                    }
+                    all_overrides.append(override_dict)
+
+        # raise Exception("EXCEPTION FOR TESTING DATA")
+        return all_overrides
+
     def add_time_extensions(self, student_groups, quiz_groups, course_id):
         """
         Applies extra time limit extensions to quizzes for students with accommodations.

@@ -299,8 +299,13 @@ class AccommodationsConfirm(views.AccommodationsListView):
 
         multiplier_quiz_groups = canvas.get_multiplier_quiz_groups(selected_quizzes)
 
+        existing_accommodations = canvas.get_existing_accommodations(
+            accommodations, students, multiplier_quiz_groups, course_id
+        )  # from canvas, I can get the list of accommodations and the students with existing accommodations
+
         request.session["multiplier_student_groups"] = multiplier_student_groups
         request.session["multiplier_quiz_groups"] = multiplier_quiz_groups
+        request.session["existing_accommodations"] = existing_accommodations
 
         response = super().get(request, *args, **kwargs)
 
