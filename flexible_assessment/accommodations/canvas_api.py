@@ -178,7 +178,11 @@ def set_warn(quiz):
     quiz : dict
         A dictionary representing a Canvas quiz
     """
-    if quiz["unlock_at"] is not None and quiz["lock_at"] is not None:
+    if (
+        quiz["unlock_at"] is not None
+        and quiz["lock_at"] is not None
+        and quiz["time_limit"] is not None
+    ):
         time_window = get_time_window(quiz["unlock_at"], quiz["lock_at"])
         if time_window < quiz["time_limit"]:
             quiz["should_warn"] = True
