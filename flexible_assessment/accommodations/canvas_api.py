@@ -527,7 +527,6 @@ class AccommodationsCanvas(Canvas):
                     }
                     existing_accommodations.append(override_dict)
 
-        # raise Exception("EXCEPTION FOR TESTING DATA")
         return existing_accommodations
 
     def add_time_extensions(self, student_groups, quiz_groups, course_id):
@@ -590,7 +589,9 @@ class AccommodationsCanvas(Canvas):
 
         return quiz_groups, status
 
-    def add_availabilities(self, student_groups, quiz_groups, course_id):
+    def add_availabilities(
+        self, student_groups, quiz_groups, should_override, course_id
+    ):
         """
         Applies availability overrides to extend quiz access windows.
 
@@ -602,6 +603,8 @@ class AccommodationsCanvas(Canvas):
             List of (multiplier, students) tuples, where each student is a (login_id, name, user_id) tuple.
         quiz_groups : dict of {str: list of dict}
             Dictionary of quizzes grouped by multiplier, each with new lock times.
+        should_override : boolean
+            Whether existing accommodations should be overriden or ignored
         course_id : int
             The Canvas course ID.
 

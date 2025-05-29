@@ -102,44 +102,58 @@
                                 </div>
                             </div>
                         {% endfor %}
-                        <div class="card shadow-sm mb-4 px-0"
-                             style="border-radius: 1em;
-                                    overflow: hidden">
-                            <div class="card-header p-0">
-                                <div class="w-100 px-3 py-2">
-                                    <h3 class="mb-0">Existing Accommodations</h3>
+                        {% if existing_accommodations %}
+                            <div class="card shadow-sm mb-4 px-0"
+                                 style="border-radius: 1em;
+                                        overflow: hidden">
+                                <div class="card-header p-0">
+                                    <div class="w-100 px-3 py-2">
+                                        <h3 class="mb-0">Existing Accommodations</h3>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p>The following accommodations have already been set:</p>
+                                    <!-- Existing Accommodation Table -->
+                                    <table class="table table-bordered table-sm mt-2"
+                                           style="table-layout: fixed">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Student Name</th>
+                                                <th>Student ID</th>
+                                                <th>Quiz Title</th>
+                                                <th>Override Start Date</th>
+                                                <th>Override End Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for acc in existing_accommodations %}
+                                                <tr>
+                                                    <td>{{ acc.display_name }}</td>
+                                                    <td>{{ acc.login_id }}</td>
+                                                    <td>
+                                                        <a href="{{ acc.url }}">{{ acc.title }}</a>
+                                                    </td>
+                                                    <td>
+                                                        <span class="{% if not acc.unlock_at_override_readable %}text-muted {% endif %}">
+                                                            {{ acc.unlock_at_override_readable|default:"No time set" }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="{% if not acc.lock_at_override_readable %}text-muted {% endif %}">
+                                                            {{ acc.lock_at_override_readable|default:"No time set" }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <input type="radio" name="choice" id="ignore" value="ignore" checked>
+                                    <label for="ignore">Ignore</label>
+                                    <input type="radio" name="choice" id="override" value="override">
+                                    <label for="override">Override</label>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <p>The following overrides have already been set:</p>
-                                <!-- Existing Accommodation Table -->
-                                <table class="table table-bordered table-sm mt-2"
-                                       style="table-layout: fixed">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Student Name</th>
-                                            <th>Student ID</th>
-                                            <th>Quiz Title</th>
-                                            <th>Override Start Date</th>
-                                            <th>Override Start Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for acc in existing_accommodations %}
-                                            <tr>
-                                                <td>{{ acc.display_name }}</td>
-                                                <td>{{ acc.login_id }}</td>
-                                                <td>
-                                                    <a href="{{ acc.url }}">{{ acc.title }}</a>
-                                                </td>
-                                                <td>{{ acc.unlock_at_override_readable }}</td>
-                                                <td>{{ acc.lock_at_override_readable }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
                     <div class="form-check d-flex justify-content-center my-4">
                         <input class="form-check-input me-2"
@@ -159,7 +173,7 @@
                             <i class="bi bi-arrow-left me-1"></i>
                             Back
                         </button>
-                        <!-- Next button -->
+                        <!-- Submit button -->
                         <button type="submit" class="btn btn-primary">
                             Submit <i class="bi bi-upload ms-2"></i>
                         </button>
