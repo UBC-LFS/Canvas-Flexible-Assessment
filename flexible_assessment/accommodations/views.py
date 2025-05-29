@@ -248,9 +248,13 @@ class AccommodationsConfirm(views.AccommodationsListView):
         )
         multiplier_quiz_groups = self.request.session.get("multiplier_quiz_groups", {})
         selected_quizzes = self.request.session.get("selected_quizzes", [])
+        existing_accommodations = self.request.session.get(
+            "existing_accommodations", []
+        )
 
         context["multiplier_student_groups"] = multiplier_student_groups
         context["multiplier_quiz_groups"] = multiplier_quiz_groups
+        context["existing_accommodations"] = existing_accommodations
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
         return context
@@ -301,7 +305,7 @@ class AccommodationsConfirm(views.AccommodationsListView):
 
         existing_accommodations = canvas.get_existing_accommodations(
             accommodations, students, multiplier_quiz_groups, course_id
-        )  # from canvas, I can get the list of accommodations and the students with existing accommodations
+        )
 
         request.session["multiplier_student_groups"] = multiplier_student_groups
         request.session["multiplier_quiz_groups"] = multiplier_quiz_groups

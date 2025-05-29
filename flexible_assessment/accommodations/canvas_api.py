@@ -481,7 +481,7 @@ class AccommodationsCanvas(Canvas):
             user_id: multiplier for _, multiplier, user_id in accommodations
         }
 
-        all_overrides = []
+        existing_accommodations = []
 
         # Use the quiz structure from one multiplier as reference (all groups are parallel)
         reference_quiz_list = next(iter(multiplier_quiz_groups.values()))
@@ -525,10 +525,10 @@ class AccommodationsCanvas(Canvas):
                             override.lock_at
                         ),
                     }
-                    all_overrides.append(override_dict)
+                    existing_accommodations.append(override_dict)
 
         # raise Exception("EXCEPTION FOR TESTING DATA")
-        return all_overrides
+        return existing_accommodations
 
     def add_time_extensions(self, student_groups, quiz_groups, course_id):
         """
