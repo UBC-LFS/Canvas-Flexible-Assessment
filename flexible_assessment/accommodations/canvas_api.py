@@ -671,6 +671,7 @@ class AccommodationsCanvas(Canvas):
                                     accommodation_student_ids
                                 )
                             )
+
                             if new_override_student_ids:
                                 edit_result = override.edit(
                                     {
@@ -694,7 +695,7 @@ class AccommodationsCanvas(Canvas):
                     else:
                         # remove student user ids from list if there is an entry in the existing accommodations with the current quiz and the student
                         # create new override with the rest of the students
-                        list_filtered = student_user_id_list
+                        list_filtered = student_user_id_list[:]  # shallow copy
                         for acc in existing_accommodations:
                             if acc["id"] == quiz["id"]:
                                 if acc["user_id"] in list_filtered:
