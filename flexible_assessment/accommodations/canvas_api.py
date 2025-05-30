@@ -510,6 +510,7 @@ class AccommodationsCanvas(Canvas):
                         "login_id": student_tuple[0],
                         "display_name": student_tuple[1],
                         "user_id": student_tuple[2],
+                        "id": quiz["id"],
                         "title": quiz["title"],
                         "url": quiz["url"],
                         "unlock_at": quiz["unlock_at"],
@@ -652,7 +653,6 @@ class AccommodationsCanvas(Canvas):
                         result = quiz_assignment.create_override(
                             assignment_override={
                                 "student_ids": student_user_id_list,
-                                "due_at": quiz["due_at"],
                                 "unlock_at": quiz["unlock_at"],
                                 "lock_at": quiz["lock_at_new"],
                                 "due_at": quiz["due_at_new"],
@@ -660,26 +660,59 @@ class AccommodationsCanvas(Canvas):
                         )
                     elif should_override:
                         # for the quiz, get all existing overrides
-                        # for each existing quiz override, identify the students that need to be overridden
-                        # copy the existing override data, remove the students that need to be overridden
-                        # delete the existing override and recreate it with the shorter list
+                        # for each existing quiz override, remove the students that need to be overridden by the app
+                        # assignment_overrides = quiz_assignment.get_overrides()
+                        assignment_overrides = quiz_assignment.get_overrides()
+                        for override in assignment_overrides:
+                            override_student_ids = set(override.student_ids)
+                            accommodation_student_ids = set(student_user_id_list)
+                            new_override_student_ids = list(
+                                override_student_ids.difference(
+                                    accommodation_student_ids
+                                )
+                            )
+                            if new_override_student_ids:
+                                edit_result = override.edit(
+                                    {
+                                        "student_ids": new_override_student_ids,
+                                        "due_at": override.due_at,
+                                        "unlock_at": override.unlock_at,
+                                        "lock_at": override.lock_at,
+                                    }
+                                )
+                            else:
+                                override.delete()
                         # create our new override with all the students
-                        pass
+                        result = quiz_assignment.create_override(
+                            assignment_override={
+                                "student_ids": student_user_id_list,
+                                "unlock_at": quiz["unlock_at"],
+                                "lock_at": quiz["lock_at_new"],
+                                "due_at": quiz["due_at_new"],
+                            }
+                        )
                     else:
                         # remove student user ids from list if there is an entry in the existing accommodations with the current quiz and the student
                         # create new override with the rest of the students
-                        pass
+                        list_filtered = student_user_id_list
+                        for acc in existing_accommodations:
+                            if acc["id"] == quiz["id"]:
+                                if acc["user_id"] in list_filtered:
+                                    list_filtered.remove(acc["user_id"])
 
-                    # Delete only matching overrides
-                    # assignment_overrides = quiz_assignment.get_overrides()
-                    # for override in assignment_overrides:
-                    #     override_student_ids = set(override.student_ids)
-                    #     if set(student_user_id_list) == override_student_ids:
-                    #         override.delete()
-
+                        if list_filtered:  # don't create if list is empty
+                            result = quiz_assignment.create_override(
+                                assignment_override={
+                                    "student_ids": list_filtered,
+                                    "unlock_at": quiz["unlock_at"],
+                                    "lock_at": quiz["lock_at_new"],
+                                    "due_at": quiz["due_at_new"],
+                                }
+                            )
                 except:
                     quiz["lock_at_status"] = "failure"
                     status = False
+                    # raise Exception("TEST EXCEPTION")
                 else:
                     quiz["lock_at_status"] = "success"
 
