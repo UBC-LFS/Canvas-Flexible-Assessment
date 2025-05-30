@@ -590,7 +590,12 @@ class AccommodationsCanvas(Canvas):
         return quiz_groups, status
 
     def add_availabilities(
-        self, student_groups, quiz_groups, should_override, course_id
+        self,
+        student_groups,
+        quiz_groups,
+        existing_accommodations,
+        should_override,
+        course_id,
     ):
         """
         Applies availability overrides to extend quiz access windows.
@@ -603,6 +608,8 @@ class AccommodationsCanvas(Canvas):
             List of (multiplier, students) tuples, where each student is a (login_id, name, user_id) tuple.
         quiz_groups : dict of {str: list of dict}
             Dictionary of quizzes grouped by multiplier, each with new lock times.
+        existing_accommodations : list of dict
+            List of all existing accommodations on Canvas as dictionaries including student and quiz info.
         should_override : boolean
             Whether existing accommodations should be overriden or ignored
         course_id : int
@@ -638,23 +645,38 @@ class AccommodationsCanvas(Canvas):
                     canvas_quiz = course.get_quiz(quiz["id"])
                     quiz_assignment = course.get_assignment(canvas_quiz.assignment_id)
 
-                    # Delete only matching overrides
-                    assignment_overrides = quiz_assignment.get_overrides()
-                    for override in assignment_overrides:
-                        override_student_ids = set(override.student_ids)
-                        if set(student_user_id_list) == override_student_ids:
-                            override.delete()
+                    if (
+                        not existing_accommodations
+                    ):  # there are no existing accommodations to worry about
+                        # Create a new override
+                        result = quiz_assignment.create_override(
+                            assignment_override={
+                                "student_ids": student_user_id_list,
+                                "due_at": quiz["due_at"],
+                                "unlock_at": quiz["unlock_at"],
+                                "lock_at": quiz["lock_at_new"],
+                                "due_at": quiz["due_at_new"],
+                            }
+                        )
+                    elif should_override:
+                        # for the quiz, get all existing overrides
+                        # for each existing quiz override, identify the students that need to be overridden
+                        # copy the existing override data, remove the students that need to be overridden
+                        # delete the existing override and recreate it with the shorter list
+                        # create our new override with all the students
+                        pass
+                    else:
+                        # remove student user ids from list if there is an entry in the existing accommodations with the current quiz and the student
+                        # create new override with the rest of the students
+                        pass
 
-                    # Create a new override
-                    result = quiz_assignment.create_override(
-                        assignment_override={
-                            "student_ids": student_user_id_list,
-                            "due_at": quiz["due_at"],
-                            "unlock_at": quiz["unlock_at"],
-                            "lock_at": quiz["lock_at_new"],
-                            "due_at": quiz["due_at_new"],
-                        }
-                    )
+                    # Delete only matching overrides
+                    # assignment_overrides = quiz_assignment.get_overrides()
+                    # for override in assignment_overrides:
+                    #     override_student_ids = set(override.student_ids)
+                    #     if set(student_user_id_list) == override_student_ids:
+                    #         override.delete()
+
                 except:
                     quiz["lock_at_status"] = "failure"
                     status = False

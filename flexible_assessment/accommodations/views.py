@@ -319,6 +319,7 @@ class AccommodationsConfirm(views.AccommodationsListView):
         course_id = self.kwargs["course_id"]
         multiplier_student_groups = request.session["multiplier_student_groups"]
         multiplier_quiz_groups = request.session["multiplier_quiz_groups"]
+        existing_accommodations = request.session["existing_accommodations"]
 
         choice = request.POST.get("choice")
         should_override = False
@@ -335,6 +336,7 @@ class AccommodationsConfirm(views.AccommodationsListView):
             canvas.add_availabilities(
                 multiplier_student_groups,
                 multiplier_quiz_groups_results,
+                existing_accommodations,
                 should_override,
                 course_id,
             )
