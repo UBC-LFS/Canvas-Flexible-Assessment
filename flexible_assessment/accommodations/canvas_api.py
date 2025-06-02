@@ -505,6 +505,14 @@ class AccommodationsCanvas(Canvas):
                     if planned_quiz.get("lock_at_new") is None:
                         continue  # App does not plan to override this quiz
 
+                    unlock_at_override = (
+                        override.unlock_at if hasattr(override, "unlock_at") else None
+                    )
+
+                    lock_at_override = (
+                        override.lock_at if hasattr(override, "unlock_at") else None
+                    )
+
                     student_tuple = student_tuples_by_user_id[student_id]
                     override_dict = {
                         "login_id": student_tuple[0],
@@ -517,13 +525,13 @@ class AccommodationsCanvas(Canvas):
                         "unlock_at_readable": quiz["unlock_at_readable"],
                         "lock_at": quiz["lock_at"],
                         "lock_at_readable": quiz["lock_at_readable"],
-                        "unlock_at_override": override.unlock_at,
+                        "unlock_at_override": unlock_at_override,
                         "unlock_at_override_readable": readable_datetime(
-                            override.unlock_at
+                            unlock_at_override
                         ),
-                        "lock_at_override": override.lock_at,
+                        "lock_at_override": lock_at_override,
                         "lock_at_override_readable": readable_datetime(
-                            override.lock_at
+                            lock_at_override
                         ),
                     }
                     existing_accommodations.append(override_dict)
@@ -678,7 +686,7 @@ class AccommodationsCanvas(Canvas):
                                 override_student_ids
                             ):  # case 1 - override should be modified to have less students
                                 edit_result = override.edit(
-                                    {
+                                    **{
                                         "student_ids": new_override_student_ids,
                                         "due_at": (
                                             override.due_at
