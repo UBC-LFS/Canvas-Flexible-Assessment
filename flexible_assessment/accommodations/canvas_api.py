@@ -672,15 +672,37 @@ class AccommodationsCanvas(Canvas):
                                 )
                             )
 
-                            if new_override_student_ids:
+                            if new_override_student_ids and len(
+                                new_override_student_ids
+                            ) < len(
+                                override_student_ids
+                            ):  # case 1 - override should be modified to have less students
                                 edit_result = override.edit(
                                     {
                                         "student_ids": new_override_student_ids,
-                                        "due_at": override.due_at,
-                                        "unlock_at": override.unlock_at,
-                                        "lock_at": override.lock_at,
+                                        "due_at": (
+                                            override.due_at
+                                            if hasattr(override, "due_at")
+                                            else None
+                                        ),
+                                        "unlock_at": (
+                                            override.unlock_at
+                                            if hasattr(override, "unlock_at")
+                                            else None
+                                        ),
+                                        "lock_at": (
+                                            override.lock_at
+                                            if hasattr(override, "lock_at")
+                                            else None
+                                        ),
                                     }
                                 )
+                            elif new_override_student_ids and len(
+                                new_override_student_ids
+                            ) == len(
+                                override_student_ids
+                            ):  # case 2 - override doesn't have any overlapping students
+                                pass
                             else:
                                 override.delete()
                         # create our new override with all the students
