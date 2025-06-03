@@ -15,6 +15,7 @@ from datetime import timedelta, datetime, timezone
 
 import math
 
+
 ACCOMMODATION_MULTIPLIERS = [1.25, 1.5, 2.0]
 
 
@@ -685,25 +686,28 @@ class AccommodationsCanvas(Canvas):
                             ) < len(
                                 override_student_ids
                             ):  # case 1 - override should be modified to have less students
-                                edit_result = override.edit(
-                                    **{
-                                        "student_ids": new_override_student_ids,
-                                        "due_at": (
-                                            override.due_at
-                                            if hasattr(override, "due_at")
-                                            else None
-                                        ),
-                                        "unlock_at": (
-                                            override.unlock_at
-                                            if hasattr(override, "unlock_at")
-                                            else None
-                                        ),
-                                        "lock_at": (
-                                            override.lock_at
-                                            if hasattr(override, "lock_at")
-                                            else None
-                                        ),
-                                    }
+                                override_new = {
+                                    "student_ids": new_override_student_ids,
+                                    "due_at": (
+                                        override.due_at
+                                        if hasattr(override, "due_at")
+                                        else None
+                                    ),
+                                    "unlock_at": (
+                                        override.unlock_at
+                                        if hasattr(override, "unlock_at")
+                                        else None
+                                    ),
+                                    "lock_at": (
+                                        override.lock_at
+                                        if hasattr(override, "lock_at")
+                                        else None
+                                    ),
+                                }
+                                # it would be ideal to call override.edit() but it seems to break - deleting and creating the override works as well
+                                override.delete()
+                                quiz_assignment.create_override(
+                                    assignment_override=override_new
                                 )
                             elif new_override_student_ids and len(
                                 new_override_student_ids
