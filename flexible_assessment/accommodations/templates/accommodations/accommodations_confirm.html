@@ -102,7 +102,8 @@
                                 </div>
                             </div>
                         {% endfor %}
-                        {% if existing_accommodations %}
+                        <!-- Hide existing accommodation table and override/ignore form for now - may implement in future depending on feedback -->
+                        {% if existing_accommodations and include_existing_acommodations %}
                             <div class="card shadow-sm mb-4 px-0"
                                  style="border-radius: 1em;
                                         overflow: hidden">
@@ -147,22 +148,41 @@
                                             {% endfor %}
                                         </tbody>
                                     </table>
-                                    <input type="radio" name="choice" id="ignore" value="ignore" checked>
-                                    <label for="ignore">Ignore</label>
-                                    <input type="radio" name="choice" id="override" value="override">
+                                    <input type="radio" name="choice" id="override" value="override" checked>
                                     <label for="override">Override</label>
+                                    <input type="radio" name="choice" id="ignore" value="ignore" class="ms-2">
+                                    <label for="ignore">Ignore</label>
                                 </div>
                             </div>
                         {% endif %}
                     </div>
-                    <div class="form-check d-flex justify-content-center my-4">
-                        <input class="form-check-input me-2"
-                               type="checkbox"
-                               id="confirmed"
-                               name="confirmed"
-                               value="confirmed"
-                               required>
-                        <label class="form-check-label" for="confirmed">I have confirmed that the above accommodations are correct.</label>
+                    <div class="d-flex flex-column align-items-center my-4">
+                        <div class="d-flex align-items-start mb-3" style="min-width: 400px;">
+                            <div class="me-2" style="width: 1.5rem;">
+                                <input class="form-check-input mt-1"
+                                       type="checkbox"
+                                       id="confirmed-correct"
+                                       name="confirmed-correct"
+                                       value="confirmed-correct"
+                                       required>
+                            </div>
+                            <label class="form-check-label" for="confirmed-correct">
+                                I have confirmed that the above accommodations are correct.
+                            </label>
+                        </div>
+                        <div class="d-flex align-items-start" style="min-width: 400px;">
+                            <div class="me-2" style="width: 1.5rem;">
+                                <input class="form-check-input mt-1"
+                                       type="checkbox"
+                                       id="confirmed-overwrite"
+                                       name="confirmed-overwrite"
+                                       value="confirmed-overwrite"
+                                       required>
+                            </div>
+                            <label class="form-check-label" for="confirmed-overwrite">
+                                I understand that submitting may overwrite any existing accommodations.
+                            </label>
+                        </div>
                     </div>
                     <!-- Buttons -->
                     <div class="mt-4 d-flex justify-content-between py-0 my-0">

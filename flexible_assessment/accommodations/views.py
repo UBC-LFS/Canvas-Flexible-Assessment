@@ -257,6 +257,9 @@ class AccommodationsConfirm(views.AccommodationsListView):
         context["existing_accommodations"] = existing_accommodations
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+
+        # hide the "Existing Accommodations" table for now and override by default - may bring this back later
+        context["include_existing_acommodations"] = False
         return context
 
     def get(self, request, *args, **kwargs):
@@ -321,10 +324,10 @@ class AccommodationsConfirm(views.AccommodationsListView):
         multiplier_quiz_groups = request.session["multiplier_quiz_groups"]
         existing_accommodations = request.session["existing_accommodations"]
 
-        choice = request.POST.get("choice")
-        should_override = False
-        if choice == "override":
-            should_override = True
+        choice = request.POST.get("choice", None)
+        should_override = True
+        if choice == "ignore":
+            should_override = False
 
         canvas = AccommodationsCanvas(request)
         multiplier_quiz_groups_results, time_extension_status = (
