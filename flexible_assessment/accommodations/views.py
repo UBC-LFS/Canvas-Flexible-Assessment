@@ -358,21 +358,6 @@ class AccommodationsConfirm(views.AccommodationsListView):
                 "All accommodations applied successfully.",
             )
 
-        results_string = ""
-        for accommodation, quizzes in multiplier_quiz_groups_results.items():
-            results_string += "<h3>" + str(accommodation) + "</h3>" + "<br>"
-            for quiz in quizzes:
-                results_string += (
-                    "-----"
-                    + quiz["title"]
-                    + " (time limit status: "
-                    + quiz["time_limit_status"]
-                    + "), (lock at status: "
-                    + quiz["lock_at_status"]
-                    + ")"
-                    + "<br>"
-                )
-
         request.session["multiplier_quiz_groups_results"] = (
             multiplier_quiz_groups_results
         )
