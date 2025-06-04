@@ -231,6 +231,12 @@ class AccommodationsQuizzes(views.AccommodationsListView):
 
         request.session["selected_quizzes"] = selected_quizzes
 
+        course = models.Course.objects.get(pk=course_id)
+        logger.info(
+            f"Instructor selected {len(selected_quizzes)} quizzes to apply accommodations for",
+            extra={"course": str(course), "user": request.session["display_name"]},
+        )
+
         return HttpResponseRedirect(
             reverse(
                 "accommodations:accommodations_confirm", kwargs={"course_id": course_id}
@@ -363,6 +369,22 @@ class AccommodationsConfirm(views.AccommodationsListView):
 
         request.session["multiplier_quiz_groups_results"] = (
             multiplier_quiz_groups_results
+        )
+
+        course = models.Course.objects.get(pk=course_id)
+        log_string = "Tried to apply all accommodations - Status: "
+        if time_extension_status and availabilities_status:
+            log_string += "Success"
+        elif time_extension_status is False and availabilities_status is False:
+            log_string += "Errors with extending time limits and end dates"
+        elif time_extension_status is False:
+            log_string += "Errors with extending time limits"
+        else:
+            log_string += "Errors with extending end dates"
+
+        logger.info(
+            log_string,
+            extra={"course": str(course), "user": request.session["display_name"]},
         )
 
         return HttpResponseRedirect(
