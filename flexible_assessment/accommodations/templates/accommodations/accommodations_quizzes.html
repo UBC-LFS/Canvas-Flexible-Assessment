@@ -133,12 +133,12 @@
                                                 </td>
                                                 <td>
                                                     <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
-                                                        {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                        {{ quiz.unlock_at_readable|default:"No date set" }}
                                                     </span>
                                                 </td>
                                                 <td>
                                                     <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
-                                                        {{ quiz.lock_at_readable|default:"No time set" }}
+                                                        {{ quiz.lock_at_readable|default:"No date set" }}
                                                     </span>
                                                 </td>
                                                 <td>
@@ -178,8 +178,8 @@
                                                 <td>
                                                     <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
                                                 </td>
-                                                <td>{{ quiz.unlock_at_readable|default:"No time set" }}</td>
-                                                <td>{{ quiz.lock_at_readable|default:"No time set" }}</td>
+                                                <td>{{ quiz.unlock_at_readable|default:"No date set" }}</td>
+                                                <td>{{ quiz.lock_at_readable|default:"No date set" }}</td>
                                                 <td>{{ quiz.time_limit_readable|default:"No time limit set" }}</td>
                                             </tr>
                                         {% endfor %}
@@ -189,7 +189,7 @@
                         </div>
                         <!-- Buttons -->
                         <div class="mt-4 d-flex justify-content-between">
-                            <!-- Back button using JavaScript -->
+                            <!-- Back button -->
                             <button type="button"
                                     class="btn btn-secondary"
                                     onclick="window.location.href='{% url 'accommodations:accommodations_home' course.id %}'">

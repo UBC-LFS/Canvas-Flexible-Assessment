@@ -72,12 +72,12 @@
                                                             </td>
                                                             <td>
                                                                 <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
-                                                                    {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                                    {{ quiz.unlock_at_readable|default:"No date set" }}
                                                                 </span>
                                                             </td>
                                                             <td>
                                                                 <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
-                                                                    {{ quiz.lock_at_readable|default:"No time set" }}
+                                                                    {{ quiz.lock_at_readable|default:"No date set" }}
                                                                 </span>
                                                                 {% if quiz.lock_at_new_readable %}
                                                                     <i class="bi bi-arrow-right"></i>
@@ -106,7 +106,7 @@
                     </div>
                     <!-- Buttons -->
                     <div class="mt-4 d-flex justify-content-between py-0 my-0">
-                        <!-- Back button using JavaScript -->
+                        <!-- Back button -->
                         <button type="button"
                                 class="btn btn-secondary"
                                 onclick="window.location.href='{% url 'accommodations:accommodations_confirm' course.id %}'">

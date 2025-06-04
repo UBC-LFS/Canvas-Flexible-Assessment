@@ -74,12 +74,12 @@
                                                             </td>
                                                             <td>
                                                                 <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
-                                                                    {{ quiz.unlock_at_readable|default:"No time set" }}
+                                                                    {{ quiz.unlock_at_readable|default:"No date set" }}
                                                                 </span>
                                                             </td>
                                                             <td>
                                                                 <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
-                                                                    {{ quiz.lock_at_readable|default:"No time set" }}
+                                                                    {{ quiz.lock_at_readable|default:"No date set" }}
                                                                 </span>
                                                                 {% if quiz.lock_at_new_readable %}
                                                                     <i class="bi bi-arrow-right"></i> <span class="text-muted">{{ quiz.lock_at_new_readable }}</span>
@@ -121,7 +121,7 @@
                                             <tr>
                                                 <th>Student Name</th>
                                                 <th>Student ID</th>
-                                                <th>Quiz Title</th>
+                                                <th>Quiz</th>
                                                 <th>Override Start Date</th>
                                                 <th>Override End Date</th>
                                             </tr>
@@ -136,12 +136,12 @@
                                                     </td>
                                                     <td>
                                                         <span class="{% if not acc.unlock_at_override_readable %}text-muted {% endif %}">
-                                                            {{ acc.unlock_at_override_readable|default:"No time set" }}
+                                                            {{ acc.unlock_at_override_readable|default:"No date set" }}
                                                         </span>
                                                     </td>
                                                     <td>
                                                         <span class="{% if not acc.lock_at_override_readable %}text-muted {% endif %}">
-                                                            {{ acc.lock_at_override_readable|default:"No time set" }}
+                                                            {{ acc.lock_at_override_readable|default:"No date set" }}
                                                         </span>
                                                     </td>
                                                 </tr>
@@ -156,37 +156,33 @@
                             </div>
                         {% endif %}
                     </div>
-                    <div class="d-flex flex-column align-items-center my-4">
-                        <div class="d-flex align-items-start mb-3" style="min-width: 400px;">
-                            <div class="me-2" style="width: 1.5rem;">
-                                <input class="form-check-input mt-1"
-                                       type="checkbox"
-                                       id="confirmed-correct"
-                                       name="confirmed-correct"
-                                       value="confirmed-correct"
-                                       required>
-                            </div>
-                            <label class="form-check-label" for="confirmed-correct">
+                    <div class="my-2">
+                        <div>
+                            <input class="form-check-input mt-1"
+                                   type="checkbox"
+                                   id="confirmed-correct"
+                                   name="confirmed-correct"
+                                   value="confirmed-correct"
+                                   required>
+                            <label class="form-check-label ms-1" for="confirmed-correct">
                                 I have confirmed that the above accommodations are correct.
                             </label>
                         </div>
-                        <div class="d-flex align-items-start" style="min-width: 400px;">
-                            <div class="me-2" style="width: 1.5rem;">
-                                <input class="form-check-input mt-1"
-                                       type="checkbox"
-                                       id="confirmed-overwrite"
-                                       name="confirmed-overwrite"
-                                       value="confirmed-overwrite"
-                                       required>
-                            </div>
-                            <label class="form-check-label" for="confirmed-overwrite">
+                        <div>
+                            <input class="form-check-input mt-1"
+                                   type="checkbox"
+                                   id="confirmed-overwrite"
+                                   name="confirmed-overwrite"
+                                   value="confirmed-overwrite"
+                                   required>
+                            <label class="form-check-label ms-1" for="confirmed-overwrite">
                                 I understand that submitting may overwrite any existing accommodations.
                             </label>
                         </div>
                     </div>
                     <!-- Buttons -->
                     <div class="mt-4 d-flex justify-content-between py-0 my-0">
-                        <!-- Back button using JavaScript -->
+                        <!-- Back button -->
                         <button type="button"
                                 class="btn btn-secondary"
                                 onclick="window.location.href='{% url 'accommodations:accommodations_quizzes' course.id %}'">
