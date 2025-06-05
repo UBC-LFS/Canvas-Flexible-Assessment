@@ -129,7 +129,10 @@
                                                            {% if quiz in selected_quizzes %}checked{% endif %}>
                                                 </th>
                                                 <td>
-                                                    <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                    <div>
+                                                        <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                        <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
@@ -147,8 +150,8 @@
                                                     </span>
                                                     {% if quiz.should_warn %}
                                                         <div class="custom-tooltip">
-                                                            <i class="bi bi-exclamation-triangle text-danger ms-1"></i>
                                                             <span class="tooltiptext">Warning: quiz time limit exceeds the time between the start date and end date. <a href="{{ quiz.url }}" target="_blank">Edit Quiz.</a></span>
+                                                            <i class="bi bi-exclamation-triangle text-danger ms-1"></i>
                                                         </div>
                                                     {% endif %}
                                                 </td>
