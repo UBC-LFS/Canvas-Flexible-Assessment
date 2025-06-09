@@ -336,12 +336,55 @@ class AccommodationsCanvas(Canvas):
                 "unlock_at_readable": readable_datetime(quiz.unlock_at),
                 "lock_at_readable": readable_datetime(quiz.lock_at),
                 "should_warn": False,  # set this to true if the time window between start and end date is less than the time limit
+                "is_new_quiz": False,
             }
             if is_quiz_selectable(quiz_data):
                 set_warn(quiz_data)
                 quiz_list.append(quiz_data)
             else:
                 unavailable_quiz_list.append(quiz_data)
+
+        try:
+            new_quizzes = course.get_new_quizzes()
+            for quiz in new_quizzes:
+                quiz_data = {
+                    "id": quiz.id,
+                    "title": quiz.title,
+                    "due_at": quiz.due_at,  # ISO8601 string or None
+                    "unlock_at": quiz.unlock_at,  # when quiz becomes available
+                    "lock_at": quiz.lock_at,  # when quiz is no longer available,
+                    "published": quiz.published,
+                    "url": f"{self.base_url}/courses/{course_id}/assignments/{quiz.id}/edit",  # send edit link
+                    "points_possible": quiz.points_possible,
+                    "due_at_readable": readable_datetime(quiz.due_at),
+                    "unlock_at_readable": readable_datetime(quiz.unlock_at),
+                    "lock_at_readable": readable_datetime(quiz.lock_at),
+                    "should_warn": False,  # set this to true if the time window between start and end date is less than the time limit
+                    "is_new_quiz": True,
+                }
+                if (
+                    hasattr(quiz, "quiz_settings")
+                    and quiz.quiz_settings["has_time_limit"] == True
+                ):  # some new quiz objects may not have this if the instructor hasn't built the quiz yet
+                    new_quiz_settings = quiz.quiz_settings
+
+                    quiz_data["time_limit"] = (
+                        new_quiz_settings["session_time_limit_in_seconds"] // 60
+                    )  # use floor division
+                    quiz_data["time_limit_readable"] = readable_time_limit(
+                        quiz["time_limit"]
+                    )
+                else:
+                    quiz_data["time_limit"] = None
+                    quiz_data["time_limit_readable"] = None
+
+                if is_quiz_selectable(quiz_data):
+                    set_warn(quiz_data)
+                    quiz_list.append(quiz_data)
+                else:
+                    unavailable_quiz_list.append(quiz_data)
+        except:
+            print("Unable to get new quizzes")
 
         quiz_list = sorted(
             quiz_list, key=lambda quiz: (quiz["title"] or "").strip().lower()
@@ -634,6 +677,9 @@ class AccommodationsCanvas(Canvas):
             - status : bool
                 Overall status indicating whether all availability overrides were applied successfully.
         """
+
+        start = time.time()
+
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
         course = self.get_course(course_id)
         status = True  # represents the status of adding - if any adds fail set to false
@@ -751,4 +797,6 @@ class AccommodationsCanvas(Canvas):
                 else:
                     quiz["lock_at_status"] = "success"
 
+        end = time.time()
+        print("synchronous execution time for add_availabilities: " + str(end - start))
         return quiz_groups, status

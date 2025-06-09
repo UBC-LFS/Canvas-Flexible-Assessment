@@ -130,7 +130,11 @@
                                                 </th>
                                                 <td>
                                                     <div>
-                                                        <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                        {% if quiz.is_new_quiz %}
+                                                            <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                        {% endif %}
                                                         <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
                                                     </div>
                                                 </td>
@@ -179,7 +183,14 @@
                                         {% for quiz in unavailable_quizzes %}
                                             <tr>
                                                 <td>
-                                                    <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                    <div>
+                                                        {% if quiz.is_new_quiz %}
+                                                            <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                        {% endif %}
+                                                        <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                    </div>
                                                 </td>
                                                 <td>{{ quiz.unlock_at_readable|default:"No date set" }}</td>
                                                 <td>{{ quiz.lock_at_readable|default:"No date set" }}</td>

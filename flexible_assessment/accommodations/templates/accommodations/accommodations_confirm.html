@@ -70,7 +70,14 @@
                                                     {% for quiz in quizzes %}
                                                         <tr>
                                                             <td>
-                                                                <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                                <div>
+                                                                    {% if quiz.is_new_quiz %}
+                                                                        <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
+                                                                    {% else %}
+                                                                        <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                                    {% endif %}
+                                                                    <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                                </div>
                                                             </td>
                                                             <td>
                                                                 <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
