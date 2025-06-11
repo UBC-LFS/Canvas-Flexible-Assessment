@@ -372,7 +372,7 @@ class AccommodationsCanvas(Canvas):
                         new_quiz_settings["session_time_limit_in_seconds"] // 60
                     )  # use floor division
                     quiz_data["time_limit_readable"] = readable_time_limit(
-                        quiz["time_limit"]
+                        quiz_data["time_limit"]
                     )
                 else:
                     quiz_data["time_limit"] = None
