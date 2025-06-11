@@ -10,6 +10,7 @@ from django.shortcuts import redirect
 from django.utils.safestring import mark_safe
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+from django.conf import settings
 
 import flexible_assessment.class_views as views
 import flexible_assessment.models as models
@@ -174,6 +175,13 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         context["unavailable_quizzes"] = unavailable_quizzes
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+
+        context["add_quizzes_link"] = (
+            settings.CANVAS_DOMAIN
+            + "courses/"
+            + str(self.kwargs["course_id"])
+            + "/quizzes"
+        )
         return context
 
     def get(self, request, *args, **kwargs):
