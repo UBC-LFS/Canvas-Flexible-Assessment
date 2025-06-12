@@ -482,7 +482,7 @@ class AccommodationsCanvas(Canvas):
         self, accommodations, students, multiplier_quiz_groups, course_id
     ):
         """
-        Creates quiz variants with extended time limit and adjusted lock times for common multipliers.
+        Find and return all existing accommodations on Canvas that conflict with the curent accommodations to be applied.
 
         Parameters
         ----------
@@ -531,8 +531,13 @@ class AccommodationsCanvas(Canvas):
         reference_quiz_list = next(iter(multiplier_quiz_groups.values()))
 
         for quiz_index, quiz in enumerate(reference_quiz_list):
-            canvas_quiz = course.get_quiz(quiz["id"])
-            quiz_assignment = course.get_assignment(canvas_quiz.assignment_id)
+            # TODO - fix for new quizzes here
+            quiz_assignment = None
+            if quiz["is_new_quiz"]:
+                quiz_assignment = course.get_assignment(quiz["id"])
+            else:
+                canvas_quiz = course.get_quiz(quiz["id"])
+                quiz_assignment = course.get_assignment(canvas_quiz.assignment_id)
             assignment_overrides = quiz_assignment.get_overrides()
 
             for override in assignment_overrides:
