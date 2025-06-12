@@ -14,6 +14,7 @@ from django.utils.timezone import get_current_timezone
 from datetime import timedelta, datetime, timezone
 
 import math
+import json
 
 
 ACCOMMODATION_MULTIPLIERS = [1.25, 1.5, 2.0]
@@ -587,6 +588,15 @@ class AccommodationsCanvas(Canvas):
 
         return existing_accommodations
 
+    def set_extensions_for_new_quiz(self, new_quiz, extensions, course_id):
+        quiz_url = f"{self.base_url}api/quiz/v1/courses/{course_id}/quizzes/{new_quiz.id}/accommodations"
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json",
+        }
+        response = requests.post(quiz_url, headers=headers, data=json.dumps(extensions))
+        response.raise_for_status()  # raise exception on HTTP error
+
     def add_time_extensions(self, student_groups, quiz_groups, course_id):
         """
         Applies extra time limit extensions to quizzes for students with accommodations.
@@ -626,6 +636,7 @@ class AccommodationsCanvas(Canvas):
                     quiz["time_limit_status"] = "N/A"
                     continue
                 try:
+                    # create list of extensions
                     extensions = []
                     # student is a tuple of login id, display name, user id
                     for student in student_list:
@@ -637,8 +648,16 @@ class AccommodationsCanvas(Canvas):
                                 ),
                             }
                         )
-                    canvas_quiz = course.get_quiz(quiz["id"])
-                    canvas_quiz.set_extensions(extensions)
+
+                    # set extensions based on quiz type
+                    if quiz["is_new_quiz"]:
+                        new_quiz = course.get_new_quiz(quiz["id"])
+                        self.set_extensions_for_new_quiz(
+                            new_quiz, extensions, course_id
+                        )  # use our own custom function
+                    else:
+                        canvas_quiz = course.get_quiz(quiz["id"])
+                        canvas_quiz.set_extensions(extensions)  # use built in function
                 except:
                     quiz["time_limit_status"] = "failure"
                     status = False
