@@ -355,7 +355,7 @@ class AccommodationsCanvas(Canvas):
                     "unlock_at": quiz.unlock_at,  # when quiz becomes available
                     "lock_at": quiz.lock_at,  # when quiz is no longer available,
                     "published": quiz.published,
-                    "url": f"{self.base_url}/courses/{course_id}/assignments/{quiz.id}/edit",  # send edit link
+                    "url": f"{self.base_url}courses/{course_id}/assignments/{quiz.id}/edit?quiz_lti",  # send edit link
                     "points_possible": quiz.points_possible,
                     "due_at_readable": readable_datetime(quiz.due_at),
                     "unlock_at_readable": readable_datetime(quiz.unlock_at),
