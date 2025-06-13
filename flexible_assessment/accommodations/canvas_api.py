@@ -722,8 +722,14 @@ class AccommodationsCanvas(Canvas):
                     continue
 
                 try:
-                    canvas_quiz = course.get_quiz(quiz["id"])
-                    quiz_assignment = course.get_assignment(canvas_quiz.assignment_id)
+                    quiz_assignment = None
+                    if quiz["is_new_quiz"]:
+                        quiz_assignment = course.get_assignment(quiz["id"])
+                    else:
+                        canvas_quiz = course.get_quiz(quiz["id"])
+                        quiz_assignment = course.get_assignment(
+                            canvas_quiz.assignment_id
+                        )
 
                     if (
                         not existing_accommodations
