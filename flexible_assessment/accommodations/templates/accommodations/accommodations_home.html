@@ -168,8 +168,20 @@
                 for (const input of inputs) {
                     if (input.name === "student_number") {
                         input.value = studentNumber;
+                        if (studentNumber) {
+                            input.readOnly = true;
+                        }
                     } else if (input.name === "multiplier") {
                         input.value = multiplier;
+                        if (multiplier) {
+                            // if from upload, disabled all options aside from existing option
+                            Array.from(input.options).forEach(function(option_element) {
+                                if (option_element.selected === false) {
+                                    option_element.disabled = true;
+                                }
+                            });
+                        }
+                        
                     }
                 }
 
