@@ -365,7 +365,8 @@ class AccommodationsCanvas(Canvas):
                 }
                 if (
                     hasattr(quiz, "quiz_settings")
-                    and quiz.quiz_settings["has_time_limit"] == True
+                    and quiz.quiz_settings != None
+                    and quiz.quiz_settings.get("has_time_limit", False) == True
                 ):  # some new quiz objects may not have this if the instructor hasn't built the quiz yet
                     new_quiz_settings = quiz.quiz_settings
 
@@ -384,8 +385,8 @@ class AccommodationsCanvas(Canvas):
                     quiz_list.append(quiz_data)
                 else:
                     unavailable_quiz_list.append(quiz_data)
-        except:
-            print("Unable to get new quizzes")
+        except Exception as e:
+            print("Unable to get new quizzes - Exception: " + str(e))
 
         quiz_list = sorted(
             quiz_list, key=lambda quiz: (quiz["title"] or "").strip().lower()
