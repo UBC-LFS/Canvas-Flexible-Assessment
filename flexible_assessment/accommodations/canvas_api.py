@@ -405,8 +405,8 @@ class AccommodationsCanvas(Canvas):
 
         Parameters
         ----------
-        accommodations : list of tuple of (str, str, int)
-            List of (login_id, multiplier, user_id) tuples.
+        accommodations : list of tuple of (str, str, int, str)
+            List of (login_id, multiplier, user_id, display_string) tuples.
         students : list
             List of Canvas user objects, each with 'login_id' and 'display_name' attributes.
 
@@ -418,7 +418,7 @@ class AccommodationsCanvas(Canvas):
         multiplier_student_groups = {}
         student_names_by_id = {s.login_id: s.display_name for s in students}
 
-        for student_id, multiplier, user_id in accommodations:
+        for student_id, multiplier, user_id, _ in accommodations:
             student = (student_id, student_names_by_id[student_id], user_id)
             multiplier_student_groups.setdefault(multiplier, []).append(student)
 
@@ -488,8 +488,8 @@ class AccommodationsCanvas(Canvas):
 
         Parameters
         ----------
-        accommodations : list of tuple of (str, str, int)
-            List of (login_id, multiplier, user_id) tuples.
+        accommodations : list of tuple of (str, str, int, str)
+            List of (login_id, multiplier, user_id, display_string) tuples.
         students : list
             List of Canvas user objects, each with 'login_id' and 'display_name' attributes.
         multiplier_quiz_groups : dict of {str: list of dict}
@@ -524,7 +524,7 @@ class AccommodationsCanvas(Canvas):
 
         # Map user_id to multiplier
         user_id_to_multiplier = {
-            user_id: multiplier for _, multiplier, user_id in accommodations
+            user_id: multiplier for _, multiplier, user_id, _ in accommodations
         }
 
         existing_accommodations = []

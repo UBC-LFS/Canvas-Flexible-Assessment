@@ -80,7 +80,7 @@
                     <table class="table table-sm table-striped text-center align-middle">
                         <thead class="table-dark" id="entry-header" style="display:none">
                             <tr>
-                                <th scope="col" style="width: 40%">Student Number</th>
+                                <th scope="col" style="width: 40%">Student</th>
                                 <th scope="col" style="width: 40%">Multiplier</th>
                                 <th scope="col" style="width: 20%">Remove</th>
                             </tr>
@@ -109,7 +109,7 @@
                             <!--Form regex limits to 8 digit numbers-->
                             <td>
                                 <input type="text"
-                                       name="student_number"
+                                       name="student"
                                        class="form-control"
                                        pattern="[0-9]{8}"
                                        maxlength="8"
@@ -161,14 +161,14 @@
                 buttons.style.display = rowCount > 0 ? "" : "none";
             }
 
-            function createRow(studentNumber = "", multiplier = "") {
+            function createRow(studentString = "", multiplier = "") {
                 const clone = template.cloneNode(true);
                 const inputs = clone.querySelectorAll("input, select");
 
                 for (const input of inputs) {
-                    if (input.name === "student_number") {
-                        input.value = studentNumber;
-                        if (studentNumber) {
+                    if (input.name === "student") {
+                        input.value = studentString;
+                        if (studentString) {
                             input.readOnly = true;
                         }
                     } else if (input.name === "multiplier") {
@@ -192,8 +192,8 @@
 
             // prefill table with existing accommodations from previous session
             const prefillData = {{ accommodations_json|safe}};
-            prefillData.forEach(([studentNumber, multiplier, _]) => {
-                createRow(studentNumber, multiplier);
+            prefillData.forEach(([studentNumber, multiplier, _, studentString]) => {
+                createRow(studentString, multiplier);
             });
     
             // insert empty rows
@@ -234,11 +234,12 @@
                 if (response.results && Array.isArray(response.results)) {
                     // Check for invalid student numbers first
                     const invalidItems = response.results.filter(item => {
-                        if (Array.isArray(item) && item.length === 2) {
-                            const [studentNumber] = item;
-                            return !/^\d{8}$/.test(studentNumber);  // expects exactly 8 digits
+                        if (Array.isArray(item) && item.length === 3) {
+                            // const [studentNumber] = item;
+                            // return !/^\d{8}$/.test(studentNumber);  // expects exactly 8 digits
+                            return false;
                         }
-                        return false;
+                        return true;
                     });
 
                     if (invalidItems.length > 0) {
@@ -248,9 +249,9 @@
 
                     // Safe to proceed
                     response.results.forEach(item => {
-                        if (Array.isArray(item) && item.length === 2) {
-                            const [studentNumber, multiplier] = item;
-                            createRow(studentNumber, multiplier);
+                        if (Array.isArray(item) && item.length === 3) {
+                            const [studentNumber, multiplier, studentName] = item;
+                            createRow(studentName, multiplier);
                         } else if (item.error) {
                             console.warn(item.error);
                             alert(item.error);
