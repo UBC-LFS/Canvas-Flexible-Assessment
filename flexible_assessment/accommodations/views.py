@@ -142,6 +142,8 @@ def upload_pdfs(request, course_id):
             student_number_match = re.search(r"\b\d{8}\b", text)
             # Match student name, found in PDF after "Student: "
             student_name_match = re.search(r"Student:\s*(.*?)\s*Term:", text)
+            if not student_name_match:
+                student_name_match = re.search(r"Students:\s*(\S+\s+\S+)", text)
             # Match multiplier (1.25x, 1.5x, 2x, etc.)
             multiplier_match = re.search(
                 r"\b(1\.25|1\.5|2(?:\.0)?)x\b", text, re.IGNORECASE
@@ -163,6 +165,14 @@ def upload_pdfs(request, course_id):
                         student_number,
                         multiplier,
                         f"{str(student_number)} ({student_name})",
+                    )
+                )
+            elif student_number and multiplier:
+                parsed_data.append(
+                    (
+                        student_number,
+                        multiplier,
+                        f"{str(student_number)}",
                     )
                 )
             else:
