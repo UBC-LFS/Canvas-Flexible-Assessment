@@ -41,9 +41,21 @@ class AccommodationsHome(views.AccommodationsListView):
             json.dumps(accommodations)
         )  # pass to template as json for javascript to use
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+
+        # pass autocomplete data (list of student numbers and names)
+        autocomplete_data = self.request.session.get("autocomplete_data", [])
+        context["autocomplete_data"] = mark_safe(json.dumps(autocomplete_data))
         return context
 
     def get(self, request, *args, **kwargs):
+
+        # pass autocomplete data (list of student numbers and names)
+        students = self.get_queryset()
+        autocomplete_data = list(
+            f"{str(s.login_id)} ({s.display_name})" for s in students
+        )
+        request.session["autocomplete_data"] = autocomplete_data
+
         response = super().get(request, *args, **kwargs)
         # if redirected, update students in database
         login_redirect = request.GET.get("login_redirect")
