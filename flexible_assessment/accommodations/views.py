@@ -52,7 +52,7 @@ class AccommodationsHome(views.AccommodationsListView):
         # pass autocomplete data (list of student numbers and names)
         students = self.get_queryset()
         autocomplete_data = list(
-            f"{str(s.login_id)} ({s.display_name})" for s in students
+            f"{s.display_name} ({str(s.login_id)})" for s in students
         )
         request.session["autocomplete_data"] = autocomplete_data
 
@@ -176,7 +176,7 @@ def upload_pdfs(request, course_id):
                     (
                         student_number,
                         multiplier,
-                        f"{str(student_number)} ({student_name})",
+                        f"{student_name} ({str(student_number)})",
                     )
                 )
             elif student_number and multiplier:
