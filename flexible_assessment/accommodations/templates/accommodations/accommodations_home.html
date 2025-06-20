@@ -45,9 +45,101 @@
     .hidden-input {
         display: none;
     }
+    
+    /* Custom CSS for Awesomeplete */
+    .awesomplete [hidden]{
+        display:none
+    }
+    .awesomplete .visually-hidden{
+        position:absolute;
+        clip:rect(0,0,0,0)
+    }
+    .awesomplete {
+        display: block;
+        position: relative;
+        width: 100%;
+    }
+    .awesomplete>input{
+        display:block
+    }
+    .awesomplete>ul{
+        position:absolute;
+        left:0;
+        z-index:1;
+        min-width:100%;
+        box-sizing:border-box;
+        list-style:none;
+        padding:0;
+        margin:0;
+        background:#fff
+    }
+    .awesomplete>ul:empty{
+        display:none
+    }
+    .awesomplete>ul{
+        border-radius:.3em;
+        margin:.2em 0 0;
+        background:hsla(0,0%,100%,.9);
+        background:linear-gradient(to bottom right,#fff,hsla(0,0%,100%,.8));
+        border:1px solid rgba(0,0,0,.3);
+        box-shadow:.05em .2em .6em rgba(0,0,0,.2);
+        text-shadow:none
+    }
+    @supports (transform:scale(0)){
+        .awesomplete>ul{
+            transition:.3s cubic-bezier(.4,.2,.5,1.4);
+            transform-origin:1.43em -.43em
+        }
+        .awesomplete>ul:empty,.awesomplete>ul[hidden]{
+            opacity:0;
+            transform:scale(0);
+            display:block;
+            transition-timing-function:ease
+        }
+    }
+    .awesomplete>ul:before{
+        content:"";
+        position:absolute;
+        top:-.43em;
+        left:1em;
+        width:0;
+        height:0;
+        padding:.4em;
+        background:#fff;
+        border:inherit;
+        border-right:0;
+        border-bottom:0;
+        -webkit-transform:rotate(45deg);
+        transform:rotate(45deg)
+    }
+    .awesomplete>ul>li{
+        position:relative;
+        padding:.2em .5em;
+        cursor:pointer
+    }
+    .awesomplete>ul>li:hover{
+        background:#b7d2e0;
+        color:#000
+    }
+    .awesomplete>ul>li[aria-selected=true]{
+        background:#363636;
+        color:#fff
+    }
+    .awesomplete mark{
+        background:#00d9ff
+    }
+    .awesomplete li:hover mark{
+        background:#1184e2
+    }
+    .awesomplete li[aria-selected=true] mark{
+        background:#08a1b2;
+        color:inherit
+    }
+/*# sourceMappingURL=awesomplete.min.css.map */
 
     
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
         <div class="row justify-content-center mt-4">
@@ -80,7 +172,7 @@
                     <table class="table table-sm table-striped text-center align-middle">
                         <thead class="table-dark" id="entry-header" style="display:none">
                             <tr>
-                                <th scope="col" style="width: 40%">Student Number</th>
+                                <th scope="col" style="width: 40%">Student</th>
                                 <th scope="col" style="width: 40%">Multiplier</th>
                                 <th scope="col" style="width: 20%">Remove</th>
                             </tr>
@@ -108,11 +200,9 @@
                         <tr id="entry-template" class="entry-row">
                             <!--Form regex limits to 8 digit numbers-->
                             <td>
-                                <input type="text"
-                                       name="student_number"
+                                <input name="student"
                                        class="form-control"
-                                       pattern="[0-9]{8}"
-                                       maxlength="8"
+                                       maxlength="50"
                                        placeholder="Student Number (8 digits)"
                                        required>
                             </td>
@@ -151,6 +241,9 @@
             const template = document.querySelector("table.d-none #entry-template");
             const MAX_SIZE_MB = 10; // max size of all file uploads - 5 MB should be roughly 50 PDFs given their current format
 
+
+            const studentList = {{ autocomplete_data|safe}}
+
             function toggleHeaderAndButtons() {
                 const rowCount = entryList.querySelectorAll("tr").length;
 
@@ -161,15 +254,33 @@
                 buttons.style.display = rowCount > 0 ? "" : "none";
             }
 
-            function createRow(studentNumber = "", multiplier = "") {
+            function createRow(studentString = "", multiplier = "") {
                 const clone = template.cloneNode(true);
                 const inputs = clone.querySelectorAll("input, select");
 
                 for (const input of inputs) {
-                    if (input.name === "student_number") {
-                        input.value = studentNumber;
+                    if (input.name === "student") {
+                        input.value = studentString;
+                        if (studentString) {
+                            input.readOnly = true;
+                        }
+
+                        new Awesomplete(input, {
+                            list: studentList,
+                            minChars: 1,
+                            autoFirst: true
+                        });
                     } else if (input.name === "multiplier") {
                         input.value = multiplier;
+                        if (multiplier) {
+                            // if from upload, disabled all options aside from existing option
+                            Array.from(input.options).forEach(function(option_element) {
+                                if (option_element.selected === false) {
+                                    option_element.disabled = true;
+                                }
+                            });
+                        }
+                        
                     }
                 }
 
@@ -180,8 +291,8 @@
 
             // prefill table with existing accommodations from previous session
             const prefillData = {{ accommodations_json|safe}};
-            prefillData.forEach(([studentNumber, multiplier, _]) => {
-                createRow(studentNumber, multiplier);
+            prefillData.forEach(([studentNumber, multiplier, _, studentString]) => {
+                createRow(studentString, multiplier);
             });
     
             // insert empty rows
@@ -222,11 +333,12 @@
                 if (response.results && Array.isArray(response.results)) {
                     // Check for invalid student numbers first
                     const invalidItems = response.results.filter(item => {
-                        if (Array.isArray(item) && item.length === 2) {
-                            const [studentNumber] = item;
-                            return !/^\d{8}$/.test(studentNumber);  // expects exactly 8 digits
+                        if (Array.isArray(item) && item.length === 3) {
+                            // const [studentNumber] = item;
+                            // return !/^\d{8}$/.test(studentNumber);  // expects exactly 8 digits
+                            return false;
                         }
-                        return false;
+                        return true;
                     });
 
                     if (invalidItems.length > 0) {
@@ -236,9 +348,9 @@
 
                     // Safe to proceed
                     response.results.forEach(item => {
-                        if (Array.isArray(item) && item.length === 2) {
-                            const [studentNumber, multiplier] = item;
-                            createRow(studentNumber, multiplier);
+                        if (Array.isArray(item) && item.length === 3) {
+                            const [studentNumber, multiplier, studentName] = item;
+                            createRow(studentName, multiplier);
                         } else if (item.error) {
                             console.warn(item.error);
                             alert(item.error);

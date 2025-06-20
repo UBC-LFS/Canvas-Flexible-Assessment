@@ -41,9 +41,21 @@ class AccommodationsHome(views.AccommodationsListView):
             json.dumps(accommodations)
         )  # pass to template as json for javascript to use
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+
+        # pass autocomplete data (list of student numbers and names)
+        autocomplete_data = self.request.session.get("autocomplete_data", [])
+        context["autocomplete_data"] = mark_safe(json.dumps(autocomplete_data))
         return context
 
     def get(self, request, *args, **kwargs):
+
+        # pass autocomplete data (list of student numbers and names)
+        students = self.get_queryset()
+        autocomplete_data = list(
+            f"{s.display_name} ({str(s.login_id)})" for s in students
+        )
+        request.session["autocomplete_data"] = autocomplete_data
+
         response = super().get(request, *args, **kwargs)
         # if redirected, update students in database
         login_redirect = request.GET.get("login_redirect")
@@ -60,14 +72,14 @@ class AccommodationsHome(views.AccommodationsListView):
         valid_student_ids = set(s.login_id for s in students)
         login_id_to_user_id = {s.login_id: s.user_id for s in students}
 
-        student_numbers = request.POST.getlist("student_number")
+        student_strings = request.POST.getlist("student")
         multipliers = request.POST.getlist("multiplier")
 
-        if not student_numbers or not multipliers:
+        if not student_strings or not multipliers:
             messages.error(request, "No accommodations entered.")
             return redirect("accommodations:accommodations_home", course_id)
 
-        if len(student_numbers) != len(multipliers):
+        if len(student_strings) != len(multipliers):
             messages.error(
                 request,
                 "Number of student numbers does not equal number of multipliers.",
@@ -78,7 +90,9 @@ class AccommodationsHome(views.AccommodationsListView):
         accommodations = []
         errors = []
 
-        for sn, mult in zip(student_numbers, multipliers):
+        for student_string, mult in zip(student_strings, multipliers):
+            sn_list = re.findall(r"\d+", student_string)
+            sn = "".join(map(str, sn_list))  # get student number from student string
             if len(sn) != 8 or not sn.isdigit():
                 errors.append(f"Invalid student number format: {sn}")
             elif sn not in valid_student_ids:
@@ -88,7 +102,9 @@ class AccommodationsHome(views.AccommodationsListView):
             elif sn in seen_ids:
                 errors.append(f"Duplicate entry for student: {sn}")
             else:
-                accommodations.append((sn, mult, login_id_to_user_id[sn]))
+                accommodations.append(
+                    (sn, mult, login_id_to_user_id[sn], student_string)
+                )
                 seen_ids.add(sn)
 
         if errors:
@@ -132,21 +148,45 @@ def upload_pdfs(request, course_id):
             for page in reader.pages:
                 text += page.extract_text() or ""
 
+            print(text)
+
             # Match 8-digit student number
-            student_match = re.search(r"\b\d{8}\b", text)
+            student_number_match = re.search(r"\b\d{8}\b", text)
+            # Match student name, found in PDF after "Student: "
+            student_name_match = re.search(r"Student:\s*(.*?)\s*Term:", text)
+            if not student_name_match:
+                student_name_match = re.search(r"Students:\s*(\S+\s+\S+)", text)
             # Match multiplier (1.25x, 1.5x, 2x, etc.)
             multiplier_match = re.search(
                 r"\b(1\.25|1\.5|2(?:\.0)?)x\b", text, re.IGNORECASE
             )
 
-            student_number = student_match.group() if student_match else None
+            student_number = (
+                student_number_match.group() if student_number_match else None
+            )
+            student_name = student_name_match.group(1) if student_name_match else None
+
             multiplier = multiplier_match.group(1) if multiplier_match else None
 
             if multiplier == "2":
                 multiplier = "2.0"
 
-            if student_number and multiplier:
-                parsed_data.append((student_number, multiplier))
+            if student_number and multiplier and student_name:
+                parsed_data.append(
+                    (
+                        student_number,
+                        multiplier,
+                        f"{student_name} ({str(student_number)})",
+                    )
+                )
+            elif student_number and multiplier:
+                parsed_data.append(
+                    (
+                        student_number,
+                        multiplier,
+                        f"{str(student_number)}",
+                    )
+                )
             else:
                 parsed_data.append(
                     ("error", f"{f.name} is missing student or multiplier.")
