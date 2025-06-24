@@ -126,8 +126,7 @@
                                                                type="checkbox"
                                                                name="selected_quizzes"
                                                                value="{{ quiz.id }}"
-                                                               id="quiz{{ quiz.id }}"
-                                                               {% if quiz in selected_quizzes %}checked{% endif %}>
+                                                               id="quiz{{ quiz.id }}">
                                                     </th>
                                                     <td>
                                                         <div>
@@ -264,11 +263,6 @@
                     cb.checked = this.checked;
                 });
             });
-
-            // check selectAll when page first loads
-            if (Array.from(checkboxes).every(cb => cb.checked)) {
-                selectAll.checked = true;
-            }
 
             
             checkboxes.forEach(cb => {

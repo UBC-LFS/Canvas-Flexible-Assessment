@@ -148,8 +148,6 @@ def upload_pdfs(request, course_id):
             for page in reader.pages:
                 text += page.extract_text() or ""
 
-            print(text)
-
             # Match 8-digit student number
             student_number_match = re.search(r"\b\d{8}\b", text)
             # Match student name, found in PDF after "Student: "
@@ -195,7 +193,7 @@ def upload_pdfs(request, course_id):
         except Exception as e:
             parsed_data.append(("error", f"{f.name} failed to process: {str(e)}"))
 
-    print(parsed_data)
+    parsed_data = sorted(parsed_data, key=lambda tup: tup[2])
 
     return JsonResponse({"results": parsed_data})
 
@@ -208,12 +206,10 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         accommodations = self.request.session.get("accommodations", [])
         quizzes = self.request.session.get("quizzes", [])
         unavailable_quizzes = self.request.session.get("unavailable_quizzes", [])
-        selected_quizzes = self.request.session.get("selected_quizzes", [])
 
         context["accommodations"] = accommodations
         context["quizzes"] = quizzes
         context["unavailable_quizzes"] = unavailable_quizzes
-        context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
 
         context["add_quizzes_link"] = (
