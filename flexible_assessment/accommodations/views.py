@@ -309,7 +309,7 @@ class AccommodationsConfirm(views.AccommodationsListView):
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
 
         # hide the "Existing Accommodations" table for now and override by default - may bring this back later
-        context["include_existing_acommodations"] = False
+        context["include_existing_acommodations"] = True
         return context
 
     def get(self, request, *args, **kwargs):
