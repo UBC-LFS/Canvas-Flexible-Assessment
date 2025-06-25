@@ -375,9 +375,9 @@ class AccommodationsConfirm(views.AccommodationsListView):
         existing_accommodations = request.session["existing_accommodations"]
 
         choice = request.POST.get("choice", None)
-        should_override = True
-        if choice == "ignore":
-            should_override = False
+        should_override = False
+        if choice == "override":
+            should_override = True
 
         canvas = AccommodationsCanvas(request)
         multiplier_quiz_groups_results, time_extension_status = (

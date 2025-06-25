@@ -219,10 +219,14 @@
                                             {% endfor %}
                                         </tbody>
                                     </table>
-                                    <input type="radio" name="choice" id="override" value="override" checked>
-                                    <label for="override">Override</label>
-                                    <input type="radio" name="choice" id="ignore" value="ignore" class="ms-2">
+                                    <input type="radio" name="choice" id="ignore" value="ignore"  checked>
                                     <label for="ignore">Ignore</label>
+                                    <input type="radio"
+                                           name="choice"
+                                           id="override"
+                                           value="override"
+                                           class="ms-2">
+                                    <label for="override">Override</label>
                                 </div>
                             </div>
                         {% endif %}
