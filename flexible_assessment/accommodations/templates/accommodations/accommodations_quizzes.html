@@ -45,6 +45,7 @@
             padding: 8px 12px;
             line-height: 1.4;
             border-radius: 6px;
+            font-weight: normal;
 
             /* Position the tooltip text */
             position: absolute;
@@ -64,8 +65,8 @@
             position: absolute;
             top: 100%;
             left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
+            margin-left: -10px;
+            border-width: 10px;
             border-style: solid;
             border-color: #555 transparent transparent transparent;
         }
@@ -116,7 +117,13 @@
                                                 <th scope="col">Start Date</th>
                                                 <th scope="col">End Date</th>
                                                 <th scope="col">Time Limit</th>
-                                                <th scope="col">Add Time</th>
+                                                <th scope="col">
+                                                    Add Time
+                                                    <div class="custom-tooltip">
+                                                        <span class="tooltiptext">Choose whether to open the quiz earlier {Before) or keep the quiz open later (After).</span>
+                                                        <i class="bi bi-info-circle text-primary ms-1"></i>
+                                                    </div>
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -161,10 +168,18 @@
                                                         {% endif %}
                                                     </td>
                                                     <td>
-                                                        <select class="form-select form-select-sm" name="add_time_{{ quiz.id }}">
-                                                            <option value="after">After</option>
-                                                            <option value="before">Before</option>
-                                                        </select>
+                                                        {% if quiz.unlock_at_readable and quiz.lock_at_readable %}
+                                                            <select class="form-select form-select-sm" name="add_time_{{ quiz.id }}">
+                                                                <option value="after">After</option>
+                                                                <option value="before">Before</option>
+                                                            </select>
+                                                        {% else %}
+                                                            <select class="form-select form-select-sm"
+                                                                    name="add_time_{{ quiz.id }}"
+                                                                    disabled>
+                                                                <option value="after">N/A</option>
+                                                            </select>
+                                                        {% endif %}
                                                     </td>
                                                 </tr>
                                             {% endfor %}

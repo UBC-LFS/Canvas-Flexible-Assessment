@@ -266,7 +266,7 @@ class AccommodationsQuizzes(views.AccommodationsListView):
             quiz_id = quiz["id"]
             if str(quiz_id) in selected_quiz_ids:
                 add_time_key = f"add_time_{quiz_id}"
-                add_time_value = request.POST.get(add_time_key, "after")
+                add_time_value = request.POST.get(add_time_key, "N/A")
                 quiz["add_time_after"] = True if add_time_value == "after" else False
                 selected_quizzes.append(quiz)
 
