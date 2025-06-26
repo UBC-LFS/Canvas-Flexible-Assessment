@@ -257,9 +257,18 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         course_id = self.kwargs["course_id"]
         quiz_list = request.session["quizzes"]
         selected_quiz_ids = request.POST.getlist("selected_quizzes")
-        selected_quizzes = list(
-            filter(lambda quiz: str(quiz["id"]) in selected_quiz_ids, quiz_list)
-        )
+        # selected_quizzes = list(
+        #    filter(lambda quiz: str(quiz["id"]) in selected_quiz_ids, quiz_list)
+        # )
+
+        selected_quizzes = []
+        for quiz in quiz_list:
+            quiz_id = quiz["id"]
+            if str(quiz_id) in selected_quiz_ids:
+                add_time_key = f"add_time_{quiz_id}"
+                add_time_value = request.POST.get(add_time_key, "after")
+                quiz["add_time_after"] = True if add_time_value == "after" else False
+                selected_quizzes.append(quiz)
 
         if len(selected_quizzes) == 0:
             messages.error(

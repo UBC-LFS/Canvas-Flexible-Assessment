@@ -147,6 +147,9 @@
                                                                 <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
                                                                     {{ quiz.unlock_at_readable|default:"No date set" }}
                                                                 </span>
+                                                                {% if quiz.unlock_at_new_readable %}
+                                                                    <i class="bi bi-arrow-right"></i> <span class="text-muted">{{ quiz.unlock_at_new_readable }}</span>
+                                                                {% endif %}
                                                             </td>
                                                             <td>
                                                                 <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">

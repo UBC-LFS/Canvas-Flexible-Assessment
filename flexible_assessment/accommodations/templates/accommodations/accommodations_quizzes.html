@@ -116,6 +116,7 @@
                                                 <th scope="col">Start Date</th>
                                                 <th scope="col">End Date</th>
                                                 <th scope="col">Time Limit</th>
+                                                <th scope="col">Add Time</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -158,6 +159,12 @@
                                                                 <i class="bi bi-exclamation-triangle text-danger ms-1"></i>
                                                             </div>
                                                         {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <select class="form-select form-select-sm" name="add_time_{{ quiz.id }}">
+                                                            <option value="after">After</option>
+                                                            <option value="before">Before</option>
+                                                        </select>
                                                     </td>
                                                 </tr>
                                             {% endfor %}

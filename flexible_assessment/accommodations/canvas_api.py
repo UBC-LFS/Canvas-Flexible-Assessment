@@ -190,7 +190,69 @@ def set_warn(quiz):
             quiz["should_warn"] = True
 
 
-def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
+def calculate_new_unlock_at(
+    unlock_at, lock_at, add_time_after, time_limit_new, multiplier
+):
+    """
+    Calculates a new unlock time if the quiz window is shorter than the new time limit.
+
+    Parameters
+    ----------
+    unlock_at : str
+        ISO8601 formatted unlock datetime string.
+    lock_at : str
+        ISO8601 formatted lock datetime string.
+    add_time_after : bool
+        Specifies whether to extend unlock_at or lock_at when adding time.
+    time_limit_new : int
+        The new time limit in minutes.
+    multiplier : float or str
+        Accommodation multiplier (e.g., 1.5 for 50% extra time).
+
+    Returns
+    -------
+    str or None
+        The new unlock_at time in ISO8601 format, or None if no change is needed.
+    """
+
+    if (
+        unlock_at is None or lock_at is None or add_time_after
+    ):  # both unlock and lock at must exist to set new unlock at
+        return None
+
+    # unlock_at, lock_at are ISO8601 strings, time_limit_new is int (in minutes)
+    lock_at_parsed = parser.isoparse(lock_at).astimezone(get_current_timezone())
+    window_in_minutes = get_time_window(unlock_at, lock_at)
+
+    if (
+        time_limit_new
+    ):  # normal case - extend lock at to match new time limit if necessary
+
+        if window_in_minutes < time_limit_new:
+            # Set new lock_at to unlock_at + time_limit_new minutes
+            new_unlock_at = lock_at_parsed - timedelta(minutes=time_limit_new)
+            if is_midnight(new_unlock_at):
+                # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
+                new_unlock_at = new_unlock_at - timedelta(minutes=1)
+            return new_unlock_at.isoformat()
+        return None
+    elif (
+        window_in_minutes <= 180
+    ):  # rarer case - no time limit, but unlock, lock at both exist and have a window less than 3 hours
+        multiplier = float(multiplier)
+        new_window_in_minutes = int(math.ceil(window_in_minutes * multiplier))
+        new_unlock_at = lock_at_parsed - timedelta(minutes=new_window_in_minutes)
+        if is_midnight(new_unlock_at):
+            # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
+            new_unlock_at = new_unlock_at - timedelta(minutes=1)
+        return new_unlock_at.isoformat()
+    else:  # if unlock, lock at both exist, but have a window greater than 3 hours, don't set a new lock at time
+        return None
+
+
+def calculate_new_lock_at(
+    unlock_at, lock_at, add_time_after, time_limit_new, multiplier
+):
     """
     Calculates a new lock time if the quiz window is shorter than the new time limit.
 
@@ -200,6 +262,8 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
         ISO8601 formatted unlock datetime string.
     lock_at : str
         ISO8601 formatted lock datetime string.
+    add_time_after : bool
+        Specifies whether to extend unlock_at or lock_at when adding time.
     time_limit_new : int
         The new time limit in minutes.
     multiplier : float or str
@@ -212,7 +276,7 @@ def calculate_new_lock_at(unlock_at, lock_at, time_limit_new, multiplier):
     """
 
     if (
-        unlock_at is None or lock_at is None
+        unlock_at is None or lock_at is None or not add_time_after
     ):  # both unlock and lock at must exist to set new lock at
         return None
 
@@ -455,21 +519,34 @@ class AccommodationsCanvas(Canvas):
                 time_limit_new = calculate_new_time_limit(
                     quiz["time_limit"], multiplier
                 )
+
+                unlock_at_new = calculate_new_unlock_at(
+                    quiz["unlock_at"],
+                    quiz["lock_at"],
+                    quiz["add_time_after"],
+                    time_limit_new,
+                    multiplier,
+                )
+
                 lock_at_new = calculate_new_lock_at(
-                    quiz["unlock_at"], quiz["lock_at"], time_limit_new, multiplier
+                    quiz["unlock_at"],
+                    quiz["lock_at"],
+                    quiz["add_time_after"],
+                    time_limit_new,
+                    multiplier,
                 )
 
                 due_at_new = calculate_new_due_at(
                     quiz["due_at"], lock_at_new, quiz["lock_at"]
                 )
 
-                #  due_at_new = calculate_new_due_at(quiz["due_at"], lock_at_new)
-
                 quiz_modified = quiz.copy()
                 quiz_modified.update(
                     {
                         "time_limit_new": time_limit_new,
                         "time_limit_new_readable": readable_time_limit(time_limit_new),
+                        "unlock_at_new": unlock_at_new,
+                        "unlock_at_new_readable": readable_datetime(unlock_at_new),
                         "lock_at_new": lock_at_new,
                         "lock_at_new_readable": readable_datetime(lock_at_new),
                         "due_at_new": due_at_new,  # no need for readable since we don't display due_at valueu
@@ -533,7 +610,6 @@ class AccommodationsCanvas(Canvas):
         reference_quiz_list = next(iter(multiplier_quiz_groups.values()))
 
         for quiz_index, quiz in enumerate(reference_quiz_list):
-            # TODO - fix for new quizzes here
             quiz_assignment = None
             if quiz["is_new_quiz"]:
                 quiz_assignment = course.get_assignment(quiz["id"])
@@ -553,7 +629,10 @@ class AccommodationsCanvas(Canvas):
                         continue
 
                     planned_quiz = planned_quiz_list[quiz_index]
-                    if planned_quiz.get("lock_at_new") is None:
+                    if (
+                        planned_quiz.get("lock_at_new") is None
+                        and planned_quiz.get("unlock_at_new") is None
+                    ):
                         continue  # App does not plan to override this quiz
 
                     unlock_at_override = (
@@ -718,8 +797,10 @@ class AccommodationsCanvas(Canvas):
 
             quiz_list = quiz_groups[multiplier]
             for quiz in quiz_list:
-                if quiz["lock_at_new"] is None:
+                if quiz["lock_at_new"] is None and quiz["unlock_at_new"] is None:
+                    # no window to extend at all
                     quiz["lock_at_status"] = "N/A"
+                    quiz["unlock_at_status"] = "N/A"
                     continue
 
                 try:
@@ -732,17 +813,27 @@ class AccommodationsCanvas(Canvas):
                             canvas_quiz.assignment_id
                         )
 
+                    override_settings = {
+                        "unlock_at": (
+                            quiz["unlock_at_new"]
+                            if quiz["unlock_at_new"] is not None
+                            else quiz["unlock_at"]
+                        ),
+                        "lock_at": (
+                            quiz["lock_at_new"]
+                            if quiz["lock_at_new"] is not None
+                            else quiz["lock_at"]
+                        ),
+                        "due_at": quiz["due_at_new"],
+                    }
+
                     if (
                         not existing_accommodations
                     ):  # there are no existing accommodations to worry about
                         # Create a new override
+                        override_settings["student_ids"] = student_user_id_list
                         result = quiz_assignment.create_override(
-                            assignment_override={
-                                "student_ids": student_user_id_list,
-                                "unlock_at": quiz["unlock_at"],
-                                "lock_at": quiz["lock_at_new"],
-                                "due_at": quiz["due_at_new"],
-                            }
+                            assignment_override=override_settings
                         )
                     elif should_override:
                         # for the quiz, get all existing overrides
@@ -795,13 +886,9 @@ class AccommodationsCanvas(Canvas):
                             else:
                                 override.delete()
                         # create our new override with all the students
+                        override_settings["student_ids"] = student_user_id_list
                         result = quiz_assignment.create_override(
-                            assignment_override={
-                                "student_ids": student_user_id_list,
-                                "unlock_at": quiz["unlock_at"],
-                                "lock_at": quiz["lock_at_new"],
-                                "due_at": quiz["due_at_new"],
-                            }
+                            assignment_override=override_settings
                         )
                     else:
                         # remove student user ids from list if there is an entry in the existing accommodations with the current quiz and the student
@@ -813,20 +900,33 @@ class AccommodationsCanvas(Canvas):
                                     list_filtered.remove(acc["user_id"])
 
                         if list_filtered:  # don't create if list is empty
+                            override_settings["student_ids"] = list_filtered
                             result = quiz_assignment.create_override(
-                                assignment_override={
-                                    "student_ids": list_filtered,
-                                    "unlock_at": quiz["unlock_at"],
-                                    "lock_at": quiz["lock_at_new"],
-                                    "due_at": quiz["due_at_new"],
-                                }
+                                assignment_override=override_settings
                             )
-                except:
-                    quiz["lock_at_status"] = "failure"
+                except Exception as e:
+                    if quiz["unlock_at_new"]:
+                        quiz["unlock_at_status"] = "failure"
+                    else:
+                        quiz["unlock_at_status"] = "N/A"
+
+                    if quiz["lock_at_new"]:
+                        quiz["lock_at_status"] = "failure"
+                    else:
+                        quiz["lock_at_status"] = "N/A"
                     status = False
+                    print(e)
                     # raise Exception("TEST EXCEPTION")
                 else:
-                    quiz["lock_at_status"] = "success"
+                    if quiz["unlock_at_new"]:
+                        quiz["unlock_at_status"] = "success"
+                    else:
+                        quiz["unlock_at_status"] = "N/A"
+
+                    if quiz["lock_at_new"]:
+                        quiz["lock_at_status"] = "success"
+                    else:
+                        quiz["lock_at_status"] = "N/A"
 
         end = time.time()
         print("synchronous execution time for add_availabilities: " + str(end - start))
