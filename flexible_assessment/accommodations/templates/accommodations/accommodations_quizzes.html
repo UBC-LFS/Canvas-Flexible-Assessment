@@ -129,14 +129,14 @@
                                         <tbody>
                                             {% for quiz in quizzes %}
                                                 <tr>
-                                                    <th scope="col">
+                                                    <td class="align-middle">
                                                         <input class="form-check-input me-2 quiz-checkbox"
                                                                type="checkbox"
                                                                name="selected_quizzes"
                                                                value="{{ quiz.id }}"
                                                                id="quiz{{ quiz.id }}">
-                                                    </th>
-                                                    <td>
+                                                    </td>
+                                                    <td class="align-middle">
                                                         <div>
                                                             {% if quiz.is_new_quiz %}
                                                                 <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
@@ -146,17 +146,17 @@
                                                             <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
                                                         </div>
                                                     </td>
-                                                    <td>
+                                                    <td class="align-middle">
                                                         <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
                                                             {{ quiz.unlock_at_readable|default:"No date set" }}
                                                         </span>
                                                     </td>
-                                                    <td>
+                                                    <td class="align-middle">
                                                         <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
                                                             {{ quiz.lock_at_readable|default:"No date set" }}
                                                         </span>
                                                     </td>
-                                                    <td>
+                                                    <td class="align-middle">
                                                         <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
                                                             {{ quiz.time_limit_readable|default:"No time limit set" }}
                                                         </span>
@@ -167,7 +167,7 @@
                                                             </div>
                                                         {% endif %}
                                                     </td>
-                                                    <td>
+                                                    <td class="align-middle">
                                                         {% if quiz.unlock_at_readable and quiz.lock_at_readable %}
                                                             <select class="form-select form-select-sm" name="add_time_{{ quiz.id }}">
                                                                 <option value="after">After</option>
