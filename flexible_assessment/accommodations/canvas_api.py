@@ -666,6 +666,14 @@ class AccommodationsCanvas(Canvas):
                     }
                     existing_accommodations.append(override_dict)
 
+        existing_accommodations = sorted(
+            existing_accommodations,
+            key=lambda override_dict: (
+                override_dict["title"],
+                override_dict["display_name"],
+            ),
+        )
+
         return existing_accommodations
 
     def set_extensions_for_new_quiz(self, new_quiz, extensions, course_id):
