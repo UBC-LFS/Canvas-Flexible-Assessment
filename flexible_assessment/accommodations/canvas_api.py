@@ -251,7 +251,7 @@ def calculate_new_unlock_at(
 
 
 def calculate_new_lock_at(
-    unlock_at, lock_at, add_time_after, time_limit_new, multiplier
+    unlock_at, lock_at, add_time_after, add_buffer, time_limit_new, multiplier
 ):
     """
     Calculates a new lock time if the quiz window is shorter than the new time limit.
@@ -264,6 +264,8 @@ def calculate_new_lock_at(
         ISO8601 formatted lock datetime string.
     add_time_after : bool
         Specifies whether to extend unlock_at or lock_at when adding time.
+    add_buffer : bool
+        Specifies whether to add a 30-minute buffer to the lock_at time.
     time_limit_new : int
         The new time limit in minutes.
     multiplier : float or str
@@ -276,37 +278,55 @@ def calculate_new_lock_at(
     """
 
     if (
-        unlock_at is None or lock_at is None or not add_time_after
-    ):  # both unlock and lock at must exist to set new lock at
+        unlock_at is None or lock_at is None or (not add_time_after and not add_buffer)
+    ):  # both unlock and lock at must exist to set new lock at, also if the quiz is set to add time before and there's no buffer, we can skip
         return None
 
     # unlock_at, lock_at are ISO8601 strings, time_limit_new is int (in minutes)
     unlock_at_parsed = parser.isoparse(unlock_at).astimezone(get_current_timezone())
+    lock_at_parsed = parser.isoparse(lock_at).astimezone(get_current_timezone())
     window_in_minutes = get_time_window(unlock_at, lock_at)
 
-    if (
-        time_limit_new
-    ):  # normal case - extend lock at to match new time limit if necessary
+    if add_time_after:  # most cases - add time after is checked
+        if (
+            time_limit_new
+        ):  # normal case - extend lock at to match new time limit if necessary
 
-        if window_in_minutes < time_limit_new:
-            # Set new lock_at to unlock_at + time_limit_new minutes
-            new_lock_at = unlock_at_parsed + timedelta(minutes=time_limit_new)
+            if window_in_minutes < time_limit_new:
+                # Set new lock_at to unlock_at + time_limit_new minutes
+                new_lock_at = unlock_at_parsed + timedelta(minutes=time_limit_new)
+                if add_buffer:
+                    # Add buffer time if necessary
+                    new_lock_at += timedelta(minutes=30)
+                if is_midnight(new_lock_at):
+                    # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
+                    new_lock_at += timedelta(minutes=1)
+                return new_lock_at.isoformat()
+            return None
+        elif (
+            window_in_minutes <= 180
+        ):  # rarer case - no time limit, but unlock, lock at both exist and have a window less than 3 hours
+            multiplier = float(multiplier)
+            new_window_in_minutes = int(math.ceil(window_in_minutes * multiplier))
+            new_lock_at = unlock_at_parsed + timedelta(minutes=new_window_in_minutes)
+            if add_buffer:
+                # Add buffer time if necessary
+                new_lock_at += timedelta(minutes=30)
             if is_midnight(new_lock_at):
                 # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
                 new_lock_at = new_lock_at + timedelta(minutes=1)
             return new_lock_at.isoformat()
-        return None
+        else:  # if unlock, lock at both exist, but have a window greater than 3 hours, don't set a new lock at time
+            return None
     elif (
-        window_in_minutes <= 180
-    ):  # rarer case - no time limit, but unlock, lock at both exist and have a window less than 3 hours
-        multiplier = float(multiplier)
-        new_window_in_minutes = int(math.ceil(window_in_minutes * multiplier))
-        new_lock_at = unlock_at_parsed + timedelta(minutes=new_window_in_minutes)
+        add_buffer
+    ):  # rare case - not supposed to add time after, but shoulod add buffer time
+        new_lock_at = lock_at_parsed + timedelta(minutes=30)
         if is_midnight(new_lock_at):
             # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
             new_lock_at = new_lock_at + timedelta(minutes=1)
         return new_lock_at.isoformat()
-    else:  # if unlock, lock at both exist, but have a window greater than 3 hours, don't set a new lock at time
+    else:  # if no buffer, no add time after, return None
         return None
 
 
@@ -532,6 +552,7 @@ class AccommodationsCanvas(Canvas):
                     quiz["unlock_at"],
                     quiz["lock_at"],
                     quiz["add_time_after"],
+                    quiz["add_buffer"],
                     time_limit_new,
                     multiplier,
                 )

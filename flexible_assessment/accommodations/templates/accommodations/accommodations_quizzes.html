@@ -118,9 +118,16 @@
                                                 <th scope="col">End Date</th>
                                                 <th scope="col">Time Limit</th>
                                                 <th scope="col">
-                                                    Add Time
+                                                    Extend Before/After
                                                     <div class="custom-tooltip">
                                                         <span class="tooltiptext">Choose whether to open the quiz earlier {Before) or keep the quiz open later (After).</span>
+                                                        <i class="bi bi-info-circle text-primary ms-1"></i>
+                                                    </div>
+                                                </th>
+                                                <th scope=""col>
+                                                    Add Buffer
+                                                    <div class="custom-tooltip">
+                                                        <span class="tooltiptext">Add a 30 minute buffer to the end date of the quiz.</span>
                                                         <i class="bi bi-info-circle text-primary ms-1"></i>
                                                     </div>
                                                 </th>
@@ -170,8 +177,8 @@
                                                     <td class="align-middle">
                                                         {% if quiz.unlock_at_readable and quiz.lock_at_readable %}
                                                             <select class="form-select form-select-sm" name="add_time_{{ quiz.id }}">
-                                                                <option value="after">After</option>
                                                                 <option value="before">Before</option>
+                                                                <option value="after" selected>After</option>
                                                             </select>
                                                         {% else %}
                                                             <select class="form-select form-select-sm"
@@ -179,6 +186,22 @@
                                                                     disabled>
                                                                 <option value="after">N/A</option>
                                                             </select>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="align-middle">
+                                                        {% if quiz.unlock_at_readable and quiz.lock_at_readable %}
+                                                            <input class="form-check-input me-2 buffer-checkbox"
+                                                                   type="checkbox"
+                                                                   name="selected_buffers"
+                                                                   value="{{ quiz.id }}"
+                                                                   id="buffer{{ quiz.id }}">
+                                                        {% else %}
+                                                            <input class="form-check-input me-2"
+                                                                   type="checkbox"
+                                                                   name="selected_buffers"
+                                                                   value="{{ quiz.id }}"
+                                                                   id="buffer{{ quiz.id }}"
+                                                                   disabled>
                                                         {% endif %}
                                                     </td>
                                                 </tr>
