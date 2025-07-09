@@ -1,13 +1,9 @@
 import time
 import requests
-from collections.abc import MutableMapping
 
 from canvasapi import Canvas
-from canvasapi.exceptions import CanvasException
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
 from oauth.oauth import get_oauth_token
-from decimal import Decimal, ROUND_HALF_UP
 
 from dateutil import parser
 from django.utils.timezone import get_current_timezone
@@ -18,16 +14,22 @@ import json
 
 
 ACCOMMODATION_MULTIPLIERS = [1.25, 1.5, 2.0]
+BUFFER_TIME = 30  # time of buffer in minutes
 
 
-def is_midnight(query_time):
-    """Checks if time is midnight
+def check_midnight(query_time):
+    """Checks if time is midnight, increments it by 1 minute if so
     Parameters
     ----------
     query_time : datetime.datetime
         datetime object
     """
-    return query_time.hour == 0 and query_time.minute == 0
+
+    # the reason for this function is that Canvas doesn't allow setting time to midnight, so we would have to set it to 12:01 AM instead
+    if query_time.hour == 0 and query_time.minute == 0:
+        return query_time + timedelta(minutes=1)
+    else:
+        return query_time
 
 
 def readable_time_limit(minutes):
@@ -231,9 +233,8 @@ def calculate_new_unlock_at(
         if window_in_minutes < time_limit_new:
             # Set new lock_at to unlock_at + time_limit_new minutes
             new_unlock_at = lock_at_parsed - timedelta(minutes=time_limit_new)
-            if is_midnight(new_unlock_at):
-                # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
-                new_unlock_at = new_unlock_at - timedelta(minutes=1)
+            new_unlock_at = check_midnight(new_unlock_at)
+
             return new_unlock_at.isoformat()
         return None
     elif (
@@ -242,9 +243,7 @@ def calculate_new_unlock_at(
         multiplier = float(multiplier)
         new_window_in_minutes = int(math.ceil(window_in_minutes * multiplier))
         new_unlock_at = lock_at_parsed - timedelta(minutes=new_window_in_minutes)
-        if is_midnight(new_unlock_at):
-            # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
-            new_unlock_at = new_unlock_at - timedelta(minutes=1)
+        new_unlock_at = check_midnight(new_unlock_at)
         return new_unlock_at.isoformat()
     else:  # if unlock, lock at both exist, but have a window greater than 3 hours, don't set a new lock at time
         return None
@@ -265,7 +264,7 @@ def calculate_new_lock_at(
     add_time_after : bool
         Specifies whether to extend unlock_at or lock_at when adding time.
     add_buffer : bool
-        Specifies whether to add a 30-minute buffer to the lock_at time.
+        Specifies whether to add a BUFFER_TIME-minute buffer to the lock_at time.
     time_limit_new : int
         The new time limit in minutes.
     multiplier : float or str
@@ -297,10 +296,8 @@ def calculate_new_lock_at(
                 new_lock_at = unlock_at_parsed + timedelta(minutes=time_limit_new)
                 if add_buffer:
                     # Add buffer time if necessary
-                    new_lock_at += timedelta(minutes=30)
-                if is_midnight(new_lock_at):
-                    # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
-                    new_lock_at += timedelta(minutes=1)
+                    new_lock_at += timedelta(minutes=BUFFER_TIME)
+                new_lock_at = check_midnight(new_lock_at)
                 return new_lock_at.isoformat()
             return None
         elif (
@@ -311,20 +308,16 @@ def calculate_new_lock_at(
             new_lock_at = unlock_at_parsed + timedelta(minutes=new_window_in_minutes)
             if add_buffer:
                 # Add buffer time if necessary
-                new_lock_at += timedelta(minutes=30)
-            if is_midnight(new_lock_at):
-                # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
-                new_lock_at = new_lock_at + timedelta(minutes=1)
+                new_lock_at += timedelta(minutes=BUFFER_TIME)
+            new_lock_at = check_midnight(new_lock_at)
             return new_lock_at.isoformat()
         else:  # if unlock, lock at both exist, but have a window greater than 3 hours, don't set a new lock at time
             return None
     elif (
         add_buffer
     ):  # rare case - not supposed to add time after, but shoulod add buffer time
-        new_lock_at = lock_at_parsed + timedelta(minutes=30)
-        if is_midnight(new_lock_at):
-            # Canvas does not allow setting time to midnight, so we'll set to 12:01 AM
-            new_lock_at = new_lock_at + timedelta(minutes=1)
+        new_lock_at = lock_at_parsed + timedelta(minutes=BUFFER_TIME)
+        new_lock_at = check_midnight(new_lock_at)
         return new_lock_at.isoformat()
     else:  # if no buffer, no add time after, return None
         return None
