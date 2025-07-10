@@ -206,11 +206,15 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         accommodations = self.request.session.get("accommodations", [])
         quizzes = self.request.session.get("quizzes", [])
         unavailable_quizzes = self.request.session.get("unavailable_quizzes", [])
+        has_quiz_with_start_end = self.request.session.get(
+            "has_quiz_with_start_end", False
+        )
 
         context["accommodations"] = accommodations
         context["quizzes"] = quizzes
         context["unavailable_quizzes"] = unavailable_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+        context["has_quiz_with_start_end"] = has_quiz_with_start_end
 
         context["add_quizzes_link"] = (
             settings.CANVAS_DOMAIN
@@ -246,6 +250,14 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         canvas = AccommodationsCanvas(request)
         quiz_list, unavailable_quiz_list = canvas.get_quiz_data(course_id)
 
+        # use this to check whether or not to display "Extend Before/After" and "Add Buffer" columns
+        has_quiz_with_start_end = False
+        for quiz in quiz_list:
+            if quiz["unlock_at_readable"] != None and quiz["lock_at_readable"] != None:
+                has_quiz_with_start_end = True
+                break
+
+        request.session["has_quiz_with_start_end"] = has_quiz_with_start_end
         request.session["quizzes"] = quiz_list
         request.session["unavailable_quizzes"] = unavailable_quiz_list
 
