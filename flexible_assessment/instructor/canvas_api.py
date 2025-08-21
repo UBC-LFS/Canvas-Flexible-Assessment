@@ -115,6 +115,8 @@ class FlexCanvas(Canvas):
         """
         To fetch all information from the database
         """
+
+        URL = self.base_url + 'api/graphql'
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json"
@@ -135,7 +137,7 @@ class FlexCanvas(Canvas):
                 "sub_after": None
             }
 
-            res = requests.post(self.base_url, json={"query": query, "variables": variables}, headers=headers)
+            res = requests.post(URL, json={"query": query, "variables": variables}, headers=headers)
             
             if res.status_code == 200:
                 data = res.json()['data']['course']['assignment_groups']
@@ -154,7 +156,7 @@ class FlexCanvas(Canvas):
                         "sub_after": sub_after
                     }
 
-                    sub_res = requests.post(self.base_url, json={"query": query, "variables": variables}, headers=headers)
+                    sub_res = requests.post(URL, json={"query": query, "variables": variables}, headers=headers)
 
                     if sub_res.status_code == 200:
                         sub_data = sub_res.json()['data']['course']['assignment_groups']
