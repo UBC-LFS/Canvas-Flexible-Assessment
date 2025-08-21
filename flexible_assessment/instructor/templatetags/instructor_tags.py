@@ -243,7 +243,7 @@ def get_group_weight(groups, id):
 @register.simple_tag()
 def get_group_weight_percentage(groups, id):
     percentage = grader.get_group_weight(groups, id)
-    if percentage is not None:
+    if percentage:
         return f"{percentage:.2f}%"
     else:
         return ""
