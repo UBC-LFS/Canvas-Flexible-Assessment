@@ -248,8 +248,9 @@ def get_score(groups, group_id, student):
     student_id = student.user_id
     group_id_str = str(group_id)
     student_id_str = str(student_id)
-    grades = groups[group_id_str]["grade_list"]["grades"]
-    for curr_id, score in grades:
-        if student_id_str == curr_id:
-            return score
+    if group_id_str in groups[group_id_str].keys():
+        grades = groups[group_id_str]["grade_list"]["grades"]
+        for curr_id, score in grades:
+            if student_id_str == curr_id:
+                return score
     return None
