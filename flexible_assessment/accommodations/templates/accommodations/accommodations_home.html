@@ -137,9 +137,33 @@
     }
 /*# sourceMappingURL=awesomplete.min.css.map */
 
+    /* DataTables custom styling */
+    .dataTables_wrapper .dataTables_length select {
+        padding: 0.375rem 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        padding: 0.375rem 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        margin-left: 0.5rem;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 0.375rem 0.75rem;
+        margin-left: 0.125rem;
+        border-radius: 0.375rem;
+    }
     
     </style>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
         <div class="row justify-content-center mt-4">
@@ -188,22 +212,23 @@
                       method="post"
                       action="{% url 'accommodations:accommodations_home' course.id %}">
                     {% csrf_token %}
-                    <!-- Virtual scrolling container -->
-                    <div class="table-container" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; margin: 1rem 0;" id="virtual-scroll-container">
-                        <table class="table table-sm table-striped text-center align-middle mb-0">
-                            <thead class="table-dark sticky-top" id="entry-header" style="display:none">
+                    
+                    <!-- DataTable -->
+                    <div id="table-container" style="display: none; margin: 1rem 0;">
+                        <table id="accommodations-table" class="table table-striped table-hover">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th scope="col" style="width: 40%">Student</th>
-                                    <th scope="col" style="width: 40%">Multiplier</th>
-                                    <th scope="col" style="width: 20%">Remove</th>
+                                    <th>Student Number</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Multiplier</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="entry-list">
-                                <!-- Entries will be dynamically inserted here -->
+                            <tbody>
+                                <!-- Rows will be added dynamically -->
                             </tbody>
                         </table>
-                        <!-- Spacer to maintain scroll height -->
-                        <div id="scroll-spacer" style="height: 0px;"></div>
                     </div>
                     <!-- Button Row -->
                     <div class="row justify-content-between my-4">
@@ -218,38 +243,6 @@
                         </div>
                     </div>
                 </form>
-                <!-- Hidden row template -->
-                <table class="d-none">
-                    <tbody>
-                        <tr id="entry-template" class="entry-row">
-                            <!--Form regex limits to 8 digit numbers-->
-                            <td>
-                                <input name="student"
-                                       class="form-control"
-                                       maxlength="50"
-                                       placeholder="Student Number (8 digits)"
-                                       required>
-                            </td>
-                            <td>
-                                <select name="multiplier" class="form-control" required>
-                                    <option value="">Select Multiplier</option>
-                                    <option value="1.25">1.25x</option>
-                                    <option value="1.5">1.5x</option>
-                                    <option value="2.0">2.0x</option>
-                                    <option value="2.5">2.5x</option>
-                                    <option value="3.0">3.0x</option>
-                                    <option value="3.5">3.5x</option>
-                                    <option value="4.0">4.0x</option>
-                                </select>
-                            </td>
-                            <td class="text-center align-middle">
-                                <button class="btn btn-outline-danger btn-sm remove-entry" type="button">
-                                    <i class="bi bi-trash3"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
@@ -263,192 +256,204 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const accommodations_form = document.getElementById("accommodations-form");
-            const entryList = document.getElementById("entry-list");
             const addBtn = document.getElementById("add-entry");
             const removeAllBtn = document.getElementById("remove-all");
-            const template = document.querySelector("table.d-none #entry-template");
-            const scrollContainer = document.getElementById("virtual-scroll-container");
-            const scrollSpacer = document.getElementById("scroll-spacer");
+            const tableContainer = document.getElementById("table-container");
             const MAX_SIZE_MB = 10;
+            let dataTable;
+            let rowCounter = 0;
 
-            // Virtual scrolling variables
-            const ROW_HEIGHT = 60; // Approximate height of each row in pixels
-            const VISIBLE_ROWS = Math.ceil(400 / ROW_HEIGHT) + 2; // Buffer rows
-            let allEntries = []; // Store all entry data
-            let visibleStartIndex = 0;
+            const studentList = {{ autocomplete_data|safe}};
 
-
-            const studentList = {{ autocomplete_data|safe}}
-
-            function toggleHeaderAndButtons() {
-                const rowCount = allEntries.length;
-
-                const header = document.getElementById("entry-header");
-                header.style.display = rowCount > 0 ? "" : "none";
-
-                const buttons = document.getElementById("buttons-hidden");
-                buttons.style.display = rowCount > 0 ? "" : "none";
+            // Initialize DataTable
+            function initializeDataTable() {
+                if ($.fn.DataTable.isDataTable('#accommodations-table')) {
+                    dataTable.destroy();
+                }
+                
+                dataTable = $('#accommodations-table').DataTable({
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                    columnDefs: [
+                        { targets: [4], orderable: false }, // Actions column not sortable
+                        { targets: [0, 1, 2], type: 'string' },
+                        { targets: [3], type: 'num' }
+                    ],
+                    order: [[2, 'asc'], [1, 'asc']], // Sort by last name, then first name
+                    language: {
+                        emptyTable: "No accommodations added yet",
+                        search: "Search students:"
+                    }
+                });
+                
+                tableContainer.style.display = 'block';
             }
 
-            function createRowElement(entryData, index) {
-                const clone = template.cloneNode(true);
-                clone.setAttribute('data-index', index);
-                const inputs = clone.querySelectorAll("input, select");
+            function parseStudentName(studentString) {
+                // Parse "Last, First (StudentNumber)" or just return parts
+                const match = studentString.match(/^(.+),\s*(.+)\s*\((\d+)\)$/);
+                if (match) {
+                    return {
+                        lastName: match[1].trim(),
+                        firstName: match[2].trim(),
+                        studentNumber: match[3]
+                    };
+                }
+                
+                // Fallback - try to extract student number if it's just a number
+                if (/^\d{8}$/.test(studentString)) {
+                    return {
+                        lastName: '',
+                        firstName: '',
+                        studentNumber: studentString
+                    };
+                }
+                
+                // If it's a name without number format
+                const parts = studentString.split(',');
+                if (parts.length === 2) {
+                    return {
+                        lastName: parts[0].trim(),
+                        firstName: parts[1].trim(),
+                        studentNumber: ''
+                    };
+                }
+                
+                return {
+                    lastName: studentString,
+                    firstName: '',
+                    studentNumber: ''
+                };
+            }
 
-                for (const input of inputs) {
-                    if (input.name === "student") {
-                        input.value = entryData.studentString;
-                        if (entryData.studentString) {
-                            input.readOnly = entryData.readOnly;
-                        }
+            function addEntry(studentString = "", multiplier = "", readOnly = false) {
+                if (!dataTable) {
+                    initializeDataTable();
+                }
 
-                        new Awesomplete(input, {
+                const studentInfo = parseStudentName(studentString);
+                const rowId = `row-${rowCounter++}`;
+                
+                const multiplierOptions = [
+                    { value: "", text: "Select Multiplier" },
+                    { value: "1.25", text: "1.25x" },
+                    { value: "1.5", text: "1.5x" },
+                    { value: "1.75", text: "1.75x" },
+                    { value: "2.0", text: "2.0x" },
+                    { value: "2.5", text: "2.5x" },
+                    { value: "3.0", text: "3.0x" },
+                    { value: "3.5", text: "3.5x" },
+                    { value: "4.0", text: "4.0x" }
+                ];
+
+                const selectOptions = multiplierOptions.map(opt => 
+                    `<option value="${opt.value}" ${opt.value === multiplier ? 'selected' : ''}>${opt.text}</option>`
+                ).join('');
+
+                const studentNumberInput = readOnly ? 
+                    `<span class="form-control-plaintext">${studentInfo.studentNumber || studentString}</span>
+                     <input type="hidden" name="student" value="${studentString}">` :
+                    `<input type="text" name="student" class="form-control student-input" value="${studentString}" 
+                            placeholder="Enter student info" required>`;
+
+                const firstNameInput = readOnly ?
+                    `<span class="form-control-plaintext">${studentInfo.firstName}</span>` :
+                    `<input type="text" class="form-control first-name-display" value="${studentInfo.firstName}" 
+                            placeholder="First name" readonly>`;
+
+                const lastNameInput = readOnly ?
+                    `<span class="form-control-plaintext">${studentInfo.lastName}</span>` :
+                    `<input type="text" class="form-control last-name-display" value="${studentInfo.lastName}" 
+                            placeholder="Last name" readonly>`;
+
+                const multiplierSelect = readOnly && multiplier ?
+                    `<span class="form-control-plaintext">${multiplier}x</span>
+                     <input type="hidden" name="multiplier" value="${multiplier}">` :
+                    `<select name="multiplier" class="form-select" required>${selectOptions}</select>`;
+
+                const rowData = [
+                    studentNumberInput,
+                    firstNameInput,
+                    lastNameInput,
+                    multiplierSelect,
+                    `<button type="button" class="btn btn-outline-danger btn-sm remove-entry" data-row-id="${rowId}">
+                        <i class="bi bi-trash3"></i>
+                    </button>`
+                ];
+
+                const rowNode = dataTable.row.add(rowData).draw().node();
+                $(rowNode).attr('id', rowId);
+                
+                // Initialize Awesomplete for new student input fields
+                if (!readOnly) {
+                    const studentInput = $(rowNode).find('.student-input')[0];
+                    if (studentInput) {
+                        new Awesomplete(studentInput, {
                             list: studentList,
                             minChars: 1,
                             autoFirst: true
                         });
-                    } else if (input.name === "multiplier") {
-                        input.value = entryData.multiplier;
-                        if (entryData.multiplier && entryData.readOnly) {
-                            Array.from(input.options).forEach(function(option_element) {
-                                if (option_element.selected === false) {
-                                    option_element.disabled = true;
-                                }
-                            });
-                        }
+
+                        // Update name fields when student is selected
+                        studentInput.addEventListener('awesomplete-selectcomplete', function() {
+                            const selectedStudent = this.value;
+                            const parsedInfo = parseStudentName(selectedStudent);
+                            
+                            const firstNameDisplay = $(rowNode).find('.first-name-display')[0];
+                            const lastNameDisplay = $(rowNode).find('.last-name-display')[0];
+                            
+                            if (firstNameDisplay) firstNameDisplay.value = parsedInfo.firstName;
+                            if (lastNameDisplay) lastNameDisplay.value = parsedInfo.lastName;
+                        });
                     }
                 }
-
-                clone.classList.remove("d-none");
-                return clone;
+                
+                toggleButtons();
             }
 
-            function renderVisibleRows() {
-                // Clear current rows
-                entryList.innerHTML = '';
-
-                const endIndex = Math.min(visibleStartIndex + VISIBLE_ROWS, allEntries.length);
-                
-                for (let i = visibleStartIndex; i < endIndex; i++) {
-                    const rowElement = createRowElement(allEntries[i], i);
-                    entryList.appendChild(rowElement);
-                }
-
-                // Update spacer height to maintain scroll position
-                const totalHeight = allEntries.length * ROW_HEIGHT;
-                const visibleHeight = (endIndex - visibleStartIndex) * ROW_HEIGHT;
-                const topSpacerHeight = visibleStartIndex * ROW_HEIGHT;
-                const bottomSpacerHeight = totalHeight - topSpacerHeight - visibleHeight;
-                
-                scrollSpacer.style.height = bottomSpacerHeight + 'px';
-                
-                // Add top spacer if needed
-                if (visibleStartIndex > 0) {
-                    const topSpacer = document.createElement('div');
-                    topSpacer.style.height = topSpacerHeight + 'px';
-                    entryList.insertBefore(topSpacer, entryList.firstChild);
-                }
-            }
-
-            function addEntry(studentString = "", multiplier = "", readOnly = false) {
-                allEntries.push({
-                    studentString: studentString,
-                    multiplier: multiplier,
-                    readOnly: readOnly
-                });
-                
-                renderVisibleRows();
-                toggleHeaderAndButtons();
-            }
-
-            function removeEntry(index) {
-                allEntries.splice(index, 1);
-                
-                // Adjust visible start index if needed
-                if (visibleStartIndex >= allEntries.length && visibleStartIndex > 0) {
-                    visibleStartIndex = Math.max(0, allEntries.length - VISIBLE_ROWS);
-                }
-                
-                renderVisibleRows();
-                toggleHeaderAndButtons();
+            function toggleButtons() {
+                const rowCount = dataTable ? dataTable.rows().count() : 0;
+                const buttons = document.getElementById("buttons-hidden");
+                buttons.style.display = rowCount > 0 ? "" : "none";
             }
 
             function removeAllEntries() {
-                allEntries = [];
-                visibleStartIndex = 0;
-                renderVisibleRows();
-                toggleHeaderAndButtons();
+                if (dataTable) {
+                    dataTable.clear().draw();
+                    toggleButtons();
+                }
             }
 
-            // Handle scrolling for virtual scrolling
-            scrollContainer.addEventListener('scroll', function() {
-                const scrollTop = scrollContainer.scrollTop;
-                const newStartIndex = Math.floor(scrollTop / ROW_HEIGHT);
-                
-                if (newStartIndex !== visibleStartIndex) {
-                    visibleStartIndex = newStartIndex;
-                    renderVisibleRows();
-                }
-            });
-
-            // Prefill table with existing accommodations from previous session
-            const prefillData = {{ accommodations_json|safe}};
-            prefillData.forEach(([studentNumber, multiplier, _, studentString]) => {
-                addEntry(studentString, multiplier, true);
-            });
-
-            // Insert empty rows
+            // Event listeners
             addBtn.addEventListener("click", function () {
                 addEntry();
-                // Scroll to the new entry
-                const newIndex = allEntries.length - 1;
-                const scrollPosition = newIndex * ROW_HEIGHT;
-                scrollContainer.scrollTop = scrollPosition;
             });
 
             removeAllBtn.addEventListener("click", function() {
                 removeAllEntries();
             });
 
-            // Remove rows - use event delegation
-            entryList.addEventListener("click", function (e) {
-                const removeBtn = e.target.closest(".remove-entry");
-                if (removeBtn) {
-                    const row = removeBtn.closest("tr");
-                    if (row) {
-                        const index = parseInt(row.getAttribute('data-index'));
-                        removeEntry(index);
-                    }
-                }
+            // Remove individual rows using event delegation
+            $(document).on('click', '.remove-entry', function() {
+                const rowId = $(this).data('row-id');
+                const row = dataTable.row(`#${rowId}`);
+                row.remove().draw();
+                toggleButtons();
             });
 
-            // Check at least one entry on submission
+            // Form submission
             accommodations_form.addEventListener("submit", function (e) {
-                if (allEntries.length === 0) {
+                if (!dataTable || dataTable.rows().count() === 0) {
                     e.preventDefault();
                     alert("Please add at least one accommodation entry before submitting.");
                     return;
                 }
+            });
 
-                // Create hidden inputs for all entries before submission
-                const hiddenContainer = document.createElement('div');
-                hiddenContainer.style.display = 'none';
-                
-                allEntries.forEach((entry, index) => {
-                    const studentInput = document.createElement('input');
-                    studentInput.type = 'hidden';
-                    studentInput.name = 'student';
-                    studentInput.value = entry.studentString;
-                    hiddenContainer.appendChild(studentInput);
-                    
-                    const multiplierInput = document.createElement('input');
-                    multiplierInput.type = 'hidden';
-                    multiplierInput.name = 'multiplier';
-                    multiplierInput.value = entry.multiplier;
-                    hiddenContainer.appendChild(multiplierInput);
-                });
-                
-                accommodations_form.appendChild(hiddenContainer);
+            // Prefill with existing data
+            const prefillData = {{ accommodations_json|safe}};
+            prefillData.forEach(([studentNumber, multiplier, _, studentString]) => {
+                addEntry(studentString, multiplier, true);
             });
 
             // Fill rows from JSON data

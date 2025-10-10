@@ -166,19 +166,21 @@ def upload_csv(request, course_id):
                 middlename = row.get('middlename', '').strip()
 
                 # Get only all-exams multipliers 
-                # match = None
-                # for multiplier in multiplier_names:
-                #     if "for all exams" in multiplier:
-                #         if row.get(multiplier) == "TRUE":
-                #             match = re.search(r"\((\d+x)\)", multiplier)
-                #             break
-
-                # if not match:
-                #     continue
+                match = None
+                for multiplier in multiplier_names:
+                    if "for all exams" in multiplier:
+                        if row.get(multiplier, '') == "TRUE":
+                            match = re.search(r"(\d+(?:\.\d+)?)", multiplier)
+                            break
+                if not match:
+                    continue
+                final_multiplier = match[0]
+                if '.' not in match[0]:
+                    final_multiplier = match[0] + '.0'
                 
                 parsed_data.append((
                     student_number,
-                    "1.25x",
+                    final_multiplier,
                     f"{firstname + ' ' + lastname + ' ' + middlename} ({student_number})"
                     ))
         except Exception as e:
