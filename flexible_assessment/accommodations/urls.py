@@ -24,4 +24,5 @@ urlpatterns = [
         name="accommodations_summary",
     ),
     path("<int:course_id>/upload_pdfs", views.upload_pdfs, name="upload_pdfs"),
+    path("<int:course_id>/upload_csv", views.upload_csv, name="upload_csv"),
 ]

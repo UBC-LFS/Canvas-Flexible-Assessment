@@ -23,6 +23,8 @@ import io
 import re
 import json
 import logging
+import csv
+import io
 
 from accommodations.canvas_api import AccommodationsCanvas
 
@@ -125,7 +127,66 @@ class AccommodationsHome(views.AccommodationsListView):
                 "accommodations:accommodations_quizzes", kwargs={"course_id": course_id}
             )
         )
+    
+def process_csv(file):
+    # Read file into memory
+    csv_bytes = file.read()
+    if not file.name.lower().endswith('.csv'):
+        raise Exception(f"{file.name} is not a CSV file.")
+    # Try different encodings
+    csv_text = None
+    encodings_to_try = ['utf-8', 'utf-8-sig', 'windows-1252', 'iso-8859-1', 'cp1252']
+    for encoding in encodings_to_try:
+        try:
+            csv_text = csv_bytes.decode(encoding)
+            break
+        except UnicodeDecodeError:
+            continue
+    if csv_text is None:
+        raise Exception("Failed to decode csv. Invalid encoding format.")
+    # Load multiplier headers
+    return csv.DictReader(io.StringIO(csv_text))
 
+@require_POST
+def upload_csv(request, course_id):
+    uploaded_files = request.FILES.getlist("csv_file")
+    parsed_data = []
+
+    for f in uploaded_files:
+        try:
+            csv_reader = process_csv(f)
+            fieldnames = csv_reader.fieldnames
+            fieldnames = fieldnames[::-1]
+            multiplier_names = fieldnames[1:21]
+
+            for row in csv_reader:
+                student_number = row.get('student_no', '').strip()
+                lastname = row.get('lastname', '').strip()
+                firstname = row.get('firstname', '').strip()
+                middlename = row.get('middlename', '').strip()
+
+                # Get only all-exams multipliers 
+                # match = None
+                # for multiplier in multiplier_names:
+                #     if "for all exams" in multiplier:
+                #         if row.get(multiplier) == "TRUE":
+                #             match = re.search(r"\((\d+x)\)", multiplier)
+                #             break
+
+                # if not match:
+                #     continue
+                
+                parsed_data.append((
+                    student_number,
+                    "1.25x",
+                    f"{firstname + ' ' + lastname + ' ' + middlename} ({student_number})"
+                    ))
+        except Exception as e:
+                parsed_data.append(("error", f"{f.name} failed to process: {str(e)}", "name"))
+
+    parsed_data = sorted(parsed_data, key=lambda tup: tup[2])
+
+    return JsonResponse({"results": parsed_data})
 
 @require_POST
 def upload_pdfs(request, course_id):

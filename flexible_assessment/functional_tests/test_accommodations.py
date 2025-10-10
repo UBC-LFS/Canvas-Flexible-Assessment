@@ -1,7 +1,5 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -39,9 +37,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         )
         chromeOptions.add_argument("--no-sandbox")
         chromeOptions.add_argument("--disable-setuid-sandbox")
-
-        chromeOptions.add_argument("--remote-debugging-port=9222")  # this
-
+        chromeOptions.add_argument("--remote-debugging-port=9222")
         chromeOptions.add_argument("--disable-dev-shm-using")
         chromeOptions.add_argument("--disable-extensions")
         chromeOptions.add_argument("--disable-gpu")
@@ -55,13 +51,14 @@ class TestInstructorViews(StaticLiveServerTestCase):
         chromeOptions.add_experimental_option(
             "prefs",
             {
-                "download.default_directory": self.download_dir,  # Set download location
-                "download.prompt_for_download": False,  # Disable prompt
+                "download.default_directory": self.download_dir,
+                "download.prompt_for_download": False,
                 "download.directory_upgrade": True,
                 "safebrowsing.enabled": True,
             },
         )
 
+        # Use Selenium's automatic driver management
         self.browser = webdriver.Chrome(options=chromeOptions)
 
         user = models.UserProfile.objects.get(login_id="10000007")
