@@ -139,7 +139,7 @@
 
     /* DataTables custom styling */
     .dataTables_wrapper .dataTables_length select {
-        padding: 0.375rem 0.75rem;
+        padding: 0.375rem 2rem 0.375rem 0.75rem;
         border: 1px solid #ced4da;
         border-radius: 0.375rem;
     }
@@ -277,7 +277,21 @@
                     columnDefs: [
                         { targets: [4], orderable: false }, // Actions column not sortable
                         { targets: [0, 1, 2], type: 'string' },
-                        { targets: [3], type: 'num' }
+                        { 
+                            targets: [3], 
+                            type: 'num',
+                            render: function(data, type, row) {
+                                if (type === 'sort' || type === 'type') {
+                                    // Extract the selected value from the select element
+                                    const selectElement = $(data).find('select')[0] || $(data)[0];
+                                    if (selectElement && selectElement.tagName === 'SELECT') {
+                                        return parseFloat(selectElement.value) || 0;
+                                    }
+                                    return parseFloat(data) || 0;
+                                }
+                                return data;
+                            }
+                        }
                     ],
                     order: [[2, 'asc'], [1, 'asc']], // Sort by last name, then first name
                     language: {
@@ -290,35 +304,16 @@
             }
 
             function parseStudentName(studentString) {
-                // Parse "Last, First (StudentNumber)" or just return parts
-                const match = studentString.match(/^(.+),\s*(.+)\s*\((\d+)\)$/);
+                const match = studentString.match(/^(.+?)\s+(.+?)\s*\((\d+)\)$/);
                 if (match) {
                     return {
-                        lastName: match[1].trim(),
-                        firstName: match[2].trim(),
+                        firstName: match[1].trim(),
+                        lastName: match[2].trim(),
                         studentNumber: match[3]
                     };
                 }
                 
-                // Fallback - try to extract student number if it's just a number
-                if (/^\d{8}$/.test(studentString)) {
-                    return {
-                        lastName: '',
-                        firstName: '',
-                        studentNumber: studentString
-                    };
-                }
-                
-                // If it's a name without number format
-                const parts = studentString.split(',');
-                if (parts.length === 2) {
-                    return {
-                        lastName: parts[0].trim(),
-                        firstName: parts[1].trim(),
-                        studentNumber: ''
-                    };
-                }
-                
+                // Default fallback
                 return {
                     lastName: studentString,
                     firstName: '',
@@ -351,8 +346,8 @@
                 ).join('');
 
                 const studentNumberInput = readOnly ? 
-                    `<span class="form-control-plaintext">${studentInfo.studentNumber || studentString}</span>
-                     <input type="hidden" name="student" value="${studentString}">` :
+                    `<span class="form-control-plaintext">${studentInfo.studentNumber}</span>
+                    <input type="hidden" name="student" value="${studentString}">` :
                     `<input type="text" name="student" class="form-control student-input" value="${studentString}" 
                             placeholder="Enter student info" required>`;
 
@@ -366,10 +361,7 @@
                     `<input type="text" class="form-control last-name-display" value="${studentInfo.lastName}" 
                             placeholder="Last name" readonly>`;
 
-                const multiplierSelect = readOnly && multiplier ?
-                    `<span class="form-control-plaintext">${multiplier}x</span>
-                     <input type="hidden" name="multiplier" value="${multiplier}">` :
-                    `<select name="multiplier" class="form-select" required>${selectOptions}</select>`;
+                const multiplierSelect = `<select name="multiplier" class="form-select" required>${selectOptions}</select>`;
 
                 const rowData = [
                     studentNumberInput,
