@@ -262,6 +262,7 @@
             const MAX_SIZE_MB = 10;
             let dataTable;
             let rowCounter = 0;
+            let studentIds = new Set();
 
             const studentList = {{ autocomplete_data|safe}};
 
@@ -324,6 +325,13 @@
             function addEntry(studentString = "", multiplier = "", readOnly = false) {
                 if (!dataTable) {
                     initializeDataTable();
+                }
+                if (studentString != "") {
+                    if (studentIds.has(studentString)) {
+                        return;
+                    } else {
+                        studentIds.add(studentString);
+                    }
                 }
 
                 const studentInfo = parseStudentName(studentString);
@@ -455,13 +463,18 @@
                     const invalidItems = response.results.filter(item => {
                         if (Array.isArray(item) && item.length === 3) {
                             return false;
-                        }
+                        }  
                         return true;
                     });
 
                     if (invalidItems.length > 0) {
                         alert("Error: One or more PDF submissions was invalid.");
                         return;  
+                    }
+
+                    if (response.results.length == 0) {
+                        alert("No students in class found on CFA list")
+                        return;
                     }
 
                     response.results.forEach(item => {

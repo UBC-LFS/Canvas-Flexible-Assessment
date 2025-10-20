@@ -149,15 +149,19 @@ def process_csv(file):
 
 @require_POST
 def upload_csv(request, course_id):
+    view_instance = AccommodationsHome()
+    view_instance.request = request
+    view_instance.kwargs = {'course_id': course_id}
+    students = view_instance.get_queryset()
+    valid_student_ids = set(s.login_id for s in students)
+
     uploaded_files = request.FILES.getlist("csv_file")
     parsed_data = []
 
     for f in uploaded_files:
         try:
             csv_reader = process_csv(f)
-            fieldnames = csv_reader.fieldnames
-            fieldnames = fieldnames[::-1]
-            multiplier_names = fieldnames[1:21]
+            multiplier_names = ["4", "3.5", "3", "2.5", "2", "1.75", "1.5", "1.25"]
 
             for row in csv_reader:
                 student_number = row.get('student_no', '').strip()
@@ -165,19 +169,23 @@ def upload_csv(request, course_id):
                 firstname = row.get('firstname', '').strip()
                 middlename = row.get('middlename', '').strip()
 
-                # Get only all-exams multipliers 
-                match = None
-                for multiplier in multiplier_names:
-                    if "for all exams" in multiplier:
-                        if row.get(multiplier, '') == "TRUE":
-                            match = re.search(r"(\d+(?:\.\d+)?)", multiplier)
-                            break
-                if not match:
+                if student_number not in valid_student_ids:
                     continue
-                final_multiplier = match[0]
-                if '.' not in match[0]:
-                    final_multiplier = match[0] + '.0'
+
+                final_multiplier = None
+                # Get only all-exams multipliers 
+                for multiplier in multiplier_names:
+                    field_name = "Extended time (" + multiplier + "x) for all exams"
+                    if row.get(field_name, '') == "TRUE":
+                        final_multiplier = multiplier
+                        break
                 
+                if not final_multiplier:
+                    continue    
+
+                if '.' not in final_multiplier:
+                    final_multiplier = final_multiplier + '.0'
+
                 parsed_data.append((
                     student_number,
                     final_multiplier,
