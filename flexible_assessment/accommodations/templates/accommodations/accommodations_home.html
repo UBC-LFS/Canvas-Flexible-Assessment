@@ -397,6 +397,11 @@
                         // Update name fields when student is selected
                         studentInput.addEventListener('awesomplete-selectcomplete', function() {
                             const selectedStudent = this.value;
+                            if (studentIds.has(selectedStudent)) {
+                                return;
+                            } else {
+                                studentIds.add(selectedStudent);
+                            }
                             const parsedInfo = parseStudentName(selectedStudent);
                             
                             const firstNameDisplay = $(rowNode).find('.first-name-display')[0];
@@ -404,6 +409,7 @@
                             
                             if (firstNameDisplay) firstNameDisplay.value = parsedInfo.firstName;
                             if (lastNameDisplay) lastNameDisplay.value = parsedInfo.lastName;
+                            if (studentInput) studentInput.value = parsedInfo.studentNumber;
                         });
                     }
                 }
