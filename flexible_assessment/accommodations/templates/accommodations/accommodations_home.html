@@ -326,15 +326,15 @@
                 if (!dataTable) {
                     initializeDataTable();
                 }
+                const studentInfo = parseStudentName(studentString);
                 if (studentString != "") {
-                    if (studentIds.has(studentString)) {
+                    if (studentIds.has(studentInfo.studentNumber)) {
                         return;
                     } else {
-                        studentIds.add(studentString);
+                        studentIds.add(studentInfo.studentNumber);
                     }
                 }
 
-                const studentInfo = parseStudentName(studentString);
                 const rowId = `row-${rowCounter++}`;
                 
                 const multiplierOptions = [
@@ -395,21 +395,30 @@
                         });
 
                         // Update name fields when student is selected
-                        studentInput.addEventListener('awesomplete-selectcomplete', function() {
+                        studentInput.addEventListener('awesomplete-selectcomplete', function(e) {
                             const selectedStudent = this.value;
-                            if (studentIds.has(selectedStudent)) {
+                            const parsedInfo = parseStudentName(selectedStudent);
+
+                            if (studentIds.has(parsedInfo.studentNumber)) {
+                                e.preventDefault();
+                                alert("Student already selected");
+                                this.value = '';
                                 return;
                             } else {
-                                studentIds.add(selectedStudent);
+                                studentIds.add(parsedInfo.studentNumber);
                             }
-                            const parsedInfo = parseStudentName(selectedStudent);
                             
                             const firstNameDisplay = $(rowNode).find('.first-name-display')[0];
                             const lastNameDisplay = $(rowNode).find('.last-name-display')[0];
                             
                             if (firstNameDisplay) firstNameDisplay.value = parsedInfo.firstName;
                             if (lastNameDisplay) lastNameDisplay.value = parsedInfo.lastName;
-                            if (studentInput) studentInput.value = parsedInfo.studentNumber;
+                            
+                            const cell = $(rowNode).find('td:first');
+                            cell.html(`
+                                <span class="form-control-plaintext">${parsedInfo.studentNumber}</span>
+                                <input type="hidden" name="student" value="${selectedStudent}">
+                            `);
                         });
                     }
                 }
@@ -424,6 +433,7 @@
             }
 
             function removeAllEntries() {
+                studentIds = new Set();
                 if (dataTable) {
                     dataTable.clear().draw();
                     toggleButtons();
@@ -443,6 +453,12 @@
             $(document).on('click', '.remove-entry', function() {
                 const rowId = $(this).data('row-id');
                 const row = dataTable.row(`#${rowId}`);
+                const rowNode = row.node();
+                const studentInput = $(rowNode).find('input[name="student"]').val();
+                const studentInfo = parseStudentName(studentInput);
+                if (studentInfo.studentNumber) {
+                   studentIds.delete(studentInfo.studentNumber);
+                }
                 row.remove().draw();
                 toggleButtons();
             });
@@ -530,9 +546,13 @@
                     data: formData,
                     processData: false,
                     contentType: false,
-                    success: fillFromPDFS,
+                    success: function(response) {
+                        fillFromPDFS(response);
+                        csvFileInput.value = '';
+                    },
                     error: function (xhr, status, error) {
                         console.error("Upload failed:", error);
+                        csvFileInput.vale = '';
                     }
                 });
             }
@@ -564,9 +584,13 @@
                     data: formData,
                     processData: false,
                     contentType: false,
-                    success: fillFromPDFS, // Reuse the same function since the response format should be similar
+                    success: function(response) {
+                        fillFromPDFS(response);
+                        csvFileInput.value = '';
+                    },
                     error: function (xhr, status, error) {
                         console.error("CSV Upload failed:", error);
+                        csvFileInput.vale = '';
                     }
                 });
             }
