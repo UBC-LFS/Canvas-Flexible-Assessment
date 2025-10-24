@@ -99,7 +99,7 @@ class AccommodationsHome(views.AccommodationsListView):
                 errors.append(f"Invalid student number format: {sn}")
             elif sn not in valid_student_ids:
                 errors.append(f"Student not found in course: {sn}")
-            elif mult not in {"1.25", "1.5", "2.0"}:
+            elif mult not in {"4.0", "3.5", "3.0", "2.5", "2.0", "1.75", "1.5", "1.25"}:
                 errors.append(f"Invalid multiplier '{mult}' for student {sn}")
             elif sn in seen_ids:
                 errors.append(f"Duplicate entry for student: {sn}")
