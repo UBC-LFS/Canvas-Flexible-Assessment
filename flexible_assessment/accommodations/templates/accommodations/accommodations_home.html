@@ -156,6 +156,41 @@
         margin-left: 0.125rem;
         border-radius: 0.375rem;
     }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 0.375rem 0.75rem;
+        margin-left: 0.125rem;
+        border-radius: 0.375rem;
+    }
+    
+    /* Loading spinner styles */
+    .btn-loading {
+        position: relative;
+        pointer-events: none;
+    }
+    
+    .btn-loading .btn-text {
+        visibility: hidden;
+    }
+    
+    .btn-loading::after {
+        content: "";
+        position: absolute;
+        width: 1rem;
+        height: 1rem;
+        top: 50%;
+        left: 50%;
+        margin-left: -0.5rem;
+        margin-top: -0.5rem;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spinner 0.6s linear infinite;
+    }
+
+    @keyframes spinner {
+        to { transform: rotate(360deg); }
+    }
     
     </style>
     <!-- DataTables CSS -->
@@ -447,6 +482,9 @@
             // Event listeners
             loadPresetBtn.addEventListener("click", function() {
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                loadPresetBtn.classList.add('btn-loading');
+                loadPresetBtn.disabled = true;
             
                 $.ajax({
                     url: "{% url 'accommodations:load_preset_csv' course.id %}",
@@ -458,6 +496,10 @@
                     error: function (xhr, status, error) {
                         console.error("Failed to load preset CSV:", error);
                         alert("Failed to load preset CSV file. Please check the file exists.");
+                    },
+                    complete: function() {
+                        loadPresetBtn.classList.remove('btn-loading');
+                        loadPresetBtn.disabled = false;
                     }
                 });
             });
