@@ -128,6 +128,16 @@ class AccommodationsHome(views.AccommodationsListView):
             )
         )
     
+def load_preset_csv(request, course_id):
+    preset_path = r'C:\Users\jason\Downloads\accomodations folder\accommodations.csv'
+    with open(preset_path, 'rb') as file:
+        return parse_csv([file], request, course_id)
+
+@require_POST
+def upload_csv(request, course_id):
+    uploaded_files = request.FILES.getlist("csv_file")
+    return parse_csv(uploaded_files, request, course_id)
+    
 def process_csv(file):
     # Read file into memory
     csv_bytes = file.read()
@@ -147,15 +157,12 @@ def process_csv(file):
     # Load multiplier headers
     return csv.DictReader(io.StringIO(csv_text))
 
-@require_POST
-def upload_csv(request, course_id):
+def parse_csv(uploaded_files, request, course_id):
     view_instance = AccommodationsHome()
     view_instance.request = request
     view_instance.kwargs = {'course_id': course_id}
     students = view_instance.get_queryset()
     valid_student_ids = set(s.login_id for s in students)
-
-    uploaded_files = request.FILES.getlist("csv_file")
     parsed_data = []
 
     for f in uploaded_files:

@@ -206,6 +206,9 @@
                                    accept=".csv,text/csv"
                                    autocomplete="off">
                         </div>
+                        <button type="button" class="btn btn-info mt-3" id="load-preset-csv">
+                            Load student data from CFA server
+                        </button>
                     </div>
                 </form>
                 <form id="accommodations-form"
@@ -259,6 +262,7 @@
             const addBtn = document.getElementById("add-entry");
             const removeAllBtn = document.getElementById("remove-all");
             const tableContainer = document.getElementById("table-container");
+            const loadPresetBtn = document.getElementById("load-preset-csv");
             const MAX_SIZE_MB = 10;
             let dataTable;
             let rowCounter = 0;
@@ -441,6 +445,23 @@
             }
 
             // Event listeners
+            loadPresetBtn.addEventListener("click", function() {
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+                $.ajax({
+                    url: "{% url 'accommodations:load_preset_csv' course.id %}",
+                    method: "GET",
+                    headers: { "X-CSRFToken": csrftoken },
+                    success: function(response) {
+                        fillFromPDFS(response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Failed to load preset CSV:", error);
+                        alert("Failed to load preset CSV file. Please check the file exists.");
+                    }
+                });
+            });
+
             addBtn.addEventListener("click", function () {
                 addEntry();
             });
