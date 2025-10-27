@@ -110,6 +110,82 @@ class FlexCanvas(Canvas):
             else:
                 incomplete[0] = True
 
+
+    def fetch_all_items(self, course_id, query):
+        """
+        To fetch all information from the database
+        """
+
+        URL = self.base_url + 'api/graphql'
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json"
+        }
+            
+        batch_size = 1
+        sub_batch_size = 100
+        all_groups = []
+
+        has_next_page = True
+        after = None
+        while has_next_page:
+            variables = {
+                "course_id": course_id,
+                "first": batch_size, 
+                "after": after,
+                "sub_first": sub_batch_size, 
+                "sub_after": None
+            }
+
+            res = requests.post(URL, json={"query": query, "variables": variables}, headers=headers)
+            
+            if res.status_code == 200:
+                data = res.json()['data']['course']['assignment_groups']
+                group = data['groups'][0]
+
+                sub_items = []
+                sub_after = None
+                sub_has_next_page = True
+
+                while sub_has_next_page:
+                    variables = {
+                        "course_id": course_id,
+                        "first": batch_size,
+                        "after": after,
+                        "sub_first": sub_batch_size,
+                        "sub_after": sub_after
+                    }
+
+                    sub_res = requests.post(URL, json={"query": query, "variables": variables}, headers=headers)
+
+                    if sub_res.status_code == 200:
+                        sub_data = sub_res.json()['data']['course']['assignment_groups']
+                        grade_list = sub_data['groups'][0]['grade_list']
+                        sub_items += grade_list['grades']
+
+                        sub_after = grade_list["sub_page_info"]["endCursor"]
+                        sub_has_next_page = grade_list["sub_page_info"]["hasNextPage"]
+                    else:
+                        sub_has_next_page = False
+
+                group['grade_list']['grades'] = sub_items
+                all_groups.append(group)
+
+                after = data["page_info"]["endCursor"]
+                has_next_page = data["page_info"]["hasNextPage"]
+            else:
+                has_next_page = False
+        
+        return {
+            'data': {
+                'course': {
+                    'assignment_groups': {
+                        'groups': all_groups
+                    }
+                }
+            }
+        }
+
     def get_groups_and_enrollments(self, course_id):
         """Gets Canvas assignment groups and student enrollment data
 
@@ -126,7 +202,7 @@ class FlexCanvas(Canvas):
             Contains enrollment ID for each user
         """
 
-        query = """query AssignmentGroupQuery($course_id: ID) {
+        query2 = """query AssignmentGroupQuery($course_id: ID) {
                     course(id: $course_id) {
                         assignment_groups: assignmentGroupsConnection {
                         groups: nodes {
@@ -144,7 +220,42 @@ class FlexCanvas(Canvas):
                                 _id
             } } } } } } }"""
 
-        query_response = self.graphql(query, variables={"course_id": course_id})
+        # query_response = self.graphql(query2, variables={"course_id": course_id})
+
+        query = """query AssignmentGroupQuery($course_id: ID, $first: Int!, $after: String, $sub_first: Int!, $sub_after: String) {
+                    course(id: $course_id) {
+                        assignment_groups: assignmentGroupsConnection(first: $first, after: $after) {
+                            groups: nodes {
+                                group_id: _id
+                                group_name: name
+                                group_weight: groupWeight
+                                grade_list: gradesConnection(first: $sub_first, after: $sub_after) {
+                                    grades: nodes {
+                                        current_score: currentScore
+                                        enrollment {
+                                            user {
+                                                user_id: _id
+                                                display_name: name
+                                            }
+                                            _id
+                                        } 
+                                    }
+                                    sub_page_info: pageInfo {
+                                        hasNextPage
+                                        endCursor
+                                    }
+                                }
+                            }
+                            page_info: pageInfo {
+                                hasNextPage
+                                endCursor
+                            }
+                        } 
+                    } 
+                }"""
+
+        # To fetch all data
+        query_response = self.fetch_all_items(course_id, query)
 
         query_flattened = self._flatten_dict(query_response)
         groups = query_flattened.get("data.course.assignment_groups.groups", None)
