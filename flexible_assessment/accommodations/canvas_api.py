@@ -13,7 +13,7 @@ import math
 import json
 
 
-ACCOMMODATION_MULTIPLIERS = [1.25, 1.5, 2.0]
+ACCOMMODATION_MULTIPLIERS = [4.0, 3.5, 3.0, 2.5, 2.0, 1.75, 1.5, 1.25]
 BUFFER_TIME = 30  # time of buffer in minutes
 
 
