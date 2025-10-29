@@ -257,7 +257,7 @@
                             Back
                         </button>
                         <!-- Submit button -->
-                        <button type="submit" class="btn btn-primary" onclick="on()">
+                        <button type="submit" class="btn btn-primary" id="submit-button" disabled>
                             Submit <i class="bi bi-upload ms-2"></i>
                         </button>
                     </div>
@@ -284,5 +284,18 @@
         function on() {
             document.getElementById("overlay").style.display = "flex";
         }
+        // Enable/disable submit button based on checkbox state
+        const checkbox = document.getElementById("confirmed-correct");
+        const submitButton = document.getElementById("submit-button");
+
+        checkbox.addEventListener("change", function() {
+            submitButton.disabled = !this.checked;
+        });
+
+        document.getElementById("accommodations-confirm-form").addEventListener("submit", function() {
+            if (checkbox.checked) {
+                on();
+            }
+        });
     </script>
 {% endblock %}
