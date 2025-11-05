@@ -61,7 +61,7 @@
                             {{ form.weight_option }}
                             <br/>        
                             <div class="d-flex align-items-center justify-content-between">
-                                <button class="btn btn-primary float-end" type="submit">
+                                <button class="btn btn-primary float-end" type="submit" data-bs-toggle="modal" data-bs-target="#loadingModal">
                                     Continue <i class="bi bi-chevron-right"></i>
                                 </button>                     
                             </div>
@@ -71,4 +71,25 @@
             </div>
         </div>
     </form>
-{% endblock %}
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-body d-flex flex-column align-items-center justify-content-center py-5">
+              <div class="row mb-4">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+             </div>
+             <div class="row">
+               <strong>Please wait...</strong>
+             </div>
+             <div class="row">
+                <p>Depending on the size of the course, it may take a couple minutes to load.</p>
+              </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock %}
