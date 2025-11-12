@@ -17,9 +17,10 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
 from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
+from django.template.loader import render_to_string
 from django.urls import reverse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from instructor.canvas_api import FlexCanvas
 from decimal import Decimal, ROUND_HALF_UP
 from . import grader, writer
@@ -285,7 +286,7 @@ class AssessmentGroupView(views.InstructorFormView):
 
     template_name = "instructor/assessment_group_form.html"
     form_class = AssessmentGroupForm
-    success_reverse_name = "instructor:final_grades"
+    success_reverse_name = "instructor:final_grades_shell"
 
     def get(self, request, *args, **kwargs):
         course_id = self.kwargs["course_id"]
@@ -1234,3 +1235,36 @@ def match_flex_dates_to_calendar(request, course_id):
     return HttpResponseRedirect(
         reverse("instructor:instructor_form", kwargs={"course_id": course_id})
     )
+
+
+class FinalGradeShellView(views.InstructorTemplateView):
+    """
+    Shell that shows the loading modal immediately
+    """
+    template_name = "instructor/final_grades_shell.html"
+
+    def get(self, request, *args, **kwargs):
+        course_id = self.kwargs["course_id"]
+        course = models.Course.objects.get(pk=course_id)
+
+        if should_show_page(course):
+            return super().get(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect(
+                reverse("instructor:instructor_home", kwargs={"course_id": course_id})
+            )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        course_id = self.kwargs["course_id"]
+        context["course"] = models.Course.objects.get(pk=course_id)
+        context["canvas_domain"] = settings.CANVAS_DOMAIN
+        return context
+    
+class FinalGradeTableView(FinalGradeListView):
+    """
+    Returns ONLY the table so Final Grades page can fetch it. 
+    """
+    template_name = "instructor/final_grades_table.html"
+
+

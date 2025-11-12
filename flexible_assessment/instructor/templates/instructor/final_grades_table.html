@@ -1,0 +1,72 @@
+{% load instructor_tags %}
+<table id="final" class="table table-striped mb-3 nowrap" width="100%">
+    <thead>
+        <tr>
+            <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
+            <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Override Total</th>
+            <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Default Total</th>
+            <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Difference</th>
+            <th class="text-center align-middle" style="width: 5%; font-size: 110%;">
+                Chose
+                <br>
+                Percentages?
+            </th>
+            {% for assessment in course.assessment_set.all|dictsort:"order" %}
+                <th class="assessment text-center align-middle" style="font-size: 110%;">
+                    {{ assessment.title }}
+                    <br>
+                    Grade %
+                </th>
+                <th class="assessment text-center align-middle"
+                    style="font-size: 110%"
+                    data-bs-toggle="tooltip"
+                    title="Default Weight">
+                    {{ assessment.title }}
+                    <br>
+                    Weight %
+                    <br>
+                    ({{ assessment.default }}%)
+                </th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for student in student_list %}
+            <tr>
+                <td class="text-center align-middle text-break">
+                    <a href="{% url 'instructor:override_student_form_final' course.id student.user_id %}?previous=final">{{ student.display_name }}</a>
+                </td>
+                {% get_student_grades groups student course as grades %}
+                <td class="text-center align-middle {{ grades.0 }}">{{ grades.1 }}</td>
+                <td class="text-center align-middle default">{{ grades.2 }}</td>
+                <td class="text-center align-middle {{ grades.0 }}">{{ grades.3 }}</td>
+                <td class="text-center align-middle">
+                    {% if grades.0 == "overriden" %}
+                        Yes
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+                {% for assessment in course.assessment_set.all|dictsort:"order" %}
+                    <!-- TODO: sorted here now - now perhaps implement in view and also fix csv export -->
+                    {% get_group_weight_percentage groups assessment.group as default_weight %}
+                    {% get_score groups assessment.group student as score %}
+                    <td class="text-center align-middle">{{ score|default_if_none:"-" }}</td>
+                    {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
+                        <td class="text-center align-middle">{{ flex_assessment.flex|to_str|default_if_none:default_weight }}</td>
+                    {% endwith %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th class="text-center align-middle">Averages</th>
+            {% get_averages_str groups course as averages %}
+            <td class="text-center align-middle">{{ averages.0 }}</td>
+            <td class="text-center align-middle">{{ averages.1 }}</td>
+            <td class="text-center align-middle">{{ averages.2 }}</td>
+            <td class="empty"></td>
+        </tr>
+    </tfoot>
+</table>

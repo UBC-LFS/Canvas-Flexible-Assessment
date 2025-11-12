@@ -1,0 +1,233 @@
+{% extends "instructor/instructor_base.html" %}
+{% load instructor_tags %}
+{% block nav_item_final %}
+    active
+{% endblock nav_item_final %}
+{% block content %}
+
+<!-- Loading modal-->
+    <div class="modal fade show" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"  role="dialog" style="display:block;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+            <div class="modal-body d-flex flex-column align-items-center justify-content-center py-5">
+                <div class="row mb-4">
+                <div class="spinner-border text-primary" style="width:3rem;height:3rem" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                </div>
+                <div class="row"><strong>Please wait...</strong></div>
+                <div class="row"><p>Depending on the size of the course, it may take a couple minutes to load.</p></div>
+            </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+            modal.show();
+        });        
+    </script>
+
+        <div class="mt-5 mb-5">
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="col-11">
+                    <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
+                        <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
+                            <h3 class="mb-0">Final Grades</h3>
+                            <a class="btn btn-outline-primary btn-sm"
+                            style="border-radius: 1em"
+                            href="{% url 'instructor:final_grades_export' course.id %}"><i class="bi bi-download"></i> Export</a>
+                        </div>
+                        <div class="card-body pt-2 pb-3">
+                            <p class="fw-light pb-2">
+                                <div id="more" style="display:none">
+                                    <p>
+                                        The <b>Override Total</b> is the total grade when factoring in the student's chosen percentages while the <b>Default Total</b> uses the default weights for each assignment group.
+                                        The <b>Default Total</b> and <b>Difference</b> columns are not visible to students.
+                                    </p>
+                                    <p>
+                                        Next to these you can see whether the student <b>Chose Percentages</b> or not, as well as the assignment group <b>Grade</b> followed by the <b>Weight</b> for each group.
+                                        The default <b>Weight</b> is listed in parenthesis; (... %).
+                                    </p>
+                                    <p>
+                                        Click the <b><i class="bi bi-download"></i> <span>Export</span></b> button in the top-right corner of this page to export this table to a spreadsheet. If you want to send the grades to Canvas, verify your grades to make sure they are calculated as expected, then click
+                                        <b>Send to Canvas</b>.
+                                    </p>
+                                </div>
+                                <span onclick="show_more()"
+                                    id="myBtn"
+                                    style="text-decoration: underline;
+                                            cursor: pointer">Show Instructions</span>
+                            </p>
+
+                            <!-- Table mounts here -->
+                            <div id="tableMount"></div>
+
+                            <form id="grade-submit"
+                                method="post"
+                                action="{% url 'instructor:final_grades_submit' course.id %}">
+                            {% csrf_token %}
+                            <div class="d-flex align-items-left">
+                                <div class="form-check">
+                                    <label class="form-check-label" for="flexCheckDefault">
+                                        <input class="form-check-input"
+                                                type="checkbox"
+                                                value=""
+                                                id="flexCheckDefault"
+                                                name="flexCheckDefault">
+                                        I have verified that the final grades are correct
+                                    </label>
+                                </div>
+                            </div>
+                            <p class="d-flex justify-content-left"
+                                id="checkbox-error-message"
+                                style="display:none !important;
+                                        color:red">
+                                Select the checkbox to confirm that you have verified the final grades before sending them to Canvas.
+                            </p>
+                            <div class="d-flex align-items-left">
+                                <div class="form-check">
+                                    <label class="form-check-label" for="release_total">
+                                        <input type="checkbox"
+                                                name="release_total"
+                                                class="form-check-input"
+                                                id="release_total">
+                                        Release Assignment Group and Override Total grades to students
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center pb-2">
+                                <button type="submit" id="submit-button" class="btn btn-primary">
+                                    Send to Canvas <i class="bi bi-cloud-arrow-up ms-1"></i>
+                                </button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <p class="fw-light">
+                                    <span style="color: red; font-weight:bold;">Warning:</span> This will overwrite the Canvas Gradebook Override column with the <span style="font-weight:bold;">Override Total</span> values here.
+                                </p>
+                            </div>
+                        </form>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if messages %}
+    <ul class="messages" hidden>
+        {% for message in messages %}
+            <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+          
+
+<script>
+
+    function hide_loading() {
+        const loadingModalElement = document.getElementById('loadingModal');
+        const modalInstance = bootstrap.Modal.getInstance(loadingModalElement);
+        modalInstance.hide();
+    }
+
+    function format_table() {
+        $('.used-default').css('color', 'gray');
+        $('.used-default').css('font-style', 'italic');
+    }
+
+    (async function() {
+        const mount = document.getElementById('tableMount');
+
+        try {
+            const response = await fetch("{% url 'instructor:final_grades_table' course.id %}");
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const html = await response.text();
+            mount.innerHTML = html.trim();
+
+            var colspan = $('.assessment').length;
+            $('.empty').attr('colspan', colspan);
+            var width = Math.floor(75/colspan);
+            $('.assessment').css('width', width+'%');
+
+
+            const table = $('#final').DataTable({
+                scrollX: true,
+                initComplete: function () {
+                  hide_loading();
+                  format_table();
+                }
+              });
+
+              $('#final').on('draw.dt', function () {
+                hide_loading();
+                format_table();
+              });
+
+            $('.dataTables_scrollBody').css('overflow-y', 'hidden');
+
+
+        } catch (err) {
+            console.error("Error loading table:", err);
+            hide_loading();
+            alert('Error loading the grade table. Please refresh and try again.');
+        }
+    })();
+
+    
+
+    $('#submit-button').click(function(e) {
+        var checkBox = document.getElementById("flexCheckDefault");
+        var errorMessage = document.getElementById("checkbox-error-message");
+        if (checkBox.checked == false){
+            e.preventDefault();
+            errorMessage.style.display = "block";
+            return false;
+        }
+        else {
+            errorMessage.style.display = "none !important";
+        }
+
+        if (confirm('Are you sure you want to submit override grades to Canvas?')) {
+            $('#submit-button').prepend('<span class="spinner-border spinner-border-sm me-2"> </span>');
+            $('#submit-button').prop('disabled', true);
+            $('form#grade-submit').submit();
+        } else {
+            return false;
+        }
+    });
+
+    $(document).ready(function () {
+        var errors = [];
+        $('.error').each(function(_, error) {
+            errors.push(error.textContent);
+        });
+        var error_str = errors.join(', ');
+        if (error_str)
+            alert(error_str);
+    });
+    
+    function show_more() {
+        var moreText = $("#more");
+        var btnText = $("#myBtn");
+        
+        function change_text(text) {
+            btnText.text(text);
+        }
+        
+        if (moreText.is(":hidden")) {
+            moreText.fadeIn({duration: 400});
+            change_text("Hide Instructions");
+        } else {
+            moreText.fadeOut({duration: 400, complete: function() {
+                    btnText.text("Show Instructions");
+                }
+            });
+        }
+    }
+
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+</script>
+
+{% endblock content %}
