@@ -192,6 +192,25 @@
         to { transform: rotate(360deg); }
     }
     
+    /* Collapsible section styles */
+    .card-header .btn-link {
+        color: #212529;
+        font-weight: normal;
+        padding: 0;
+    }
+    
+    .card-header .btn-link:hover {
+        color: #0056b3;
+    }
+    
+    .card-header .btn-link i {
+        transition: transform 0.3s ease;
+    }
+    
+    .card-header .btn-link[aria-expanded="true"] i {
+        transform: rotate(180deg);
+    }
+    
     </style>
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
@@ -204,48 +223,80 @@
         <div class="row justify-content-center mt-4">
             <div class="col-lg-10 col-md-12">
                 <!-- PDF upload -->
-                <form id="pdf-upload-form" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="my-3">
-                        <h4>Upload PDF Files from CfA</h4>
-                        <label for="pdf-file" class="form-label my-3">
-                            Please upload the files you received from the Centre for Accessibility.
-                        </label>
-                        <div id="drop-area">
-                            <p>Drag & drop PDF files here, or click to select</p>
-                            <input type="file"
-                                   id="pdf-file"
-                                   name="pdf_files"
-                                   multiple
-                                   class="hidden-input"
-                                   accept="application/pdf"
-                                   autocomplete="off">
-                        </div>
-                    </div>
-                </form>
-
-                <!-- CSV upload -->
-                <form id="csv-upload-form" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="my-3">
-                        <h4>Upload CSV File</h4>
-                        <label for="csv-file" class="form-label my-3">
-                            Upload a CSV file containing student accommodations data.
-                        </label>
-                        <div id="csv-drop-area">
-                            <p>Drag & drop CSV file here, or click to select</p>
-                            <input type="file"
-                                   id="csv-file"
-                                   name="csv_file"
-                                   class="hidden-input"
-                                   accept=".csv,text/csv"
-                                   autocomplete="off">
-                        </div>
-                        <button type="button" class="btn btn-info mt-3" id="load-preset-csv">
-                            Load student data from CFA server
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <button class="btn btn-link text-decoration-none w-100 text-start d-flex justify-content-between align-items-center" 
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#pdfUploadCollapse" 
+                                aria-expanded="false" 
+                                aria-controls="pdfUploadCollapse">
+                            <h4 class="mb-0">Upload PDF Files from CfA</h4>
+                            <i class="bi bi-chevron-down"></i>
                         </button>
                     </div>
-                </form>
+                    <div class="collapse" id="pdfUploadCollapse">
+                        <div class="card-body">
+                            <form id="pdf-upload-form" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div>
+                                    <label for="pdf-file" class="form-label mb-3">
+                                        Please upload the files you received from the Centre for Accessibility.
+                                    </label>
+                                    <div id="drop-area">
+                                        <p>Drag & drop PDF files here, or click to select</p>
+                                        <input type="file"
+                                               id="pdf-file"
+                                               name="pdf_files"
+                                               multiple
+                                               class="hidden-input"
+                                               accept="application/pdf"
+                                               autocomplete="off">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CSV upload -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <button class="btn btn-link text-decoration-none w-100 text-start d-flex justify-content-between align-items-center" 
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#csvUploadCollapse" 
+                                aria-expanded="false" 
+                                aria-controls="csvUploadCollapse">
+                            <h4 class="mb-0">Upload CSV File</h4>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="csvUploadCollapse">
+                        <div class="card-body">
+                            <form id="csv-upload-form" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div>
+                                    <label for="csv-file" class="form-label mb-3">
+                                        Upload a CSV file containing student accommodations data.
+                                    </label>
+                                    <div id="csv-drop-area">
+                                        <p>Drag & drop CSV file here, or click to select</p>
+                                        <input type="file"
+                                               id="csv-file"
+                                               name="csv_file"
+                                               class="hidden-input"
+                                               accept=".csv,text/csv"
+                                               autocomplete="off">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-info" id="load-preset-csv">
+                    Load student data from CFA server
+                </button>
                 <form id="accommodations-form"
                       method="post"
                       action="{% url 'accommodations:accommodations_home' course.id %}">
