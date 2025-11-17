@@ -6,7 +6,7 @@
 {% block content %}
 
 <!-- Loading modal-->
-    <div class="modal fade show" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"  role="dialog" style="display:block;">
+    <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"  role="dialog">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow">
             <div class="modal-body d-flex flex-column align-items-center justify-content-center py-5">
@@ -22,10 +22,13 @@
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
-            modal.show();
-        });        
+        {% if not saved_table %}
+            const loadingModal = document.getElementById('loadingModal');
+            if (loadingModal) {
+                const modal = bootstrap.Modal.getOrCreateInstance(loadingModal);
+                modal.show();
+            }
+        {% endif %}    
     </script>
 
         <div class="mt-5 mb-5">
@@ -61,7 +64,13 @@
                             </p>
 
                             <!-- Table mounts here -->
-                            <div id="tableMount"></div>
+                             <div id="tableMount">
+                                {% if saved_table %}
+                                    {{ saved_table|safe }}
+                                {% endif %}
+                            </div>
+
+                            <!-- Table Mount end -->
 
                             <form id="grade-submit"
                                 method="post"
@@ -124,9 +133,13 @@
 <script>
 
     function hide_loading() {
-        const loadingModalElement = document.getElementById('loadingModal');
-        const modalInstance = bootstrap.Modal.getInstance(loadingModalElement);
-        modalInstance.hide();
+        var modalElement = document.getElementById('loadingModal');
+        if (modalElement) {
+            const instance = bootstrap.Modal.getInstance(modalElement);
+            if (instance) {
+                instance.hide();
+            }
+        }
     }
 
     function format_table() {
@@ -143,6 +156,8 @@
             const html = await response.text();
             mount.innerHTML = html.trim();
 
+            hide_loading();
+
             var colspan = $('.assessment').length;
             $('.empty').attr('colspan', colspan);
             var width = Math.floor(75/colspan);
@@ -152,13 +167,11 @@
             const table = $('#final').DataTable({
                 scrollX: true,
                 initComplete: function () {
-                  hide_loading();
                   format_table();
                 }
               });
 
               $('#final').on('draw.dt', function () {
-                hide_loading();
                 format_table();
               });
 

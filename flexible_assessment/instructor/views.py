@@ -1,5 +1,6 @@
 import csv
 import json
+import hashlib
 import logging
 from datetime import datetime
 import dateutil.parser
@@ -286,6 +287,7 @@ class AssessmentGroupView(views.InstructorFormView):
 
     template_name = "instructor/assessment_group_form.html"
     form_class = AssessmentGroupForm
+    # success_reverse_name = "instructor:final_grades"
     success_reverse_name = "instructor:final_grades_shell"
 
     def get(self, request, *args, **kwargs):
@@ -331,6 +333,26 @@ class AssessmentGroupView(views.InstructorFormView):
         self.kwargs["hide_weights"] = not canvas_course.apply_assignment_group_weights
 
         return kwargs
+    
+    def compute_assignment_group_hash(self, course_id, selected_map, weighting):
+        """
+        Create a hash object of the assignment group inputs
+        """
+        pairs = sorted(selected_map.items(), key=lambda kv: kv[0])  
+        payload = {
+            "course_id": course_id,
+            "weighting": weighting,
+            "pairs": pairs,   
+        }
+        encoded_json = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return hashlib.sha256(encoded_json).hexdigest()  
+
+    def session_table_key(self, hash_id):
+        return f"final_table_{hash_id}"
+
+    def session_set_current_key(self, request, key):
+        request.session["current_table_key"] = key
+        request.session.modified = True
 
     def form_valid(self, form):
         """Validates that each assessment is matched to one Canvas assignment group
@@ -350,6 +372,7 @@ class AssessmentGroupView(views.InstructorFormView):
             HttpResponseRedirect if form is valid,
             TemplateResponse if error in form
         """
+        course_id = self.kwargs["course_id"]
         weight_option = form.cleaned_data.pop("weight_option", "default")
 
         matched_groups = form.cleaned_data.values()
@@ -379,6 +402,17 @@ class AssessmentGroupView(views.InstructorFormView):
         else:
             self.request.session["flat"] = False
 
+        weighting = (weight_option == "equal_weights")
+        
+        selected_map: dict[str, int] = {}
+        for assessment_id, group_id in form.cleaned_data.items():
+            if group_id in ("", None):
+                continue
+            selected_map[str(assessment_id)] = int(group_id)
+
+        hash_id = self.compute_assignment_group_hash(course_id, selected_map, weighting)
+        key = self.session_table_key(hash_id)
+        self.session_set_current_key(self.request, key)
         response = super().form_valid(form)
         return response
 
@@ -1259,6 +1293,8 @@ class FinalGradeShellView(views.InstructorTemplateView):
         course_id = self.kwargs["course_id"]
         context["course"] = models.Course.objects.get(pk=course_id)
         context["canvas_domain"] = settings.CANVAS_DOMAIN
+        curr_key = self.request.session.get("current_table_key")
+        context["saved_table"] = self.request.session.get(curr_key, "") if curr_key else ""
         return context
     
 class FinalGradeTableView(FinalGradeListView):
@@ -1266,5 +1302,21 @@ class FinalGradeTableView(FinalGradeListView):
     Returns ONLY the table so Final Grades page can fetch it. 
     """
     template_name = "instructor/final_grades_table.html"
+
+    def get(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+        curr_key = self.request.session.get("current_table_key")
+
+        if curr_key and self.request.session.get(curr_key):
+            return HttpResponse(request.session[curr_key])
+
+        context = self.get_context_data(**kwargs)
+        html = render_to_string(self.template_name, context=context, request=request)
+
+        if curr_key:
+            self.request.session[curr_key] = html
+            self.request.session.modified = True
+
+        return HttpResponse(html)
 
 
