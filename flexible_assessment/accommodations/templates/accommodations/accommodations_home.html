@@ -412,7 +412,7 @@
                 };
             }
 
-            function addEntry(studentString = "", multiplier = "", readOnly = false) {
+            function addEntry(studentString = "", multiplier = "", studentNotes = "", readOnly = false) {
                 if (!dataTable) {
                     initializeDataTable();
                 }
@@ -445,9 +445,11 @@
 
                 const studentNumberInput = readOnly ? 
                     `<span class="form-control-plaintext">${studentInfo.studentNumber}</span>
-                    <input type="hidden" name="student" value="${studentString}">` :
+                    <input type="hidden" name="student" value="${studentString}">
+                    <input type="hidden" name="student_notes" value = "${studentNotes}">` :
                     `<input type="text" name="student" class="form-control student-input" value="${studentString}" 
-                            placeholder="Enter student info" required>`;
+                            placeholder="Enter student info" required>
+                    <input type="hidden" name="student_notes" value="">`;
 
                 const firstNameInput = readOnly ?
                     `<span class="form-control-plaintext">${studentInfo.firstName}</span>` :
@@ -597,7 +599,7 @@
                 console.log(response.results);
                 if (response.results && Array.isArray(response.results)) {
                     const invalidItems = response.results.filter(item => {
-                        if (Array.isArray(item) && item.length === 3) {
+                        if (Array.isArray(item) && item.length === 4) {
                             return false;
                         }  
                         return true;
@@ -614,9 +616,9 @@
                     }
 
                     response.results.forEach(item => {
-                        if (Array.isArray(item) && item.length === 3) {
-                            const [studentNumber, multiplier, studentName] = item;
-                            addEntry(studentName, multiplier, true);
+                        if (Array.isArray(item) && item.length === 4) {
+                            const [studentNumber, multiplier, studentName, studentNotes] = item;
+                            addEntry(studentName, multiplier, studentNotes, true);
                         } else if (item.error) {
                             console.warn(item.error);
                             alert(item.error);

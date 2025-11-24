@@ -106,13 +106,15 @@
                                             <tr>
                                                 <th>Name</th>
                                                 <th>Student ID</th>
+                                                <th>CFA Notes</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for student_id, student_name, _ in students %}
+                                            {% for student_id, student_name, _, student_note in students %}
                                                 <tr>
                                                     <td>{{ student_name }}</td>
                                                     <td>{{ student_id }}</td>
+                                                    <td>{{ student_note }}</td>
                                                 </tr>
                                             {% endfor %}
                                         </tbody>
