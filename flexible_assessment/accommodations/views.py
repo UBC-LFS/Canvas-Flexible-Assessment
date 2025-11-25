@@ -75,13 +75,14 @@ class AccommodationsHome(views.AccommodationsListView):
         login_id_to_user_id = {s.login_id: s.user_id for s in students}
 
         student_strings = request.POST.getlist("student")
+        student_notes = request.POST.getlist("student_notes")
         multipliers = request.POST.getlist("multiplier")
 
-        if not student_strings or not multipliers:
+        if not student_strings or not multipliers or not student_notes:
             messages.error(request, "No accommodations entered.")
             return redirect("accommodations:accommodations_home", course_id)
 
-        if len(student_strings) != len(multipliers):
+        if len(student_strings) != len(multipliers) or len(multipliers) != len(student_notes):
             messages.error(
                 request,
                 "Number of student numbers does not equal number of multipliers.",
@@ -92,7 +93,7 @@ class AccommodationsHome(views.AccommodationsListView):
         accommodations = []
         errors = []
 
-        for student_string, mult in zip(student_strings, multipliers):
+        for student_string, mult, student_note in zip(student_strings, multipliers, student_notes):
             sn_list = re.findall(r"\d+", student_string)
             sn = "".join(map(str, sn_list))  # get student number from student string
             if len(sn) != 8 or not sn.isdigit():
@@ -105,7 +106,7 @@ class AccommodationsHome(views.AccommodationsListView):
                 errors.append(f"Duplicate entry for student: {sn}")
             else:
                 accommodations.append(
-                    (sn, mult, login_id_to_user_id[sn], student_string)
+                    (sn, mult, login_id_to_user_id[sn], student_string, student_note)
                 )
                 seen_ids.add(sn)
 
@@ -172,12 +173,12 @@ def parse_csv(uploaded_files, request, course_id):
 
             for row in csv_reader:
                 student_number = row.get('student_no', '').strip()
+                if student_number not in valid_student_ids:
+                    continue
+                
                 lastname = row.get('lastname', '').strip()
                 firstname = row.get('firstname', '').strip()
                 middlename = row.get('middlename', '').strip()
-
-                if student_number not in valid_student_ids:
-                    continue
 
                 final_multiplier = None
                 # Get only all-exams multipliers 
@@ -193,10 +194,15 @@ def parse_csv(uploaded_files, request, course_id):
                 if '.' not in final_multiplier:
                     final_multiplier = final_multiplier + '.0'
 
+                notes = ""
+                if "exam" in row.get('If other, please specify').lower():
+                    notes = row.get('If other, please specify')
+
                 parsed_data.append((
                     student_number,
                     final_multiplier,
-                    f"{firstname + ' ' + lastname + ' ' + middlename} ({student_number})"
+                    f"{firstname + ' ' + lastname + ' ' + middlename} ({student_number})",
+                    notes
                     ))
         except Exception as e:
                 parsed_data.append(("error", f"{f.name} failed to process: {str(e)}", "name"))
@@ -261,6 +267,7 @@ def upload_pdfs(request, course_id):
                         student_number,
                         multiplier,
                         f"{str(student_number)}",
+                        "",
                     )
                 )
             else:
