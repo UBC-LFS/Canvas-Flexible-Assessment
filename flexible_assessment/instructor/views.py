@@ -140,40 +140,13 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                 reverse("instructor:instructor_home", kwargs={"course_id": course_id})
             )
 
-    # def export_list(self):
-    #     students = self.get_queryset()
-    #     course_id = self.kwargs["course_id"]
-    #     course = models.Course.objects.get(pk=course_id)
-    #     groups = self.get_context_data().get("groups")
-
-    #     csv_response = writer.grades_csv(course, students, groups)
-
-    #     logger.info(
-    #         "Final list view exported",
-    #         extra={"course": str(course), "user": self.request.session["display_name"]},
-    #     )
-
-    #     return csv_response
-    
     def export_list(self):
         students = self.get_queryset()
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
         groups = self.get_context_data().get("groups")
-        curr_key = self.request.session.get("current_table_key")
-        saved = self.request.session.get(curr_key) if curr_key else ""
 
-        if isinstance(saved, dict):
-            table_html = saved.get("html", "")
-        else:
-            table_html = ""
-
-        if not table_html:
-            context = self.get_context_data()
-            html = render_to_string("instructor/final_grades_table.html", context)
-            table_html = html
-        
-        csv_response = writer.grades_csv(course, table_html)
+        csv_response = writer.grades_csv(course, students, groups)
 
         logger.info(
             "Final list view exported",
@@ -181,6 +154,33 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         )
 
         return csv_response
+    
+    # def export_list(self):
+    #     students = self.get_queryset()
+    #     course_id = self.kwargs["course_id"]
+    #     course = models.Course.objects.get(pk=course_id)
+    #     groups = self.get_context_data().get("groups")
+    #     curr_key = self.request.session.get("current_table_key")
+    #     saved = self.request.session.get(curr_key) if curr_key else ""
+
+    #     if isinstance(saved, dict):
+    #         table_html = saved.get("html", "")
+    #     else:
+    #         table_html = ""
+
+    #     if not table_html:
+    #         context = self.get_context_data()
+    #         html = render_to_string("instructor/final_grades_table.html", context)
+    #         table_html = html
+        
+    #     csv_response = writer.grades_csv(course, table_html)
+
+    #     logger.info(
+    #         "Final list view exported",
+    #         extra={"course": str(course), "user": self.request.session["display_name"]},
+    #     )
+
+    #     return csv_response
 
     def post(self, request, *args, **kwargs):
         """Sets override grades for students on Canvas"""
