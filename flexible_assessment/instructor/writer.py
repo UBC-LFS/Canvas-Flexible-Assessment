@@ -233,42 +233,40 @@ def grades_csv(course, html):
 
     csv_writer = CSVWriter("Grades", course)
 
-    soup = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(html, "lxml")
     table = soup.find("table", {"id": "final"})
+    if table is None:
+        return csv_writer.get_response() 
 
-    thead = table.find("thead")
+    thead = table.thead
     if thead:
-        header_cells = thead.find_all("th")
-        num_cells = len(header_cells)
-        values = []
-        for i in range(0, num_cells - 1):
-            values.append(header_cells[i].get_text(" ", strip=True))
+        header_cells = thead.find_all("th", recursive=True)
+        values = [cell.get_text(" ", strip=True) for cell in header_cells[:-1]]
         csv_writer.write(values)
 
-    tbody = table.find("tbody")
+    tbody = table.tbody
     if tbody:
-        for row in tbody.find_all("tr"):
-            cells = row.find_all("td")
-            values = []
-            num_cells = len(cells)
+        for row in tbody.find_all("tr", recursive=False):
+            cells = row.find_all("td", recursive=False)
+            if not cells:
+                continue
+
             name = cells[0].get_text(" ", strip=True)
-            cwl = cells[num_cells - 1].get_text(" ", strip=True)
-            values.append("{}, {}".format(name, cwl)) 
-            for i in range(1, num_cells - 1):
-                values.append(cells[i].get_text(" ", strip=True))
+            cwl = cells[-1].get_text(" ", strip=True)
+
+            values = [f"{name}, {cwl}"]
+            values.extend(
+                cell.get_text(" ", strip=True) for cell in cells[1:-1]
+            )
             csv_writer.write(values)
 
-    tfoot = table.find("tfoot")
+    tfoot = table.tfoot
     if tfoot:
         csv_writer.write(["Average Override", "Average Default", "Average Difference"])
-        values = []
-        footer_cells = tfoot.find_all("td")
-        for cell in footer_cells:
-            values.append(cell.get_text(" ", strip=True))
+        footer_cells = tfoot.find_all("td", recursive=True)
+        values = [cell.get_text(" ", strip=True) for cell in footer_cells]
         csv_writer.write(values)
-
     return csv_writer.get_response()
-
 
 def assessments_csv(course):
     """Creates csv response for course assessments"""
