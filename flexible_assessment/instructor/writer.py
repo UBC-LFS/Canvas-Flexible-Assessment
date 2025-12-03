@@ -233,8 +233,9 @@ def grades_csv(course, html):
 
     csv_writer = CSVWriter("Grades", course)
 
-    soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(html, "html.parser")
     table = soup.find("table", {"id": "final"})
+    
     if table is None:
         return csv_writer.get_response() 
 
