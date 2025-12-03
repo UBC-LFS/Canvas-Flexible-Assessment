@@ -8,6 +8,8 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.utils import timezone
 
+from bs4 import BeautifulSoup
+
 from . import grader
 
 
@@ -159,64 +161,105 @@ def round_half_up(value, digits=2):
     d = Decimal(str(value))  # Convert to Decimal
     return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
+# def grades_csv(course, students, groups):
+#     """Creates csv response for final grade list"""
 
-def grades_csv(course, students, groups):
+#     csv_writer = CSVWriter("Grades", course)
+
+#     assessments = list(course.assessment_set.all().order_by("order"))
+
+#     titles = []
+#     for assessment in assessments:
+#         titles.append(f"{assessment.title} Grade %")
+#         titles.append(
+#             f"{assessment.title} Weight % ({grader.get_group_weight(groups, assessment.group)}%)"
+#         )
+
+#     header = (
+#         ["Student"]
+#         + ["Override Total", "Default Total", "Difference", "Chose Percentages?"]
+#         + titles
+#     )
+
+#     csv_writer.write(header)
+
+#     for student in students:
+#         values = []
+#         values.append("{}, {}".format(student.display_name, student.login_id))
+
+#         override_total = grader.get_override_total(groups, student, course)
+#         override_total = round_half_up(override_total, 3)
+#         default_total = grader.get_default_total(groups, student)
+#         default_total = round_half_up(default_total, 3)
+
+#         if override_total is not None:
+#             values.append(round_half_up(override_total, 2))
+#             values.append(round_half_up(default_total, 2))
+#             diff = override_total - default_total
+#             values.append(round_half_up(diff, 2))
+#             values.append("Yes")
+#         else:
+#             values.append(round_half_up(default_total, 2))
+#             values.append(round_half_up(default_total, 2))
+#             values.append("0")
+#             values.append("No")
+
+#         for assessment in assessments:
+#             score = grader.get_score(groups, assessment.group, student)
+#             values.append(score)
+
+#             group_weight = grader.get_group_weight(groups, assessment.group)
+
+#             flex = student.flexassessment_set.get(assessment=assessment).flex
+#             values.append(flex) if flex is not None else values.append(group_weight)
+
+#         csv_writer.write(values)
+
+#     csv_writer.write(["Average Override", "Average Default", "Average Difference"])
+
+#     csv_writer.write(grader.get_averages(groups, course))
+
+#     return csv_writer.get_response()
+
+
+def grades_csv(course, html):
     """Creates csv response for final grade list"""
 
     csv_writer = CSVWriter("Grades", course)
 
-    assessments = list(course.assessment_set.all().order_by("order"))
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", {"id": "final"})
 
-    titles = []
-    for assessment in assessments:
-        titles.append(f"{assessment.title} Grade %")
-        titles.append(
-            f"{assessment.title} Weight % ({grader.get_group_weight(groups, assessment.group)}%)"
-        )
-
-    header = (
-        ["Student"]
-        + ["Override Total", "Default Total", "Difference", "Chose Percentages?"]
-        + titles
-    )
-
-    csv_writer.write(header)
-
-    for student in students:
+    thead = table.find("thead")
+    if thead:
+        header_cells = thead.find_all("th")
+        num_cells = len(header_cells)
         values = []
-        values.append("{}, {}".format(student.display_name, student.login_id))
-
-        override_total = grader.get_override_total(groups, student, course)
-        override_total = round_half_up(override_total, 3)
-        default_total = grader.get_default_total(groups, student)
-        default_total = round_half_up(default_total, 3)
-
-        if override_total is not None:
-            values.append(round_half_up(override_total, 2))
-            values.append(round_half_up(default_total, 2))
-            diff = override_total - default_total
-            values.append(round_half_up(diff, 2))
-            values.append("Yes")
-        else:
-            values.append(round_half_up(default_total, 2))
-            values.append(round_half_up(default_total, 2))
-            values.append("0")
-            values.append("No")
-
-        for assessment in assessments:
-            score = grader.get_score(groups, assessment.group, student)
-            values.append(score)
-
-            group_weight = grader.get_group_weight(groups, assessment.group)
-
-            flex = student.flexassessment_set.get(assessment=assessment).flex
-            values.append(flex) if flex is not None else values.append(group_weight)
-
+        for i in range(0, num_cells - 1):
+            values.append(header_cells[i].get_text(" ", strip=True))
         csv_writer.write(values)
 
-    csv_writer.write(["Average Override", "Average Default", "Average Difference"])
+    tbody = table.find("tbody")
+    if tbody:
+        for row in tbody.find_all("tr"):
+            cells = row.find_all("td")
+            values = []
+            num_cells = len(cells)
+            name = cells[0].get_text(" ", strip=True)
+            cwl = cells[num_cells - 1].get_text(" ", strip=True)
+            values.append("{}, {}".format(name, cwl)) 
+            for i in range(1, num_cells - 1):
+                values.append(cells[i].get_text(" ", strip=True))
+            csv_writer.write(values)
 
-    csv_writer.write(grader.get_averages(groups, course))
+    tfoot = table.find("tfoot")
+    if tfoot:
+        csv_writer.write(["Average Override", "Average Default", "Average Difference"])
+        values = []
+        footer_cells = tfoot.find_all("td")
+        for cell in footer_cells:
+            values.append(cell.get_text(" ", strip=True))
+        csv_writer.write(values)
 
     return csv_writer.get_response()
 

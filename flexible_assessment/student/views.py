@@ -166,6 +166,8 @@ class StudentAssessmentView(views.StudentFormView):
             "user": self.request.session["display_name"],
         }
 
+        changed = False
+
         for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
             flex_assessment = assessment.flexassessment_set.filter(
@@ -176,8 +178,9 @@ class StudentAssessmentView(views.StudentFormView):
             # Informs the database that the student updated the flex and not the instructor
             if old_flex != flex:
                 flex_assessment.override = False
+                changed = True
             flex_assessment.save()
-
+            
             if old_flex is None:
                 logger.info(
                     "Set %s flex for %s to %s%%",
@@ -196,6 +199,10 @@ class StudentAssessmentView(views.StudentFormView):
                     extra=log_extra,
                 )
 
+        if changed:
+            course.flex_version = (course.flex_version or 0) + 1
+            course.save(update_fields=["flex_version"])
+        
         user_comment = models.UserComment.objects.filter(
             user__user_id=user_id, course__id=course_id
         ).first()

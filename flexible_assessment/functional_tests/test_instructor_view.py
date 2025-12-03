@@ -1117,11 +1117,6 @@ class TestInstructorViews(StaticLiveServerTestCase):
         open_date_field = self.browser.find_element(By.NAME, "date-open")
         date_field = self.browser.find_element(By.NAME, "date-close")
 
-        tomorrow = datetime.now() + timedelta(1)
-
-        open_date_field = self.browser.find_element(By.NAME, "date-open")
-        date_field = self.browser.find_element(By.NAME, "date-close")
-
         tomorrow = datetime.now() + timedelta(days=1)
         formatted_date = tomorrow.strftime("%Y-%m-%d")
 
@@ -1183,7 +1178,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         # 4
         self.browser.find_element(By.LINK_TEXT, "Assessments").click()
         time.sleep(5)
-        self.browser.find_element(By.CLASS_NAME, "btn-secondary").click()
+        self.browser.find_element(By.XPATH, '//*[@id="change-calendar-btn"]').click()
 
         # 5
         start_at = dateutil.parser.parse(canvas_calendar.start_at).replace(tzinfo=None)
@@ -1210,7 +1205,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         # 7
         self.browser.find_element(By.LINK_TEXT, "Assessments").click()
         time.sleep(5)
-        self.browser.find_element(By.CLASS_NAME, "btn-primary").click()
+        self.browser.find_element(By.XPATH, '//*[@id="change-flex-btn"]').click()
 
         # 8
         c_close = models.Course.objects.get(id=3).close.replace(tzinfo=None)
@@ -1364,3 +1359,432 @@ class TestInstructorViews(StaticLiveServerTestCase):
             reader = list(csv.reader(f))
 
         self.assertEqual(reader, expected_data)
+
+    @tag("slow", "view", "300_students")
+    @mock_classes.use_mock_canvas()
+    @patch.object(views.FinalGradeListView, "_submit_final_grades")
+    def test_300_view_page(self, mocked_flex_canvas_instance, mock_submit_final_grades):
+        """Note, this is designed to work with the fixture data for course 6 (300 students)."""
+        mock_submit_final_grades.return_value = (
+            True  # When submitting final grades, just return True for that function
+        )
+        session_id = self.client.session.session_key
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[6])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[6])
+        )
+
+        input("Press Enter in this terminal to continue")
+
+    @tag("slow", "view", "final_grades_valid_table")
+    @mock_classes.use_mock_canvas()
+    def test_final_grades_valid_table(self, mocked_flex_canvas_instance):
+        """Final Grades: check modal is displayed, no error messages, table mounts, DataTables initializes, modal auto-hides."""
+
+        session_id = self.client.session.session_key
+
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+        final_grades_button = self.browser.find_element(
+            By.XPATH, '//a[contains(text(), "Final Grades")]'
+        )
+        final_grades_button.send_keys(Keys.ENTER)
+
+        continue_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Continue")]'
+        )
+        continue_button.send_keys(Keys.ENTER)
+
+        #  No alert should pop up, check modal pops up and table is not there,
+
+        try:
+            WebDriverWait(self.browser, 5).until(EC.alert_is_present())
+            self.fail(
+                "An unexpected alert appeared, but none was expected."
+            )  # Fail if alert appears
+        except TimeoutException:
+            pass  # Test passes if no alert appears
+
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "modal-open")))
+        modal = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.ID, "loadingModal")))
+        table_invis = WebDriverWait(self.browser, 10).until(EC.invisibility_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(
+            modal.is_displayed() and table_invis, 
+                        "Modal should be visible after clicking Continue and table should not be there at the same time as the modal")
+        
+        # Check modal disappears and table is there
+        modal_invis = WebDriverWait(self.browser, 500).until(EC.invisibility_of_element_located((By.ID, "finalGradesModal")))
+        table = WebDriverWait(self.browser, 500).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(modal_invis and table.is_displayed(), "Final grades table should be visible and loading modal should not be shown")
+
+        # Check DataTables actually initialized 
+        is_dt = self.browser.execute_script("return !!($.fn.dataTable && $.fn.dataTable.isDataTable('#final'));")
+        self.assertTrue(is_dt, "final-grades-table should be a DataTable")
+
+
+    @tag("slow", "view", "final_grades_invalid_table")
+    @mock_classes.use_mock_canvas()
+    def test_final_grades_invalid_table(self, mocked_flex_canvas_instance):
+        """Final Grades: invalid table, error popup, DataTables does not initialize."""
+
+        session_id = self.client.session.session_key
+
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+
+        # Adjust grade list so the table is invalid
+        mocked_flex_canvas_instance.groups_dict["1"].grade_list = None
+
+        final_grades_button = self.browser.find_element(
+            By.XPATH, '//a[contains(text(), "Final Grades")]'
+        )
+        final_grades_button.send_keys(Keys.ENTER)
+
+        continue_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Continue")]'
+        )
+        continue_button.send_keys(Keys.ENTER)
+
+        alert = WebDriverWait(self.browser, 5).until(EC.alert_is_present())
+        self.assertIn(
+            "Error loading the grade table. Please try again.",
+            alert.text.split("\n")[0],
+        )
+        alert.accept()
+
+        # Check there is no loading modal, table is not mounted and DataTable is not initialized
+        modal_invis = WebDriverWait(self.browser, 500).until(EC.invisibility_of_element_located((By.ID, "finalGradesModal")))
+        table_invis = WebDriverWait(self.browser, 500).until(EC.invisibility_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(modal_invis and table_invis, "Loading modal and table should not be shown")
+
+        is_dt = self.browser.execute_script("return !!($.fn.dataTable && $.fn.dataTable.isDataTable('#final'));")
+        self.assertFalse(is_dt, "final-grades-table should be a DataTable")
+
+        # Check that it returns to the assignment group page
+        self.assertTrue(EC.url_contains("/final/match/"))
+
+    def extract_data_from_csv(self):
+        download_button = self.browser.find_element(
+            By.CLASS_NAME, "btn-outline-primary"
+        )
+
+        filename = os.path.join(
+            self.download_dir,
+            f"Grades_test_course6_{datetime.now().strftime("%Y-%m-%dT%H%M")}.csv",
+        )
+
+        download_button.click()
+
+        timeout = 5
+
+        while not os.path.exists(filename) and timeout > 0:
+            time.sleep(1)
+            timeout -= 1
+
+        self.assertTrue(os.path.exists(filename), "CSV file was not downloaded")
+        df = pd.read_csv(filename, header=0)
+
+        # Drop extra rows that might not match the expected structure
+        df = df[df["Student"].notna()]
+
+        # Strip spaces in column names (just in case)
+        df.columns = df.columns.str.strip()
+
+        # Select only columns from "Student" onwards
+        start_col = "Student"
+        df_filtered = df.loc[:, start_col:]
+
+        # Ensure NaNs are treated consistently
+        df_filtered = df_filtered.fillna("")
+
+        return df_filtered
+
+
+    @tag("slow", "view", "final_grades_sessions")
+    @mock_classes.use_mock_canvas()
+    def test_final_grades_sessions_no_change(self, mocked_flex_canvas_instance):
+        """Final Grades: check sessions
+           1. Go to Final Grades page. The Final Grades table is loaded and saved. 
+           2. Instructor goes to home page
+           3. Go back to Final Grades with no change.
+           4. The same table should load immediately with no loading modal since there are no changes to settings or grades."""
+
+        session_id = self.client.session.session_key
+
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+        
+        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button.send_keys(Keys.ENTER)
+
+        continue_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]')
+        continue_button.send_keys(Keys.ENTER)
+
+        first_table = WebDriverWait(self.browser, 500).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+
+        # Extract data from the csv for comparison
+        first_df_filtered = self.extract_data_from_csv()
+
+        home_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Home")]')
+        home_button.send_keys(Keys.ENTER)
+
+        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button.send_keys(Keys.ENTER)
+
+        continue_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]')
+        continue_button.send_keys(Keys.ENTER)
+
+        modal_invis = WebDriverWait(self.browser, 10).until(EC.invisibility_of_element_located((By.ID, "finalGradesModal")))
+        second_table = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(modal_invis and second_table.is_displayed(), "Final grades table should be visible and loading modal should not be shown")
+
+        # Check DataTables actually initialized 
+        is_dt = self.browser.execute_script("return !!($.fn.dataTable && $.fn.dataTable.isDataTable('#final'));")
+        self.assertTrue(is_dt, "final-grades-table should be a DataTable")
+
+        # Compare the DataFrames
+        second_df_filtered = self.extract_data_from_csv()
+
+        pd.testing.assert_frame_equal(
+            first_df_filtered.reset_index(drop=True),
+            second_df_filtered.reset_index(drop=True),
+        )
+        
+    def assert_frame_not_equal(self, first_df_filtered, second_df_filtered):
+        try:
+            pd.testing.assert_frame_equal(
+                first_df_filtered.reset_index(drop=True),
+                second_df_filtered.reset_index(drop=True),
+        )
+        except AssertionError:
+            # frames are not equal
+            pass
+        else:
+            # frames are equal
+            raise AssertionError
+    
+    @tag("slow", "view", "final_grades_sessions_method")
+    @mock_classes.use_mock_canvas()
+    def test_final_grades_sessions_method(self, mocked_flex_canvas_instance):
+        """Final Grades: check sessions
+           1. Go to Final Grades page. The Final Grades table is loaded and saved. 
+           2. Instructor goes to home page
+           3. Go back to Final Grades
+           4. Changes the method to Equal. 
+           The table should not load immediately and the loading modal should pop up."""
+
+        session_id = self.client.session.session_key
+
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[1]))
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[1]))
+        
+        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button.send_keys(Keys.ENTER)
+
+        continue_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]')
+        continue_button.send_keys(Keys.ENTER)
+
+        first_table = WebDriverWait(self.browser, 500).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+
+        # Extract data from the csv for comparison
+        first_df_filtered = self.extract_data_from_csv()
+
+        home_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Home")]')
+        home_button.send_keys(Keys.ENTER)
+
+        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button.send_keys(Keys.ENTER)
+
+        # Change the method to Equal from Proportional
+        equal_button = self.browser.find_element(By.XPATH, '//*[@id="id_weight_option_1"]')
+        self.browser.execute_script("arguments[0].click();", equal_button)
+
+        continue_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]')
+        continue_button.send_keys(Keys.ENTER)
+
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "modal-open")))
+        modal = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.ID, "loadingModal")))
+        table_invis = WebDriverWait(self.browser, 10).until(EC.invisibility_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(
+            modal.is_displayed() and table_invis, 
+                "Modal should be visible after clicking Continue and table should not be there at the same time as the modal")
+        
+        # Check modal disappears and table is there
+        modal_invis = WebDriverWait(self.browser, 500).until(EC.invisibility_of_element_located((By.ID, "finalGradesModal")))
+        table = WebDriverWait(self.browser, 500).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(modal_invis and table.is_displayed(), "Final grades table should be visible and loading modal should not be shown")
+
+        # Check DataTables actually initialized 
+        is_dt = self.browser.execute_script("return !!($.fn.dataTable && $.fn.dataTable.isDataTable('#final'));")
+        self.assertTrue(is_dt, "final-grades-table should be a DataTable")
+
+        # Compare the DataFrames
+        second_df_filtered = self.extract_data_from_csv()
+        
+        # TODO: there is no difference between Equal and Proportional right now so the two dataframes are the same and this test should fail
+        pd.testing.assert_index_equal(first_df_filtered.columns, second_df_filtered.columns, check_order=True)
+        self.assert_frame_not_equal(first_df_filtered, second_df_filtered) 
+
+
+    @tag("slow", "view", "final_grades_sessions_groups")
+    @mock_classes.use_mock_canvas()
+    def test_final_grades_sessions_groups(self, mocked_flex_canvas_instance):
+        """Final Grades: check sessions
+        1. Go to Final Grades page. The Final Grades table is loaded and saved. 
+        2. Instructor goes to home page
+        3. Go back to Final Grades
+        4. Changes assignment1 to test_group10 and assignment10 to test_group1. 
+        The table should not load immediately and the loading modal should pop up."""
+
+        session_id = self.client.session.session_key
+
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+        
+        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button.send_keys(Keys.ENTER)
+
+        continue_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]')
+        continue_button.send_keys(Keys.ENTER)
+
+        first_table = WebDriverWait(self.browser, 500).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+
+        # Extract data from the csv for comparison
+        first_df_filtered = self.extract_data_from_csv()
+
+        home_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Home")]')
+        home_button.send_keys(Keys.ENTER)
+
+        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button.send_keys(Keys.ENTER)
+
+        # Change groups
+        select_tags = self.browser.find_elements(By.TAG_NAME, "select")
+        Select(select_tags[0]).select_by_visible_text("test_group10")
+        Select(select_tags[9]).select_by_visible_text("test_group1")
+
+        continue_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]')
+        continue_button.send_keys(Keys.ENTER)
+
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "modal-open")))
+        modal = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.ID, "loadingModal")))
+        table_invis = WebDriverWait(self.browser, 10).until(EC.invisibility_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(
+            modal.is_displayed() and table_invis, 
+                "Modal should be visible after clicking Continue and table should not be there at the same time as the modal")
+        
+        # Check modal disappears and table is there
+        modal_invis = WebDriverWait(self.browser, 500).until(EC.invisibility_of_element_located((By.ID, "finalGradesModal")))
+        table = WebDriverWait(self.browser, 500).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(modal_invis and table.is_displayed(), "Final grades table should be visible and loading modal should not be shown")
+
+        # Check DataTables actually initialized 
+        is_dt = self.browser.execute_script("return !!($.fn.dataTable && $.fn.dataTable.isDataTable('#final'));")
+        self.assertTrue(is_dt, "final-grades-table should be a DataTable")
+
+        # Compare the DataFrames
+        second_df_filtered = self.extract_data_from_csv()
+        
+        # TODO: there is no difference between Equal and Proportional right now so the two dataframes are the same and this test should fail
+        pd.testing.assert_index_equal(first_df_filtered.columns, second_df_filtered.columns, check_order=True)
+        self.assert_frame_not_equal(first_df_filtered, second_df_filtered) 
+
+    
+    @tag("slow", "view", "final_grades_sessions_assessments")
+    @mock_classes.use_mock_canvas()
+    def test_final_grades_sessions_assessments(self, mocked_flex_canvas_instance):
+        """Final Grades: check sessions
+        1. Go to Final Grades page. The Final Grades table is loaded and saved. 
+        2. Instructor goes to assessments page
+        3. Instructor deletes an assessment and changes the weighting of the second assignment to make the total sum up to 100
+        3. Go back to Final Grades
+        The table should not load immediately and the loading modal should pop up."""
+
+        session_id = self.client.session.session_key
+
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+        
+        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button.send_keys(Keys.ENTER)
+
+        continue_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]')
+        continue_button.send_keys(Keys.ENTER)
+
+        first_table = WebDriverWait(self.browser, 500).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+
+        # Extract data from the csv for comparison
+        first_df_filtered = self.extract_data_from_csv()
+
+        home_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Home")]')
+        home_button.send_keys(Keys.ENTER)
+
+        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button.send_keys(Keys.ENTER)
+
+        # Delete assessment and change weighting
+        assessments_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Assessments")]')
+        assessments_button.send_keys(Keys.ENTER)
+
+        WebDriverWait(self.browser, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "delete"))
+        )
+        delete_button = self.browser.find_element(By.CLASS_NAME, "delete")
+        delete_button.send_keys(Keys.ENTER)
+
+        # TODO: add another wait here: 
+
+
+        default_weight_input = self.browser.find_element(By.XPATH, '//*[@id="id_assessment-0-default"]')
+        default_weight_input.send_keys("4")
+        
+        update_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Update")]'
+        )
+        update_button.send_keys(Keys.ENTER)
+        alert = self.browser.switch_to.alert
+        alert.accept()
+
+
+        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button.send_keys(Keys.ENTER)
+
+        continue_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]')
+        continue_button.send_keys(Keys.ENTER)
+
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "modal-open")))
+        modal = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.ID, "loadingModal")))
+        table_invis = WebDriverWait(self.browser, 10).until(EC.invisibility_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(
+            modal.is_displayed() and table_invis, 
+                "Modal should be visible after clicking Continue and table should not be there at the same time as the modal")
+        
+        # Check modal disappears and table is there
+        modal_invis = WebDriverWait(self.browser, 500).until(EC.invisibility_of_element_located((By.ID, "finalGradesModal")))
+        table = WebDriverWait(self.browser, 500).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(modal_invis and table.is_displayed(), "Final grades table should be visible and loading modal should not be shown")
+
+        # Check DataTables actually initialized 
+        is_dt = self.browser.execute_script("return !!($.fn.dataTable && $.fn.dataTable.isDataTable('#final'));")
+        self.assertTrue(is_dt, "final-grades-table should be a DataTable")
+
+        # Compare the DataFrames
+        second_df_filtered = self.extract_data_from_csv()
+        
+        # TODO: there is no difference between Equal and Proportional right now so the two dataframes are the same and this test should fail
+        self.assert_frame_not_equal(first_df_filtered, second_df_filtered) 
+
+
+    
+    
