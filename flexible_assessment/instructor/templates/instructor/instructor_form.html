@@ -125,13 +125,15 @@
                 </div>
                 <div class="modal-footer justify-content-between">
                     <div>
-                        <a role="button"
+                        <a id="change-calendar-btn" 
+                           role="button"
                            type="button"
                            class="btn btn-secondary"
                            href="{% url 'instructor:match_calendar' course.id %}">Change Calendar</a>
                     </div>
                     <div>
-                        <a role="button"
+                        <a id="change-flex-btn"
+                           role="button"
                            type="button"
                            class="btn btn-primary"
                            href="{% url 'instructor:match_flex' course.id %}">Change Flex Dates</a>
