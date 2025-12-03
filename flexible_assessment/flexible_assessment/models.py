@@ -157,6 +157,7 @@ class Course(models.Model):
         default="Please enter your reasons for the choices you made.",
     )
     calendar_id = models.IntegerField(null=True, blank=True, default=None)
+    flex_version = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return "{} - {}".format(self.title, self.id)
@@ -176,6 +177,8 @@ class Course(models.Model):
             ).exists()
         ]
         FlexAssessment.objects.bulk_create(flex_assessments)
+        self.flex_version = (self.flex_version or 0) + 1
+        self.save(update_fields=["flex_version"])
 
     def reset_students(self, students):
         """Resets flex allocations and comments for students"""
@@ -184,6 +187,8 @@ class Course(models.Model):
             fas_to_reset = student.flexassessment_set.filter(assessment__course=self)
             fas_to_reset.update(flex=None)
             student.usercomment_set.filter(course=self).update(comment="")
+            self.flex_version = (self.flex_version or 0) + 1
+            self.save(update_fields=["flex_version"])
 
     def reset_all_students(self):
         """Resets flex allocations for all students in the course"""
@@ -193,6 +198,8 @@ class Course(models.Model):
 
         comments_to_reset = UserComment.objects.filter(course=self)
         comments_to_reset.update(comment="")
+        self.flex_version = (self.flex_version or 0) + 1
+        self.save(update_fields=["flex_version"])
 
 
 class UserCourse(models.Model):
@@ -259,6 +266,8 @@ class Assessment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     group = models.IntegerField(null=True)
     order = models.IntegerField(blank=False, default=100_000)
+
+    
 
     def __str__(self):
         return "{}, {}".format(self.title, self.course.title)

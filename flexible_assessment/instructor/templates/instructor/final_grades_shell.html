@@ -21,15 +21,6 @@
             </div>
         </div>
     </div>
-    <script>
-        {% if not saved_table %}
-            const loadingModal = document.getElementById('loadingModal');
-            if (loadingModal) {
-                const modal = bootstrap.Modal.getOrCreateInstance(loadingModal);
-                modal.show();
-            }
-        {% endif %}    
-    </script>
 
         <div class="mt-5 mb-5">
             <div class="d-flex align-items-center justify-content-center">
@@ -131,6 +122,13 @@
           
 
 <script>
+    function show_loading() {
+        var modalElement = document.getElementById('loadingModal');
+        if (modalElement) {
+            var instance = bootstrap.Modal.getOrCreateInstance(modalElement);
+            instance.show();
+        }
+    }
 
     function hide_loading() {
         var modalElement = document.getElementById('loadingModal');
@@ -147,44 +145,64 @@
         $('.used-default').css('font-style', 'italic');
     }
 
-    (async function() {
-        const mount = document.getElementById('tableMount');
+    function initFinalTable() {
+        if (!document.querySelector('#final')) return;
+        if ($.fn.DataTable.isDataTable('#final')) return;
 
-        try {
-            const response = await fetch("{% url 'instructor:final_grades_table' course.id %}");
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const html = await response.text();
-            mount.innerHTML = html.trim();
-
-            hide_loading();
-
-            var colspan = $('.assessment').length;
+        const colspan = $('.assessment').length;
+        if (colspan > 0) {
             $('.empty').attr('colspan', colspan);
-            var width = Math.floor(75/colspan);
-            $('.assessment').css('width', width+'%');
-
-
-            const table = $('#final').DataTable({
-                scrollX: true,
-                initComplete: function () {
-                  format_table();
-                }
-              });
-
-              $('#final').on('draw.dt', function () {
-                format_table();
-              });
-
-            $('.dataTables_scrollBody').css('overflow-y', 'hidden');
-
-
-        } catch (err) {
-            console.error("Error loading table:", err);
-            hide_loading();
-            alert('Error loading the grade table. Please go back and try again.');
+            const width = Math.floor(75 / colspan);
+            $('.assessment').css('width', width + '%');
         }
-    })();
 
+        const table = $('#final').DataTable({
+            scrollX: true,
+            initComplete: format_table
+        });
+
+        $('#final').on('draw.dt', format_table);
+        $('.dataTables_scrollBody').css('overflow-y', 'hidden');
+    }
+
+  (async function () {
+    const mount = document.getElementById('tableMount');
+
+    // If Django already rendered the table, just init it.
+    if (mount && mount.querySelector('#final')) {
+      initFinalTable();
+      return;
+    }
+
+    // Start fetch + delayed modal
+    var done = false;
+    const modalTimer = setTimeout(() => {
+      if (!done) show_loading();
+    }, 150); 
+
+    try {
+        const response = await fetch("{% url 'instructor:final_grades_table' course.id %}");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const html = await response.text();
+        done = true;
+        clearTimeout(modalTimer);
+
+        mount.innerHTML = html.trim();
+
+        hide_loading();
+        initFinalTable();
+
+    } catch (err) {
+        done = true;
+        clearTimeout(modalTimer);
+
+        console.error("Error loading table:", err);
+        hide_loading();
+        alert("Error loading the grade table. Please try again.");
+        window.location = "{% url 'instructor:group_form' course.id %}"
+    }
+    })();
     
 
     $('#submit-button').click(function(e) {
@@ -210,12 +228,13 @@
 
     $(document).ready(function () {
         var errors = [];
-        $('.error').each(function(_, error) {
+        $('.error').each(function (_, error) {
             errors.push(error.textContent);
         });
         var error_str = errors.join(', ');
-        if (error_str)
+        if (error_str) {
             alert(error_str);
+        }
     });
     
     function show_more() {

@@ -11,7 +11,7 @@
                 <br>
                 Percentages?
             </th>
-            {% for assessment in course.assessment_set.all|dictsort:"order" %}
+            {% for assessment in assessments %}
                 <th class="assessment text-center align-middle" style="font-size: 110%;">
                     {{ assessment.title }}
                     <br>
@@ -47,7 +47,7 @@
                         No
                     {% endif %}
                 </td>
-                {% for assessment in course.assessment_set.all|dictsort:"order" %}
+                {% for assessment in assessments %}
                     <!-- TODO: sorted here now - now perhaps implement in view and also fix csv export -->
                     {% get_group_weight_percentage groups assessment.group as default_weight %}
                     {% get_score groups assessment.group student as score %}

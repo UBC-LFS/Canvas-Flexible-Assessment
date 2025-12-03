@@ -43,7 +43,7 @@
                                         <br>
                                         Percentages
                                     </th>
-                                    {% for assessment in course.assessment_set.all|dictsort:"order" %}
+                                    {% for assessment in assessments %}
                                         <th class="assessment text-center align-middle" style="font-size: 110%;">
                                             {{ assessment.title }}
                                             <br>
@@ -68,7 +68,7 @@
                                                 {% endif %}
                                             </td>
                                         {% endwith %}
-                                        {% for assessment in course.assessment_set.all|dictsort:"order" %}
+                                        {% for assessment in assessments %}
                                             {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
                                                 <td class="text-center align-middle">
                                                     {% if flex_assessment.flex is None %}
