@@ -3,6 +3,7 @@ import os
 import re
 from datetime import datetime
 from abc import ABC, abstractmethod
+from decimal import Decimal
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -272,31 +273,129 @@ def round_half_up(value, digits=2):
 
 
 def grades_csv(course, students, groups):
-    """Creates csv response for final grade list (optimized version)."""
-
-    students = list(students)
+    """Creates csv response for final grade list"""
 
     csv_writer = CSVWriter("Grades", course)
 
     assessments = list(
-        course.assessment_set.all().order_by("order")
+        course.assessment_set.all().order_by("order", "id")
     )
 
-    group_weights = {}
-    for assessment in assessments:
-        group_id = assessment.group
-        if group_id not in group_weights:
-            group_weights[group_id] = grader.get_group_weight(groups, group_id)
+    student_ids = [s.user_id for s in students]
+
+    flex_qs = (
+        FlexAssessment.objects
+        .filter(assessment__course=course, user__user_id__in=student_ids)
+        .select_related("assessment", "user")
+    )
+
+    flex_by_student_assessment = {}
+    for fa in flex_qs:
+        key = (fa.user_id, fa.assessment_id)
+        flex_by_student_assessment[key] = fa.flex  
+
+    score_by_student_group = {}
+    weight_by_group = {}
+
+    for group_id_str, data in groups.items():
+        group_weight = Decimal(str(data["group_weight"]))
+        weight_by_group[group_id_str] = group_weight
+
+        for student_id_str, score in data["grade_list"]["grades"]:
+            sid = int(student_id_str)
+            key = (sid, group_id_str)
+            score_by_student_group[key] = (
+                None if score is None else Decimal(str(score))
+            )
+
+    def compute_default_total(student_id: int) -> Decimal:
+        scores = []
+        weights = []
+        for group_id_str, group_weight in weight_by_group.items():
+            score = score_by_student_group.get((student_id, group_id_str))
+            if score is not None:
+                scores.append(score)
+                weights.append(group_weight)
+
+        if not weights:
+            return Decimal("0")
+
+        overall = Decimal("0")
+        for score, weight in zip(scores, weights):
+            overall += score * weight / Decimal("100")
+
+        total_weight = sum(weights)
+        if total_weight == 0:
+            return Decimal("0")
+
+        overall = overall / total_weight * Decimal("100")
+        return overall
+
+    def compute_override_total_and_flag(student_id: int):
+        flex_values = []
+        flex_sum = Decimal("0")
+        has_null = False
+
+        assessment_scores = []
+        assessment_weights = []
+
+        for assessment in assessments:
+            fa_flex = flex_by_student_assessment.get((student_id, assessment.id))
+            if fa_flex is None:
+                has_null = True
+            else:
+                flex_values.append(Decimal(fa_flex))
+                flex_sum += Decimal(fa_flex)
+
+            group_id_str = str(assessment.group)
+            score = score_by_student_group.get((student_id, group_id_str))
+            if score is not None:
+                assessment_scores.append(score)
+                if fa_flex is not None:
+                    assessment_weights.append(Decimal(fa_flex))
+
+        is_valid = (not has_null) and (flex_sum == Decimal("100"))
+
+        if not is_valid:
+            return None, False  
+
+        if not assessment_scores or not assessment_weights:
+            return Decimal("0"), True
+
+        overall = Decimal("0")
+        for score, weight in zip(assessment_scores, assessment_weights):
+            overall += score * weight / Decimal("100")
+
+        total_flex = sum(assessment_weights)
+        if total_flex == 0:
+            return Decimal("0"), True
+
+        overall = overall / total_flex * Decimal("100")
+        return overall, True  
+
+
+    default_totals = {}
+    override_totals = {}
+    chose_flex_flag = {}  
+
+    for s in students:
+        sid = s.user_id
+        default_totals[sid] = compute_default_total(sid)
+        override, chose = compute_override_total_and_flag(sid)
+
+        if override is None:
+            override_totals[sid] = default_totals[sid]
+        else:
+            override_totals[sid] = override
+
+        chose_flex_flag[sid] = chose
 
     titles = []
     for assessment in assessments:
-        gw = group_weights.get(assessment.group)
-        if gw is not None:
-            titles.append(f"{assessment.title} Grade %")
-            titles.append(f"{assessment.title} Weight % ({gw}%)")
-        else:
-            titles.append(f"{assessment.title} Grade %")
-            titles.append(f"{assessment.title} Weight %")
+        titles.append(f"{assessment.title} Grade %")
+        titles.append(
+            f"{assessment.title} Weight % ({grader.get_group_weight(groups, assessment.group)}%)"
+        )
 
     header = (
         ["Student"]
@@ -305,76 +404,55 @@ def grades_csv(course, students, groups):
     )
     csv_writer.write(header)
 
-    student_ids = [s.user_id for s in students]
-
-    flex_qs = (
-        FlexAssessment.objects
-        .filter(assessment__course=course, user_id__in=student_ids)
-        .select_related("assessment", "user")
-    )
-
-    flex_map: dict[int, dict] = {}
-    for fa in flex_qs:
-        user_map = flex_map.setdefault(fa.user_id, {})
-        user_map[fa.assessment_id] = fa.flex
-
     for student in students:
+        sid = student.user_id
+
         values = []
-        values.append("{}, {}".format(student.display_name, student.login_id))
+        values.append(f"{student.display_name}, {student.login_id}")
 
-        override_total = grader.get_override_total(groups, student, course)
-        default_total = grader.get_default_total(groups, student)
+        default_total = default_totals[sid]
+        override_total = override_totals[sid]
+        diff = override_total - default_total
 
-        override_total_3 = round_half_up(override_total, 3)
-        default_total_3 = round_half_up(default_total, 3)
-
-        if override_total_3 is not None:
-            override_2 = round_half_up(override_total_3, 2)
-            default_2 = round_half_up(default_total_3, 2)
-            diff = round_half_up(override_total_3 - default_total_3, 2)
-            values.append(override_2)
-            values.append(default_2)
-            values.append(diff)
-            values.append("Yes")
-        else:
-            default_2 = round_half_up(default_total_3, 2)
-            values.append(default_2)
-            values.append(default_2)
-            values.append("0")
-            values.append("No")
-
-        user_flexes = flex_map.get(student.user_id, {})
+        values.append(round_half_up(override_total, 2))
+        values.append(round_half_up(default_total, 2))
+        values.append(round_half_up(diff, 2))
+        values.append("Yes" if chose_flex_flag[sid] else "No")
 
         for assessment in assessments:
-            score = grader.get_score(groups, assessment.group, student)
-            values.append(score)
+            group_id_str = str(assessment.group)
+            score = score_by_student_group.get((sid, group_id_str))
+            values.append(
+                round_half_up(score, 2) if score is not None else None
+            )
 
-            flex = user_flexes.get(assessment.id)
-            if flex is not None:
-                values.append(flex)
+            fa_flex = flex_by_student_assessment.get((sid, assessment.id))
+            if fa_flex is not None:
+                values.append(str(round_half_up(fa_flex, 2)))
             else:
-                values.append(group_weights.get(assessment.group))
+                gw = grader.get_group_weight(groups, assessment.group)
+                values.append(f"{gw:.2f}%" if gw != "" else "")
 
         csv_writer.write(values)
+
 
     csv_writer.write(["Average Override", "Average Default", "Average Difference"])
-    csv_writer.write(grader.get_averages(groups, course))
 
-    return csv_writer.get_response()
+    overrides_list = list(override_totals.values())
+    defaults_list = list(default_totals.values())
+    diffs_list = [o - d for o, d in zip(overrides_list, defaults_list)]
 
+    def avg_or_zero(nums):
+        return (
+            round_half_up(sum(nums) / len(nums), 2) if nums else Decimal("0")
+        )
 
-def assessments_csv(course):
-    """Creates csv response for course assessments"""
-
-    csv_writer = CSVWriter("Assessments", course)
-
-    assessments = list(course.assessment_set.all().order_by("order"))
-    header = ("Assessment", "Default", "Minimum", "Maximum")
-
-    csv_writer.write(header)
-
-    for assessment in assessments:
-        values = (assessment.title, assessment.default, assessment.min, assessment.max)
-        csv_writer.write(values)
+    csv_writer.write(
+        [
+            avg_or_zero(overrides_list),
+            avg_or_zero(defaults_list),
+            avg_or_zero(diffs_list),
+        ]
+    )
 
     return csv_writer.get_response()
