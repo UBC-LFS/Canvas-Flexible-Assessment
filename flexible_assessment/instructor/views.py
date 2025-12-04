@@ -1380,7 +1380,7 @@ class FinalGradeTableView(FinalGradeListView):
             self.request.session[curr_key] = {
                 "version": course.flex_version,
                 "html": html,
-                "courses": context["groups"],
+                "groups": context["groups"],
             }
             self.request.session.modified = True
 
