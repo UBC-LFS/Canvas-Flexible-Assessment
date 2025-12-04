@@ -163,16 +163,16 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         curr_key = self.request.session.get("current_table_key")
         saved = self.request.session.get(curr_key) if curr_key else ""
 
-        groups = None
         if isinstance(saved, dict):
-            groups = saved.get("groups")
+            groups = saved.get("groups", "")
+        else:
+            groups = ""
 
-        if groups is None:
-            context = self.get_context_data()
-            groups = context.get("groups")
-
-        csv_response = writer.grades_csv(course, students, groups)
+        if not groups:
+            context = groups = self.get_context_data().get("groups")
         
+        csv_response = writer.grades_csv(course, students, groups)
+
         logger.info(
             "Final list view exported",
             extra={"course": str(course), "user": self.request.session["display_name"]},
