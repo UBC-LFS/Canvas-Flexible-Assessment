@@ -122,8 +122,8 @@ class FlexCanvas(Canvas):
             "Content-Type": "application/json"
         }
             
-        batch_size = 1
-        sub_batch_size = 100
+        batch_size = 50
+        sub_batch_size = 2000
         all_groups = []
 
         has_next_page = True
@@ -220,7 +220,7 @@ class FlexCanvas(Canvas):
                                 _id
             } } } } } } }"""
 
-        query_response = self.graphql(query2, variables={"course_id": course_id})
+        # query_response = self.graphql(query2, variables={"course_id": course_id})
 
         query = """query AssignmentGroupQuery($course_id: ID, $first: Int!, $after: String, $sub_first: Int!, $sub_after: String) {
                     course(id: $course_id) {
@@ -255,7 +255,7 @@ class FlexCanvas(Canvas):
                 }"""
 
         # To fetch all data
-        # query_response = self.fetch_all_items(course_id, query)
+        query_response = self.fetch_all_items(course_id, query)
 
         query_flattened = self._flatten_dict(query_response)
         groups = query_flattened.get("data.course.assignment_groups.groups", None)
