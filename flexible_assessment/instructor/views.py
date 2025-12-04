@@ -169,7 +169,8 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             groups = ""
 
         if not groups:
-            context = groups = self.get_context_data().get("groups")
+            context = self.get_context_data()
+            groups = context.get("groups")
         
         csv_response = writer.grades_csv(course, students, groups)
 
