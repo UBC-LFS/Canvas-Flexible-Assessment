@@ -93,6 +93,7 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
         )
 
         return context
+    
     def export_list(self):
         students = self.get_queryset()
         course_id = self.kwargs["course_id"]
@@ -159,24 +160,18 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         students = self.get_queryset()
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
-
         curr_key = self.request.session.get("current_table_key")
         saved = self.request.session.get(curr_key) if curr_key else ""
 
         if isinstance(saved, dict):
-            table_html = saved.get("html", "")
+            groups = saved.get("groups", "")
         else:
-            context = self.get_context_data()
-            table_html = render_to_string("instructor/final_grades_table.html", context)
+            groups = ""
 
-        if curr_key:
-            self.request.session[curr_key] = {
-                "version": course.flex_version,
-                "html": table_html,
-            }
-            self.request.session.modified = True
+        if not groups:
+            context = groups = self.get_context_data().get("groups")
         
-        csv_response = writer.grades_csv(course, table_html)
+        csv_response = writer.grades_csv(course, students, groups)
 
         logger.info(
             "Final list view exported",
@@ -1368,6 +1363,7 @@ class FinalGradeTableView(FinalGradeListView):
         self.object_list = self.get_queryset()
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
+        context = self.get_context_data(**kwargs)
         curr_key = self.request.session.get("current_table_key")
 
         if curr_key:
@@ -1378,14 +1374,13 @@ class FinalGradeTableView(FinalGradeListView):
             elif isinstance(cached, str):
                 pass
 
-        context = self.get_context_data(**kwargs)
-
         html = render_to_string(self.template_name, context, request)
 
         if curr_key:
             self.request.session[curr_key] = {
                 "version": course.flex_version,
                 "html": html,
+                "courses": context["groups"],
             }
             self.request.session.modified = True
 

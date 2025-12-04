@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 
 from bs4 import BeautifulSoup
+from flexible_assessment.models import FlexAssessment
 
 from . import grader
 
@@ -228,46 +229,139 @@ def round_half_up(value, digits=2):
 #     return csv_writer.get_response()
 
 
-def grades_csv(course, html):
-    """Creates csv response for final grade list"""
+# def grades_csv(course, html):
+#     """Creates csv response for final grade list"""
+
+#     csv_writer = CSVWriter("Grades", course)
+
+#     soup = BeautifulSoup(html, "html.parser")
+#     table = soup.find("table", {"id": "final"})
+    
+#     if table is None:
+#         return csv_writer.get_response() 
+
+#     thead = table.thead
+#     if thead:
+#         header_cells = thead.find_all("th", recursive=True)
+#         values = [cell.get_text(" ", strip=True) for cell in header_cells[:-1]]
+#         csv_writer.write(values)
+
+#     tbody = table.tbody
+#     if tbody:
+#         for row in tbody.find_all("tr", recursive=False):
+#             cells = row.find_all("td", recursive=False)
+#             if not cells:
+#                 continue
+
+#             name = cells[0].get_text(" ", strip=True)
+#             cwl = cells[-1].get_text(" ", strip=True)
+
+#             values = [f"{name}, {cwl}"]
+#             values.extend(
+#                 cell.get_text(" ", strip=True) for cell in cells[1:-1]
+#             )
+#             csv_writer.write(values)
+
+#     tfoot = table.tfoot
+#     if tfoot:
+#         csv_writer.write(["Average Override", "Average Default", "Average Difference"])
+#         footer_cells = tfoot.find_all("td", recursive=True)
+#         values = [cell.get_text(" ", strip=True) for cell in footer_cells]
+#         csv_writer.write(values)
+#     return csv_writer.get_response()
+
+
+def grades_csv(course, students, groups):
+    """Creates csv response for final grade list (optimized version)."""
+
+    students = list(students)
 
     csv_writer = CSVWriter("Grades", course)
 
-    soup = BeautifulSoup(html, "html.parser")
-    table = soup.find("table", {"id": "final"})
-    
-    if table is None:
-        return csv_writer.get_response() 
+    assessments = list(
+        course.assessment_set.all().order_by("order")
+    )
 
-    thead = table.thead
-    if thead:
-        header_cells = thead.find_all("th", recursive=True)
-        values = [cell.get_text(" ", strip=True) for cell in header_cells[:-1]]
+    group_weights = {}
+    for assessment in assessments:
+        group_id = assessment.group
+        if group_id not in group_weights:
+            group_weights[group_id] = grader.get_group_weight(groups, group_id)
+
+    titles = []
+    for assessment in assessments:
+        gw = group_weights.get(assessment.group)
+        if gw is not None:
+            titles.append(f"{assessment.title} Grade %")
+            titles.append(f"{assessment.title} Weight % ({gw}%)")
+        else:
+            titles.append(f"{assessment.title} Grade %")
+            titles.append(f"{assessment.title} Weight %")
+
+    header = (
+        ["Student"]
+        + ["Override Total", "Default Total", "Difference", "Chose Percentages?"]
+        + titles
+    )
+    csv_writer.write(header)
+
+    student_ids = [s.user_id for s in students]
+
+    flex_qs = (
+        FlexAssessment.objects
+        .filter(assessment__course=course, user_id__in=student_ids)
+        .select_related("assessment", "user")
+    )
+
+    flex_map: dict[int, dict] = {}
+    for fa in flex_qs:
+        user_map = flex_map.setdefault(fa.user_id, {})
+        user_map[fa.assessment_id] = fa.flex
+
+    for student in students:
+        values = []
+        values.append("{}, {}".format(student.display_name, student.login_id))
+
+        override_total = grader.get_override_total(groups, student, course)
+        default_total = grader.get_default_total(groups, student)
+
+        override_total_3 = round_half_up(override_total, 3)
+        default_total_3 = round_half_up(default_total, 3)
+
+        if override_total_3 is not None:
+            override_2 = round_half_up(override_total_3, 2)
+            default_2 = round_half_up(default_total_3, 2)
+            diff = round_half_up(override_total_3 - default_total_3, 2)
+            values.append(override_2)
+            values.append(default_2)
+            values.append(diff)
+            values.append("Yes")
+        else:
+            default_2 = round_half_up(default_total_3, 2)
+            values.append(default_2)
+            values.append(default_2)
+            values.append("0")
+            values.append("No")
+
+        user_flexes = flex_map.get(student.user_id, {})
+
+        for assessment in assessments:
+            score = grader.get_score(groups, assessment.group, student)
+            values.append(score)
+
+            flex = user_flexes.get(assessment.id)
+            if flex is not None:
+                values.append(flex)
+            else:
+                values.append(group_weights.get(assessment.group))
+
         csv_writer.write(values)
 
-    tbody = table.tbody
-    if tbody:
-        for row in tbody.find_all("tr", recursive=False):
-            cells = row.find_all("td", recursive=False)
-            if not cells:
-                continue
+    csv_writer.write(["Average Override", "Average Default", "Average Difference"])
+    csv_writer.write(grader.get_averages(groups, course))
 
-            name = cells[0].get_text(" ", strip=True)
-            cwl = cells[-1].get_text(" ", strip=True)
-
-            values = [f"{name}, {cwl}"]
-            values.extend(
-                cell.get_text(" ", strip=True) for cell in cells[1:-1]
-            )
-            csv_writer.write(values)
-
-    tfoot = table.tfoot
-    if tfoot:
-        csv_writer.write(["Average Override", "Average Default", "Average Difference"])
-        footer_cells = tfoot.find_all("td", recursive=True)
-        values = [cell.get_text(" ", strip=True) for cell in footer_cells]
-        csv_writer.write(values)
     return csv_writer.get_response()
+
 
 def assessments_csv(course):
     """Creates csv response for course assessments"""
