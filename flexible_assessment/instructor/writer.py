@@ -276,7 +276,6 @@ def grades_csv(course, students, groups):
 
     csv_writer = CSVWriter("Grades", course)
 
-    # Assessments in a stable order
     assessments = list(
         course.assessment_set.all().order_by("order", "id")
     )
@@ -290,16 +289,12 @@ def grades_csv(course, students, groups):
         .select_related("assessment", "user")
     )
 
-    # (student_id, assessment_id) -> flex value (may be None)
     flex_by_student_assessment = {}
     for fa in flex_qs:
         key = (fa.user_id, fa.assessment_id)
         flex_by_student_assessment[key] = fa.flex
 
-    # --- Precompute scores & weights from the Canvas groups dict ---
-    # (student_id, group_id_str) -> Decimal score or None
     score_by_student_group = {}
-    # group_id_str -> Decimal weight
     weight_by_group = {}
 
     for group_id_str, data in groups.items():
@@ -313,9 +308,8 @@ def grades_csv(course, students, groups):
                 None if score is None else Decimal(str(score))
             )
 
-    # --- Helpers to compute totals in-memory (no extra DB hits) ---
 
-    def compute_default_total(student_id: int) -> Decimal:
+    def compute_default_total(student_id: int):
         """
         Default total using assignment group weights only.
         Mirrors grader.get_default_total but uses precomputed dicts.
@@ -360,7 +354,6 @@ def grades_csv(course, students, groups):
         assessment_weights = []
 
         for assessment in assessments:
-            # flex chosen for this assessment
             fa_flex = flex_by_student_assessment.get((student_id, assessment.id))
             if fa_flex is None:
                 has_null = True
@@ -376,11 +369,10 @@ def grades_csv(course, students, groups):
                 if fa_flex is not None:
                     assessment_weights.append(Decimal(str(fa_flex)))
 
-        # This matches valid_flex: no nulls and sum == 100
         is_valid = (not has_null) and (flex_sum == Decimal("100"))
 
         if not is_valid:
-            return None, False  # student did not effectively "choose" percentages
+            return None, False  
 
         if not assessment_scores or not assessment_weights:
             return Decimal("0"), True
@@ -396,7 +388,6 @@ def grades_csv(course, students, groups):
         overall = overall / total_flex * Decimal("100")
         return overall, True
 
-    # --- Precompute totals for all students once ---
 
     default_totals = {}
     override_totals = {}
@@ -408,15 +399,12 @@ def grades_csv(course, students, groups):
         default_totals[sid] = compute_default_total(sid)
         override, chose = compute_override_total_and_flag(sid)
 
-        # If override is None, fall back to default like the old version did
         if override is None:
             override_totals[sid] = default_totals[sid]
         else:
             override_totals[sid] = override
 
         chose_flex_flag[sid] = chose
-
-    # --- Header row (same structure as before) ---
 
     titles = []
     for assessment in assessments:
@@ -432,7 +420,6 @@ def grades_csv(course, students, groups):
     )
     csv_writer.write(header)
 
-    # --- Per-student rows ---
 
     for student in students:
         sid = student.user_id
@@ -452,13 +439,11 @@ def grades_csv(course, students, groups):
         for assessment in assessments:
             group_id_str = str(assessment.group)
 
-            # Grade (%)
             score = score_by_student_group.get((sid, group_id_str))
             values.append(
                 round_half_up(score, 2) if score is not None else ""
             )
 
-            # Weight (%): flex if chosen, otherwise group weight
             fa_flex = flex_by_student_assessment.get((sid, assessment.id))
             if fa_flex is not None:
                 values.append(round_half_up(Decimal(str(fa_flex)), 2))
@@ -468,7 +453,6 @@ def grades_csv(course, students, groups):
 
         csv_writer.write(values)
 
-    # --- Averages row (no extra DB work) ---
 
     csv_writer.write(["Average Override", "Average Default", "Average Difference"])
 

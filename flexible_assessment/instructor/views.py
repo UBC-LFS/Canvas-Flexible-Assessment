@@ -160,17 +160,17 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         students = self.get_queryset()
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
+            
         curr_key = self.request.session.get("current_table_key")
-        saved = self.request.session.get(curr_key) if curr_key else ""
+        saved = self.request.session.get(curr_key) if curr_key else None
 
+        groups = None  
         if isinstance(saved, dict):
-            groups = saved.get("groups", "")
-        else:
-            groups = ""
-
-        # if not groups:
-        #     context = self.get_context_data()
-        #     groups = context.get("groups")
+            groups = saved.get("groups")  
+        
+        if groups is None:
+            context = self.get_context_data()
+            groups = context.get("groups")
         
         csv_response = writer.grades_csv(course, students, groups)
 
@@ -1366,7 +1366,7 @@ class FinalGradeTableView(FinalGradeListView):
         course = models.Course.objects.get(pk=course_id)
         context = self.get_context_data(**kwargs)
         curr_key = self.request.session.get("current_table_key")
-
+        
         if curr_key:
             cached = self.request.session.get(curr_key)
             if isinstance(cached, dict):

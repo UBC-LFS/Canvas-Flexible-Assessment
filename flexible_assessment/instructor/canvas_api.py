@@ -1,5 +1,6 @@
 import time
 import requests
+
 from collections.abc import MutableMapping
 
 from canvasapi import Canvas
@@ -122,8 +123,8 @@ class FlexCanvas(Canvas):
             "Content-Type": "application/json"
         }
             
-        batch_size = 50
-        sub_batch_size = 2000
+        batch_size = 1
+        sub_batch_size = 100
         all_groups = []
 
         has_next_page = True
