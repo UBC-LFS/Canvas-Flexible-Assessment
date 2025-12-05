@@ -1333,6 +1333,10 @@ class FinalGradeShellView(views.InstructorTemplateView):
     template_name = "instructor/final_grades_shell.html"
 
     def get(self, request, *args, **kwargs):
+
+        if kwargs.get("csv", False):
+            return self.export_list()
+    
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
@@ -1365,6 +1369,10 @@ class FinalGradeTableView(FinalGradeListView):
     template_name = "instructor/final_grades_table.html"
 
     def get(self, request, *args, **kwargs):
+
+        if self.kwargs.get("csv", False):
+            return self.export_list()
+        
         self.object_list = self.get_queryset()
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
