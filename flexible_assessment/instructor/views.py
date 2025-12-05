@@ -129,6 +129,10 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
     template_name = "instructor/final_grade_list.html"
 
     def get(self, request, *args, **kwargs):
+
+        if self.kwargs.get("csv", False):
+            return self.export_list()
+        
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
@@ -1366,7 +1370,7 @@ class FinalGradeTableView(FinalGradeListView):
         course = models.Course.objects.get(pk=course_id)
         context = self.get_context_data(**kwargs)
         curr_key = self.request.session.get("current_table_key")
-        
+
         if curr_key:
             cached = self.request.session.get(curr_key)
             if isinstance(cached, dict):
