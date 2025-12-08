@@ -27,7 +27,6 @@
                 <div class="col-11">
                     <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                         <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
-                            <h1 style="color:red">DEBUG FINAL GRADES SHELL</h1> 
                             <h3 class="mb-0">Final Grades</h3>
                             {% comment %} <a class="btn btn-outline-primary btn-sm"
                             style="border-radius: 1em"
@@ -166,21 +165,60 @@
             $('.assessment').css('width', width + '%');
         }
 
-        const table = $('#final').DataTable({
-            dom: 'Bftip',
+        finalTable = $('#final').DataTable({
+            dom: 'lrftip',
             buttons: [
                 {
                     extend: 'csvHtml5',
-                    text: 'Export CSV',    
+                    text: 'Export',    
                     title: 'Final Grades',
                     filename: function () {
-                        const courseId = "{{ course.id }}";
+                        const courseName = "{{ course.title }}".replace(/\s+/g, '-');
                         const now = new Date();
-                        const stamp = now.toISOString().replace(/[-:T]/g, '').slice(0, 12);
-                        return `Final_Grades_${courseId}_${stamp}`;
+                        const year = now.getFullYear();
+                        const month = now.getMonth();
+                        const day = now.getDate();
+                        const hours = now.getHours();
+                        const minutes = now.getMinutes();
+                        return `Grades_${courseName}_${year}-${month}-${day}T${hours}${minutes}`;
+                    },
+                    filename: function () {
+                        const courseId = "{{ course.id }}";
+                        const courseName = "{{ course.title }}".replace(/\s+/g, '_');
+                        const now = new Date();
+                        const year = now.getFullYear();
+                        const month = String(now.getMonth() + 1).padStart(2, '0');
+                        const day = String(now.getDate()).padStart(2, '0');
+                        const hours = String(now.getHours()).padStart(2, '0');
+                        const minutes = String(now.getMinutes()).padStart(2, '0');
+                        return `Grades_${courseName}_${year}-${month}-${day}T${hours}${minutes}`;
+                    },
+                    exportOptions: {
+                        // remove line breaks in the header
+                        format: {
+                            header: function (data, columnIdx) {
+                                return data.replace(/<br\s*\/?>/gi, ' ')
+                                          .replace(/\s+/g, ' ')
+                                          .trim();
+                            }
+                        }
+                    },
+                    // add in total average rows in the footer
+                    customize: function (csv) {
+                        const $footerRow = $('#final tfoot tr');
+                        if ($footerRow.length > 0) {
+                            const avgOverride = $footerRow.find('td').eq(0).text().trim();
+                            const avgDefault = $footerRow.find('td').eq(1).text().trim();
+                            const avgDiff = $footerRow.find('td').eq(2).text().trim();
+                            
+                            return csv + '\n' + 
+                                   '"Average Override","Average Default","Average Difference"\n' +
+                                   '"' + avgOverride + '","' + avgDefault + '","' + avgDiff + '"';
+                        }
+                        return csv;
                     }
                 }
-            ],
+            ], 
             scrollX: true,
             initComplete: format_table
         });
