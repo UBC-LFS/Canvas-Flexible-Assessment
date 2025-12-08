@@ -44,7 +44,7 @@ class TestViews(TestCase):
         self.assertEqual(type(response), HttpResponseRedirect)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
-            response.url, reverse("instructor:final_grades", args=[course_id])
+            response.url, reverse("instructor:final_grades_shell", args=[course_id])
         )
 
         # Make sure the Canvas course group weights are now updated to match the default for each assessment

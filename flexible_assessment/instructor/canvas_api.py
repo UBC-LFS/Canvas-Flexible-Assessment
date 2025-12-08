@@ -1,5 +1,6 @@
 import time
 import requests
+
 from collections.abc import MutableMapping
 
 from canvasapi import Canvas

@@ -27,10 +27,17 @@
                 <div class="col-11">
                     <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                         <div class="card-header d-flex align-items-center justify-content-between pt-3 pb-3">
+                            <h1 style="color:red">DEBUG FINAL GRADES SHELL</h1> 
                             <h3 class="mb-0">Final Grades</h3>
-                            <a class="btn btn-outline-primary btn-sm"
+                            {% comment %} <a class="btn btn-outline-primary btn-sm"
                             style="border-radius: 1em"
-                            href="{% url 'instructor:final_grades_export' course.id %}"><i class="bi bi-download"></i> Export</a>
+                            href="{% url 'instructor:final_grades_export' course.id %}"><i class="bi bi-download"></i> Export</a> {% endcomment %}
+                            <button type="button"
+                                id="exportCsvBtn"
+                                class="btn btn-outline-primary btn-sm"
+                                style="border-radius: 1em">
+                                <i class="bi bi-download"></i> Export
+                            </button>
                         </div>
                         <div class="card-body pt-2 pb-3">
                             <p class="fw-light pb-2">
@@ -122,6 +129,9 @@
           
 
 <script>
+
+    let finalTable = null;
+
     function show_loading() {
         var modalElement = document.getElementById('loadingModal');
         if (modalElement) {
@@ -157,6 +167,20 @@
         }
 
         const table = $('#final').DataTable({
+            dom: 'Bftip',
+            buttons: [
+                {
+                    extend: 'csvHtml5',
+                    text: 'Export CSV',    
+                    title: 'Final Grades',
+                    filename: function () {
+                        const courseId = "{{ course.id }}";
+                        const now = new Date();
+                        const stamp = now.toISOString().replace(/[-:T]/g, '').slice(0, 12);
+                        return `Final_Grades_${courseId}_${stamp}`;
+                    }
+                }
+            ],
             scrollX: true,
             initComplete: format_table
         });
@@ -164,6 +188,13 @@
         $('#final').on('draw.dt', format_table);
         $('.dataTables_scrollBody').css('overflow-y', 'hidden');
     }
+
+    $(document).on('click', '#exportCsvBtn', function () {
+        if (finalTable) {
+            finalTable.button(0).trigger();
+        }
+    });
+
 
   (async function () {
     const mount = document.getElementById('tableMount');

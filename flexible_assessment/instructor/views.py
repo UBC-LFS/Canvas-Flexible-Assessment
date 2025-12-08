@@ -93,6 +93,7 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
         )
 
         return context
+    
     def export_list(self):
         students = self.get_queryset()
         course_id = self.kwargs["course_id"]
@@ -128,6 +129,10 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
     template_name = "instructor/final_grade_list.html"
 
     def get(self, request, *args, **kwargs):
+
+        if self.kwargs.get("csv", False):
+            return self.export_list()
+        
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
@@ -159,21 +164,19 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         students = self.get_queryset()
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
-        groups = self.get_context_data().get("groups")
+            
         curr_key = self.request.session.get("current_table_key")
-        saved = self.request.session.get(curr_key) if curr_key else ""
+        saved = self.request.session.get(curr_key) if curr_key else None
 
+        groups = None  
         if isinstance(saved, dict):
-            table_html = saved.get("html", "")
-        else:
-            table_html = ""
-
-        if not table_html:
-            context = self.get_context_data()
-            html = render_to_string("instructor/final_grades_table.html", context)
-            table_html = html
+            groups = saved.get("groups")  
         
-        csv_response = writer.grades_csv(course, table_html)
+        if groups is None:
+            context = self.get_context_data()
+            groups = context.get("groups")
+        
+        csv_response = writer.grades_csv(course, students, groups)
 
         logger.info(
             "Final list view exported",
@@ -1334,6 +1337,10 @@ class FinalGradeShellView(views.InstructorTemplateView):
     template_name = "instructor/final_grades_shell.html"
 
     def get(self, request, *args, **kwargs):
+
+        if kwargs.get("csv", False):
+            return self.export_list()
+    
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
@@ -1366,9 +1373,14 @@ class FinalGradeTableView(FinalGradeListView):
     template_name = "instructor/final_grades_table.html"
 
     def get(self, request, *args, **kwargs):
+
+        if self.kwargs.get("csv", False):
+            return self.export_list()
+        
         self.object_list = self.get_queryset()
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
+        context = self.get_context_data(**kwargs)
         curr_key = self.request.session.get("current_table_key")
 
         if curr_key:
@@ -1379,14 +1391,13 @@ class FinalGradeTableView(FinalGradeListView):
             elif isinstance(cached, str):
                 pass
 
-        context = self.get_context_data(**kwargs)
-
         html = render_to_string(self.template_name, context, request)
 
         if curr_key:
             self.request.session[curr_key] = {
                 "version": course.flex_version,
                 "html": html,
+                "groups": context["groups"],
             }
             self.request.session.modified = True
 
