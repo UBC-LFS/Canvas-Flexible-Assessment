@@ -1743,8 +1743,6 @@ class TestInstructorViews(StaticLiveServerTestCase):
         delete_button = self.browser.find_element(By.CLASS_NAME, "delete")
         delete_button.send_keys(Keys.ENTER)
 
-        # TODO: add another wait here: 
-
 
         default_weight_input = self.browser.find_element(By.XPATH, '//*[@id="id_assessment-0-default"]')
         default_weight_input.send_keys("4")

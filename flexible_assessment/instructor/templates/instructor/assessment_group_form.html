@@ -8,24 +8,7 @@
 {% endblock nav_item_final %}
 {% block content %}
 
-    <!-- Loading modal-->
-    <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"  role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-            <div class="modal-body d-flex flex-column align-items-center justify-content-center py-5">
-                <div class="row mb-4">
-                <div class="spinner-border text-primary" style="width:3rem;height:3rem" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                </div>
-                <div class="row"><strong>Please wait...</strong></div>
-                <div class="row"><p>Depending on the size of the course, it may take a few minutes to load.</p></div>
-            </div>
-            </div>
-        </div>
-    </div>
-
-    <form action="" method="post" id="assessmentForm">
+    <form action="" method="post">
         {% csrf_token %}
         {% bootstrap_form_errors form type='non_fields' %}
         {% for hidden_field in form.hidden_fields %}
@@ -90,12 +73,4 @@
         </div>
     </form>
 
-    <script>
-        document.getElementById('assessmentForm').addEventListener('submit', function(e) {
-            
-            var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
-            loadingModal.show();
-
-        });
-    </script>
   {% endblock %}
