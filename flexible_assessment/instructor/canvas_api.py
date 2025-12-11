@@ -380,6 +380,130 @@ class FlexCanvas(Canvas):
 
         # print(user_scores)
         return user_scores
+    
+    def fetch_flat_items(self, course_id, query):
+        """
+        Fetch all assignment groups with nested pagination for assignments, submissions, and grades
+        """
+        URL = self.base_url + 'api/graphql'
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json"
+        }
+        
+        batch_size = 1  # Fetch one group at a time
+        all_groups = []
+        
+        has_next_page = True
+        after = None
+        
+        while has_next_page:
+            variables = {
+                "course_id": course_id,
+                "first": batch_size,
+                "after": after,
+                "assign_first": 100,
+                "assign_after": None,
+                "sub_first": 100,
+                "sub_after": None,
+                "grade_first": 100,
+                "grade_after": None
+            }
+            
+            res = requests.post(URL, json={"query": query, "variables": variables}, headers=headers)
+            
+            if res.status_code == 200:
+                data = res.json()['data']['course']['assignment_groups']
+                group = data['groups'][0]
+                
+                # Fetch all assignments for this group
+                assignments = []
+                assign_after = None
+                assign_has_next_page = True
+                
+                while assign_has_next_page:
+                    variables["assign_after"] = assign_after
+                    assign_res = requests.post(URL, json={"query": query, "variables": variables}, headers=headers)
+                    
+                    if assign_res.status_code == 200:
+                        assign_data = assign_res.json()['data']['course']['assignment_groups']['groups'][0]
+                        assignment_list = assign_data['assignment_list']
+                        
+                        # For each assignment, fetch all submissions
+                        for assignment in assignment_list['assignments']:
+                            all_submissions = []
+                            sub_after = None
+                            sub_has_next_page = True
+                            
+                            while sub_has_next_page:
+                                sub_variables = dict(variables)
+                                sub_variables["assign_after"] = assign_after
+                                sub_variables["sub_after"] = sub_after
+                                
+                                sub_res = requests.post(URL, json={"query": query, "variables": sub_variables}, headers=headers)
+                                
+                                if sub_res.status_code == 200:
+                                    sub_data = sub_res.json()['data']['course']['assignment_groups']['groups'][0]
+                                    # Find the matching assignment in the response
+                                    matching_assign = next((a for a in sub_data['assignment_list']['assignments'] 
+                                                        if a['_id'] == assignment['_id']), None)
+                                    if matching_assign:
+                                        submission_list = matching_assign['submission_list']
+                                        all_submissions += submission_list['submissions']
+                                        
+                                        sub_after = submission_list['sub_page_info']['endCursor']
+                                        sub_has_next_page = submission_list['sub_page_info']['hasNextPage']
+                                    else:
+                                        sub_has_next_page = False
+                                else:
+                                    sub_has_next_page = False
+                            
+                            assignment['submission_list']['submissions'] = all_submissions
+                            assignments.append(assignment)
+                        
+                        assign_after = assignment_list['assign_page_info']['endCursor']
+                        assign_has_next_page = assignment_list['assign_page_info']['hasNextPage']
+                    else:
+                        assign_has_next_page = False
+                
+                group['assignment_list']['assignments'] = assignments
+                
+                # Fetch all grades for this group
+                all_grades = []
+                grade_after = None
+                grade_has_next_page = True
+                
+                while grade_has_next_page:
+                    variables["grade_after"] = grade_after
+                    grade_res = requests.post(URL, json={"query": query, "variables": variables}, headers=headers)
+                    
+                    if grade_res.status_code == 200:
+                        grade_data = grade_res.json()['data']['course']['assignment_groups']['groups'][0]
+                        grade_list = grade_data['grade_list']
+                        all_grades += grade_list['grades']
+                        
+                        grade_after = grade_list['grade_page_info']['endCursor']
+                        grade_has_next_page = grade_list['grade_page_info']['hasNextPage']
+                    else:
+                        grade_has_next_page = False
+                
+                group['grade_list']['grades'] = all_grades
+                all_groups.append(group)
+                
+                after = data['page_info']['endCursor']
+                has_next_page = data['page_info']['hasNextPage']
+            else:
+                has_next_page = False
+        
+        return {
+            'data': {
+                'course': {
+                    'assignment_groups': {
+                        'groups': all_groups
+                    }
+                }
+            }
+        }
 
     def get_flat_groups_and_enrollments(self, course_id):
         """Gets Canvas assignment groups and student enrollment data
@@ -397,7 +521,7 @@ class FlexCanvas(Canvas):
             Contains enrollment ID for each user
         """
 
-        query = """
+        query2 = """
         query AssignmentGroupQuery($course_id: ID!) {
         course(id: $course_id) {
             assignment_groups: assignmentGroupsConnection {
@@ -445,8 +569,80 @@ class FlexCanvas(Canvas):
         }
     }
         """
+
+        query = """
+        query AssignmentGroupQuery($course_id: ID!, $first: Int!, $after: String, 
+                               $assign_first: Int!, $assign_after: String,
+                               $sub_first: Int!, $sub_after: String,
+                               $grade_first: Int!, $grade_after: String) {
+        course(id: $course_id) {
+            assignment_groups: assignmentGroupsConnection(first: $first, after: $after) {
+                groups: nodes {
+                    rules {
+                        dropHighest
+                        dropLowest
+                        neverDrop {
+                            _id
+                        }
+                    }
+                    group_id:_id
+                    group_name: name
+                    group_weight: groupWeight
+                    assignment_list: assignmentsConnection(first: $assign_first, after: $assign_after) {
+                        assignments: nodes {
+                            _id
+                            max_score: pointsPossible
+                            name
+                            published
+                            gradingType
+                            omitFromFinalGrade
+                            submission_list: submissionsConnection(first: $sub_first, after: $sub_after) {
+                                submissions: nodes {
+                                    score
+                                    user_id: userId
+                                }
+                                sub_page_info: pageInfo {
+                                    hasNextPage
+                                    endCursor
+                                }
+                            }
+                        }
+                        assign_page_info: pageInfo {
+                            hasNextPage
+                            endCursor
+                        }
+                    }
+                    grade_list: gradesConnection(first: $grade_first, after: $grade_after) {
+                        grades: nodes {
+                            current_score: currentScore
+                            enrollment {
+                                _id
+                                user {
+                                    user_id: _id
+                                    display_name: name
+                                }
+                            }
+                        }
+                        grade_page_info: pageInfo {
+                            hasNextPage
+                            endCursor
+                        }
+                    }
+                }
+                page_info: pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+            }
+        }
+    }
+    """
+    
+        # Use fetch_flat_items for pagination
+        query_response = self.fetch_flat_items(course_id, query)
+        
         # Makes the API call
-        query_response = self.graphql(query, variables={"course_id": course_id})
+        # query_response = self.graphql(query, variables={"course_id": course_id})
         query_flattened = self._flatten_dict(query_response)
         groups = query_flattened.get("data.course.assignment_groups.groups", None)
         if groups is None:
