@@ -383,7 +383,7 @@ class FlexCanvas(Canvas):
     
     def fetch_flat_items(self, course_id, query):
         """
-        Fetch all assignment groups with nested pagination for assignments, submissions, and grades
+        Fetch all assignment groups, assignments, submissions, and grades from database
         """
         URL = self.base_url + 'api/graphql'
         headers = {
@@ -391,109 +391,160 @@ class FlexCanvas(Canvas):
             "Content-Type": "application/json"
         }
         
-        batch_size = 1  # Fetch one group at a time
+        GROUP_BATCH_SIZE = 1 
+        ASSIGN_BATCH_SIZE = 100
+        SUB_BATCH_SIZE = 100
+        GRADE_BATCH_SIZE = 100
+
         all_groups = []
+        group_after = None
+        group_has_next_page = True
         
-        has_next_page = True
-        after = None
+        all_course_grades = []
         
-        while has_next_page:
-            variables = {
+        while group_has_next_page:
+            group_variables = {
                 "course_id": course_id,
-                "first": batch_size,
-                "after": after,
-                "assign_first": 100,
-                "assign_after": None,
-                "sub_first": 100,
+                "first": GROUP_BATCH_SIZE, 
+                "after": group_after,
+                "assign_first": ASSIGN_BATCH_SIZE,
+                "assign_after": None, 
+                "sub_first": SUB_BATCH_SIZE, 
                 "sub_after": None,
-                "grade_first": 100,
+                "grade_first": GRADE_BATCH_SIZE,
                 "grade_after": None
             }
             
-            res = requests.post(URL, json={"query": query, "variables": variables}, headers=headers)
+            res = requests.post(URL, json={"query": query, "variables": group_variables}, headers=headers)
             
-            if res.status_code == 200:
-                data = res.json()['data']['course']['assignment_groups']
-                group = data['groups'][0]
+            if res.status_code != 200:
+                print(f"Error fetching assignment group: {res.text}")
+                group_has_next_page = False
+                break
+
+            data = res.json()['data']['course']['assignment_groups']
+            if not data['groups']:
+                group_has_next_page = False
+                break
+
+            group = data['groups'][0] 
+            current_group_cursor = group_after 
+            
+            all_assignments_raw = group.get('assignment_list', {}).get('assignments', [])
+            assign_page_info = group.get('assignment_list', {}).get('assign_page_info', {})
+            assign_after = assign_page_info.get('endCursor')
+            assign_has_next_page = assign_page_info.get('hasNextPage', False)
+
+            while assign_has_next_page:
+                assign_variables = {
+                    "course_id": course_id,
+                    "first": GROUP_BATCH_SIZE, 
+                    "after": current_group_cursor, 
+                    "assign_first": ASSIGN_BATCH_SIZE,
+                    "assign_after": assign_after, 
+                    "sub_first": SUB_BATCH_SIZE, 
+                    "sub_after": None,           
+                    "grade_first": GRADE_BATCH_SIZE,
+                    "grade_after": None
+                }
                 
-                # Fetch all assignments for this group
-                assignments = []
-                assign_after = None
-                assign_has_next_page = True
+                assign_res = requests.post(URL, json={"query": query, "variables": assign_variables}, headers=headers)
                 
-                while assign_has_next_page:
-                    variables["assign_after"] = assign_after
-                    assign_res = requests.post(URL, json={"query": query, "variables": variables}, headers=headers)
+                if assign_res.status_code == 200:
+                    assign_data = assign_res.json()['data']['course']['assignment_groups']['groups'][0]
+                    assignment_list = assign_data.get('assignment_list', {})
+                    all_assignments_raw.extend(assignment_list.get('assignments', []))
                     
-                    if assign_res.status_code == 200:
-                        assign_data = assign_res.json()['data']['course']['assignment_groups']['groups'][0]
-                        assignment_list = assign_data['assignment_list']
-                        
-                        # For each assignment, fetch all submissions
-                        for assignment in assignment_list['assignments']:
-                            all_submissions = []
-                            sub_after = None
-                            sub_has_next_page = True
-                            
-                            while sub_has_next_page:
-                                sub_variables = dict(variables)
-                                sub_variables["assign_after"] = assign_after
-                                sub_variables["sub_after"] = sub_after
-                                
-                                sub_res = requests.post(URL, json={"query": query, "variables": sub_variables}, headers=headers)
-                                
-                                if sub_res.status_code == 200:
-                                    sub_data = sub_res.json()['data']['course']['assignment_groups']['groups'][0]
-                                    # Find the matching assignment in the response
-                                    matching_assign = next((a for a in sub_data['assignment_list']['assignments'] 
-                                                        if a['_id'] == assignment['_id']), None)
-                                    if matching_assign:
-                                        submission_list = matching_assign['submission_list']
-                                        all_submissions += submission_list['submissions']
-                                        
-                                        sub_after = submission_list['sub_page_info']['endCursor']
-                                        sub_has_next_page = submission_list['sub_page_info']['hasNextPage']
-                                    else:
-                                        sub_has_next_page = False
-                                else:
-                                    sub_has_next_page = False
-                            
-                            assignment['submission_list']['submissions'] = all_submissions
-                            assignments.append(assignment)
-                        
-                        assign_after = assignment_list['assign_page_info']['endCursor']
-                        assign_has_next_page = assignment_list['assign_page_info']['hasNextPage']
-                    else:
-                        assign_has_next_page = False
-                
-                group['assignment_list']['assignments'] = assignments
-                
-                # Fetch all grades for this group
-                all_grades = []
-                grade_after = None
-                grade_has_next_page = True
-                
-                while grade_has_next_page:
-                    variables["grade_after"] = grade_after
-                    grade_res = requests.post(URL, json={"query": query, "variables": variables}, headers=headers)
+                    assign_page_info = assignment_list.get('assign_page_info', {})
+                    assign_after = assign_page_info.get('endCursor')
+                    assign_has_next_page = assign_page_info.get('hasNextPage', False)
+                else:
+                    assign_has_next_page = False
+
+
+            all_assignments_complete = []
+            for assignment in all_assignments_raw:
+                assignment_id = assignment['_id']
+                all_submissions = assignment.get('submission_list', {}).get('submissions', [])
+                sub_page_info = assignment.get('submission_list', {}).get('sub_page_info', {})
+                sub_after = sub_page_info.get('endCursor')
+                sub_has_next_page = sub_page_info.get('hasNextPage', False)
+
+                while sub_has_next_page:
+                    sub_variables = {
+                        "course_id": course_id,
+                        "first": GROUP_BATCH_SIZE, 
+                        "after": current_group_cursor, 
+                        "assign_first": ASSIGN_BATCH_SIZE,
+                        "assign_after": None, 
+                        "sub_first": SUB_BATCH_SIZE, 
+                        "sub_after": sub_after, 
+                        "grade_first": GRADE_BATCH_SIZE,
+                        "grade_after": None
+                    }
                     
-                    if grade_res.status_code == 200:
-                        grade_data = grade_res.json()['data']['course']['assignment_groups']['groups'][0]
-                        grade_list = grade_data['grade_list']
-                        all_grades += grade_list['grades']
+                    sub_res = requests.post(URL, json={"query": query, "variables": sub_variables}, headers=headers)
+                    
+                    if sub_res.status_code == 200:
+                        sub_data = sub_res.json()['data']['course']['assignment_groups']['groups'][0]
+
+                        matching_assign = next((a for a in sub_data.get('assignment_list', {}).get('assignments', []) 
+                                                if a.get('_id') == assignment_id), None)
                         
-                        grade_after = grade_list['grade_page_info']['endCursor']
-                        grade_has_next_page = grade_list['grade_page_info']['hasNextPage']
+                        if matching_assign and 'submission_list' in matching_assign:
+                            submission_list = matching_assign['submission_list']
+                            all_submissions.extend(submission_list.get('submissions', []))
+                            
+                            sub_page_info = submission_list.get('sub_page_info', {})
+                            sub_after = sub_page_info.get('endCursor')
+                            sub_has_next_page = sub_page_info.get('hasNextPage', False)
+                        else:
+                            sub_has_next_page = False
                     else:
-                        grade_has_next_page = False
+                        sub_has_next_page = False
                 
-                group['grade_list']['grades'] = all_grades
-                all_groups.append(group)
+                assignment['submission_list']['submissions'] = all_submissions
+                all_assignments_complete.append(assignment)
+            
+            group['assignment_list']['assignments'] = all_assignments_complete
+            all_groups.append(group)
+            
+            group_page_info = data.get('page_info', {})
+            group_after = group_page_info.get('endCursor')
+            group_has_next_page = group_page_info.get('hasNextPage', False)
+
+        grade_after = None
+        grade_has_next_page = True
+
+        while grade_has_next_page:
+            grade_variables = {
+                "course_id": course_id,
+                "first": GROUP_BATCH_SIZE, 
+                "after": None,             
+                "assign_first": 0,         
+                "assign_after": None,
+                "sub_first": 0,            
+                "sub_after": None,
+                "grade_first": GRADE_BATCH_SIZE,
+                "grade_after": grade_after,
+            }
+
+            grade_res = requests.post(URL, json={"query": query, "variables": grade_variables}, headers=headers)
+            
+            if grade_res.status_code == 200:
+                grade_data = grade_res.json()['data']['course']['assignment_groups']['groups'][0]
+                grade_list = grade_data.get('grade_list', {})
+                all_course_grades.extend(grade_list.get('grades', []))
                 
-                after = data['page_info']['endCursor']
-                has_next_page = data['page_info']['hasNextPage']
+                grade_page_info = grade_list.get('grade_page_info', {})
+                grade_after = grade_page_info.get('endCursor')
+                grade_has_next_page = grade_page_info.get('hasNextPage', False)
             else:
-                has_next_page = False
+                grade_has_next_page = False
+        
+        for group in all_groups:
+            group['grade_list'] = group.get('grade_list', {})
+            group['grade_list']['grades'] = all_course_grades
         
         return {
             'data': {
@@ -504,6 +555,7 @@ class FlexCanvas(Canvas):
                 }
             }
         }
+
 
     def get_flat_groups_and_enrollments(self, course_id):
         """Gets Canvas assignment groups and student enrollment data
@@ -572,9 +624,9 @@ class FlexCanvas(Canvas):
 
         query = """
         query AssignmentGroupQuery($course_id: ID!, $first: Int!, $after: String, 
-                               $assign_first: Int!, $assign_after: String,
-                               $sub_first: Int!, $sub_after: String,
-                               $grade_first: Int!, $grade_after: String) {
+                            $assign_first: Int!, $assign_after: String,
+                            $sub_first: Int!, $sub_after: String,
+                            $grade_first: Int!, $grade_after: String) {
         course(id: $course_id) {
             assignment_groups: assignmentGroupsConnection(first: $first, after: $after) {
                 groups: nodes {
