@@ -1,5 +1,6 @@
 {% extends "accommodations/accommodations_base.html" %}
 {% load django_bootstrap5 %}
+{% load accommodations_tags %}
 {% bootstrap_messages %}
 {% load static %}
 {% bootstrap_css %}
@@ -22,6 +23,68 @@
                     <h4>Summary of Applied Accommodations for Multiplier Groups</h4>
                     <label class="form-label my-3">Verify that the accommodations listed have been applied correctly.</label>
                     <div class="row g-3">
+                        <div class="card shadow-sm mb-4 px-0"
+                                 style="border-radius: 1em;
+                                        overflow: hidden">
+                            <div class="card-header p-0">
+                                <div class="w-100 px-3 py-2">
+                                    <h4 class="mb-0">🚨 Warning - Please review the following unique accommodations</h3>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-bordered table-sm mt-2"
+                                        style="table-layout: auto">
+                                    <thead class="table-light">
+                                        <tr class="align-middle">
+                                            <th>Name</th>
+                                            <th>Student ID</th>
+                                            <th>Current extended time</th>
+                                            <th>Extended time only for essay format</th>
+                                            <th>Extended time only for multipler choice format</th>
+                                            <th>CFA Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for multiplier, students in multiplier_student_groups %}
+                                            {% for student_id, student_name, _, additional_info in students %}
+                                                {% with note_parts=additional_info|split:"^" %}
+                                                {% if note_parts.0 != "" or note_parts.1 != "" or note_parts.2 != "" %}
+                                                    <tr>
+                                                        <td>{{ student_name }}</td>
+                                                        <td>{{ student_id }}</td>
+                                                        <td>{{ multiplier }}x</td>
+                                                        {% if note_parts.0 == "" %}
+                                                            <td class="text-muted">N/A</td>
+                                                        {% else %}
+                                                            <td class="{% if note_parts.0|to_float > multiplier|to_float%}{% endif %}">
+                                                                {{note_parts.0}}x
+                                                            </td>
+                                                        {% endif %}
+
+                                                        {% if note_parts.1 == "" %}
+                                                            <td class="text-muted">N/A</td>
+                                                        {% else %}
+                                                            <td class="">
+                                                                {{note_parts.1}}x
+                                                            </td>
+                                                        {% endif %}
+                                                        
+                                                        {% if note_parts.2 == "" %}
+                                                            <td class="text-muted">N/A</td>
+                                                        {% else %}
+                                                            <td class="">
+                                                                {{note_parts.2}}
+                                                            </td>
+                                                        {% endif %}
+                                                    </tr>
+                                                {% endif %}
+                                                {% endwith %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                         {% for multiplier, students in multiplier_student_groups %}
                             <div class="card shadow-sm mb-4 px-0"
                                  style="border-radius: 1em;
@@ -32,7 +95,6 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <h5>Warning </h5>
                                     <!-- Student Table -->
                                     <h5>Students:</h5>
                                     <table class="table table-bordered table-sm mt-2"
@@ -45,11 +107,9 @@
                                         </thead>
                                         <tbody>
                                             {% for student_id, student_name, _, _ in students %}
-                                                {% with note_parts=additional_info|split:"^" %}
                                                 <tr>
                                                     <td>{{ student_name }}</td>
                                                     <td>{{ student_id }}</td>
-                                                    <td>{{ student_note }}</td>
                                                 </tr>
                                             {% endfor %}
                                         </tbody>
