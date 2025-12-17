@@ -209,7 +209,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                 )
 
                 return HttpResponseRedirect(
-                    reverse("instructor:final_grades", kwargs={"course_id": course_id})
+                    reverse("instructor:final_grades_shell", kwargs={"course_id": course_id})
                 )
 
             success = self._submit_final_grades(course_id, canvas)
@@ -222,7 +222,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                 logger.info("Error in submitting final grades", extra=log_extra)
 
                 return HttpResponseRedirect(
-                    reverse("instructor:final_grades", kwargs={"course_id": course_id})
+                    reverse("instructor:final_grades_shell", kwargs={"course_id": course_id})
                 )
 
             logger.info("Completed final grades submission to Canvas", extra=log_extra)
@@ -1041,7 +1041,7 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
     def get_success_url(self):
         previous = self.request.GET.get("previous", "")
         if previous == "final":
-            self.success_reverse_name = "instructor:final_grades"
+            self.success_reverse_name = "instructor:final_grades_shell"
         else:
             self.success_reverse_name = "instructor:percentage_list"
 
