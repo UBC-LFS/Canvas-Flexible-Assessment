@@ -132,5 +132,2712 @@
         "course_id": 1,
         "role": 1
     }
+}, {
+  "model": "flexible_assessment.usercourse",
+  "pk": 201,
+  "fields": {
+    "user": 201,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 202,
+  "fields": {
+    "user": 202,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 203,
+  "fields": {
+    "user": 203,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 204,
+  "fields": {
+    "user": 204,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 205,
+  "fields": {
+    "user": 205,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 206,
+  "fields": {
+    "user": 206,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 207,
+  "fields": {
+    "user": 207,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 208,
+  "fields": {
+    "user": 208,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 209,
+  "fields": {
+    "user": 209,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 210,
+  "fields": {
+    "user": 210,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 211,
+  "fields": {
+    "user": 211,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 212,
+  "fields": {
+    "user": 212,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 213,
+  "fields": {
+    "user": 213,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 214,
+  "fields": {
+    "user": 214,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 215,
+  "fields": {
+    "user": 215,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 216,
+  "fields": {
+    "user": 216,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 217,
+  "fields": {
+    "user": 217,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 218,
+  "fields": {
+    "user": 218,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 219,
+  "fields": {
+    "user": 219,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 220,
+  "fields": {
+    "user": 220,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 221,
+  "fields": {
+    "user": 221,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 222,
+  "fields": {
+    "user": 222,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 223,
+  "fields": {
+    "user": 223,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 224,
+  "fields": {
+    "user": 224,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 225,
+  "fields": {
+    "user": 225,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 226,
+  "fields": {
+    "user": 226,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 227,
+  "fields": {
+    "user": 227,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 228,
+  "fields": {
+    "user": 228,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 229,
+  "fields": {
+    "user": 229,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 230,
+  "fields": {
+    "user": 230,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 231,
+  "fields": {
+    "user": 231,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 232,
+  "fields": {
+    "user": 232,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 233,
+  "fields": {
+    "user": 233,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 234,
+  "fields": {
+    "user": 234,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 235,
+  "fields": {
+    "user": 235,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 236,
+  "fields": {
+    "user": 236,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 237,
+  "fields": {
+    "user": 237,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 238,
+  "fields": {
+    "user": 238,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 239,
+  "fields": {
+    "user": 239,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 240,
+  "fields": {
+    "user": 240,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 241,
+  "fields": {
+    "user": 241,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 242,
+  "fields": {
+    "user": 242,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 243,
+  "fields": {
+    "user": 243,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 244,
+  "fields": {
+    "user": 244,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 245,
+  "fields": {
+    "user": 245,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 246,
+  "fields": {
+    "user": 246,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 247,
+  "fields": {
+    "user": 247,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 248,
+  "fields": {
+    "user": 248,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 249,
+  "fields": {
+    "user": 249,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 250,
+  "fields": {
+    "user": 250,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 251,
+  "fields": {
+    "user": 251,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 252,
+  "fields": {
+    "user": 252,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 253,
+  "fields": {
+    "user": 253,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 254,
+  "fields": {
+    "user": 254,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 255,
+  "fields": {
+    "user": 255,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 256,
+  "fields": {
+    "user": 256,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 257,
+  "fields": {
+    "user": 257,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 258,
+  "fields": {
+    "user": 258,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 259,
+  "fields": {
+    "user": 259,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 260,
+  "fields": {
+    "user": 260,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 261,
+  "fields": {
+    "user": 261,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 262,
+  "fields": {
+    "user": 262,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 263,
+  "fields": {
+    "user": 263,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 264,
+  "fields": {
+    "user": 264,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 265,
+  "fields": {
+    "user": 265,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 266,
+  "fields": {
+    "user": 266,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 267,
+  "fields": {
+    "user": 267,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 268,
+  "fields": {
+    "user": 268,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 269,
+  "fields": {
+    "user": 269,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 270,
+  "fields": {
+    "user": 270,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 271,
+  "fields": {
+    "user": 271,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 272,
+  "fields": {
+    "user": 272,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 273,
+  "fields": {
+    "user": 273,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 274,
+  "fields": {
+    "user": 274,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 275,
+  "fields": {
+    "user": 275,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 276,
+  "fields": {
+    "user": 276,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 277,
+  "fields": {
+    "user": 277,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 278,
+  "fields": {
+    "user": 278,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 279,
+  "fields": {
+    "user": 279,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 280,
+  "fields": {
+    "user": 280,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 281,
+  "fields": {
+    "user": 281,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 282,
+  "fields": {
+    "user": 282,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 283,
+  "fields": {
+    "user": 283,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 284,
+  "fields": {
+    "user": 284,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 285,
+  "fields": {
+    "user": 285,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 286,
+  "fields": {
+    "user": 286,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 287,
+  "fields": {
+    "user": 287,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 288,
+  "fields": {
+    "user": 288,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 289,
+  "fields": {
+    "user": 289,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 290,
+  "fields": {
+    "user": 290,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 291,
+  "fields": {
+    "user": 291,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 292,
+  "fields": {
+    "user": 292,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 293,
+  "fields": {
+    "user": 293,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 294,
+  "fields": {
+    "user": 294,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 295,
+  "fields": {
+    "user": 295,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 296,
+  "fields": {
+    "user": 296,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 297,
+  "fields": {
+    "user": 297,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 298,
+  "fields": {
+    "user": 298,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 299,
+  "fields": {
+    "user": 299,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 300,
+  "fields": {
+    "user": 300,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 301,
+  "fields": {
+    "user": 301,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 302,
+  "fields": {
+    "user": 302,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 303,
+  "fields": {
+    "user": 303,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 304,
+  "fields": {
+    "user": 304,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 305,
+  "fields": {
+    "user": 305,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 306,
+  "fields": {
+    "user": 306,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 307,
+  "fields": {
+    "user": 307,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 308,
+  "fields": {
+    "user": 308,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 309,
+  "fields": {
+    "user": 309,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 310,
+  "fields": {
+    "user": 310,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 311,
+  "fields": {
+    "user": 311,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 312,
+  "fields": {
+    "user": 312,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 313,
+  "fields": {
+    "user": 313,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 314,
+  "fields": {
+    "user": 314,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 315,
+  "fields": {
+    "user": 315,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 316,
+  "fields": {
+    "user": 316,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 317,
+  "fields": {
+    "user": 317,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 318,
+  "fields": {
+    "user": 318,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 319,
+  "fields": {
+    "user": 319,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 320,
+  "fields": {
+    "user": 320,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 321,
+  "fields": {
+    "user": 321,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 322,
+  "fields": {
+    "user": 322,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 323,
+  "fields": {
+    "user": 323,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 324,
+  "fields": {
+    "user": 324,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 325,
+  "fields": {
+    "user": 325,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 326,
+  "fields": {
+    "user": 326,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 327,
+  "fields": {
+    "user": 327,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 328,
+  "fields": {
+    "user": 328,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 329,
+  "fields": {
+    "user": 329,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 330,
+  "fields": {
+    "user": 330,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 331,
+  "fields": {
+    "user": 331,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 332,
+  "fields": {
+    "user": 332,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 333,
+  "fields": {
+    "user": 333,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 334,
+  "fields": {
+    "user": 334,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 335,
+  "fields": {
+    "user": 335,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 336,
+  "fields": {
+    "user": 336,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 337,
+  "fields": {
+    "user": 337,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 338,
+  "fields": {
+    "user": 338,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 339,
+  "fields": {
+    "user": 339,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 340,
+  "fields": {
+    "user": 340,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 341,
+  "fields": {
+    "user": 341,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 342,
+  "fields": {
+    "user": 342,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 343,
+  "fields": {
+    "user": 343,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 344,
+  "fields": {
+    "user": 344,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 345,
+  "fields": {
+    "user": 345,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 346,
+  "fields": {
+    "user": 346,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 347,
+  "fields": {
+    "user": 347,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 348,
+  "fields": {
+    "user": 348,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 349,
+  "fields": {
+    "user": 349,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 350,
+  "fields": {
+    "user": 350,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 351,
+  "fields": {
+    "user": 351,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 352,
+  "fields": {
+    "user": 352,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 353,
+  "fields": {
+    "user": 353,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 354,
+  "fields": {
+    "user": 354,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 355,
+  "fields": {
+    "user": 355,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 356,
+  "fields": {
+    "user": 356,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 357,
+  "fields": {
+    "user": 357,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 358,
+  "fields": {
+    "user": 358,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 359,
+  "fields": {
+    "user": 359,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 360,
+  "fields": {
+    "user": 360,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 361,
+  "fields": {
+    "user": 361,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 362,
+  "fields": {
+    "user": 362,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 363,
+  "fields": {
+    "user": 363,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 364,
+  "fields": {
+    "user": 364,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 365,
+  "fields": {
+    "user": 365,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 366,
+  "fields": {
+    "user": 366,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 367,
+  "fields": {
+    "user": 367,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 368,
+  "fields": {
+    "user": 368,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 369,
+  "fields": {
+    "user": 369,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 370,
+  "fields": {
+    "user": 370,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 371,
+  "fields": {
+    "user": 371,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 372,
+  "fields": {
+    "user": 372,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 373,
+  "fields": {
+    "user": 373,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 374,
+  "fields": {
+    "user": 374,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 375,
+  "fields": {
+    "user": 375,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 376,
+  "fields": {
+    "user": 376,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 377,
+  "fields": {
+    "user": 377,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 378,
+  "fields": {
+    "user": 378,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 379,
+  "fields": {
+    "user": 379,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 380,
+  "fields": {
+    "user": 380,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 381,
+  "fields": {
+    "user": 381,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 382,
+  "fields": {
+    "user": 382,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 383,
+  "fields": {
+    "user": 383,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 384,
+  "fields": {
+    "user": 384,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 385,
+  "fields": {
+    "user": 385,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 386,
+  "fields": {
+    "user": 386,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 387,
+  "fields": {
+    "user": 387,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 388,
+  "fields": {
+    "user": 388,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 389,
+  "fields": {
+    "user": 389,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 390,
+  "fields": {
+    "user": 390,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 391,
+  "fields": {
+    "user": 391,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 392,
+  "fields": {
+    "user": 392,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 393,
+  "fields": {
+    "user": 393,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 394,
+  "fields": {
+    "user": 394,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 395,
+  "fields": {
+    "user": 395,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 396,
+  "fields": {
+    "user": 396,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 397,
+  "fields": {
+    "user": 397,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 398,
+  "fields": {
+    "user": 398,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 399,
+  "fields": {
+    "user": 399,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 400,
+  "fields": {
+    "user": 400,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 401,
+  "fields": {
+    "user": 401,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 402,
+  "fields": {
+    "user": 402,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 403,
+  "fields": {
+    "user": 403,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 404,
+  "fields": {
+    "user": 404,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 405,
+  "fields": {
+    "user": 405,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 406,
+  "fields": {
+    "user": 406,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 407,
+  "fields": {
+    "user": 407,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 408,
+  "fields": {
+    "user": 408,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 409,
+  "fields": {
+    "user": 409,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 410,
+  "fields": {
+    "user": 410,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 411,
+  "fields": {
+    "user": 411,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 412,
+  "fields": {
+    "user": 412,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 413,
+  "fields": {
+    "user": 413,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 414,
+  "fields": {
+    "user": 414,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 415,
+  "fields": {
+    "user": 415,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 416,
+  "fields": {
+    "user": 416,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 417,
+  "fields": {
+    "user": 417,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 418,
+  "fields": {
+    "user": 418,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 419,
+  "fields": {
+    "user": 419,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 420,
+  "fields": {
+    "user": 420,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 421,
+  "fields": {
+    "user": 421,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 422,
+  "fields": {
+    "user": 422,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 423,
+  "fields": {
+    "user": 423,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 424,
+  "fields": {
+    "user": 424,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 425,
+  "fields": {
+    "user": 425,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 426,
+  "fields": {
+    "user": 426,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 427,
+  "fields": {
+    "user": 427,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 428,
+  "fields": {
+    "user": 428,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 429,
+  "fields": {
+    "user": 429,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 430,
+  "fields": {
+    "user": 430,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 431,
+  "fields": {
+    "user": 431,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 432,
+  "fields": {
+    "user": 432,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 433,
+  "fields": {
+    "user": 433,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 434,
+  "fields": {
+    "user": 434,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 435,
+  "fields": {
+    "user": 435,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 436,
+  "fields": {
+    "user": 436,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 437,
+  "fields": {
+    "user": 437,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 438,
+  "fields": {
+    "user": 438,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 439,
+  "fields": {
+    "user": 439,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 440,
+  "fields": {
+    "user": 440,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 441,
+  "fields": {
+    "user": 441,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 442,
+  "fields": {
+    "user": 442,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 443,
+  "fields": {
+    "user": 443,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 444,
+  "fields": {
+    "user": 444,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 445,
+  "fields": {
+    "user": 445,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 446,
+  "fields": {
+    "user": 446,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 447,
+  "fields": {
+    "user": 447,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 448,
+  "fields": {
+    "user": 448,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 449,
+  "fields": {
+    "user": 449,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 450,
+  "fields": {
+    "user": 450,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 451,
+  "fields": {
+    "user": 451,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 452,
+  "fields": {
+    "user": 452,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 453,
+  "fields": {
+    "user": 453,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 454,
+  "fields": {
+    "user": 454,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 455,
+  "fields": {
+    "user": 455,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 456,
+  "fields": {
+    "user": 456,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 457,
+  "fields": {
+    "user": 457,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 458,
+  "fields": {
+    "user": 458,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 459,
+  "fields": {
+    "user": 459,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 460,
+  "fields": {
+    "user": 460,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 461,
+  "fields": {
+    "user": 461,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 462,
+  "fields": {
+    "user": 462,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 463,
+  "fields": {
+    "user": 463,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 464,
+  "fields": {
+    "user": 464,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 465,
+  "fields": {
+    "user": 465,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 466,
+  "fields": {
+    "user": 466,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 467,
+  "fields": {
+    "user": 467,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 468,
+  "fields": {
+    "user": 468,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 469,
+  "fields": {
+    "user": 469,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 470,
+  "fields": {
+    "user": 470,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 471,
+  "fields": {
+    "user": 471,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 472,
+  "fields": {
+    "user": 472,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 473,
+  "fields": {
+    "user": 473,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 474,
+  "fields": {
+    "user": 474,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 475,
+  "fields": {
+    "user": 475,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 476,
+  "fields": {
+    "user": 476,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 477,
+  "fields": {
+    "user": 477,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 478,
+  "fields": {
+    "user": 478,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 479,
+  "fields": {
+    "user": 479,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 480,
+  "fields": {
+    "user": 480,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 481,
+  "fields": {
+    "user": 481,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 482,
+  "fields": {
+    "user": 482,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 483,
+  "fields": {
+    "user": 483,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 484,
+  "fields": {
+    "user": 484,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 485,
+  "fields": {
+    "user": 485,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 486,
+  "fields": {
+    "user": 486,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 487,
+  "fields": {
+    "user": 487,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 488,
+  "fields": {
+    "user": 488,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 489,
+  "fields": {
+    "user": 489,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 490,
+  "fields": {
+    "user": 490,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 491,
+  "fields": {
+    "user": 491,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 492,
+  "fields": {
+    "user": 492,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 493,
+  "fields": {
+    "user": 493,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 494,
+  "fields": {
+    "user": 494,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 495,
+  "fields": {
+    "user": 495,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 496,
+  "fields": {
+    "user": 496,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 497,
+  "fields": {
+    "user": 497,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 498,
+  "fields": {
+    "user": 498,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 499,
+  "fields": {
+    "user": 499,
+    "course_id": 6,
+    "role": 4
+  }
+},
+{
+  "model": "flexible_assessment.usercourse",
+  "pk": 500,
+  "fields": {
+    "user": 500,
+    "course_id": 6,
+    "role": 4
+  }
+}, {
+    "model": "flexible_assessment.usercourse",
+    "pk": 501,
+    "fields": {
+        "user_id": 101,
+        "course_id": 6,
+        "role": 2
+    }
 }
 ]

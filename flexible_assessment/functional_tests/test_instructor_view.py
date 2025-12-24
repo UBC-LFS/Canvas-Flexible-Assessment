@@ -1471,9 +1471,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         self.assertTrue(EC.url_contains("/final/match/"))
 
     def extract_data_from_csv(self):
-        download_button = self.browser.find_element(
-            By.CLASS_NAME, "btn-outline-primary"
-        )
+        download_button = WebDriverWait(self.browser, 500).until(EC.element_to_be_clickable((By.CLASS_NAME, "btn-outline-primary")))
 
         filename = os.path.join(
             self.download_dir,
@@ -1583,9 +1581,9 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         session_id = self.client.session.session_key
 
-        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[1]))
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
         self.browser.add_cookie({"name": "sessionid", "value": session_id})
-        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[1]))
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
         
         final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
         final_grades_button.send_keys(Keys.ENTER)
@@ -1706,8 +1704,8 @@ class TestInstructorViews(StaticLiveServerTestCase):
         """Final Grades: check sessions
         1. Go to Final Grades page. The Final Grades table is loaded and saved. 
         2. Instructor goes to assessments page
-        3. Instructor deletes an assessment and changes the weighting of the second assignment to make the total sum up to 100
-        3. Go back to Final Grades
+        3. Instructor changes the weighting of the first and second assignments
+        4. Go back to Final Grades
         The table should not load immediately and the loading modal should pop up."""
 
         session_id = self.client.session.session_key
@@ -1730,32 +1728,26 @@ class TestInstructorViews(StaticLiveServerTestCase):
         home_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Home")]')
         home_button.send_keys(Keys.ENTER)
 
-        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
-        final_grades_button.send_keys(Keys.ENTER)
-
         # Delete assessment and change weighting
         assessments_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Assessments")]')
         assessments_button.send_keys(Keys.ENTER)
 
-        WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "delete"))
-        )
-        delete_button = self.browser.find_element(By.CLASS_NAME, "delete")
-        delete_button.send_keys(Keys.ENTER)
+        first_weight_input = self.browser.find_element(By.XPATH, '//*[@id="id_assessment-0-default"]')
+        first_weight_input.clear()
+        first_weight_input.send_keys("4")
 
+        second_weight_input = self.browser.find_element(By.XPATH, '//*[@id="id_assessment-1-default"]')
+        second_weight_input.clear()
+        second_weight_input.send_keys("0")
 
-        default_weight_input = self.browser.find_element(By.XPATH, '//*[@id="id_assessment-0-default"]')
-        default_weight_input.send_keys("4")
+        time.sleep(20)
         
         update_button = self.browser.find_element(
             By.XPATH, '//button[contains(text(), "Update")]'
         )
         update_button.send_keys(Keys.ENTER)
-        alert = self.browser.switch_to.alert
-        alert.accept()
 
-
-        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button = WebDriverWait(self.browser, 500).until(EC.element_to_be_clickable((By.XPATH, '//a[contains(text(), "Final Grades")]')))
         final_grades_button.send_keys(Keys.ENTER)
 
         continue_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]')
@@ -1779,10 +1771,71 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         # Compare the DataFrames
         second_df_filtered = self.extract_data_from_csv()
+    
+        self.assert_frame_not_equal(first_df_filtered, second_df_filtered) 
+
+    @tag("slow", "view", "final_grades_sessions_override")
+    @mock_classes.use_mock_canvas()
+    def test_final_grades_sessions_override(self, mocked_flex_canvas_instance):
+        """Final Grades: check sessions
+        1. Go to Final Grades page. The Final Grades table is loaded and saved. 
+        2. Instructor overrides a student
+        The table should not load immediately and the loading modal should pop up."""
+
+        session_id = self.client.session.session_key
+
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+        self.browser.get(self.live_server_url + reverse("instructor:instructor_home", args=[6]))
         
-        # TODO: there is no difference between Equal and Proportional right now so the two dataframes are the same and this test should fail
+        final_grades_button = self.browser.find_element(By.XPATH, '//a[contains(text(), "Final Grades")]')
+        final_grades_button.send_keys(Keys.ENTER)
+
+        continue_button = self.browser.find_element(By.XPATH, '//button[contains(text(), "Continue")]')
+        continue_button.send_keys(Keys.ENTER)
+
+        first_table = WebDriverWait(self.browser, 500).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+
+        # Extract data from the csv for comparison
+        first_df_filtered = self.extract_data_from_csv()
+
+        self.browser.find_element(By.LINK_TEXT, "test_student201").click()
+
+        assignment1_input = self.browser.find_element(By.XPATH, '//*[@id="id_123e4567e89b12d3a456426655440201"]')
+        assignment1_input.clear()
+        assignment1_input.send_keys("2")
+
+        assignment2_input = self.browser.find_element(By.XPATH, '//*[@id="id_123e4567e89b12d3a456426655440202"]')
+        assignment2_input.clear()
+        assignment2_input.send_keys("4")
+
+        submit_student_override_button = self.browser.find_element(
+            By.XPATH, '//button[contains(text(), "Submit")]'
+        )
+
+        time.sleep(5)
+        submit_student_override_button.click()
+
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "modal-open")))
+        modal = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.ID, "loadingModal")))
+        table_invis = WebDriverWait(self.browser, 10).until(EC.invisibility_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(
+            modal.is_displayed() and table_invis, 
+                "Modal should be visible after clicking Continue and table should not be there at the same time as the modal")
+        
+        # Check modal disappears and table is there
+        modal_invis = WebDriverWait(self.browser, 500).until(EC.invisibility_of_element_located((By.ID, "finalGradesModal")))
+        table = WebDriverWait(self.browser, 500).until(EC.presence_of_element_located((By.ID, "final_wrapper")))
+        self.assertTrue(modal_invis and table.is_displayed(), "Final grades table should be visible and loading modal should not be shown")
+
+        # Check DataTables actually initialized 
+        is_dt = self.browser.execute_script("return !!($.fn.dataTable && $.fn.dataTable.isDataTable('#final'));")
+        self.assertTrue(is_dt, "final-grades-table should be a DataTable")
+
+        # Compare the DataFrames
+        second_df_filtered = self.extract_data_from_csv()
+    
         self.assert_frame_not_equal(first_df_filtered, second_df_filtered) 
 
 
-    
-    
+

@@ -28,8 +28,6 @@ class TestStudentViews(StaticLiveServerTestCase):
         chromeOptions.add_argument("--no-sandbox")
         chromeOptions.add_argument("--disable-setuid-sandbox")
 
-        chromeOptions.add_argument("--remote-debugging-port=9222")  # this
-
         chromeOptions.add_argument("--disable-dev-shm-using")
         chromeOptions.add_argument("--disable-extensions")
         chromeOptions.add_argument("--disable-gpu")
@@ -794,7 +792,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         self.assertIn("NEW WELCOME INSTRUCTIONS", page_text)
         self.assertIn("NEW COMMENT INSTRUCTIONS", page_text)
 
-    @tag("slow")
+    @tag("slow", "test_instructor_override")
     @mock_classes.use_mock_canvas()
     def test_instructor_override(self, mocked_flex_canvas_instance):
         """The student in course 4 chooses his flexes, instructor has to override them, student checks home page and sees new grades"
@@ -868,6 +866,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         submit.click()
 
         # 4
+        
         self.browser.refresh()
         self.browser.refresh()  # Double refresh because database takes time to update
         bodyText = self.browser.find_element(By.TAG_NAME, "body").text
