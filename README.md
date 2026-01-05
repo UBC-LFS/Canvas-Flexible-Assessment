@@ -38,7 +38,9 @@ As long as tests are maintained for new features created, the following checks a
 11. Instructor: Go to _Final Grades_ and double check the exported csv is correct. Also check the Change Log and Percentages export in _Student Choices_.
 
 ## Testing Accommodations App
-Functional test suite can be found in `functional_tests/test_accommodations.py`. Example usage:
+Functional test suite can be found in `functional_tests/test_accommodations.py`. 
+
+Example usage:
 
 - To launch home page `python manage.py test functional_tests.test_accommodations.TestInstructorViews.test_view_page`
 - To launch summary page `python manage.py test functional_tests.test_accommodations.TestInstructorViews.test_accommodations_summary_page`
