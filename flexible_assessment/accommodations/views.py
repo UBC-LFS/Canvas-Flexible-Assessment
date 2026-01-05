@@ -578,6 +578,24 @@ class AccommodationsSummary(views.AccommodationsListView):
         context["multiplier_quiz_groups_results"] = multiplier_quiz_groups_results
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+
+        show_warning = False
+        for _, students in multiplier_student_groups:
+            for student in students:
+                # student: (student_id, student_name, user_id, additional_info)
+                additional_info = student[3]
+                if isinstance(additional_info, str):
+                    parts = additional_info.split("^")
+                    # Check if relevant parts are not empty strings.
+                    if (len(parts) > 0 and parts[0] != "") or \
+                       (len(parts) > 1 and parts[1] != "") or \
+                       (len(parts) > 2 and parts[2] != ""):
+                        show_warning = True
+                        break
+            if show_warning:
+                break
+        
+        context["show_warning"] = show_warning
         return context
 
     def get(self, request, *args, **kwargs):

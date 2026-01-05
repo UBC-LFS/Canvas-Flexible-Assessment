@@ -152,7 +152,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         # Summary page data
         session["multiplier_student_groups"] = [
             ("1.5", [
-                ("10000001", "Jason Zheng", "user_1", "^2.0^"),
+                ("10000001", "Jason Zheng", "user_1", "^^"),
                 ("10000002", "Albert Einstein", "user_2", "^1.5^"),
             ]),
             ("2.0", [
