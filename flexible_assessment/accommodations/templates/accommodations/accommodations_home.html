@@ -618,12 +618,22 @@
                     }
 
                     response.results.forEach(item => {
-                        if (Array.isArray(item) && item.length === 4) {
-                            const [studentNumber, multiplier, studentName, additionalInfo] = item;
-                            addEntry(studentName, multiplier, additionalInfo, true);
-                        } else if (item.error) {
-                            console.warn(item.error);
-                            alert(item.error);
+                        if (fromCSV) {
+                            if (Array.isArray(item) && item.length === 4) {
+                                const [studentNumber, multiplier, studentName, additionalInfo] = item;
+                                addEntry(studentName, multiplier, additionalInfo, true);
+                            } else if (item.error) {
+                                console.warn(item.error);
+                                alert(item.error);
+                            }
+                        } else {
+                            if (Array.isArray(item) && item.length === 3) {
+                                const [studentNumber, multiplier, studentName, additionalInfo] = item;
+                                addEntry(studentName, multiplier, additionalInfo, true);
+                            } else if (item.error) {
+                                console.warn(item.error);
+                                alert(item.error);
+                            }
                         }
                     });
                 } else {
