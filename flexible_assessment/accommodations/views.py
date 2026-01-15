@@ -78,11 +78,11 @@ class AccommodationsHome(views.AccommodationsListView):
         additional_infos = request.POST.getlist("additional_info")
         multipliers = request.POST.getlist("multiplier")
 
-        if not student_strings or not multipliers or not additional_info:
+        if not student_strings or not multipliers or not additional_infos:
             messages.error(request, "No accommodations entered.")
             return redirect("accommodations:accommodations_home", course_id)
 
-        if len(student_strings) != len(multipliers) or len(multipliers) != len(additional_info):
+        if len(student_strings) != len(multipliers) or len(multipliers) != len(additional_infos):
             messages.error(
                 request,
                 "Number of student numbers does not equal number of multipliers.",
