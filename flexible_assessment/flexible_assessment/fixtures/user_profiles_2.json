@@ -19,7 +19,7 @@
             "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
             "last_login": null,
             "login_id": "10000001",
-            "display_name": "test_student1",
+            "display_name": "test student1",
             "superuser": false,
             "groups": [],
             "user_permissions": []
@@ -32,7 +32,7 @@
             "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
             "last_login": null,
             "login_id": "10000002",
-            "display_name": "test_student2",
+            "display_name": "test student2",
             "superuser": false,
             "groups": [],
             "user_permissions": []
@@ -45,7 +45,7 @@
             "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
             "last_login": null,
             "login_id": "10000003",
-            "display_name": "test_student3",
+            "display_name": "test student3",
             "superuser": false,
             "groups": [],
             "user_permissions": []
@@ -58,7 +58,7 @@
             "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
             "last_login": null,
             "login_id": "10000004",
-            "display_name": "test_student4",
+            "display_name": "test student4",
             "superuser": false,
             "groups": [],
             "user_permissions": []
@@ -71,7 +71,7 @@
             "password": "pbkdf2_sha256$320000$CUm6ThdsNzKU4AnO0LKWa7$bmUT+iX3eWLoYmoMcv346M1EaRgXvQBshAB7+z3C81Q=",
             "last_login": null,
             "login_id": "10000005",
-            "display_name": "test_student5",
+            "display_name": "test student5",
             "superuser": false,
             "groups": [],
             "user_permissions": []

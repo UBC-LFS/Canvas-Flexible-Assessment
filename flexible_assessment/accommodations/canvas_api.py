@@ -747,7 +747,7 @@ class AccommodationsCanvas(Canvas):
                                 "user_id": student[2],
                                 "extra_time": int(
                                     quiz["time_limit_new"] - quiz["time_limit"]
-                                ),
+                                ),      
                             }
                         )
 

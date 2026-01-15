@@ -412,7 +412,7 @@
                 };
             }
 
-            function addEntry(studentString = "", multiplier = "", studentNotes = "", readOnly = false) {
+            function addEntry(studentString = "", multiplier = "", additionalInfo = ["", "", ""], readOnly = false) {
                 if (!dataTable) {
                     initializeDataTable();
                 }
@@ -445,8 +445,8 @@
 
                 const studentNumberInput = readOnly ? 
                     `<span class="form-control-plaintext">${studentInfo.studentNumber}</span>
-                    <input type="hidden" name="student" value="${studentString}">
-                    <input type="hidden" name="student_notes" value = "${studentNotes}">` :
+                    <input type="hidden" name="student" value="${studentString)}">
+                    <input type="hidden" name="additional_info" value = "${studentNotes.join("^")}">` :
                     `<input type="text" name="student" class="form-control student-input" value="${studentString}" 
                             placeholder="Enter student info" required>
                     <input type="hidden" name="student_notes" value="">`;
@@ -617,8 +617,8 @@
 
                     response.results.forEach(item => {
                         if (Array.isArray(item) && item.length === 4) {
-                            const [studentNumber, multiplier, studentName, studentNotes] = item;
-                            addEntry(studentName, multiplier, studentNotes, true);
+                            const [studentNumber, multiplier, studentName, additionalInfo] = item;
+                            addEntry(studentName, multiplier, additionalInfo, true);
                         } else if (item.error) {
                             console.warn(item.error);
                             alert(item.error);

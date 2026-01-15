@@ -75,14 +75,14 @@ class AccommodationsHome(views.AccommodationsListView):
         login_id_to_user_id = {s.login_id: s.user_id for s in students}
 
         student_strings = request.POST.getlist("student")
-        student_notes = request.POST.getlist("student_notes")
+        additional_infos = request.POST.getlist("additional_info")
         multipliers = request.POST.getlist("multiplier")
 
-        if not student_strings or not multipliers or not student_notes:
+        if not student_strings or not multipliers or not additional_info:
             messages.error(request, "No accommodations entered.")
             return redirect("accommodations:accommodations_home", course_id)
 
-        if len(student_strings) != len(multipliers) or len(multipliers) != len(student_notes):
+        if len(student_strings) != len(multipliers) or len(multipliers) != len(additional_info):
             messages.error(
                 request,
                 "Number of student numbers does not equal number of multipliers.",
@@ -93,7 +93,7 @@ class AccommodationsHome(views.AccommodationsListView):
         accommodations = []
         errors = []
 
-        for student_string, mult, student_note in zip(student_strings, multipliers, student_notes):
+        for student_string, mult, additional_info in zip(student_strings, multipliers, additional_infos):
             sn_list = re.findall(r"\d+", student_string)
             sn = "".join(map(str, sn_list))  # get student number from student string
             if len(sn) != 8 or not sn.isdigit():
@@ -106,7 +106,7 @@ class AccommodationsHome(views.AccommodationsListView):
                 errors.append(f"Duplicate entry for student: {sn}")
             else:
                 accommodations.append(
-                    (sn, mult, login_id_to_user_id[sn], student_string, student_note)
+                    (sn, mult, login_id_to_user_id[sn], student_string, additional_info)
                 )
                 seen_ids.add(sn)
 
@@ -191,6 +191,16 @@ def parse_csv(uploaded_files, request, course_id):
                 if not final_multiplier:
                     continue    
 
+                essay_multiplier = ""
+                mc_multiplier = ""
+                for multiplier in multiplier_names:
+                    essay_field = "Extended time ("+ multiplier + "x)/essay format"
+                    mc_field = "Extended time ("+ multiplier + "x)/multiple choice format"
+                    if row.get(essay_field, '') == "TRUE" and essay_multiplier == "":
+                        essay_multiplier = multiplier
+                    if row.get(mc_field, '') == "TRUE" and mc_multiplier == "":
+                        mc_multiplier = multiplier
+
                 if '.' not in final_multiplier:
                     final_multiplier = final_multiplier + '.0'
 
@@ -198,11 +208,12 @@ def parse_csv(uploaded_files, request, course_id):
                 if "exam" in row.get('If other, please specify').lower():
                     notes = row.get('If other, please specify')
 
+                additional_info = (notes, essay_multiplier, mc_multiplier)
                 parsed_data.append((
                     student_number,
                     final_multiplier,
                     f"{firstname + ' ' + lastname + ' ' + middlename} ({student_number})",
-                    notes
+                    additional_info
                     ))
         except Exception as e:
                 parsed_data.append(("error", f"{f.name} failed to process: {str(e)}", "name"))
@@ -567,6 +578,24 @@ class AccommodationsSummary(views.AccommodationsListView):
         context["multiplier_quiz_groups_results"] = multiplier_quiz_groups_results
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+
+        show_warning = False
+        for _, students in multiplier_student_groups:
+            for student in students:
+                # student: (student_id, student_name, user_id, additional_info)
+                additional_info = student[3]
+                if isinstance(additional_info, str):
+                    parts = additional_info.split("^")
+                    # Check if relevant parts are not empty strings.
+                    if (len(parts) > 0 and parts[0] != "") or \
+                       (len(parts) > 1 and parts[1] != "") or \
+                       (len(parts) > 2 and parts[2] != ""):
+                        show_warning = True
+                        break
+            if show_warning:
+                break
+        
+        context["show_warning"] = show_warning
         return context
 
     def get(self, request, *args, **kwargs):
