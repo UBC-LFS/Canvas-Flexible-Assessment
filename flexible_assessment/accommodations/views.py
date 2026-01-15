@@ -208,7 +208,7 @@ def parse_csv(uploaded_files, request, course_id):
                 if "exam" in row.get('If other, please specify').lower():
                     notes = row.get('If other, please specify')
 
-                additional_info = (notes, essay_multiplier, mc_multiplier)
+                additional_info = (essay_multiplier, mc_multiplier, notes)
                 parsed_data.append((
                     student_number,
                     final_multiplier,
