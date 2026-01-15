@@ -445,8 +445,8 @@
 
                 const studentNumberInput = readOnly ? 
                     `<span class="form-control-plaintext">${studentInfo.studentNumber}</span>
-                    <input type="hidden" name="student" value="${studentString)}">
-                    <input type="hidden" name="additional_info" value = "${studentNotes.join("^")}">` :
+                    <input type="hidden" name="student" value="${studentString}">
+                    <input type="hidden" name="additional_info" value = "${additionalInfo.join("^")}">` :
                     `<input type="text" name="student" class="form-control student-input" value="${studentString}" 
                             placeholder="Enter student info" required>
                     <input type="hidden" name="student_notes" value="">`;
@@ -595,13 +595,15 @@
             });
 
             // Fill rows from JSON data
-            function fillFromPDFS(response) {
+            function fillFromPDFS(response, fromCSV=true) {
                 console.log(response.results);
                 if (response.results && Array.isArray(response.results)) {
                     const invalidItems = response.results.filter(item => {
                         if (Array.isArray(item) && item.length === 4) {
                             return false;
-                        }  
+                        } else if (!fromCSV && Array.isArray(item) && item.length === 3) {
+                            return false;
+                        }
                         return true;
                     });
 
@@ -616,12 +618,22 @@
                     }
 
                     response.results.forEach(item => {
-                        if (Array.isArray(item) && item.length === 4) {
-                            const [studentNumber, multiplier, studentName, additionalInfo] = item;
-                            addEntry(studentName, multiplier, additionalInfo, true);
-                        } else if (item.error) {
-                            console.warn(item.error);
-                            alert(item.error);
+                        if (fromCSV) {
+                            if (Array.isArray(item) && item.length === 4) {
+                                const [studentNumber, multiplier, studentName, additionalInfo] = item;
+                                addEntry(studentName, multiplier, additionalInfo, true);
+                            } else if (item.error) {
+                                console.warn(item.error);
+                                alert(item.error);
+                            }
+                        } else {
+                            if (Array.isArray(item) && item.length === 3) {
+                                const [studentNumber, multiplier, studentName, additionalInfo] = item;
+                                addEntry(studentName, multiplier, additionalInfo, true);
+                            } else if (item.error) {
+                                console.warn(item.error);
+                                alert(item.error);
+                            }
                         }
                     });
                 } else {
@@ -663,7 +675,7 @@
                     processData: false,
                     contentType: false,
                     success: function(response) {
-                        fillFromPDFS(response);
+                        fillFromPDFS(response, false);
                         csvFileInput.value = '';
                     },
                     error: function (xhr, status, error) {
