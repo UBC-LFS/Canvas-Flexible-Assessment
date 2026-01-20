@@ -193,13 +193,20 @@ def parse_csv(uploaded_files, request, course_id):
 
                 essay_multiplier = ""
                 mc_multiplier = ""
+                short_multiplier = ""
+                fine_multiplier = ""
                 for multiplier in multiplier_names:
                     essay_field = "Extended time ("+ multiplier + "x)/essay format"
                     mc_field = "Extended time ("+ multiplier + "x)/multiple choice format"
+                    short_answer = "Extended time (" + multiplier + "x)/short answer format"
                     if row.get(essay_field, '') == "TRUE" and essay_multiplier == "":
                         essay_multiplier = multiplier
                     if row.get(mc_field, '') == "TRUE" and mc_multiplier == "":
                         mc_multiplier = multiplier
+                    if row.get(short_answer, '') == "TRUE" and short_multiplier == "":
+                        mc_multiplier = multiplier
+                if row.get("Extended time (3x) for exams involving fine manipulations", '') == "TRUE":
+                    fine_multiplier = "3"
 
                 if '.' not in final_multiplier:
                     final_multiplier = final_multiplier + '.0'
@@ -208,7 +215,7 @@ def parse_csv(uploaded_files, request, course_id):
                 if "exam" in row.get('If other, please specify').lower():
                     notes = row.get('If other, please specify')
 
-                additional_info = (essay_multiplier, mc_multiplier, notes)
+                additional_info = (essay_multiplier, mc_multiplier, short_multiplier, fine_multiplier, notes)
                 parsed_data.append((
                     student_number,
                     final_multiplier,
@@ -580,6 +587,8 @@ class AccommodationsSummary(views.AccommodationsListView):
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
 
         show_warning = False
+        columns_populated = [False, False, False, False, False]
+
         for _, students in multiplier_student_groups:
             for student in students:
                 # student: (student_id, student_name, user_id, additional_info)
@@ -587,15 +596,13 @@ class AccommodationsSummary(views.AccommodationsListView):
                 if isinstance(additional_info, str):
                     parts = additional_info.split("^")
                     # Check if relevant parts are not empty strings.
-                    if (len(parts) > 0 and parts[0] != "") or \
-                       (len(parts) > 1 and parts[1] != "") or \
-                       (len(parts) > 2 and parts[2] != ""):
-                        show_warning = True
-                        break
-            if show_warning:
-                break
+                    for i in range(len(parts)):
+                        if i < 5 and parts[i] != "":
+                            columns_populated[i] = True
+                            show_warning = True
         
         context["show_warning"] = show_warning
+        context["columns_populated"] = columns_populated
         return context
 
     def get(self, request, *args, **kwargs):

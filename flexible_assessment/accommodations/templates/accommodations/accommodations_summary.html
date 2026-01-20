@@ -30,7 +30,7 @@
                                         border: 2px solid red">
                             <div class="card-header p-0">
                                 <div class="w-100 px-3 py-2">
-                                    <h4 class="mb-0">🚨 Warning - Please review the following unique accommodations</h3>
+                                    <h4 class="mb-0">🚨 Warning - Please review the following additional accommodations</h3>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -41,16 +41,18 @@
                                             <th>Name</th>
                                             <th>Student ID</th>
                                             <th>Current extended time</th>
-                                            <th>Extended time only for essay format</th>
-                                            <th>Extended time only for multipler choice format</th>
-                                            <th>CFA Notes</th>
+                                            {% if columns_populated.0 %}<th>Extended time only for essay format</th>{% endif %}
+                                            {% if columns_populated.1 %}<th>Extended time only for multipler choice format</th>{% endif %}
+                                            {% if columns_populated.2 %}<th>Extended time only for short answer format</th>{% endif %}
+                                            {% if columns_populated.3 %}<th>Extended time only for exams involving fine manipulations</th>{% endif %}
+                                            {% if columns_populated.4 %}<th>CFA Notes</th>{% endif %}
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for multiplier, students in multiplier_student_groups %}
                                             {% for student_id, student_name, _, additional_info in students %}
                                                 {% with note_parts=additional_info|split:"^" %}
-                                                {% if note_parts.0 != "" or note_parts.1 != "" or note_parts.2 != "" %}
+                                                {% if note_parts.0 != "" or note_parts.1 != "" or note_parts.2 != "" or note_parts.3 != "" or note_parts.4 != "" %}
                                                     <tr>
                                                         <td>{{ student_name }}</td>
                                                         <td>{{ student_id }}</td>
@@ -58,6 +60,7 @@
                                                             {{ multiplier }}x
                                                             <i class="bi bi-check-lg"></i>
                                                         </td>
+                                                        {% if columns_populated.0 %}
                                                         {% if note_parts.0 == "" %}
                                                             <td class="text-muted">N/A</td>
                                                         {% else %}
@@ -65,7 +68,9 @@
                                                                 {{note_parts.0}}x
                                                             </td>
                                                         {% endif %}
+                                                        {% endif %}
 
+                                                        {% if columns_populated.1 %}
                                                         {% if note_parts.1 == "" %}
                                                             <td class="text-muted">N/A</td>
                                                         {% else %}
@@ -73,13 +78,36 @@
                                                                 {{note_parts.1}}x
                                                             </td>
                                                         {% endif %}
-                                                        
+                                                        {% endif %}
+
+                                                        {% if columns_populated.2 %}
                                                         {% if note_parts.2 == "" %}
                                                             <td class="text-muted">N/A</td>
                                                         {% else %}
-                                                            <td class="">
-                                                                {{note_parts.2}}
+                                                            <td class="text-danger">
+                                                                {{note_parts.2}}x
                                                             </td>
+                                                        {% endif %}
+                                                        {% endif %}
+
+                                                        {% if columns_populated.3 %}
+                                                        {% if note_parts.3 == "" %}
+                                                            <td class="text-muted">N/A</td>
+                                                        {% else %}
+                                                            <td class="text-danger">
+                                                                {{note_parts.3}}x
+                                                            </td>
+                                                        {% endif %}
+                                                        {% endif %}
+                                                        
+                                                        {% if columns_populated.4 %}
+                                                        {% if note_parts.4 == "" %}
+                                                            <td class="text-muted">N/A</td>
+                                                        {% else %}
+                                                            <td class="">
+                                                                {{note_parts.4}}
+                                                            </td>
+                                                        {% endif %}
                                                         {% endif %}
                                                     </tr>
                                                 {% endif %}

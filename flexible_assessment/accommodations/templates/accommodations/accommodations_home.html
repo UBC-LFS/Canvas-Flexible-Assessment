@@ -295,7 +295,7 @@
                     </div>
                 </div>
                 <button type="button" class="btn btn-info" id="load-preset-csv">
-                    Load student data from CFA server
+                    Reload student data from CFA server
                 </button>
                 <form id="accommodations-form"
                       method="post"
@@ -412,7 +412,7 @@
                 };
             }
 
-            function addEntry(studentString = "", multiplier = "", additionalInfo = ["", "", ""], readOnly = false) {
+            function addEntry(studentString = "", multiplier = "", additionalInfo = ["", "", "", "", ""], readOnly = false) {
                 if (!dataTable) {
                     initializeDataTable();
                 }
@@ -449,7 +449,7 @@
                     <input type="hidden" name="additional_info" value = "${additionalInfo.join("^")}">` :
                     `<input type="text" name="student" class="form-control student-input" value="${studentString}" 
                             placeholder="Enter student info" required>
-                    <input type="hidden" name="student_notes" value="">`;
+                    <input type="hidden" name="additional_info" value="${additionalInfo.join("^")}">`;
 
                 const firstNameInput = readOnly ?
                     `<span class="form-control-plaintext">${studentInfo.firstName}</span>` :
@@ -510,6 +510,7 @@
                             cell.html(`
                                 <span class="form-control-plaintext">${parsedInfo.studentNumber}</span>
                                 <input type="hidden" name="student" value="${selectedStudent}">
+                                <input type="hidden" name="additional_info" value="^^">
                             `);
                         });
                     }
@@ -589,10 +590,10 @@
             });
 
             // Prefill with existing data
-            const prefillData = {{ accommodations_json|safe}};
-            prefillData.forEach(([studentNumber, multiplier, _, studentString]) => {
-                addEntry(studentString, multiplier, true);
-            });
+            // const prefillData = {{ accommodations_json|safe}};
+            // prefillData.forEach(([studentNumber, multiplier, _, studentString, additionalInfo]) => {
+            //    addEntry(studentString, multiplier, additionalInfo ? additionalInfo.split('^') : ["", "", "", "", ""], true);
+            // });
 
             // Fill rows from JSON data
             function fillFromPDFS(response, fromCSV=true) {
@@ -793,6 +794,9 @@
 
                 uploadCSV();
             });
+
+            // Automatically load preset data
+            loadPresetBtn.click();
 
         });
     </script>
