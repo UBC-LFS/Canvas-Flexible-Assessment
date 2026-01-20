@@ -225,4 +225,4 @@ LOGGING = {
     },
 }
 
-TEAMSHARE_FOLDER = os.path.join("C:/Users", "jason", "Downloads", "accomodations folder")
+TEAMSHARE_FOLDER = os.path.join()
