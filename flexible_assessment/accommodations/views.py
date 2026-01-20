@@ -130,7 +130,8 @@ class AccommodationsHome(views.AccommodationsListView):
         )
     
 def load_preset_csv(request, course_id):
-    preset_path = r'C:\Users\jason\Downloads\accomodations folder\accommodations.csv'
+    print(settings.TEAMSHARE_FOLDER)
+    preset_path = settings.TEAMSHARE_FOLDER + "/accommodations.csv"
     with open(preset_path, 'rb') as file:
         return parse_csv([file], request, course_id)
 
