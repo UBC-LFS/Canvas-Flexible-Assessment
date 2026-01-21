@@ -491,6 +491,13 @@
                             const selectedStudent = this.value;
                             const parsedInfo = parseStudentName(selectedStudent);
 
+                            if (!parsedInfo.studentNumber) {
+                                alert("Invalid format. Please use 'First Last (StudentNumber)'.");
+                                this.value = "";
+                                e.preventDefault();
+                                return;
+                            }
+
                             if (studentIds.has(parsedInfo.studentNumber)) {
                                 e.preventDefault();
                                 alert("Student already selected");
@@ -585,6 +592,30 @@
                 if (!dataTable || dataTable.rows().count() === 0) {
                     e.preventDefault();
                     alert("Please add at least one accommodation entry before submitting.");
+                    return;
+                }
+
+                let hasInvalidEntries = false;
+                
+                // Validate all rows
+                dataTable.rows().every(function() {
+                    const rowNode = this.node();
+                    const input = $(rowNode).find('input[name="student"]');
+                    if (input.length > 0) {
+                        const val = input.val();
+                        // If value is present but parsing fails to extract student ID
+                        if (val && !parseStudentName(val).studentNumber) {
+                            hasInvalidEntries = true;
+                            $(rowNode).addClass('table-danger');
+                        } else {
+                            $(rowNode).removeClass('table-danger');
+                        }
+                    }
+                });
+
+                if (hasInvalidEntries) {
+                    e.preventDefault();
+                    alert("One or more entries have an invalid format. Please ensure all students follow 'First Last (StudentNumber)' format.");
                     return;
                 }
             });
