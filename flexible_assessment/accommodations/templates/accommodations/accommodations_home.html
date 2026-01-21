@@ -517,7 +517,7 @@
                             cell.html(`
                                 <span class="form-control-plaintext">${parsedInfo.studentNumber}</span>
                                 <input type="hidden" name="student" value="${selectedStudent}">
-                                <input type="hidden" name="additional_info" value="^^">
+                                <input type="hidden" name="additional_info" value="^^^^">
                             `);
                         });
                     }
@@ -621,10 +621,10 @@
             });
 
             // Prefill with existing data
-            // const prefillData = {{ accommodations_json|safe}};
-            // prefillData.forEach(([studentNumber, multiplier, _, studentString, additionalInfo]) => {
-            //    addEntry(studentString, multiplier, additionalInfo ? additionalInfo.split('^') : ["", "", "", "", ""], true);
-            // });
+            const prefillData = {{ accommodations_json|safe}};
+            prefillData.forEach(([studentNumber, multiplier, _, studentString, additionalInfo]) => {
+                addEntry(studentString, multiplier, additionalInfo ? additionalInfo.split('^') : ["", "", "", "", ""], true);
+            });
 
             // Fill rows from JSON data
             function fillFromPDFS(response, fromCSV=true) {
