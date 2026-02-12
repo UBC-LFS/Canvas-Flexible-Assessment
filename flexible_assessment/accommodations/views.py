@@ -194,7 +194,6 @@ def parse_csv(uploaded_files, request, course_id):
             for row in csv_reader:
                 student_number = row.get('student_no', '').strip()
                 if student_number not in valid_student_ids:
-                    logger.info(f"parse_csv: Student {student_number} not in course list. Skipping.", extra=log_extra)
                     continue
                 
                 lastname = row.get('lastname', '').strip()
@@ -205,7 +204,8 @@ def parse_csv(uploaded_files, request, course_id):
                 # Get only all-exams multipliers 
                 for multiplier in multiplier_names:
                     field_name = "Extended time (" + multiplier + "x) for all exams"
-                    if row.get(field_name, '') == "TRUE":
+                    logger.info(f"parse_csv: Student {student_number}. Multiplier: {multiplier}. Result: {row.get(field_name, '').strip()}. Compare: {row.get(field_name, '').strip() == "TRUE"}", extra=log_extra)
+                    if row.get(field_name, '').strip() == "TRUE":
                         final_multiplier = multiplier
                         break
                 
