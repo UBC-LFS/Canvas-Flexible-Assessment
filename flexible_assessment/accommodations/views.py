@@ -131,16 +131,19 @@ class AccommodationsHome(views.AccommodationsListView):
     
 def load_preset_csv(request, course_id):
     preset_path = settings.TEAMSHARE_FOLDER
-    logger.info(f"load_preset_csv: Attempting to load preset CSV from {preset_path}")
+    course = Course.objects.get(pk=course_id)
+    log_extra = {"course": str(course), "user": request.session.get("display_name", "Unknown")}
+
+    logger.info(f"load_preset_csv: Attempting to load preset CSV from {preset_path}", extra=log_extra)
     try:
         with open(preset_path, 'rb') as file:
-            logger.info(f"load_preset_csv: Successfully opened {preset_path}")
+            logger.info(f"load_preset_csv: Successfully opened {preset_path}", extra=log_extra)
             return parse_csv([file], request, course_id)
     except FileNotFoundError:
-        logger.error(f"load_preset_csv: File not found at {preset_path}")
+        logger.error(f"load_preset_csv: File not found at {preset_path}", extra=log_extra)
         return JsonResponse({"results": [], "error": f"Preset file not found at {preset_path}"}, status=404)
     except Exception as e:
-        logger.error(f"load_preset_csv: Error opening file {preset_path}: {e}")
+        logger.error(f"load_preset_csv: Error opening file {preset_path}: {e}", extra=log_extra)
         return JsonResponse({"results": [], "error": f"Error opening file: {str(e)}"}, status=500)
 
 @require_POST
@@ -173,21 +176,25 @@ def parse_csv(uploaded_files, request, course_id):
     view_instance.kwargs = {'course_id': course_id}
     students = view_instance.get_queryset()
     valid_student_ids = set(s.login_id for s in students)
-    logger.info(f"parse_csv: Found {len(valid_student_ids)} students in course {course_id}. Data: {list(valid_student_ids)}")
+    
+    course = Course.objects.get(pk=course_id)
+    log_extra = {"course": str(course), "user": request.session.get("display_name", "Unknown")}
+
+    logger.info(f"parse_csv: Found {len(valid_student_ids)} students in course {course_id}. Data: {list(valid_student_ids)}", extra=log_extra)
     parsed_data = []
 
     for f in uploaded_files:
         try:
             csv_reader = process_csv(f)
             if hasattr(csv_reader, 'fieldnames'):
-                logger.info(f"parse_csv: CSV Headers: {csv_reader.fieldnames}")
+                logger.info(f"parse_csv: CSV Headers: {csv_reader.fieldnames}", extra=log_extra)
 
             multiplier_names = ["4", "3.5", "3", "2.5", "2", "1.75", "1.5", "1.25"]
 
             for row in csv_reader:
                 student_number = row.get('student_no', '').strip()
                 if student_number not in valid_student_ids:
-                    logger.info(f"parse_csv: Student {student_number} not in course list. Skipping.")
+                    logger.info(f"parse_csv: Student {student_number} not in course list. Skipping.", extra=log_extra)
                     continue
                 
                 lastname = row.get('lastname', '').strip()
@@ -203,7 +210,7 @@ def parse_csv(uploaded_files, request, course_id):
                         break
                 
                 if not final_multiplier:
-                    logger.info(f"parse_csv: Student {student_number} found but no multiplier matched for all exams. Skipping.")
+                    logger.info(f"parse_csv: Student {student_number} found but no multiplier matched for all exams. Skipping.", extra=log_extra)
                     continue    
 
                 essay_multiplier = ""
