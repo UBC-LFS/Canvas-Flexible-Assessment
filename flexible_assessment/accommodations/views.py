@@ -204,7 +204,7 @@ def parse_csv(uploaded_files, request, course_id):
                 # Get only all-exams multipliers 
                 for multiplier in multiplier_names:
                     field_name = "Extended time (" + multiplier + "x) for all exams"
-                    logger.info(f"parse_csv: Student {student_number}. Multiplier: {multiplier}. Result: {row.get(field_name, '').strip()}. Compare: {row.get(field_name, '').strip() == "TRUE"}", extra=log_extra)
+                    logger.info(f"parse_csv: Student {student_number}. Multiplier: {multiplier}. Result: {row.get(field_name, '').strip()}. Compare: {row.get(field_name, '').strip() == 'TRUE'}", extra=log_extra)
                     if row.get(field_name, '').strip() == "TRUE":
                         final_multiplier = multiplier
                         break
