@@ -617,7 +617,6 @@
 
             // Fill rows from JSON data
             function fillFromPDFS(response, fromCSV=true) {
-                console.log(response.results);
                 if (response.results && Array.isArray(response.results)) {
                     const invalidItems = response.results.filter(item => {
                         if (Array.isArray(item) && item.length === 4) {

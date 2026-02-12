@@ -1,7 +1,6 @@
 import os
 from datetime import timedelta
 
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ENGINE = os.environ["DB_ENGINE"]
@@ -223,3 +222,5 @@ LOGGING = {
         },
     },
 }
+
+TEAMSHARE_FOLDER = os.environ["TEAMSHARE_FOLDER_PATH"]
