@@ -195,8 +195,7 @@ def parse_csv(uploaded_files, request, course_id):
                 student_number = row.get('student_no', '').strip()
                 if student_number not in valid_student_ids:
                     continue
-                logger.info(f"Row data: {row}", extra=log_extra)
-
+                
                 lastname = row.get('lastname', '').strip()
                 firstname = row.get('firstname', '').strip()
                 middlename = row.get('middlename', '').strip()
@@ -205,7 +204,7 @@ def parse_csv(uploaded_files, request, course_id):
                 # Get only all-exams multipliers 
                 for multiplier in multiplier_names:
                     field_name = "Extended time (" + multiplier + "x) for all exams"
-                    if row.get(field_name, '').strip() == "TRUE":
+                    if row.get(field_name, '').strip() == "True":
                         final_multiplier = multiplier
                         break
                 
