@@ -114,15 +114,37 @@ class TestInstructorViews(StaticLiveServerTestCase):
         browser.get(self.live_server_url + response.url)
         return browser
 
-    @tag("slow", "view", "accommodations")
+    @tag("slow", "view", "accommodations", "home")
     @mock_classes.use_mock_canvas_in_accommodations()
     @patch.object(views.FinalGradeListView, "_submit_final_grades")
-    def test_view_page(self, mocked_flex_canvas_instance, mock_submit_final_grades):
+    def test_accommodations_home_page(
+        self, mocked_flex_canvas_instance, mock_submit_final_grades
+    ):
         """Note, this is designed to work with the fixture data for course 1."""
         mock_submit_final_grades.return_value = (
             True  # When submitting final grades, just return True for that function
         )
         session_id = self.client.session.session_key
+
+        # Set up required session data for the home page
+        session = self.client.session
+        # Required auth/display data
+        session["display_name"] = "Test Instructor"
+        session["user_id"] = "10000007"
+        session["login_id"] = "10000007"
+        # Home page data - existing accommodations (from previous submissions)
+        session["accommodations"] = [
+            ("10000001", "1.5", "user_1", "Jason Zheng (10000001)", ""),
+            ("10000002", "2.0", "user_2", "Albert Einstein (10000002)", "^1.5^"),
+        ]
+        # Autocomplete data for student search
+        session["autocomplete_data"] = [
+            "Jason Zheng (10000001)",
+            "Albert Einstein (10000002)",
+            "Jon Snow (10000003)",
+            "Marie Curie (10000004)",
+        ]
+        session.save()
 
         self.browser.get(
             self.live_server_url
