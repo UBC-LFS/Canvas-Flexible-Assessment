@@ -151,13 +151,24 @@ class TestInstructorViews(StaticLiveServerTestCase):
         session["login_id"] = "10000007"
         # Summary page data
         session["multiplier_student_groups"] = [
-            ("1.5", [
-                ("10000001", "Jason Zheng", "user_1", "^^"),
-                ("10000002", "Albert Einstein", "user_2", "^1.5^"),
-            ]),
-            ("2.0", [
-                ("10000003", "Jon Snow", "user_3", "2.0^^Exam Accommodation: Exams to begin only after 11:00 a.m."),
-            ]),
+            (
+                "1.5",
+                [
+                    ("10000001", "Jason Zheng", "user_1", "^^"),
+                    ("10000002", "Albert Einstein", "user_2", "^1.5^"),
+                ],
+            ),
+            (
+                "2.0",
+                [
+                    (
+                        "10000003",
+                        "Jon Snow",
+                        "user_3",
+                        "2.0^^Exam Accommodation: Exams to begin only after 11:00 a.m.",
+                    ),
+                ],
+            ),
         ]
         session["multiplier_quiz_groups_results"] = {
             "1.5": [
@@ -205,7 +216,9 @@ class TestInstructorViews(StaticLiveServerTestCase):
         response = self.client.get(
             reverse("accommodations:accommodations_summary", args=[1])
         )
-        self.assertEqual(response.status_code, 200, f"View returned {response.status_code}")
+        self.assertEqual(
+            response.status_code, 200, f"View returned {response.status_code}"
+        )
 
         # Navigate to the summary page with Selenium
         self.browser.get(
@@ -228,10 +241,14 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         # Verify multiplier groups are displayed
         cards = self.browser.find_elements(By.CLASS_NAME, "card")
-        self.assertGreaterEqual(len(cards), 2)  # At least warning card + multiplier groups
+        self.assertGreaterEqual(
+            len(cards), 2
+        )  # At least warning card + multiplier groups
 
         # Verify the restart button exists
-        restart_button = self.browser.find_element(By.CSS_SELECTOR, "button[type='submit']")
+        restart_button = self.browser.find_element(
+            By.CSS_SELECTOR, "button[type='submit']"
+        )
         self.assertIn("Restart", restart_button.text)
 
         # Verify back button exists
@@ -273,7 +290,9 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
     @tag("slow", "view", "accommodations", "summary")
     @mock_classes.use_mock_canvas_in_accommodations()
-    def test_accommodations_summary_restart_clears_session(self, mocked_canvas_instance):
+    def test_accommodations_summary_restart_clears_session(
+        self, mocked_canvas_instance
+    ):
         """Test that clicking restart button clears session data and redirects to home."""
         session_id = self.client.session.session_key
 
@@ -322,10 +341,14 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         # Wait for page to load
         wait = WebDriverWait(self.browser, 10)
-        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[type='submit']")))
+        wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "button[type='submit']"))
+        )
 
         # Click restart button
-        restart_button = self.browser.find_element(By.CSS_SELECTOR, "button[type='submit']")
+        restart_button = self.browser.find_element(
+            By.CSS_SELECTOR, "button[type='submit']"
+        )
         restart_button.click()
 
         # Wait for redirect
@@ -338,7 +361,9 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
     @tag("slow", "view", "accommodations", "summary")
     @mock_classes.use_mock_canvas_in_accommodations()
-    def test_accommodations_summary_displays_unique_accommodations_warning(self, mocked_canvas_instance):
+    def test_accommodations_summary_displays_unique_accommodations_warning(
+        self, mocked_canvas_instance
+    ):
         """Test that unique accommodations (with special notes) are displayed in warning table."""
         session_id = self.client.session.session_key
 
@@ -349,11 +374,24 @@ class TestInstructorViews(StaticLiveServerTestCase):
         session["user_id"] = "10000007"
         session["login_id"] = "10000007"
         session["multiplier_student_groups"] = [
-            ("1.5", [
-                ("10000001", "Test Student 1", "user_1", "1.5^^"),  # Has current extended time
-                ("10000002", "Test Student 2", "user_2", "^2.0^"),  # Essay only
-                ("10000003", "Test Student 3", "user_3", "^^MC Only"),  # MC only notes
-            ]),
+            (
+                "1.5",
+                [
+                    (
+                        "10000001",
+                        "Test Student 1",
+                        "user_1",
+                        "1.5^^",
+                    ),  # Has current extended time
+                    ("10000002", "Test Student 2", "user_2", "^2.0^"),  # Essay only
+                    (
+                        "10000003",
+                        "Test Student 3",
+                        "user_3",
+                        "^^MC Only",
+                    ),  # MC only notes
+                ],
+            ),
         ]
         session["multiplier_quiz_groups_results"] = {
             "1.5": [
@@ -390,10 +428,12 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         # Wait for page to load
         wait = WebDriverWait(self.browser, 10)
-        wait.until(EC.presence_of_element_located((By.TAG_NAME, "h3")))
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, "h4")))
 
         # Verify warning section exists
-        warning_header = self.browser.find_element(By.XPATH, "//h3[contains(text(), 'Warning')]")
+        warning_header = self.browser.find_element(
+            By.XPATH, "//h4[contains(text(), 'Warning')]"
+        )
         self.assertIsNotNone(warning_header)
 
         input("Press Enter in this terminal to continue\n")
