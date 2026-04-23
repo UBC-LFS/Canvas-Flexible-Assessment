@@ -449,20 +449,20 @@
                     `<option value="${opt.value}" ${opt.value === multiplier ? 'selected' : ''}>${opt.text}</option>`
                 ).join('');
 
+                const lastNameInput = readOnly ?
+                    `<span class="form-control-plaintext">${studentInfo.lastName}</span>` :
+                    `<input type="text" class="form-control last-name-display" value="${studentInfo.lastName}" placeholder="Last name" readonly>`;
+
+                const firstNameInput = readOnly ?
+                    `<span class="form-control-plaintext">${studentInfo.firstName}</span>` :
+                    `<input type="text" class="form-control first-name-display" value="${studentInfo.firstName}" placeholder="First name" readonly>`;
+
                 const studentNumberInput = readOnly ? 
                     `<span class="form-control-plaintext">${studentInfo.studentNumber}</span>
                     <input type="hidden" name="student" value="${studentString}">
                     <input type="hidden" name="additional_info" value = "${additionalInfo.join("^")}">` :
                     `<input type="text" name="student" class="form-control student-input" value="${studentString}" placeholder="Enter student info" required>
                     <input type="hidden" name="additional_info" value="${additionalInfo.join("^")}">`;
-
-                const firstNameInput = readOnly ?
-                    `<span class="form-control-plaintext">${studentInfo.firstName}</span>` :
-                    `<input type="text" class="form-control first-name-display" value="${studentInfo.firstName}" placeholder="First name" readonly>`;
-
-                const lastNameInput = readOnly ?
-                    `<span class="form-control-plaintext">${studentInfo.lastName}</span>` :
-                    `<input type="text" class="form-control last-name-display" value="${studentInfo.lastName}" placeholder="Last name" readonly>`;
 
                 const multiplierSelect = `<select name="multiplier" class="form-select" required>${selectOptions}</select>`;
 
@@ -516,11 +516,11 @@
                             if (firstNameDisplay) firstNameDisplay.value = parsedInfo.firstName;
                             if (lastNameDisplay) lastNameDisplay.value = parsedInfo.lastName;
                             
-                            const cell = $(rowNode).find('td:first');
+                            const cell = $(rowNode).find('td:eq(2)');
                             cell.html(`
-                                <span class="form-control-plaintext">${parsedInfo.studentNumber}</span>
                                 <input type="hidden" name="student" value="${selectedStudent}">
                                 <input type="hidden" name="additional_info" value="^^^^">
+                                <span class="form-control-plaintext">${parsedInfo.studentNumber}</span>
                             `);
                         });
                     }
