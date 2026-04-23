@@ -1,4 +1,5 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from requests import session
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -155,6 +156,81 @@ class TestAccommodations(StaticLiveServerTestCase):
         self.browser.get(
             self.live_server_url
             + reverse("accommodations:accommodations_home", args=[1])
+        )
+
+        input("Press Enter in this terminal to continue\n")
+
+    @tag("slow", "view", "accommodations", "quizzes")
+    @mock_classes.use_mock_canvas_in_accommodations()
+    @patch.object(views.FinalGradeListView, "_submit_final_grades")
+    def test_accommodations_quizzes_page(
+        self, mocked_flex_canvas_instance, mock_submit_final_grades
+    ):
+        """Note, this is designed to work with the fixture data for course 1."""
+        mock_submit_final_grades.return_value = (
+            True  # When submitting final grades, just return True for that function
+        )
+        session_id = self.client.session.session_key
+
+        # Set up required session data for the quizzes page
+        session = self.client.session
+        # Required auth/display data
+        session["display_name"] = "Test Instructor"
+        # Quizzes page data - submitted accommodations
+        session["accommodations"] = [
+            ("10000001", "1.5", "user_1", "Jason Zheng (10000001)", ""),
+            ("10000002", "2.0", "user_2", "Albert Einstein (10000002)", "^1.5^"),
+        ]
+
+        # Quizzes data
+        session["quizzes"] = [
+            {
+                "id": 101,
+                "title": "Quiz 1",
+                "is_new_quiz": False,
+                "url": "https://example.com/quiz/101",
+                "unlock_at_readable": "Dec 15, 2025 10:00 AM",
+                "lock_at_readable": "Dec 15, 2025 11:00 AM",
+                "time_limit_readable": "1h",
+            },
+            {
+                "id": 102,
+                "title": "Quiz 2",
+                "is_new_quiz": True,
+                "url": "https://example.com/quiz/102",
+                "unlock_at_readable": None,
+                "lock_at_readable": None,
+                "time_limit_readable": "30m",
+            },
+        ]
+
+        session["unavailable_quizzes"] = []
+        session["has_quiz_with_start_end"] = True
+        session.save()
+
+        # response = self.client.get(
+        #     reverse("accommodations:accommodations_quizzes", args=[1])
+        # )
+
+        # if response.status_code == 500:
+        #     print("\n=== 500 ERROR DETAILS ===")
+        #     print(response.content.decode())
+        #     print("=== END ERROR ===\n")
+        # self.assertEqual(
+        #     response.status_code,
+        #     200,
+        #     f"View returned {response.status_code}. Check console for error details.",
+        # )
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("accommodations:accommodations_quizzes", args=[1])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("accommodations:accommodations_quizzes", args=[1])
         )
 
         input("Press Enter in this terminal to continue\n")
