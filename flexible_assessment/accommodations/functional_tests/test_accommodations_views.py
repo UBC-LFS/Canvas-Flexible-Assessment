@@ -27,7 +27,7 @@ import pandas as pd
 import shutil
 
 
-class TestInstructorViews(StaticLiveServerTestCase):
+class TestAccommodations(StaticLiveServerTestCase):
     fixtures = ACCOMMODATIONS_DATA
 
     def setUp(self):
@@ -130,8 +130,8 @@ class TestInstructorViews(StaticLiveServerTestCase):
         session = self.client.session
         # Required auth/display data
         session["display_name"] = "Test Instructor"
-        session["user_id"] = "10000007"
-        session["login_id"] = "10000007"
+        # session["user_id"] = "10000007"
+        # session["login_id"] = "10000007"
         # Home page data - existing accommodations (from previous submissions)
         session["accommodations"] = [
             ("10000001", "1.5", "user_1", "Jason Zheng (10000001)", ""),
@@ -142,7 +142,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
             "Jason Zheng (10000001)",
             "Albert Einstein (10000002)",
             "Jon Snow (10000003)",
-            "Marie Curie (10000004)",
+            # "Marie Curie (10000004)",
         ]
         session.save()
 
