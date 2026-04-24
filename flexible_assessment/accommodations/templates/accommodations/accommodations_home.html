@@ -401,7 +401,7 @@
             }
 
             function parseStudentName(studentString) {
-                const match = studentString.match(/^(.+?)\s+(.+?)\s*\((\d+)\)$/);
+                const match = studentString.match(/^(.+?)\s+(.+)\s*\((\d+)\)$/);
                 if (match) {
                     return {
                         firstName: match[1].trim(),
@@ -466,21 +466,28 @@
 
                 const multiplierSelect = `<select name="multiplier" class="form-select" required>${selectOptions}</select>`;
 
-                const rowData = [
-                    lastNameInput,
-                    firstNameInput,
-                    studentNumberInput,
-                    multiplierSelect,
-                    `<button type="button" class="btn btn-outline-danger btn-sm remove-entry" data-row-id="${rowId}">
-                        <i class="bi bi-trash3"></i>
-                    </button>`
-                ];
+                
 
-                const rowNode = dataTable.row.add(rowData).draw().node();
-                $(rowNode).attr('id', rowId);
+                
                 
                 // Initialize Awesomplete for new student input fields
                 if (!readOnly) {
+                    const rowNode = dataTable.row.add(['', '', '', multiplierSelect,
+                        `<button type="button" class="btn btn-outline-danger btn-sm remove-entry" data-row-id="${rowId}">
+                            <i class="bi bi-trash3"></i>
+                        </button>`
+                    ]).draw().node();
+                    $(rowNode).attr('id', rowId);
+
+                    // Merge first 3 cells into one spanning input
+                    const cells = $(rowNode).find('td');
+                    cells[0].setAttribute('colspan', '3');
+                    cells[0].innerHTML = `
+                        <input type="text" name="student" class="form-control student-input" value="${studentString}" placeholder="Search by name or student number..." required>
+                        <input type="hidden" name="additional_info" value="^^^^">
+                    `;
+                    $(cells[1]).hide();
+                    $(cells[2]).hide();
                     const studentInput = $(rowNode).find('.student-input')[0];
                     if (studentInput) {
                         new Awesomplete(studentInput, {
@@ -510,22 +517,34 @@
                                 studentIds.add(parsedInfo.studentNumber);
                             }
                             
-                            const firstNameDisplay = $(rowNode).find('.first-name-display')[0];
-                            const lastNameDisplay = $(rowNode).find('.last-name-display')[0];
-                            
-                            if (firstNameDisplay) firstNameDisplay.value = parsedInfo.firstName;
-                            if (lastNameDisplay) lastNameDisplay.value = parsedInfo.lastName;
-                            
-                            const cell = $(rowNode).find('td:eq(2)');
-                            cell.html(`
+                            const liveCells = rowNode.querySelectorAll('td');
+                            liveCells[0].removeAttribute('colspan');
+                            liveCells[0].innerHTML = `<span class="form-control-plaintext">${parsedInfo.lastName}</span>`;
+                            liveCells[1].style.display = '';
+                            liveCells[1].innerHTML = `<span class="form-control-plaintext">${parsedInfo.firstName}</span>`;
+                            liveCells[2].style.display = '';
+                            liveCells[2].innerHTML = `
                                 <input type="hidden" name="student" value="${selectedStudent}">
                                 <input type="hidden" name="additional_info" value="^^^^">
                                 <span class="form-control-plaintext">${parsedInfo.studentNumber}</span>
-                            `);
+                            `;
                         });
                     }
+                    toggleButtons();
+                    return;
                 }
-                
+
+                const rowData = [
+                    lastNameInput,
+                    firstNameInput,
+                    studentNumberInput,
+                    multiplierSelect,
+                    `<button type="button" class="btn btn-outline-danger btn-sm remove-entry" data-row-id="${rowId}">
+                        <i class="bi bi-trash3"></i>
+                    </button>`
+                ];
+                const rowNode = dataTable.row.add(rowData).draw().node();
+                $(rowNode).attr('id', rowId);
                 toggleButtons();
             }
 
