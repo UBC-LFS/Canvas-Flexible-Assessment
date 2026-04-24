@@ -99,7 +99,14 @@ class AccommodationsHome(views.AccommodationsListView):
             student_strings, multipliers, additional_infos
         ):
             sn_list = re.findall(r"\d+", student_string)
-            sn = "".join(map(str, sn_list))  # get student number from student string
+            sn = 0
+            for n in sn_list:  # get student number in string - ignore other numbers
+                if len(n) == 8:
+                    if sn != 0:
+                        errors.append(
+                            f"Multiple student numbers found in input: {student_string}"
+                        )
+                    sn = n
             if len(sn) != 8 or not sn.isdigit():
                 errors.append(f"Invalid student number format: {sn}")
             elif sn not in valid_student_ids:
