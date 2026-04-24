@@ -8,7 +8,7 @@ DATA = [
 ]
 
 ACCOMMODATIONS_DATA = [
-    "user_profiles_2",
+    "user_profiles_accommodations",
     "courses",
     "user_courses",
     "assessments",

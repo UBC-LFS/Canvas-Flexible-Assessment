@@ -165,3 +165,38 @@ class MockAccommodationsCanvas(MockCanvas):
 
     def __init__(self):
         super().__init__()
+
+    def get_quiz_data(self, course_id):
+        """Mock the quiz data method"""
+        quiz_list = [
+            {
+                "id": 101,
+                "title": "Mock Quiz 1",
+                "is_new_quiz": False,
+                "url": "https://example.com/quiz/101",
+                "unlock_at_readable": "2026-06-01 - 12:00PM",
+                "lock_at_readable": "2026-06-01 - 1:00PM",
+                "time_limit_readable": "No time limit set",
+            },
+            {
+                "id": 102,
+                "title": "Mock Quiz 2",
+                "is_new_quiz": True,
+                "url": "https://example.com/quiz/102",
+                "unlock_at_readable": "2026-07-05 - 9:00AM",
+                "lock_at_readable": "2026-08-10 - 11:59PM",
+                "time_limit_readable": "2h",
+            },
+        ]
+        unavailable_quiz_list = [
+            {
+                "id": 103,
+                "title": "Mock Quiz 3",
+                "is_new_quiz": False,
+                "url": "https://example.com/quiz/103",
+                "unlock_at_readable": "2026-04-05 - 9:00AM",
+                "lock_at_readable": "2026-04-05 - 11:59PM",
+                "time_limit_readable": "1h",
+            }
+        ]
+        return quiz_list, unavailable_quiz_list
