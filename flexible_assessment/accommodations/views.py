@@ -82,7 +82,9 @@ class AccommodationsHome(views.AccommodationsListView):
             messages.error(request, "No accommodations entered.")
             return redirect("accommodations:accommodations_home", course_id)
 
-        if len(student_strings) != len(multipliers) or len(multipliers) != len(additional_infos):
+        if len(student_strings) != len(multipliers) or len(multipliers) != len(
+            additional_infos
+        ):
             messages.error(
                 request,
                 "Number of student numbers does not equal number of multipliers.",
@@ -93,9 +95,18 @@ class AccommodationsHome(views.AccommodationsListView):
         accommodations = []
         errors = []
 
-        for student_string, mult, additional_info in zip(student_strings, multipliers, additional_infos):
+        for student_string, mult, additional_info in zip(
+            student_strings, multipliers, additional_infos
+        ):
             sn_list = re.findall(r"\d+", student_string)
-            sn = "".join(map(str, sn_list))  # get student number from student string
+            sn = 0
+            for n in sn_list:  # get student number in string - ignore other numbers
+                if len(n) == 8:
+                    if sn != 0:
+                        errors.append(
+                            f"Multiple student numbers found in input: {student_string}"
+                        )
+                    sn = n
             if len(sn) != 8 or not sn.isdigit():
                 errors.append(f"Invalid student number format: {sn}")
             elif sn not in valid_student_ids:
@@ -128,37 +139,48 @@ class AccommodationsHome(views.AccommodationsListView):
                 "accommodations:accommodations_quizzes", kwargs={"course_id": course_id}
             )
         )
-    
+
+
 def load_preset_csv(request, course_id):
     preset_path = settings.TEAMSHARE_FOLDER
     course = Course.objects.get(pk=course_id)
-    log_extra = {"course": str(course), "user": request.session.get("display_name", "Unknown")}
+    log_extra = {
+        "course": str(course),
+        "user": request.session.get("display_name", "Unknown"),
+    }
 
     # logger.info(f"load_preset_csv: Attempting to load preset CSV from {preset_path}", extra=log_extra)
     try:
-        with open(preset_path, 'rb') as file:
+        with open(preset_path, "rb") as file:
             # logger.info(f"load_preset_csv: Successfully opened {preset_path}", extra=log_extra)
             return parse_csv([file], request, course_id)
     except FileNotFoundError:
         # logger.error(f"load_preset_csv: File not found at {preset_path}", extra=log_extra)
-        return JsonResponse({"results": [], "error": f"Preset file not found at {preset_path}"}, status=404)
+        return JsonResponse(
+            {"results": [], "error": f"Preset file not found at {preset_path}"},
+            status=404,
+        )
     except Exception as e:
         # logger.error(f"load_preset_csv: Error opening file {preset_path}: {e}", extra=log_extra)
-        return JsonResponse({"results": [], "error": f"Error opening file: {str(e)}"}, status=500)
+        return JsonResponse(
+            {"results": [], "error": f"Error opening file: {str(e)}"}, status=500
+        )
+
 
 @require_POST
 def upload_csv(request, course_id):
     uploaded_files = request.FILES.getlist("csv_file")
     return parse_csv(uploaded_files, request, course_id)
-    
+
+
 def process_csv(file):
     # Read file into memory
     csv_bytes = file.read()
-    if not file.name.lower().endswith('.csv'):
+    if not file.name.lower().endswith(".csv"):
         raise Exception(f"{file.name} is not a CSV file.")
     # Try different encodings
     csv_text = None
-    encodings_to_try = ['utf-8', 'utf-8-sig', 'windows-1252', 'iso-8859-1', 'cp1252']
+    encodings_to_try = ["utf-8", "utf-8-sig", "windows-1252", "iso-8859-1", "cp1252"]
     for encoding in encodings_to_try:
         try:
             csv_text = csv_bytes.decode(encoding)
@@ -170,15 +192,19 @@ def process_csv(file):
     # Load multiplier headers
     return csv.DictReader(io.StringIO(csv_text))
 
+
 def parse_csv(uploaded_files, request, course_id):
     view_instance = AccommodationsHome()
     view_instance.request = request
-    view_instance.kwargs = {'course_id': course_id}
+    view_instance.kwargs = {"course_id": course_id}
     students = view_instance.get_queryset()
     valid_student_ids = set(s.login_id for s in students)
-    
+
     course = Course.objects.get(pk=course_id)
-    log_extra = {"course": str(course), "user": request.session.get("display_name", "Unknown")}
+    log_extra = {
+        "course": str(course),
+        "user": request.session.get("display_name", "Unknown"),
+    }
 
     # logger.info(f"parse_csv: Found {len(valid_student_ids)} students in course {course_id}. Data: {list(valid_student_ids)}", extra=log_extra)
     parsed_data = []
@@ -192,63 +218,83 @@ def parse_csv(uploaded_files, request, course_id):
             multiplier_names = ["4", "3.5", "3", "2.5", "2", "1.75", "1.5", "1.25"]
 
             for row in csv_reader:
-                student_number = row.get('student_no', '').strip()
+                student_number = row.get("student_no", "").strip()
                 if student_number not in valid_student_ids:
                     continue
 
-                lastname = row.get('lastname', '').strip()
-                firstname = row.get('firstname', '').strip()
-                middlename = row.get('middlename', '').strip()
+                lastname = row.get("lastname", "").strip()
+                firstname = row.get("firstname", "").strip()
+                middlename = row.get("middlename", "").strip()
 
                 final_multiplier = None
-                # Get only all-exams multipliers 
+                # Get only all-exams multipliers
                 for multiplier in multiplier_names:
                     field_name = "Extended time (" + multiplier + "x) for all exams"
-                    if row.get(field_name, '').strip() == "True":
+                    if row.get(field_name, "").strip() == "True":
                         final_multiplier = multiplier
                         break
-                
+
                 if not final_multiplier:
                     # logger.info(f"parse_csv: Student {student_number} found but no multiplier matched for all exams. Skipping.", extra=log_extra)
-                    continue    
+                    continue
 
                 essay_multiplier = ""
                 mc_multiplier = ""
                 short_multiplier = ""
                 fine_multiplier = ""
                 for multiplier in multiplier_names:
-                    essay_field = "Extended time ("+ multiplier + "x)/essay format"
-                    mc_field = "Extended time ("+ multiplier + "x)/multiple choice format"
-                    short_answer = "Extended time (" + multiplier + "x)/short answer format"
-                    if row.get(essay_field, '') == "TRUE" and essay_multiplier == "":
+                    essay_field = "Extended time (" + multiplier + "x)/essay format"
+                    mc_field = (
+                        "Extended time (" + multiplier + "x)/multiple choice format"
+                    )
+                    short_answer = (
+                        "Extended time (" + multiplier + "x)/short answer format"
+                    )
+                    if row.get(essay_field, "") == "TRUE" and essay_multiplier == "":
                         essay_multiplier = multiplier
-                    if row.get(mc_field, '') == "TRUE" and mc_multiplier == "":
+                    if row.get(mc_field, "") == "TRUE" and mc_multiplier == "":
                         mc_multiplier = multiplier
-                    if row.get(short_answer, '') == "TRUE" and short_multiplier == "":
+                    if row.get(short_answer, "") == "TRUE" and short_multiplier == "":
                         mc_multiplier = multiplier
-                if row.get("Extended time (3x) for exams involving fine manipulations", '') == "TRUE":
+                if (
+                    row.get(
+                        "Extended time (3x) for exams involving fine manipulations", ""
+                    )
+                    == "TRUE"
+                ):
                     fine_multiplier = "3"
 
-                if '.' not in final_multiplier:
-                    final_multiplier = final_multiplier + '.0'
+                if "." not in final_multiplier:
+                    final_multiplier = final_multiplier + ".0"
 
                 notes = ""
-                if "exam" in row.get('If other, please specify').lower():
-                    notes = row.get('If other, please specify')
+                if "exam" in row.get("If other, please specify").lower():
+                    notes = row.get("If other, please specify")
 
-                additional_info = (essay_multiplier, mc_multiplier, short_multiplier, fine_multiplier, notes)
-                parsed_data.append((
-                    student_number,
-                    final_multiplier,
-                    f"{firstname + ' ' + lastname + ' ' + middlename} ({student_number})",
-                    additional_info
-                    ))
+                additional_info = (
+                    essay_multiplier,
+                    mc_multiplier,
+                    short_multiplier,
+                    fine_multiplier,
+                    notes,
+                )
+                parsed_data.append(
+                    (
+                        student_number,
+                        final_multiplier,
+                        f"{firstname + ' ' + lastname + ' ' + middlename} ({student_number})",
+                        additional_info,
+                    )
+                )
         except Exception as e:
-                parsed_data.append(("error", f"{f.name} failed to process: {str(e)}", "name"))
+            parsed_data.append(
+                ("error", f"{f.name} failed to process: {str(e)}", "name")
+            )
 
     parsed_data = sorted(parsed_data, key=lambda tup: tup[2])
 
     return JsonResponse({"results": parsed_data})
+
 
 @require_POST
 def upload_pdfs(request, course_id):
@@ -621,7 +667,7 @@ class AccommodationsSummary(views.AccommodationsListView):
                         if i < 5 and parts[i] != "":
                             columns_populated[i] = True
                             show_warning = True
-        
+
         context["show_warning"] = show_warning
         context["columns_populated"] = columns_populated
         return context
