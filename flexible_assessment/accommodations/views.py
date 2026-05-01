@@ -28,7 +28,6 @@ import io
 
 from accommodations.canvas_api import AccommodationsCanvas
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -379,7 +378,6 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         has_quiz_with_start_end = self.request.session.get(
             "has_quiz_with_start_end", False
         )
-
         context["accommodations"] = accommodations
         context["quizzes"] = quizzes
         context["unavailable_quizzes"] = unavailable_quizzes
