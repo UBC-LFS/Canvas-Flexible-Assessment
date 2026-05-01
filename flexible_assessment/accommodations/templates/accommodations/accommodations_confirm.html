@@ -32,7 +32,8 @@
             position: relative;
             width: 80px;
             height: 80px;
-            color: white; /* Set color to white for visibility */
+            color: white;
+            /* Set color to white for visibility */
         }
 
         .lds-ring,
@@ -55,28 +56,28 @@
         .lds-ring div:nth-child(1) {
             animation-delay: -0.45s;
         }
+
         .lds-ring div:nth-child(2) {
             animation-delay: -0.3s;
         }
-            .lds-ring div:nth-child(3) {
-        animation-delay: -0.15s;
+
+        .lds-ring div:nth-child(3) {
+            animation-delay: -0.15s;
         }
 
         @keyframes lds-ring {
-        0% {
-            transform: rotate(0deg);
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        100% {
-            transform: rotate(360deg);
-        }
-        }
-
-
-
-
     </style>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
+        {% if course %}<h4 class="text-center text-muted">{{ course.title }}</h4>{% endif %}
         <div class="row justify-content-center mt-4">
             <div class="col-lg-10 col-md-12">
                 <form id="accommodations-confirm-form"

@@ -402,8 +402,6 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         if login_redirect:
             course = self.get_context_data().get("course", "")
             utils.update_students(request, course)
-        else:
-            course = models.Course.objects.get(pk=course_id)
 
         if accommodations == None or accommodations == []:
             messages.error(
