@@ -28,7 +28,6 @@ import io
 
 from accommodations.canvas_api import AccommodationsCanvas
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -379,7 +378,6 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         has_quiz_with_start_end = self.request.session.get(
             "has_quiz_with_start_end", False
         )
-
         context["accommodations"] = accommodations
         context["quizzes"] = quizzes
         context["unavailable_quizzes"] = unavailable_quizzes
@@ -404,6 +402,8 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         if login_redirect:
             course = self.get_context_data().get("course", "")
             utils.update_students(request, course)
+        else:
+            course = models.Course.objects.get(pk=course_id)
 
         if accommodations == None or accommodations == []:
             messages.error(

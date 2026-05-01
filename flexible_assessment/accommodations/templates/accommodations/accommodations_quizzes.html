@@ -13,15 +13,18 @@
 
         .disabled-table td,
         .disabled-table th {
-            color: rgba(114, 114, 117, 0.5); /* Bootstrap body text, faded */
+            color: rgba(114, 114, 117, 0.5);
+            /* Bootstrap body text, faded */
         }
 
         .disabled-table a {
-            color: #0d6efd !important; /* Bootstrap primary link color */
+            color: #0d6efd !important;
+            /* Bootstrap primary link color */
         }
 
         .disabled-table a:hover {
-            color: #0a58ca !important; /* Darker hover state */
+            color: #0a58ca !important;
+            /* Darker hover state */
         }
 
         /*
@@ -79,19 +82,21 @@
 
         /* Improve link readability inside tooltip */
         .custom-tooltip .tooltiptext a {
-            color: #71e3f2; /* Light blue for good contrast */
+            color: #71e3f2;
+            /* Light blue for good contrast */
             text-decoration: underline;
             font-weight: 500;
         }
 
         .custom-tooltip .tooltiptext a:hover {
-            color: #a2eff9; /* Slightly lighter on hover */
+            color: #a2eff9;
+            /* Slightly lighter on hover */
             text-decoration: none;
         }
-
     </style>
     <div class="container my-4">
         <h2 class="text-center">Accommodations</h2>
+        {% if course %}<h4 class="text-center text-muted">{{ course.title }}</h4>{% endif %}
         <div class="row justify-content-center mt-4">
             <div class="col-lg-10 col-md-12">
                 <form id="quiz-upload-form"
@@ -328,4 +333,4 @@
 
         });
     </script>
-{% endblock %}
+{% endblock content %}
