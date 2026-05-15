@@ -17,6 +17,7 @@ from flexible_assessment.tests.test_data import ACCOMMODATIONS_DATA
 from unittest.mock import patch, MagicMock, ANY
 import instructor.views as views
 import time
+import logging
 
 import flexible_assessment.tests.mock_classes as mock_classes
 from selenium.webdriver.chrome.service import Service
@@ -67,6 +68,9 @@ class TestAccommodations(StaticLiveServerTestCase):
         self.client.force_login(user)
         self.launch_url = reverse("launch_accommodations")
         self.login_url = reverse("login")
+        # logging.basicConfig(level=logging.DEBUG)
+        # logger = logging.getLogger("django.request")
+        # logger.setLevel(logging.DEBUG)
 
     def tearDown(self):
         shutil.rmtree(self.download_dir, ignore_errors=True)
@@ -235,6 +239,71 @@ class TestAccommodations(StaticLiveServerTestCase):
 
         input("Press Enter in this terminal to continue\n")
 
+    @tag("slow", "view", "accommodations", "confirm")
+    @mock_classes.use_mock_canvas_in_accommodations()
+    @patch.object(views.FinalGradeListView, "_submit_final_grades")
+    def test_accommodations_confirm_page(
+        self, mock_submit_final_grades, mocked_flex_canvas_instance
+    ):
+        """Note, this is designed to work with the fixture data for course 1."""
+        mock_submit_final_grades.return_value = (
+            True  # When submitting final grades, just return True for that function
+        )
+        session_id = self.client.session.session_key
+
+        # Set up required session data for the quizzes page
+        session = self.client.session
+        # Required auth/display data
+        session["display_name"] = "Test Instructor"
+        # Quizzes page data - submitted accommodations
+        session["accommodations"] = [
+            ("10000001", "1.5", "user_1", "Jason Zheng (10000001)", ""),
+            ("10000002", "2.0", "user_2", "Albert Einstein (10000002)", "^1.5^"),
+        ]
+
+        # Quizzes data
+        session["selected_quizzes"] = [
+            {
+                "id": 101,
+                "title": "Quiz 1",
+            },
+            {
+                "id": 102,
+                "title": "Quiz 2",
+            },
+        ]
+        session.save()
+
+        import logging
+        import sys
+
+        # Force Django to print exceptions during tests
+        logging.disable(logging.NOTSET)
+
+        # Or, override the client to re-raise exceptions:
+        response = self.client.get(
+            reverse("accommodations:accommodations_confirm", args=[1]),
+            raise_request_exception=True,  # ← this re-raises the actual exception
+        )
+
+        if response.status_code == 500:
+            print("\n=== 500 ERROR DETAILS ===")
+            print(response.content.decode())
+            print("=== END ERROR ===\n")
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("accommodations:accommodations_confirm", args=[1])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("accommodations:accommodations_confirm", args=[1])
+        )
+
+        input("Press Enter in this terminal to continue\n")
+
     @tag("slow", "view", "accommodations", "summary")
     @mock_classes.use_mock_canvas_in_accommodations()
     def test_accommodations_summary_page(self, mocked_canvas_instance):
@@ -263,7 +332,7 @@ class TestAccommodations(StaticLiveServerTestCase):
                         "10000003",
                         "Jon Snow",
                         "user_3",
-                        "2.0^^Exam Accommodation: Exams to begin only after 11:00 a.m.",
+                        "^^Exam Accommodation: Exams to begin only after 11:00 a.m.",
                     ),
                 ],
             ),

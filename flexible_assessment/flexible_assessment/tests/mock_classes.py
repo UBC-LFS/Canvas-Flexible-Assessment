@@ -200,3 +200,64 @@ class MockAccommodationsCanvas(MockCanvas):
             }
         ]
         return quiz_list, unavailable_quiz_list
+
+    def get_multiplier_student_groups(self, accommodations, students):
+        """Mock method that groups students by multiplier"""
+        multiplier_groups = {}
+        for accommodation in accommodations:
+            student_id, multiplier, user_id, student_string, additional_info = (
+                accommodation
+            )
+            if multiplier not in multiplier_groups:
+                multiplier_groups[multiplier] = []
+
+            # Find matching student name from students
+            student_name = "Test Student"
+            for student in students:
+                if str(student.login_id) == student_id:
+                    student_name = student.display_name
+                    break
+
+            multiplier_groups[multiplier].append(
+                (student_id, student_name, user_id, additional_info)
+            )
+
+        # Convert dict to list of tuples sorted by multiplier
+        return sorted(
+            [(k, v) for k, v in multiplier_groups.items()],
+            key=lambda x: float(x[0]),
+            reverse=True,
+        )
+
+    def get_multiplier_quiz_groups(self, selected_quizzes):
+        """Mock method that groups quizzes by multiplier"""
+        return {
+            "1.5": selected_quizzes[:1] if selected_quizzes else [],
+            "2.0": selected_quizzes[1:] if len(selected_quizzes) > 1 else [],
+        }
+
+    def get_existing_accommodations(
+        self, accommodations, students, multiplier_quiz_groups, course_id
+    ):
+        """Mock method that returns existing accommodations"""
+        return []
+
+    def add_time_extensions(self, student_groups, quiz_groups, course_id):
+        for multiplier, quiz_list in quiz_groups.items():
+            for quiz in quiz_list:
+                quiz["time_limit_status"] = "success"
+        return quiz_groups, True
+
+    def add_availabilities(
+        self,
+        student_groups,
+        quiz_groups,
+        existing_accommodations,
+        should_override,
+        course_id,
+    ):
+        for multiplier, quiz_list in quiz_groups.items():
+            for quiz in quiz_list:
+                quiz["lock_at_status"] = "success"
+                quiz["unlock_at_status"] = "success"
+        return quiz_groups, True
