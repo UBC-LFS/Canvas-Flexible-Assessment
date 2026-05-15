@@ -503,6 +503,41 @@ class AccommodationsConfirm(views.AccommodationsListView):
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
 
+        show_warning = False
+        columns_populated = [False] * 5
+        processed_groups = []
+
+        for multiplier, students in multiplier_student_groups:
+            processed_students = []
+            for student in students:
+                student_id, student_name, user_id, additional_info = student
+                parts = [""] * 5
+                if isinstance(additional_info, str):
+                    split_parts = additional_info.split("^")
+                    for i in range(min(5, len(split_parts))):
+                        if split_parts[i]:
+                            parts[i] = split_parts[i]
+                            columns_populated[i] = True
+                            show_warning = True
+                processed_students.append(
+                    {
+                        "id": student_id,
+                        "name": student_name,
+                        "multiplier": multiplier,
+                        "parts": parts,
+                    }
+                )
+            processed_groups.append(
+                {
+                    "multiplier": multiplier,
+                    "students": processed_students,
+                }
+            )
+        print(processed_groups)
+
+        context["show_warning"] = show_warning
+        context["columns_populated"] = columns_populated
+        context["processed_groups"] = processed_groups
         # hide the "Existing Accommodations" table for now and override by default - may bring this back later
         context["include_existing_acommodations"] = True
         return context
@@ -650,24 +685,6 @@ class AccommodationsSummary(views.AccommodationsListView):
         context["multiplier_quiz_groups_results"] = multiplier_quiz_groups_results
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
-
-        show_warning = False
-        columns_populated = [False, False, False, False, False]
-
-        for _, students in multiplier_student_groups:
-            for student in students:
-                # student: (student_id, student_name, user_id, additional_info)
-                additional_info = student[3]
-                if isinstance(additional_info, str):
-                    parts = additional_info.split("^")
-                    # Check if relevant parts are not empty strings.
-                    for i in range(len(parts)):
-                        if i < 5 and parts[i] != "":
-                            columns_populated[i] = True
-                            show_warning = True
-
-        context["show_warning"] = show_warning
-        context["columns_populated"] = columns_populated
         return context
 
     def get(self, request, *args, **kwargs):
