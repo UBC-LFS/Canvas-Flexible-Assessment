@@ -304,7 +304,7 @@ class TestAccommodations(StaticLiveServerTestCase):
 
         input("Press Enter in this terminal to continue\n")
 
-    @tag("slow", "view", "accommodations", "summary")
+    @tag("slow", "view", "accommodations", "summarypage")
     @mock_classes.use_mock_canvas_in_accommodations()
     def test_accommodations_summary_page(self, mocked_canvas_instance):
         """Test the accommodations summary page displays correctly with session data."""
@@ -418,9 +418,9 @@ class TestAccommodations(StaticLiveServerTestCase):
         )
         self.assertIn("Restart", restart_button.text)
 
-        # Verify back button exists
-        back_button = self.browser.find_element(By.CSS_SELECTOR, "button.btn-secondary")
-        self.assertIn("Back", back_button.text)
+        # Verify continue button exists
+        back_button = self.browser.find_element(By.CSS_SELECTOR, "button.btn-primary")
+        self.assertIn("Continue", back_button.text)
 
         input("Press Enter in this terminal to continue\n")
 
