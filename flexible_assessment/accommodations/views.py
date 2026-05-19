@@ -533,7 +533,6 @@ class AccommodationsConfirm(views.AccommodationsListView):
                     "students": processed_students,
                 }
             )
-        print(processed_groups)
 
         context["show_warning"] = show_warning
         context["columns_populated"] = columns_populated

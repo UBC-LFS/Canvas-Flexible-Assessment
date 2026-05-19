@@ -231,10 +231,15 @@ class MockAccommodationsCanvas(MockCanvas):
 
     def get_multiplier_quiz_groups(self, selected_quizzes):
         """Mock method that groups quizzes by multiplier"""
-        return {
-            "1.5": selected_quizzes[:1] if selected_quizzes else [],
-            "2.0": selected_quizzes[1:] if len(selected_quizzes) > 1 else [],
-        }
+        if selected_quizzes[0]:
+            selected_quizzes[0]["lock_at_new_readable"] = "2026-06-01 - 1:30PM"
+        if selected_quizzes[1]:
+            selected_quizzes[1]["time_limit_new_readable"] = "3h"
+        multipliers = [4.0, 3.5, 3.0, 2.5, 2.0, 1.75, 1.5, 1.25]
+        result = {}
+        for multiplier in multipliers:
+            result[str(multiplier)] = selected_quizzes
+        return result
 
     def get_existing_accommodations(
         self, accommodations, students, multiplier_quiz_groups, course_id
