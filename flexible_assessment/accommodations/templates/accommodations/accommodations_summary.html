@@ -125,21 +125,26 @@
                             Restart <i class="bi bi-arrow-clockwise ms-2"></i>
                         </button>
                         <!-- Back button -->
-                        <button type="button" class="btn btn-primary" onclick="history.back()">
-                            <i class="bi bi-arrow-right me-1"></i>
-                            Continue
-                        </button>
-                    </div>
-                </form>
-            </div>
+                        {% comment %} <script>
+                            function window_close() {
+                                window.close();
+                            }
+                        </script>
+                                                <button type="button" class="btn btn-primary" onclick="window_close()">
+                                                <i class="bi bi-arrow-right me-1"></i>
+                                                Continue
+                    </button> {% endcomment %}
+                </div>
+            </form>
         </div>
     </div>
-    {% if messages %}
-        <ul class="messages" hidden>
-            {% for message in messages %}
-                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    <script></script>
+</div>
+{% if messages %}
+    <ul class="messages" hidden>
+        {% for message in messages %}
+            <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+<script></script>
 {% endblock content %}
