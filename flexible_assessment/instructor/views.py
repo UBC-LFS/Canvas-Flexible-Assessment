@@ -70,7 +70,6 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
-
         if should_show_page(course):
             response = super().get(request, *args, **kwargs)
             return response
@@ -86,14 +85,12 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
-        context["assessments"] = (
-            models.Assessment.objects
-            .filter(course=course)
-            .order_by("order", "id")
-        )
+        context["assessments"] = models.Assessment.objects.filter(
+            course=course
+        ).order_by("order", "id")
 
         return context
-    
+
     def export_list(self):
         students = self.get_queryset()
         course_id = self.kwargs["course_id"]
@@ -130,7 +127,6 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
 
     def get(self, request, *args, **kwargs):
 
-        
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
@@ -157,23 +153,24 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
     #     )
 
     #     return csv_response
-    
+
     def export_list(self):
-        students = self.get_queryset()
+        self.object_list = self.get_queryset()
+        students = self.object_list
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
-            
+
         curr_key = self.request.session.get("current_table_key")
         saved = self.request.session.get(curr_key) if curr_key else None
 
-        groups = None  
+        groups = None
         if isinstance(saved, dict):
-            groups = saved.get("groups")  
-        
+            groups = saved.get("groups")
+
         if groups is None:
             context = self.get_context_data()
             groups = context.get("groups")
-        
+
         csv_response = writer.grades_csv(course, students, groups)
 
         logger.info(
@@ -209,7 +206,9 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                 )
 
                 return HttpResponseRedirect(
-                    reverse("instructor:final_grades_shell", kwargs={"course_id": course_id})
+                    reverse(
+                        "instructor:final_grades_shell", kwargs={"course_id": course_id}
+                    )
                 )
 
             success = self._submit_final_grades(course_id, canvas)
@@ -222,7 +221,9 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
                 logger.info("Error in submitting final grades", extra=log_extra)
 
                 return HttpResponseRedirect(
-                    reverse("instructor:final_grades_shell", kwargs={"course_id": course_id})
+                    reverse(
+                        "instructor:final_grades_shell", kwargs={"course_id": course_id}
+                    )
                 )
 
             logger.info("Completed final grades submission to Canvas", extra=log_extra)
@@ -256,10 +257,12 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
         else:
             # If 'flat' is false or not set, call the standard method
             groups, _ = FlexCanvas(self.request).get_groups_and_enrollments(course_id)
-        
+
         context["groups"] = groups
         context["canvas_domain"] = settings.CANVAS_DOMAIN
-        context["assessments"] = (models.Assessment.objects.filter(course=course).order_by("order", "id"))
+        context["assessments"] = models.Assessment.objects.filter(
+            course=course
+        ).order_by("order", "id")
 
         return context
 
@@ -376,19 +379,21 @@ class AssessmentGroupView(views.InstructorFormView):
         self.kwargs["hide_weights"] = not canvas_course.apply_assignment_group_weights
 
         return kwargs
-    
+
     def compute_assignment_group_hash(self, course_id, selected_map, weighting):
         """
         Create a hash object of the assignment group inputs
         """
-        pairs = sorted(selected_map.items(), key=lambda kv: kv[0])  
+        pairs = sorted(selected_map.items(), key=lambda kv: kv[0])
         payload = {
             "course_id": course_id,
             "weighting": weighting,
-            "pairs": pairs,   
+            "pairs": pairs,
         }
-        encoded_json = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-        return hashlib.sha256(encoded_json).hexdigest()  
+        encoded_json = json.dumps(
+            payload, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        return hashlib.sha256(encoded_json).hexdigest()
 
     def session_table_key(self, hash_id):
         return f"final_table_{hash_id}"
@@ -445,8 +450,8 @@ class AssessmentGroupView(views.InstructorFormView):
         else:
             self.request.session["flat"] = False
 
-        weighting = (weight_option == "equal_weights")
-        
+        weighting = weight_option == "equal_weights"
+
         selected_map: dict[str, int] = {}
         for assessment_id, group_id in form.cleaned_data.items():
             if group_id in ("", None):
@@ -578,11 +583,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             context["populated"] = True
 
         else:
-            qs = (
-                models.Assessment.objects
-                .filter(course=course)
-                .order_by("order", "id")
-            )
+            qs = models.Assessment.objects.filter(course=course).order_by("order", "id")
 
             AssessmentFormSet = get_assessment_formset()
             context["formset"] = AssessmentFormSet(queryset=qs, prefix="assessment")
@@ -843,7 +844,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 extra={
                     "course": str(course),
                     "user": self.request.session["display_name"],
-                }
+                },
             )
             calendar_event = FlexCanvas(self.request).get_calendar_event(
                 course.calendar_id
@@ -955,7 +956,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                         "to (default %s%%, min %s%%, max %s%%)",
                         assessment.title,
                         *log_allocations,
-                        extra=log_extra
+                        extra=log_extra,
                     )
 
         return assessment_created
@@ -1137,7 +1138,7 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         }
 
         changed = False
-        
+
         for assessment_id, flex in assessment_fields:
             assessment = models.Assessment.objects.get(pk=assessment_id)
             flex_assessment = assessment.flexassessment_set.filter(
@@ -1150,7 +1151,6 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
                 flex_assessment.override = True
                 changed = True
             flex_assessment.save()
-           
 
             if old_flex is None:
                 logger.info(
@@ -1328,10 +1328,11 @@ class FinalGradeShellView(views.InstructorTemplateView):
     """
     Shell that shows the loading modal immediately
     """
+
     template_name = "instructor/final_grades_shell.html"
 
     def get(self, request, *args, **kwargs):
-    
+
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
 
@@ -1356,15 +1357,17 @@ class FinalGradeShellView(views.InstructorTemplateView):
         else:
             context["saved_table"] = ""
         return context
-    
+
+
 class FinalGradeTableView(FinalGradeListView):
     """
-    Returns ONLY the table so Final Grades page can fetch it. 
+    Returns ONLY the table so Final Grades page can fetch it.
     """
+
     template_name = "instructor/final_grades_table.html"
 
     def get(self, request, *args, **kwargs):
-        
+
         self.object_list = self.get_queryset()
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
@@ -1390,5 +1393,3 @@ class FinalGradeTableView(FinalGradeListView):
             self.request.session.modified = True
 
         return HttpResponse(html)
-
-
