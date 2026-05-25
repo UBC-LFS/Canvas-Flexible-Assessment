@@ -981,7 +981,11 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         student_name = get_object_or_404(
             models.UserProfile, pk=self.kwargs["pk"]
         ).display_name
+        student_number = get_object_or_404(
+            models.UserProfile, pk=self.kwargs["pk"]
+        ).login_id
         context["student_name"] = student_name
+        context["student_number"] = student_number
 
         previous = self.request.GET.get("previous", "")
 
