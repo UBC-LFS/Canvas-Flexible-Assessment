@@ -169,6 +169,7 @@ def round_half_up(value, digits=2):
     d = Decimal(str(value))  # Convert to Decimal
     return d.quantize(Decimal(10) ** -digits, rounding=ROUND_HALF_UP)
 
+
 def grades_csv(course, students, groups):
     """Creates csv response for final grade list"""
 
@@ -193,7 +194,7 @@ def grades_csv(course, students, groups):
 
     for student in students:
         values = []
-        values.append("{}, {}".format(student.display_name, student.login_id))
+        values.append("{}".format(student.login_id))
 
         override_total = grader.get_override_total(groups, student, course)
         override_total = round_half_up(override_total, 3)
@@ -237,9 +238,9 @@ def grades_csv(course, students, groups):
 
 #     soup = BeautifulSoup(html, "html.parser")
 #     table = soup.find("table", {"id": "final"})
-    
+
 #     if table is None:
-#         return csv_writer.get_response() 
+#         return csv_writer.get_response()
 
 #     thead = table.thead
 #     if thead:

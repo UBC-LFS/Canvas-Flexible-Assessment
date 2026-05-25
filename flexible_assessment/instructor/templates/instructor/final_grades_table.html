@@ -3,6 +3,7 @@
     <thead>
         <tr>
             <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
+            <th style="width: 0%;">Student ID</th>
             <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Override Total</th>
             <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Default Total</th>
             <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Difference</th>
@@ -36,6 +37,7 @@
                 <td class="text-center align-middle text-break">
                     <a href="{% url 'instructor:override_student_form_final' course.id student.user_id %}?previous=final">{{ student.display_name }}</a>
                 </td>
+                <td>{{ student.login_id }}</td>
                 {% get_student_grades groups student course as grades %}
                 <td class="text-center align-middle {{ grades.0 }}">{{ grades.1 }}</td>
                 <td class="text-center align-middle default">{{ grades.2 }}</td>
