@@ -267,8 +267,6 @@ class Assessment(models.Model):
     group = models.IntegerField(null=True)
     order = models.IntegerField(blank=False, default=100_000)
 
-    
-
     def __str__(self):
         return "{}, {}".format(self.title, self.course.title)
 

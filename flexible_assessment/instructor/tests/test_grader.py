@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.test import TestCase
 from flexible_assessment.models import UserProfile
 from instructor import grader
@@ -234,11 +236,21 @@ class TestGrader(TestCase):
         [average_override, average_default, average_difference] = grader.get_averages(
             groups_dict, course
         )
-        self.assertEqual(average_default, round((84.00 + 20.25 + 27.11 + 66.67) / 4, 2))
-        self.assertEqual(
-            average_override, round((84.00 + 20.25 + 40.20 + 66.67) / 4, 2)
+        self.assertAlmostEqual(
+            average_default,
+            Decimal(round((84.00 + 20.25 + 27.11 + 66.67) / 4, 2)),
+            places=2,
         )
-        self.assertEqual(average_difference, round((0 + 0 + 13.09 + 0) / 4, 2))
+        self.assertAlmostEqual(
+            average_override,
+            Decimal(round((84.00 + 20.25 + 40.20 + 66.67) / 4, 2)),
+            places=2,
+        )
+        self.assertAlmostEqual(
+            average_difference,
+            Decimal(round((0 + 0 + 13.09 + 0) / 4, 2)),
+            places=2,
+        )
 
     def test_Grader_gets_group_weight_correctly(self):
         course_id = 1
