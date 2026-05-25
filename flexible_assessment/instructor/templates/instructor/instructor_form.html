@@ -89,6 +89,7 @@
             flatpickr("input[type=datetime-local]", {
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",
+                minuteIncrement: 1
             });
         });
     </script>
@@ -125,7 +126,7 @@
                 </div>
                 <div class="modal-footer justify-content-between">
                     <div>
-                        <a id="change-calendar-btn" 
+                        <a id="change-calendar-btn"
                            role="button"
                            type="button"
                            class="btn btn-secondary"
