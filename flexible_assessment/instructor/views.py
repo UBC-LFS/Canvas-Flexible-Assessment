@@ -782,7 +782,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 "title": ("Flexible Assessment"),
                 "start_at": date_form.cleaned_data["close"],
                 "end_at": date_form.cleaned_data["close"],
-                "all_day": True,
+                "all_day": False,
                 "description": "If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>",
             }
             calendar_event = FlexCanvas(self.request).create_calendar_event(
@@ -817,7 +817,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                 "title": ("Flexible Assessment"),
                 "start_at": date_form.cleaned_data["close"],
                 "end_at": date_form.cleaned_data["close"],
-                "all_day": True,
+                "all_day": False,
                 "description": "If you have not made your choices by this deadline, your choices will be <strong>automatically set to the default percentages</strong>",
             }
             calendar_event = FlexCanvas(self.request).create_calendar_event(
@@ -855,7 +855,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
                     "title": ("Flexible Assessment"),
                     "start_at": date_form.cleaned_data["close"],
                     "end_at": date_form.cleaned_data["close"],
-                    "all_day": True,
+                    "all_day": False,
                     "description": "If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>",
                 }
             )
@@ -1271,7 +1271,7 @@ def match_calendar_to_flex_dates(request, course_id):
                 "title": ("Flexible Assessment"),
                 "start_at": course.close,
                 "end_at": course.close,
-                "all_day": True,
+                "all_day": False,
                 "description": "If you have not made your choices by this deadline, your choices will be  <strong>automatically set to the default percentages</strong>",
             }
         )
