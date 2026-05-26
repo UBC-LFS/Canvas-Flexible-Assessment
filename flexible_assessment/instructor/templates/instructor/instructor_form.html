@@ -86,11 +86,22 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            flatpickr("input[type=datetime-local]", {
+            flatpickr(".opentimepicker", {
                 enableTime: true,
                 dateFormat: "Y-m-d h:i K",
                 minuteIncrement: 1,
                 time_24hr: false,
+                defaultHour: 9,
+                defaultMinute: 0,
+            });
+            flatpickr(".closetimepicker", {
+                enableTime: true,
+                dateFormat: "Y-m-d h:i K",
+                minuteIncrement: 1,
+                time_24hr: false,
+                defaultHour: 23,
+                defaultMinute: 59,
+
             });
         });
     </script>

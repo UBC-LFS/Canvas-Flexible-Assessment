@@ -1062,9 +1062,9 @@ class TestInstructorViews(StaticLiveServerTestCase):
         self.assertEqual(A3_min, 50)
         self.assertEqual(A3_max, 50)
 
-    @tag("slow")
+    @tag("slow", "view", "cal")
     @mock_classes.use_mock_canvas()
-    def test_calendar(self, mocked_flex_canvas_instance):
+    def test_cal(self, mocked_flex_canvas_instance):
         """In course 3 the teacher is setting up flexible assessment
         The calendar should match the open and close dates and provide an option if the dates do not match
         1. Navigate to Course Setup and create 3 assessments
@@ -1266,7 +1266,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
                 "Comments",
             ],
             [
-                "test_student1, test_student1",
+                "test_student1, 10000001",
                 "Yes",
                 "25.00",
                 "25.00",
@@ -1275,7 +1275,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
                 "Today was an exciting day, filled with unexpected surprises. I met some incredible people, learned a lot of new things, and enjoyed the small moments that make life so beautiful. It was a perfect balance of productivity and relaxation. Looking forward to what tomorrow will bring!",
             ],
             [
-                "test_student2, test_student2",
+                "test_student2, 10000002",
                 "Yes",
                 "25.00",
                 "25.00",
@@ -1284,7 +1284,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
                 "student 2 comment",
             ],
             [
-                "test_student3, test_student3",
+                "test_student3, 10000003",
                 "Yes",
                 "25.00",
                 "25.00",
@@ -1293,7 +1293,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
                 "student 3 comment",
             ],
             [
-                "test_student4, test_student4",
+                "test_student4, 10000004",
                 "Yes",
                 "25.00",
                 "25.00",
@@ -1352,7 +1352,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         expected_data = [
             ["Student", "Chose Percentages", "assignmentA", "assignmentB", "Comments"],
-            ["test_student1, test_student1", "No", "50.00", "50.00", ""],
+            ["test_student1, 10000001", "No", "50.00", "50.00", ""],
         ]
 
         with open(filename, newline="", encoding="utf-8") as f:

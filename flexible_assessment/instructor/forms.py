@@ -116,16 +116,22 @@ class CourseSettingsForm(ModelForm):
             self.add_error("open", ValidationError(""))
             self.add_error("close", ValidationError(""))
 
+    open = forms.DateTimeField(
+        input_formats=["%Y-%m-%d %I:%M %p"],
+        widget=forms.DateTimeInput(attrs={"class": "opentimepicker"}),
+    )
+
+    close = forms.DateTimeField(
+        input_formats=["%Y-%m-%d %I:%M %p"],
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local", "class": "closetimepicker"}
+        ),
+    )
+
     class Meta:
         model = Course
         fields = ["open", "close", "welcome_instructions", "comment_instructions"]
         widgets = {
-            "open": forms.DateTimeInput(
-                attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
-            ),
-            "close": forms.DateTimeInput(
-                attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
-            ),
             "welcome_instructions": forms.Textarea(
                 attrs={
                     "rows": 2,
