@@ -1300,6 +1300,14 @@ def match_flex_dates_to_calendar(request, course_id):
         calendar_event = FlexCanvas(request).get_calendar_event(course.calendar_id)
         curr_start = course.open
         curr_end = course.close
+        # change from all-day event if manually edited to 11:59pm
+        if calendar_event.all_day:
+            calendar_event.all_day = False
+            event_time = dateutil.parser.isoparse(
+                calendar_event.end_at
+            ) - dateutil.relativedelta.relativedelta(minutes=1)
+            calendar_event.start_at = event_time.isoformat()
+            calendar_event.end_at = event_time.isoformat()
         course.close = dateutil.parser.isoparse(calendar_event.end_at)
         course.save(update_fields=["close"])
 
