@@ -139,6 +139,23 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         input("Press Enter in this terminal to continue")
 
+    @tag("slow", "view", "new_course")
+    @mock_classes.use_mock_canvas()
+    def test_new_course_page(self, mocked_flex_canvas_instance):
+        """Note, this is designed to work with the fixture data for course 1."""
+        session_id = self.client.session.session_key
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[2])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[2])
+        )
+
+        input("Press Enter in this terminal to continue")
+
     @tag("slow", "view", "double_view")
     @mock_classes.use_mock_canvas()
     def test_double_view(self, mocked_flex_canvas_instance):
@@ -319,6 +336,12 @@ class TestInstructorViews(StaticLiveServerTestCase):
             "+", bodyText
         )  # With only the default flexes, there is no difference in the totals
 
+        WebDriverWait(self.browser, 10).until(
+            EC.visibility_of_element_located((By.ID, "loadingModal"))
+        )
+        WebDriverWait(self.browser, 500).until(
+            EC.invisibility_of_element_located((By.ID, "loadingModal"))
+        )
         self.browser.find_element(By.LINK_TEXT, "test_student1").click()
         inputs = self.browser.find_elements(By.TAG_NAME, "input")
         inputs[1].send_keys("30")
