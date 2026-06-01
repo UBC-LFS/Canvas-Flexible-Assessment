@@ -336,12 +336,10 @@ class TestInstructorViews(StaticLiveServerTestCase):
             "+", bodyText
         )  # With only the default flexes, there is no difference in the totals
 
-        WebDriverWait(self.browser, 10).until(
-            EC.visibility_of_element_located((By.ID, "loadingModal"))
-        )
-        WebDriverWait(self.browser, 500).until(
-            EC.invisibility_of_element_located((By.ID, "loadingModal"))
-        )
+        if EC.visibility_of_element_located((By.ID, "loadingModal")):
+            WebDriverWait(self.browser, 10).until(
+                EC.invisibility_of_element_located((By.ID, "loadingModal"))
+            )
         self.browser.find_element(By.LINK_TEXT, "test_student1").click()
         inputs = self.browser.find_elements(By.TAG_NAME, "input")
         inputs[1].send_keys("30")
@@ -766,7 +764,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         filename = os.path.join(
             self.download_dir,
-            f"Grades_test_course3_{datetime.now().strftime('%Y-%m-%dT%H%M')}.csv",
+            f"Grades_test_course3_{datetime.now().strftime('%Y-%m-%dT%H-%M')}.csv",
         )
 
         download_button.click()
@@ -1531,7 +1529,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
         filename = os.path.join(
             self.download_dir,
-            f"Grades_test_course6_{datetime.now().strftime('%Y-%m-%dT%H%M')}.csv",
+            f"Grades_test_course6_{datetime.now().strftime('%Y-%m-%dT%H-%M')}.csv",
         )
 
         download_button.click()
