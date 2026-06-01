@@ -129,54 +129,57 @@
         </ul>
     {% endif %}
     <script>
-    let finalTable = null;
+        let finalTable = null;
+        
+        let modalTimer = null;
+        let loadingShown = false;   
 
-    function show_loading() {
-        var modalElement = document.getElementById('loadingModal');
-        if (modalElement) {
-            var instance = bootstrap.Modal.getOrCreateInstance(modalElement);
-            instance.show();
+        function show_loading() {
+            const el = document.getElementById('loadingModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(el);
+            loadingShown = true;
+            modal.show();
         }
-    }
 
-    function hide_loading() {
-        var modalElement = document.getElementById('loadingModal');
-        if (modalElement) {
-            const instance = bootstrap.Modal.getInstance(modalElement);
-            if (instance) {
-                instance.hide();
+        async function hide_loading() {
+            const el = document.getElementById('loadingModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(el);
+            if (loadingShown) {
+                await new Promise(resolve => {
+                    el.addEventListener('hidden.bs.modal', resolve, { once: true });
+                    modal.hide();
+                });
             }
-        }
-    }
-
-    function format_table() {
-        $('.used-default').css('color', 'gray');
-        $('.used-default').css('font-style', 'italic');
-    }
-
-    function initFinalTable() {
-        if (!document.querySelector('#final')) return;
-        if ($.fn.DataTable.isDataTable('#final')) return;
-
-        const colspan = $('.assessment').length;
-        if (colspan > 0) {
-            $('.empty').attr('colspan', colspan);
-            const width = Math.floor(75 / colspan);
-            $('.assessment').css('width', width + '%');
+            loadingShown = false;
         }
 
-        finalTable = $('#final').DataTable({
-            dom: 'lrftip',
+        function format_table() {
+            $('.used-default').css('color', 'gray');
+            $('.used-default').css('font-style', 'italic');
+        }
 
-            columnDefs: [
-                {
-                    targets: 1,
-                    visible: false // hide Student ID column, only visible in CSV
-                }
-            ],
+        function initFinalTable() {
+            if (!document.querySelector('#final')) return;
+            if ($.fn.DataTable.isDataTable('#final')) return;
 
-            buttons: [
-                {
+            const colspan = $('.assessment').length;
+            if (colspan > 0) {
+                $('.empty').attr('colspan', colspan);
+                const width = Math.floor(75 / colspan);
+                $('.assessment').css('width', width + '%');
+            }
+
+            finalTable = $('#final').DataTable({
+                dom: 'lrftip',
+
+                columnDefs: [
+                    {
+                        targets: 1,
+                        visible: false // hide Student ID column, only visible in CSV
+                    }
+                ],
+
+                buttons: [{
                     extend: 'csvHtml5',
                     text: 'Export',    
                     title: 'Final Grades',
@@ -198,139 +201,135 @@
                         // remove line breaks in the header
                         format: {
                             header: function (data, columnIdx) {
-                                return data.replace(/<br\s *\/?>/gi, ' ')
-                                                                              .replace(/\s+/g, ' ')
-                                                                              .trim();
-                                                                }
-                                                            }
-                                                        },
-                                                        // add in total average rows in the footer
-                                                        customize: function (csv) {
-                                                            const rows = csv.split('\n')
-                                        
-                                                            const $footerRow = $('#final tfoot tr');
-                                                            if ($footerRow.length > 0) {
-                                                                const avgOverride = $footerRow.find('td').eq(0).text().trim();
-                                                                const avgDefault = $footerRow.find('td').eq(1).text().trim();
-                                                                const avgDiff = $footerRow.find('td').eq(2).text().trim();
-                            
-                                                                return csv + '\n' + 
-                                                                       '"Average Overrides","Average Default","Average Difference"\n' +
-                                                                       '"' + avgOverride + '","' + avgDefault + '","' + avgDiff + '"';
-                                                            }
-                                                            return csv;
-                                                        }
-                                                    }
-                                                ], 
-                                                scrollX: true,
-                                                initComplete: format_table
-                                            });
+                                return data.replace(/<br\s *\/?>/gi, ' ').replace(/\s+/g, ' ').trim();
+                                    }
+                                }
+                            },
+                            // add in total average rows in the footer
+                            customize: function (csv) {
+                                const rows = csv.split('\n')
 
-                                            $('#final').on('draw.dt', format_table);
-                                            $('.dataTables_scrollBody').css('overflow-y', 'hidden');
-                                        }
+                                const $footerRow = $('#final tfoot tr');
+                                if ($footerRow.length > 0) {
+                                    const avgOverride = $footerRow.find('td').eq(0).text().trim();
+                                    const avgDefault = $footerRow.find('td').eq(1).text().trim();
+                                    const avgDiff = $footerRow.find('td').eq(2).text().trim();
 
-                                        $(document).on('click', '#exportCsvBtn', function () {
-                                            if (finalTable) {
-                                                finalTable.button(0).trigger();
-                                            }
-                                        });
+                                    return csv + '\n' + 
+                                            '"Average Overrides","Average Default","Average Difference"\n' +
+                                            '"' + avgOverride + '","' + avgDefault + '","' + avgDiff + '"';
+                                }
+                                return csv;
+                            }
+                        }], 
+                        scrollX: true,
+                        initComplete: format_table
+                    });
+
+                    $('#final').on('draw.dt', format_table);
+                    $('.dataTables_scrollBody').css('overflow-y', 'hidden');
+                }
+
+                $(document).on('click', '#exportCsvBtn', function () {
+                    if (finalTable) {
+                        finalTable.button(0).trigger();
+                    }
+                });
 
 
-                                      (async function () {
-                                        const mount = document.getElementById('tableMount');
+                (async function () {
+                    const mount = document.getElementById('tableMount');
 
-                                        // If Django already rendered the table, just init it.
-                                        if (mount && mount.querySelector('#final')) {
-                                          initFinalTable();
-                                          return;
-                                        }
+                    // If Django already rendered the table, just init it.
+                    if (mount && mount.querySelector('#final')) {
+                        initFinalTable();
+                        return;
+                    }
 
-                                        // Start fetch + delayed modal
-                                        var done = false;
-                                        const modalTimer = setTimeout(() => {
-                                          if (!done) show_loading();
-                                        }, 150); 
+                    // Start fetch + delayed modal
+                    var done = false;
+                    modalTimer = setTimeout(() => {
+                        if (!done) show_loading();
+                    }, 200); 
 
-                                        try {
-                                            const response = await fetch("{% url 'instructor:final_grades_table' course.id %}");
-                                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    try {
+                        const response = await fetch("{% url 'instructor:final_grades_table' course.id %}");
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-                                            const html = await response.text();
-                                            done = true;
-                                            clearTimeout(modalTimer);
+                        const html = await response.text();
+                        done = true;
+                        clearTimeout(modalTimer);
 
-                                            mount.innerHTML = html.trim();
+                        mount.innerHTML = html.trim();
 
-                                            hide_loading();
-                                            initFinalTable();
+                        await hide_loading();
+                        initFinalTable();
+                    } catch (err) {
+                        done = true;
+                        clearTimeout(modalTimer);
 
-                                        } catch (err) {
-                                            done = true;
-                                            clearTimeout(modalTimer);
+                        console.error("Error loading table:", err);
+                        hide_loading();
+                        alert("Error loading the grade table. Please try again.");
+                        window.location = "{% url 'instructor:group_form' course.id %}"
+                    }
+                })();
 
-                                            console.error("Error loading table:", err);
-                                            hide_loading();
-                                            alert("Error loading the grade table. Please try again.");
-                                            window.location = "{% url 'instructor:group_form' course.id %}"
-                                        }
-                                        })();
-    
 
-                                        $('#submit-button').click(function(e) {
-                                            var checkBox = document.getElementById("flexCheckDefault");
-                                            var errorMessage = document.getElementById("checkbox-error-message");
-                                            if (checkBox.checked == false){
-                                                e.preventDefault();
-                                                errorMessage.style.display = "block";
-                                                return false;
-                                            }
-                                            else {
-                                                errorMessage.style.display = "none !important";
-                                            }
+                $('#submit-button').click(function(e) {
+                    var checkBox = document.getElementById("flexCheckDefault");
+                    var errorMessage = document.getElementById("checkbox-error-message");
+                    if (checkBox.checked == false){
+                        e.preventDefault();
+                        errorMessage.style.display = "block";
+                        return false;
+                    }
+                    else {
+                        errorMessage.style.display = "none !important";
+                    }
 
-                                            if (confirm('Are you sure you want to submit override grades to Canvas?')) {
-                                                $('#submit-button').prepend('<span class="spinner-border spinner-border-sm me-2"> </span>');
-                                                $('#submit-button').prop('disabled', true);
-                                                $('form#grade-submit').submit();
-                                            } else {
-                                                return false;
-                                            }
-                                        });
+                    if (confirm('Are you sure you want to submit override grades to Canvas?')) {
+                        $('#submit-button').prepend('<span class="spinner-border spinner-border-sm me-2"> </span>');
+                        $('#submit-button').prop('disabled', true);
+                        $('form#grade-submit').submit();
+                    } else {
+                        return false;
+                    }
+                });
 
-                                        $(document).ready(function () {
-                                            var errors = [];
-                                            $('.error').each(function (_, error) {
-                                                errors.push(error.textContent);
-                                            });
-                                            var error_str = errors.join(', ');
-                                            if (error_str) {
-                                                alert(error_str);
-                                            }
-                                        });
-    
-                                        function show_more() {
-                                            var moreText = $("#more");
-                                            var btnText = $("#myBtn");
-        
-                                            function change_text(text) {
-                                                btnText.text(text);
-                                            }
-        
-                                            if (moreText.is(":hidden")) {
-                                                moreText.fadeIn({duration: 400});
-                                                change_text("Hide Instructions");
-                                            } else {
-                                                moreText.fadeOut({duration: 400, complete: function() {
-                                                        btnText.text("Show Instructions");
-                                                    }
-                                                });
-                                            }
-                                        }
+                $(document).ready(function () {
+                    var errors = [];
+                    $('.error').each(function (_, error) {
+                        errors.push(error.textContent);
+                    });
+                    var error_str = errors.join(', ');
+                    if (error_str) {
+                        alert(error_str);
+                    }
+                });
 
-                                        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-                                        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                                            return new bootstrap.Tooltip(tooltipTriggerEl)
-                                        });
+                function show_more() {
+                    var moreText = $("#more");
+                    var btnText = $("#myBtn");
+
+                    function change_text(text) {
+                        btnText.text(text);
+                    }
+
+                    if (moreText.is(":hidden")) {
+                        moreText.fadeIn({duration: 400});
+                        change_text("Hide Instructions");
+                    } else {
+                        moreText.fadeOut({duration: 400, complete: function() {
+                                btnText.text("Show Instructions");
+                            }
+                        });
+                    }
+                }
+
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                });
     </script>
 {% endblock content %}
