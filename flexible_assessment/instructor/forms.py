@@ -51,7 +51,7 @@ class StudentAssessmentBaseForm(forms.Form):
             self.add_error(
                 None,
                 ValidationError(
-                    "Total flex has to add up to 100%, currently it is ({})%".format(
+                    "Total flex has to add up to 100%, currently it is {}%".format(
                         flex_total
                     )
                 ),

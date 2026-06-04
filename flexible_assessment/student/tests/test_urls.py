@@ -31,9 +31,7 @@ class TestUrls(TestCase):
         self.assertEqual(resolve(url).func.view_class, StudentAssessmentView)
 
     def test_student_home_url_valid_for_student(self):
-        [user, course] = self.get_user_and_course_object(
-            "test_student1", "test_course1"
-        )
+        [user, course] = self.get_user_and_course_object("10000001", "test_course1")
         self.client.force_login(user)
 
         student_home_url = reverse("student:student_home", args=[course.id])
@@ -61,9 +59,7 @@ class TestUrls(TestCase):
         self.assert_instructor_redirected_home(response, course.id)
 
     def test_student_form_url_valid_for_student(self):
-        [user, course] = self.get_user_and_course_object(
-            "test_student1", "test_course1"
-        )
+        [user, course] = self.get_user_and_course_object("10000001", "test_course1")
         self.client.force_login(user)
 
         student_url = reverse("student:student_form", args=[course.id])
@@ -71,25 +67,21 @@ class TestUrls(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_student_home_invalid_if_not_logged_in(self):
-        [user, course] = self.get_user_and_course_object(
-            "test_student1", "test_course1"
-        )
+        [user, course] = self.get_user_and_course_object("10000001", "test_course1")
 
         student_url = reverse("student:student_home", args=[course.id])
         response = self.client.get(student_url, args=[course.id])
         self.assertEqual(response.status_code, 403)
 
     def test_student_form_invalid_if_not_logged_in(self):
-        [user, course] = self.get_user_and_course_object(
-            "test_student1", "test_course1"
-        )
+        [user, course] = self.get_user_and_course_object("10000001", "test_course1")
 
         student_url = reverse("student:student_form", args=[course.id])
         response = self.client.get(student_url, args=[course.id])
         self.assertEqual(response.status_code, 403)
 
     def test_student_home_url_invalid_for_student_not_in_course(self):
-        user = UserProfile.objects.get(login_id="test_student1")
+        user = UserProfile.objects.get(login_id="10000001")
         course = Course.objects.get(title="test_course1000")
         self.client.force_login(user)
         student_home_url = reverse("student:student_home", args=[course.id])
@@ -98,7 +90,7 @@ class TestUrls(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_student_tries_access_nonexistant_course(self):
-        user, course = self.get_user_and_course_object("test_student1", "test_course1")
+        user, course = self.get_user_and_course_object("10000001", "test_course1")
         self.client.force_login(user)
         student_home_url = reverse("student:student_home", args=[99999])
 

@@ -36,7 +36,7 @@ class TestForms(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["__all__"][0],
-            "Total flex has to add up to 100%, currently it is (101)%",
+            "Total flex has to add up to 100%, currently it is 101%",
         )
 
     def test_student_form_invalid_invalid_argument(self):
@@ -54,7 +54,7 @@ class TestForms(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["__all__"][0],
-            "Total flex has to add up to 100%, currently it is (82.2)%",
+            "Total flex has to add up to 100%, currently it is 82.2%",
         )
         self.assertEqual(
             form.errors[assessments[0].id.hex][0],

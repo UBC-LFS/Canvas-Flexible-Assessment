@@ -20,7 +20,7 @@ class TestViews(TestCase):
 
     def setUp(self):
         self.client = Client()
-        user = UserProfile.objects.get(login_id="test_student1")
+        user = UserProfile.objects.get(login_id="10000001")
         self.client.force_login(user)
 
     """ Begin tests for StudentAssessmentView. For a form to be valid it must also be within the flex range set by the instructor and is within the deadline """
