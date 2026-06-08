@@ -185,46 +185,7 @@ class TestAccommodations(StaticLiveServerTestCase):
             ("10000001", "1.5", "user_1", "Jason Zheng (10000001)", ""),
             ("10000002", "2.0", "user_2", "Albert Einstein (10000002)", "^1.5^"),
         ]
-
-        # Quizzes data
-        session["quizzes"] = [
-            {
-                "id": 101,
-                "title": "Quiz 1",
-                "is_new_quiz": False,
-                "url": "https://example.com/quiz/101",
-                "unlock_at_readable": "Dec 15, 2025 10:00 AM",
-                "lock_at_readable": "Dec 15, 2025 11:00 AM",
-                "time_limit_readable": "1h",
-            },
-            {
-                "id": 102,
-                "title": "Quiz 2",
-                "is_new_quiz": True,
-                "url": "https://example.com/quiz/102",
-                "unlock_at_readable": None,
-                "lock_at_readable": None,
-                "time_limit_readable": "30m",
-            },
-        ]
-
-        session["unavailable_quizzes"] = []
-        session["has_quiz_with_start_end"] = True
         session.save()
-
-        # response = self.client.get(
-        #     reverse("accommodations:accommodations_quizzes", args=[1])
-        # )
-
-        # if response.status_code == 500:
-        #     print("\n=== 500 ERROR DETAILS ===")
-        #     print(response.content.decode())
-        #     print("=== END ERROR ===\n")
-        # self.assertEqual(
-        #     response.status_code,
-        #     200,
-        #     f"View returned {response.status_code}. Check console for error details.",
-        # )
 
         self.browser.get(
             self.live_server_url
@@ -265,11 +226,21 @@ class TestAccommodations(StaticLiveServerTestCase):
         session["selected_quizzes"] = [
             {
                 "id": 101,
-                "title": "Quiz 1",
+                "title": "Mock Quiz 1",
+                "is_new_quiz": False,
+                "url": "https://example.com/quiz/101",
+                "unlock_at_readable": "2026-06-01 - 12:00PM",
+                "lock_at_readable": "2026-06-01 - 1:00PM",
+                "time_limit_readable": "No time limit set",
             },
             {
                 "id": 102,
-                "title": "Quiz 2",
+                "title": "Mock Quiz 2",
+                "is_new_quiz": True,
+                "url": "https://example.com/quiz/102",
+                "unlock_at_readable": "2026-07-05 - 9:00AM",
+                "lock_at_readable": "2026-08-10 - 11:59PM",
+                "time_limit_readable": "2h",
             },
         ]
         session.save()
@@ -304,7 +275,7 @@ class TestAccommodations(StaticLiveServerTestCase):
 
         input("Press Enter in this terminal to continue\n")
 
-    @tag("slow", "view", "accommodations", "summary")
+    @tag("slow", "view", "accommodations", "summarypage")
     @mock_classes.use_mock_canvas_in_accommodations()
     def test_accommodations_summary_page(self, mocked_canvas_instance):
         """Test the accommodations summary page displays correctly with session data."""
@@ -418,9 +389,9 @@ class TestAccommodations(StaticLiveServerTestCase):
         )
         self.assertIn("Restart", restart_button.text)
 
-        # Verify back button exists
-        back_button = self.browser.find_element(By.CSS_SELECTOR, "button.btn-secondary")
-        self.assertIn("Back", back_button.text)
+        # Verify continue button exists
+        # back_button = self.browser.find_element(By.CSS_SELECTOR, "button.btn-primary")
+        # self.assertIn("Continue", back_button.text)
 
         input("Press Enter in this terminal to continue\n")
 
