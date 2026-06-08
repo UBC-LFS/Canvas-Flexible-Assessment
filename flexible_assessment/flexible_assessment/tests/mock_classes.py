@@ -266,3 +266,37 @@ class MockAccommodationsCanvas(MockCanvas):
                 quiz["lock_at_status"] = "success"
                 quiz["unlock_at_status"] = "success"
         return quiz_groups, True
+
+    def get_additional_accommodations_groups(self, accommodations, students):
+        """Mock method that groups students by additional accommodation type"""
+        additional_accommodations_groups = {
+            "essay": [],
+            "mult_choice": [],
+            "short_ans": [],
+            "fine_manip": [],
+            "notes": [],
+        }
+        accommodations_keys = [
+            "essay",
+            "mult_choice",
+            "short_ans",
+            "fine_manip",
+            "notes",
+        ]
+        student_names_by_id = {s.login_id: s.display_name for s in students}
+
+        for student_id, _, _, _, student_note in accommodations:
+            if isinstance(student_note, str):
+                split_parts = student_note.split("^")
+                for i in range(min(5, len(split_parts))):
+                    if split_parts[i]:
+                        additional_accommodations_groups[accommodations_keys[i]].append(
+                            {
+                                "id": student_id,
+                                "name": student_names_by_id.get(
+                                    student_id, "Test Student"
+                                ),
+                                "multiplier": split_parts[i],
+                            }
+                        )
+        return additional_accommodations_groups

@@ -106,63 +106,59 @@
                                             <tr class="align-middle">
                                                 <th>Name</th>
                                                 <th>Student ID</th>
-                                                <th>Current extended time</th>
-                                                {% if columns_populated.0 %}<th>Extended time only for essay format</th>{% endif %}
-                                                {% if columns_populated.1 %}<th>Extended time only for multiple choice format</th>{% endif %}
-                                                {% if columns_populated.2 %}<th>Extended time only for short answer format</th>{% endif %}
-                                                {% if columns_populated.3 %}<th>Extended time only for exams involving fine manipulations</th>{% endif %}
-                                                {% if columns_populated.4 %}<th>CFA Notes</th>{% endif %}
+                                                <th>Default extended time</th>
+                                                {% if additional_accommodations_groups.essay %}<th>Extended time only for essay format</th>{% endif %}
+                                                {% if additional_accommodations_groups.mult_choice %}<th>Extended time only for multiple choice format</th>{% endif %}
+                                                {% if additional_accommodations_groups.short_ans %}<th>Extended time only for short answer format</th>{% endif %}
+                                                {% if additional_accommodations_groups.fine_manip %}
+                                                    <th>Extended time only for exams involving fine manipulations</th>
+                                                {% endif %}
+                                                {% comment %} {% if %}<th>CFA Notes</th>{% endif %} {% endcomment %}
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for group in processed_groups %}
-                                                {% for student in group.students %}
-                                                    {% if student.parts.0 != "" or student.parts.1 != "" or student.parts.2 != "" or student.parts.3 != "" or student.parts.4 != "" %}
-                                                        <tr>
-                                                            <td>{{ student.name }}</td>
-                                                            <td>{{ student.id }}</td>
-                                                            <td class="text-success">
-                                                                {{ student.multiplier }}x
-                                                                <i class="bi bi-check-lg"></i>
-                                                            </td>
-                                                            {% if columns_populated.0 %}
-                                                                {% if student.parts.0 == "" %}
-                                                                    <td class="text-muted">N/A</td>
-                                                                {% else %}
-                                                                    <td class="text-danger">{{ student.parts.0 }}x</td>
-                                                                {% endif %}
-                                                            {% endif %}
-                                                            {% if columns_populated.1 %}
-                                                                {% if student.parts.1 == "" %}
-                                                                    <td class="text-muted">N/A</td>
-                                                                {% else %}
-                                                                    <td class="text-danger">{{ student.parts.1 }}x</td>
-                                                                {% endif %}
-                                                            {% endif %}
-                                                            {% if columns_populated.2 %}
-                                                                {% if student.parts.2 == "" %}
-                                                                    <td class="text-muted">N/A</td>
-                                                                {% else %}
-                                                                    <td class="text-danger">{{ student.parts.2 }}x</td>
-                                                                {% endif %}
-                                                            {% endif %}
-                                                            {% if columns_populated.3 %}
-                                                                {% if student.parts.3 == "" %}
-                                                                    <td class="text-muted">N/A</td>
-                                                                {% else %}
-                                                                    <td class="text-danger">{{ student.parts.3 }}x</td>
-                                                                {% endif %}
-                                                            {% endif %}
-                                                            {% if columns_populated.4 %}
-                                                                {% if student.parts.4 == "" %}
-                                                                    <td class="text-muted">N/A</td>
-                                                                {% else %}
-                                                                    <td class="">{{ student.parts.4 }}</td>
-                                                                {% endif %}
-                                                            {% endif %}
-                                                        </tr>
-                                                    {% endif %}
-                                                {% endfor %}
+                                            {% for student in additional_accommodations_groups.essay %}
+                                                <tr>
+                                                    <td>{{ student.name }}</td>
+                                                    <td>{{ student.id }}</td>
+                                                    <td class="text-primary">{{ student.multiplier }}x</td>
+                                                    <td class="text-secondary">{{ student.multiplier }}x</td>
+                                                    <td class="text-muted">N/A</td>
+                                                    <td class="text-muted">N/A</td>
+                                                    <td class="text-muted">N/A</td>
+                                                </tr>
+                                            {% endfor %}
+                                            {% for student in additional_accommodations_groups.mult_choice %}
+                                                <tr>
+                                                    <td>{{ student.name }}</td>
+                                                    <td>{{ student.id }}</td>
+                                                    <td class="text-primary">{{ student.multiplier }}x</td>
+                                                    <td class="text-muted">N/A</td>
+                                                    <td class="text-secondary">{{ student.multiplier }}x</td>
+                                                    <td class="text-muted">N/A</td>
+                                                    <td class="text-muted">N/A</td>
+                                                </tr>
+                                            {% endfor %}
+                                            {% for student in additional_accommodations_groups.short_ans %}
+                                                <tr>
+                                                    <td>{{ student.name }}</td>
+                                                    <td>{{ student.id }}</td>
+                                                    <td class="text-primary">{{ student.multiplier }}x</td>
+                                                    <td class="text-muted">N/A</td>
+                                                    <td class="text-muted">N/A</td>
+                                                    <td class="text-secondary">{{ student.multiplier }}x</td>
+                                                    <td class="text-muted">N/A</td>
+                                                </tr>
+                                            {% endfor %}
+                                            {% for student in additional_accommodations_groups.fine_manip %}
+                                                <tr>
+                                                    <td>{{ student.name }}</td>
+                                                    <td>{{ student.id }}</td>
+                                                    <td class="text-primary">{{ student.multiplier }}x</td>
+                                                    <td class="text-muted">N/A</td>
+                                                    <td class="text-muted">N/A</td>
+                                                    <td class="text-secondary">{{ student.multiplier }}x</td>
+                                                </tr>
                                             {% endfor %}
                                         </tbody>
                                     </table>

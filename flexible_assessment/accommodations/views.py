@@ -496,47 +496,21 @@ class AccommodationsConfirm(views.AccommodationsListView):
         existing_accommodations = self.request.session.get(
             "existing_accommodations", []
         )
+        additional_accommodations_groups = self.request.session.get(
+            "additional_accommodations_groups", {}
+        )
 
         context["multiplier_student_groups"] = multiplier_student_groups
         context["multiplier_quiz_groups"] = multiplier_quiz_groups
         context["existing_accommodations"] = existing_accommodations
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
+        context["additional_accommodations_groups"] = additional_accommodations_groups
+        print(additional_accommodations_groups)
 
-        show_warning = False
-        columns_populated = [False] * 5
-        processed_groups = []
-
-        for multiplier, students in multiplier_student_groups:
-            processed_students = []
-            for student in students:
-                student_id, student_name, user_id, additional_info = student
-                parts = [""] * 5
-                if isinstance(additional_info, str):
-                    split_parts = additional_info.split("^")
-                    for i in range(min(5, len(split_parts))):
-                        if split_parts[i]:
-                            parts[i] = split_parts[i]
-                            columns_populated[i] = True
-                            show_warning = True
-                processed_students.append(
-                    {
-                        "id": student_id,
-                        "name": student_name,
-                        "multiplier": multiplier,
-                        "parts": parts,
-                    }
-                )
-            processed_groups.append(
-                {
-                    "multiplier": multiplier,
-                    "students": processed_students,
-                }
-            )
+        show_warning = any(additional_accommodations_groups.values())
 
         context["show_warning"] = show_warning
-        context["columns_populated"] = columns_populated
-        context["processed_groups"] = processed_groups
         # hide the "Existing Accommodations" table for now and override by default - may bring this back later
         context["include_existing_acommodations"] = True
         return context
@@ -589,9 +563,16 @@ class AccommodationsConfirm(views.AccommodationsListView):
             accommodations, students, multiplier_quiz_groups, course_id
         )
 
+        additional_accommodations_groups = canvas.get_additional_accommodations_groups(
+            accommodations, students
+        )
+
         request.session["multiplier_student_groups"] = multiplier_student_groups
         request.session["multiplier_quiz_groups"] = multiplier_quiz_groups
         request.session["existing_accommodations"] = existing_accommodations
+        request.session["additional_accommodations_groups"] = (
+            additional_accommodations_groups
+        )
 
         response = super().get(request, *args, **kwargs)
 

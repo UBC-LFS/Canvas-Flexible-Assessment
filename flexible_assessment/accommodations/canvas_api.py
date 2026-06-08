@@ -12,7 +12,6 @@ from datetime import timedelta, datetime, timezone
 import math
 import json
 
-
 ACCOMMODATION_MULTIPLIERS = [4.0, 3.5, 3.0, 2.5, 2.0, 1.75, 1.5, 1.25]
 BUFFER_TIME = 30  # time of buffer in minutes
 
@@ -496,7 +495,12 @@ class AccommodationsCanvas(Canvas):
         student_names_by_id = {s.login_id: s.display_name for s in students}
 
         for student_id, multiplier, user_id, _, student_note in accommodations:
-            student = (student_id, student_names_by_id[student_id], user_id, student_note)
+            student = (
+                student_id,
+                student_names_by_id[student_id],
+                user_id,
+                student_note,
+            )
             multiplier_student_groups.setdefault(multiplier, []).append(student)
 
         # Sort each student list by name
@@ -747,7 +751,7 @@ class AccommodationsCanvas(Canvas):
                                 "user_id": student[2],
                                 "extra_time": int(
                                     quiz["time_limit_new"] - quiz["time_limit"]
-                                ),      
+                                ),
                             }
                         )
 
@@ -953,3 +957,51 @@ class AccommodationsCanvas(Canvas):
         end = time.time()
         print("synchronous execution time for add_availabilities: " + str(end - start))
         return quiz_groups, status
+
+    def get_additional_accommodations_groups(self, accommodations, students):
+        """
+        Groups students by additional accommodation type.
+
+        Parameters
+        ----------
+        accommodations : list of tuple of (str, str, int, str)
+            List of (login_id, multiplier, user_id, display_string) tuples.
+        students : list
+            List of Canvas user objects, each with 'login_id' and 'display_name' attributes.
+
+        Returns
+        -------
+        dictionary
+            A dict of type:[student]. Each student list is sorted by name.
+        type = ["essay", "mult_choice", "short_ans", "fine_manip"]
+        """
+
+        additional_accommodations_groups = {
+            "essay": [],
+            "mult_choice": [],
+            "short_ans": [],
+            "fine_manip": [],
+            "notes": [],
+        }
+        accommodations_keys = [
+            "essay",
+            "mult_choice",
+            "short_ans",
+            "fine_manip",
+            "notes",
+        ]
+        student_names_by_id = {s.login_id: s.display_name for s in students}
+
+        for student_id, _, _, _, student_note in accommodations:
+            if isinstance(student_note, str):
+                split_parts = student_note.split("^")
+                for i in range(min(5, len(split_parts))):
+                    if split_parts[i]:
+                        additional_accommodations_groups[accommodations_keys[i]].append(
+                            {
+                                "id": student_id,
+                                "name": student_names_by_id[student_id],
+                                "multiplier": split_parts[i],
+                            }
+                        )
+        return additional_accommodations_groups
