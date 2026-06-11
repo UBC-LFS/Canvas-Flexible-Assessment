@@ -218,7 +218,7 @@ class TestAccommodations(StaticLiveServerTestCase):
         session["display_name"] = "Test Instructor"
         # Quizzes page data - submitted accommodations
         session["accommodations"] = [
-            ("10000001", "1.5", "user_1", "Jason Zheng (10000001)", "1.75^^"),
+            ("10000001", "1.5", "user_1", "Jason Zheng (10000001)", "1.75^1.5^"),
             ("10000002", "2.0", "user_2", "Albert Einstein (10000002)", "^1.5^"),
         ]
 

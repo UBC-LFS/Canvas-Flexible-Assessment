@@ -134,7 +134,9 @@
                                         <thead class="table-light">
                                             <tr class="align-middle">
                                                 <th style="width: 40px;">
-                                                    <input class="form-check-input select-all" type="checkbox">
+                                                    <input class="form-check-input me-3 select-all"
+                                                           type="checkbox"
+                                                           id="select-all">
                                                 </th>
                                                 <th>Quiz</th>
                                             </tr>
@@ -143,7 +145,11 @@
                                             {% for quiz in selected_quizzes %}
                                                 <tr>
                                                     <td>
-                                                        <input class="form-check-input" type="checkbox">
+                                                        <input class="form-check-input me-2 quiz-checkbox"
+                                                               type="checkbox"
+                                                               name="override_quizzes"
+                                                               value="{{ quiz.id }}"
+                                                               id="quiz{{ quiz.id }}">
                                                     </td>
                                                     <td>
                                                         {% if quiz.is_new_quiz %}
@@ -161,6 +167,10 @@
                             </div>
                         {% endif %}
                     {% endfor %}
+                    <div id="quiz-confirm-box" class="alert alert-warning mt-3 d-none">
+                        <div class="mb-2">Are you sure you want to override existing accommodations?</div>
+                        <button type="button" class="btn btn-sm btn-success" id="quiz-override">Override</button>
+                    </div>
                     {% for multiplier, students in multiplier_student_groups %}
                         <div class="card shadow-sm mb-4 px-0"
                              style="border-radius: 1em;
@@ -337,23 +347,18 @@
             </form>
         </div>
     </div>
-</div>
-<div id="overlay" onclick="on()">
+    {% comment %} <div id="overlay" onclick="on()">
     <div class="lds-ring">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
     </div>
-</div>
-{% if messages %}
-    <ul class="messages" hidden>
-        {% for message in messages %}
-            <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
-<script>
+    </div> {% endcomment %}
+    {% if messages %}
+        <ul class="messages" hidden>
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <script>
         function on() {
             document.getElementById("overlay").style.display = "flex";
         }
@@ -370,5 +375,54 @@
                 on();
             }
         });
-</script>
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log("JS running");
+
+            const checkboxes = document.querySelectorAll('.quiz-checkbox, .select-all');
+            const box = document.getElementById('quiz-confirm-box');
+            const btn = document.getElementById('quiz-override');
+
+            console.log("Found", checkboxes.length, "checkboxes");
+            console.log("Confirm box:", box);
+
+            let pending = null;
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', function () {
+                    const anyChecked = [...checkboxes].some(box => box.checked);
+
+                    if (anyChecked) {
+                        box.classList.remove('d-none');
+                    } else {
+                        box.classList.add('d-none');
+                        pendingCheckbox = null;
+                    }
+                });
+            });
+
+            btn.addEventListener('click', function () {
+                box.classList.add('d-none');
+                pending = null;
+            });
+        });
+        
+        document.querySelectorAll('.select-all').forEach(selectAll => {
+            const table = selectAll.closest('table');
+            const checkboxes = table.querySelectorAll('.quiz-checkbox')
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            });
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    if (!cb.checked) {
+                        selectAll.checked = false;
+                    } else if (Array.from(checkboxes).every(cb => cb.checked)) {
+                        selectAll.checked = true;
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock content %}
