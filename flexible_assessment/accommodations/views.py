@@ -507,10 +507,6 @@ class AccommodationsConfirm(views.AccommodationsListView):
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
         context["additional_accommodations_groups"] = additional_accommodations_groups
         print(additional_accommodations_groups)
-
-        show_warning = any(additional_accommodations_groups.values())
-
-        context["show_warning"] = show_warning
         # hide the "Existing Accommodations" table for now and override by default - may bring this back later
         context["include_existing_acommodations"] = True
         return context

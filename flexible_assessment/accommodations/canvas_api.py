@@ -972,36 +972,46 @@ class AccommodationsCanvas(Canvas):
         Returns
         -------
         dictionary
-            A dict of type:[student]. Each student list is sorted by name.
+            A dict of type: ([student], title). Each student list is sorted by name.
         type = ["essay", "mult_choice", "short_ans", "fine_manip"]
         """
 
-        additional_accommodations_groups = {
-            "essay": [],
-            "mult_choice": [],
-            "short_ans": [],
-            "fine_manip": [],
-            "notes": [],
-        }
-        accommodations_keys = [
-            "essay",
-            "mult_choice",
-            "short_ans",
-            "fine_manip",
-            "notes",
+        additional_accommodations_groups = [
+            {
+                "key": "essay",
+                "students": [],
+                "description": "essay format",
+            },
+            {
+                "key": "mult_choice",
+                "students": [],
+                "description": "mutliple choice format",
+            },
+            {
+                "key": "short_ans",
+                "students": [],
+                "description": "short answer format",
+            },
+            {
+                "key": "fine_manip",
+                "students": [],
+                "description": "exams involving fine maniplations",
+            },
+            {"key": "notes", "students": [], "description": "CFA Notes"},
         ]
         student_names_by_id = {s.login_id: s.display_name for s in students}
 
-        for student_id, _, _, _, student_note in accommodations:
+        for student_id, multiplier, _, _, student_note in accommodations:
             if isinstance(student_note, str):
                 split_parts = student_note.split("^")
                 for i in range(min(5, len(split_parts))):
                     if split_parts[i]:
-                        additional_accommodations_groups[accommodations_keys[i]].append(
+                        additional_accommodations_groups[i]["students"].append(
                             {
                                 "id": student_id,
                                 "name": student_names_by_id[student_id],
-                                "multiplier": split_parts[i],
+                                "def_multiplier": multiplier,
+                                "new_multiplier": split_parts[i],
                             }
                         )
         return additional_accommodations_groups
