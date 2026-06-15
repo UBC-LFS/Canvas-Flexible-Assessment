@@ -425,6 +425,14 @@ class AccommodationsQuizzes(views.AccommodationsListView):
                 has_quiz_with_start_end = True
                 break
 
+        students = self.get_queryset()
+        additional_accommodations_groups = canvas.get_additional_accommodations_groups(
+            accommodations, students
+        )
+
+        request.session["additional_accommodations_groups"] = (
+            additional_accommodations_groups
+        )
         request.session["has_quiz_with_start_end"] = has_quiz_with_start_end
         request.session["quizzes"] = quiz_list
         request.session["unavailable_quizzes"] = unavailable_quiz_list
@@ -438,6 +446,9 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         quiz_list = request.session["quizzes"]
         selected_quiz_ids = request.POST.getlist("selected_quizzes")
         selected_buffer_ids = request.POST.getlist("selected_buffers")
+        additional_accommodations_groups = request.session[
+            "additional_accommodations_groups"
+        ]
         # selected_quizzes = list(
         #    filter(lambda quiz: str(quiz["id"]) in selected_quiz_ids, quiz_list)
         # )
@@ -475,12 +486,93 @@ class AccommodationsQuizzes(views.AccommodationsListView):
             f"Instructor selected {len(selected_quizzes)} quizzes to apply accommodations for",
             extra={"course": str(course), "user": request.session["display_name"]},
         )
+        print(additional_accommodations_groups)
+        for group in additional_accommodations_groups:
+            if group["students"]:
+                return HttpResponseRedirect(
+                    reverse(
+                        "accommodations:accommodations_overwrite",
+                        kwargs={"course_id": course_id},
+                    )
+                )
 
         return HttpResponseRedirect(
             reverse(
                 "accommodations:accommodations_confirm", kwargs={"course_id": course_id}
             )
         )
+
+
+class AccommodationsOverwrite(views.AccommodationsListView):
+    template_name = "accommodations/accommodations_overwrite.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        additional_accommodations_groups = self.request.session.get(
+            "additional_accommodations_groups", {}
+        )
+        selected_quizzes = self.request.session.get("selected_quizzes", [])
+
+        context["additional_accommodations_groups"] = additional_accommodations_groups
+        context["selected_quizzes"] = selected_quizzes
+
+        return context
+
+    def get(self, request, *args, **kwargs):
+        # should require that accommodations, selected quizzes exist in context data - if not, redirect back to home
+        course_id = self.kwargs["course_id"]
+        accommodations = request.session.get("accommodations", None)
+        additional_accommodations_groups = request.session.get(
+            "additional_accommodations_groups", None
+        )
+        selected_quizzes = request.session.get("selected_quizzes", None)
+
+        # if redirected, update students in database
+        login_redirect = request.GET.get("login_redirect")
+        if login_redirect:
+            course = self.get_context_data().get("course", "")
+            utils.update_students(request, course)
+
+        if accommodations == None or accommodations == []:
+            messages.error(
+                request,
+                "Please set student accommodations before trying to access the overwrite page.",
+            )
+            return HttpResponseRedirect(
+                reverse(
+                    "accommodations:accommodations_home",
+                    kwargs={"course_id": course_id},
+                )
+            )
+        elif selected_quizzes == None or selected_quizzes == []:
+            messages.error(
+                request,
+                "Please select at least one quiz before trying to access the overwrite page.",
+            )
+            return HttpResponseRedirect(
+                reverse(
+                    "accommodations:accommodations_quizzes",
+                    kwargs={"course_id": course_id},
+                )
+            )
+        elif (
+            additional_accommodations_groups == None
+            or additional_accommodations_groups == {}
+        ):
+            messages.error(
+                request,
+                "Please select students with additional accommodations before trying to access the overwrite page.",
+            )
+            return HttpResponseRedirect(
+                reverse(
+                    "accommodations:accommodations_quizzes",
+                    kwargs={"course_id": course_id},
+                )
+            )
+
+        response = super().get(request, *args, **kwargs)
+
+        return response
 
 
 class AccommodationsConfirm(views.AccommodationsListView):
@@ -506,7 +598,6 @@ class AccommodationsConfirm(views.AccommodationsListView):
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
         context["additional_accommodations_groups"] = additional_accommodations_groups
-        print(additional_accommodations_groups)
         # hide the "Existing Accommodations" table for now and override by default - may bring this back later
         context["include_existing_acommodations"] = True
         return context

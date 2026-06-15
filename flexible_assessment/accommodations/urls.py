@@ -14,6 +14,11 @@ urlpatterns = [
         name="accommodations_quizzes",
     ),
     path(
+        "<int:course_id>/overwrite",
+        views.AccommodationsOverwrite.as_view(),
+        name="accommodations_overwrite",
+    ),
+    path(
         "<int:course_id>/confirm",
         views.AccommodationsConfirm.as_view(),
         name="accommodations_confirm",
@@ -25,5 +30,7 @@ urlpatterns = [
     ),
     path("<int:course_id>/upload_pdfs", views.upload_pdfs, name="upload_pdfs"),
     path("<int:course_id>/upload_csv", views.upload_csv, name="upload_csv"),
-    path("<int:course_id>/load_preset_csv", views.load_preset_csv, name="load_preset_csv"),
+    path(
+        "<int:course_id>/load_preset_csv", views.load_preset_csv, name="load_preset_csv"
+    ),
 ]

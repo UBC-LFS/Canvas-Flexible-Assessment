@@ -985,7 +985,7 @@ class AccommodationsCanvas(Canvas):
             {
                 "key": "mult_choice",
                 "students": [],
-                "description": "mutliple choice format",
+                "description": "multiple choice format",
             },
             {
                 "key": "short_ans",

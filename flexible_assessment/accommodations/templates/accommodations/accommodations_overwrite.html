@@ -1,0 +1,272 @@
+{% extends "accommodations/accommodations_base.html" %}
+{% load django_bootstrap5 %}
+{% bootstrap_messages %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+{% block content %}
+    <style>
+        input[type=checkbox][disabled] {
+            filter: invert(15%);
+        }
+
+        #overlay {
+            position: fixed;
+            display: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            cursor: pointer;
+
+            /* Center the loader */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lds-ring {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+            color: white;
+            /* Set color to white for visibility */
+        }
+
+        .lds-ring,
+        .lds-ring div {
+            box-sizing: border-box;
+        }
+
+        .lds-ring div {
+            display: block;
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border: 8px solid currentColor;
+            border-radius: 50%;
+            animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-color: currentColor transparent transparent transparent;
+        }
+
+        .lds-ring div:nth-child(1) {
+            animation-delay: -0.45s;
+        }
+
+        .lds-ring div:nth-child(2) {
+            animation-delay: -0.3s;
+        }
+
+        .lds-ring div:nth-child(3) {
+            animation-delay: -0.15s;
+        }
+
+        @keyframes lds-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <div class="container my-4">
+        <h2 class="text-center">Accommodations</h2>
+        {% if course %}<h4 class="text-center text-muted">{{ course.title }}</h4>{% endif %}
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-10 col-md-12">
+                <form id="accommodations-overwrite-form"
+                      method="post"
+                      action="{% url 'accommodations:accommodations_overwrite' course.id %}">
+                    {% csrf_token %}
+                    <h4>🚨 Warning: review the following exam-specific accommodation overwrites</h4>
+                    <label class="form-label my-3">
+                        Select the following quizzes which include questions in the category. The affected students' multipliers will be overridden for those selected quizzes.
+                    </label>
+                    {% for group in additional_accommodations_groups %}
+                        {% if group.students %}
+                            <div class="card shadow-sm mb-4 px-0"
+                                 style="border-radius: 1em;
+                                        overflow: hidden;
+                                        border: 2px solid red">
+                                <div class="card-header p-0">
+                                    <div class="w-100 px-3 py-2">
+                                        <h4 class="mb-0">
+                                            Apply overrides for <strong>{{ group.description }}</strong>
+                                        </h4>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="mt-2">Affected Students:</h5>
+                                    <table class="table table-bordered table-sm mt-2"
+                                           style="table-layout: fixed">
+                                        <thead class="table-light">
+                                            <tr class="align-middle">
+                                                <th>Name</th>
+                                                <th>Student ID</th>
+                                                <th>Multiplier override only for {{ group.description }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student in group.students %}
+                                                <tr>
+                                                    <td>{{ student.name }}</td>
+                                                    <td>{{ student.id }}</td>
+                                                    <td>
+                                                        <span>
+                                                            {{ student.def_multiplier }}x
+                                                            <i class="bi bi-arrow-right"></i>
+                                                        </span>
+                                                        <span class="text-primary">{{ student.new_multiplier }}x</span>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <h5 class="mt-2">Select quizzes to to apply {{ group.description }}-specific overrides:</h5>
+                                    <table class="table table-bordered table-sm mt-2"
+                                           style="table-layout: fixed">
+                                        <thead class="table-light">
+                                            <tr class="align-middle">
+                                                <th style="width: 40px;">
+                                                    <input class="form-check-input me-3 select-all"
+                                                           type="checkbox"
+                                                           id="select-all">
+                                                </th>
+                                                <th>Quiz</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for quiz in selected_quizzes %}
+                                                <tr>
+                                                    <td>
+                                                        <input class="form-check-input me-2 quiz-checkbox"
+                                                               type="checkbox"
+                                                               name="override_quizzes"
+                                                               value="{{ quiz.id }}"
+                                                               id="quiz{{ quiz.id }}">
+                                                    </td>
+                                                    <td>
+                                                        {% if quiz.is_new_quiz %}
+                                                            <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                        {% endif %}
+                                                        <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <div class="my-2">
+                        <div id="quiz-confirm-box" class="alert alert-warning mt-3 d-none">
+                            <input class="form-check-input mt-1"
+                                   type="checkbox"
+                                   id="confirmed-correct"
+                                   name="confirmed-correct"
+                                   value="confirmed-correct"
+                                   required>
+                            <label class="form-check-label ms-1" for="confirmed-correct">
+                                I have confirmed that I want to override existing accommodations.
+                            </label>
+                        </div id="quiz-confirm-box" class="alert alert-warning mt-3 d-none">
+                    </div>
+                    <!-- Buttons -->
+                    <div class="mt-4 d-flex justify-content-between py-0 my-0">
+                        <!-- Back button -->
+                        <button type="button"
+                                class="btn btn-secondary"
+                                onclick="window.location.href='{% url 'accommodations:accommodations_quizzes' course.id %}'">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Back
+                        </button>
+                        <!-- Continue button -->
+                        <button type="submit" class="btn btn-primary" id="submit-button">
+                            Continue <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% if messages %}
+            <ul class="messages" hidden>
+                {% for message in messages %}
+                    <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <script>
+        function on() {
+            document.getElementById("overlay").style.display = "flex";
+        }
+        // Enable/disable submit button based on checkbox state
+        const checkbox = document.getElementById("confirmed-correct");
+        const submitButton = document.getElementById("submit-button");
+
+        checkbox.addEventListener("change", function() {
+            submitButton.disabled = !this.checked;
+        });
+
+        document.getElementById("accommodations-overwrite-form").addEventListener("submit", function() {
+            if (checkbox.checked) {
+                on();
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const checkboxes = document.querySelectorAll('.quiz-checkbox, .select-all');
+            const box = document.getElementById('quiz-confirm-box');
+            const btn = document.getElementById('quiz-override');
+
+            let pending = null;
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', function () {
+                    const anyChecked = [...checkboxes].some(box => box.checked);
+
+                    if (anyChecked) {
+                        box.classList.remove('d-none');
+                        submitButton.disabled = !checkbox.checked;
+                    } else {
+                        box.classList.add('d-none');
+                        pendingCheckbox = null;
+                        submitButton.disabled = false;
+                    }
+                });
+            });
+
+            btn.addEventListener('click', function () {
+                box.classList.add('d-none');
+                pending = null;
+            });
+        });
+        
+        document.querySelectorAll('.select-all').forEach(selectAll => {
+            const table = selectAll.closest('table');
+            const checkboxes = table.querySelectorAll('.quiz-checkbox')
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            });
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    if (!cb.checked) {
+                        selectAll.checked = false;
+                    } else if (Array.from(checkboxes).every(cb => cb.checked)) {
+                        selectAll.checked = true;
+                    }
+                });
+            });
+        });
+        </script>
+    {% endblock content %}
