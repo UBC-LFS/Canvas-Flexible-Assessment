@@ -426,13 +426,11 @@ class AccommodationsQuizzes(views.AccommodationsListView):
                 break
 
         students = self.get_queryset()
-        additional_accommodations_groups = canvas.get_additional_accommodations_groups(
+        overwrite_student_groups = canvas.get_overwrite_student_groups(
             accommodations, students
         )
 
-        request.session["additional_accommodations_groups"] = (
-            additional_accommodations_groups
-        )
+        request.session["overwrite_student_groups"] = overwrite_student_groups
         request.session["has_quiz_with_start_end"] = has_quiz_with_start_end
         request.session["quizzes"] = quiz_list
         request.session["unavailable_quizzes"] = unavailable_quiz_list
@@ -446,9 +444,7 @@ class AccommodationsQuizzes(views.AccommodationsListView):
         quiz_list = request.session["quizzes"]
         selected_quiz_ids = request.POST.getlist("selected_quizzes")
         selected_buffer_ids = request.POST.getlist("selected_buffers")
-        additional_accommodations_groups = request.session[
-            "additional_accommodations_groups"
-        ]
+        overwrite_student_groups = request.session["overwrite_student_groups"]
         # selected_quizzes = list(
         #    filter(lambda quiz: str(quiz["id"]) in selected_quiz_ids, quiz_list)
         # )
@@ -486,8 +482,7 @@ class AccommodationsQuizzes(views.AccommodationsListView):
             f"Instructor selected {len(selected_quizzes)} quizzes to apply accommodations for",
             extra={"course": str(course), "user": request.session["display_name"]},
         )
-        print(additional_accommodations_groups)
-        for group in additional_accommodations_groups:
+        for group in overwrite_student_groups:
             if group["students"]:
                 return HttpResponseRedirect(
                     reverse(
@@ -508,12 +503,12 @@ class AccommodationsOverwrite(views.AccommodationsListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        additional_accommodations_groups = self.request.session.get(
-            "additional_accommodations_groups", {}
+        overwrite_student_groups = self.request.session.get(
+            "overwrite_student_groups", {}
         )
         selected_quizzes = self.request.session.get("selected_quizzes", [])
 
-        context["additional_accommodations_groups"] = additional_accommodations_groups
+        context["overwrite_student_groups"] = overwrite_student_groups
         context["selected_quizzes"] = selected_quizzes
 
         return context
@@ -522,9 +517,7 @@ class AccommodationsOverwrite(views.AccommodationsListView):
         # should require that accommodations, selected quizzes exist in context data - if not, redirect back to home
         course_id = self.kwargs["course_id"]
         accommodations = request.session.get("accommodations", None)
-        additional_accommodations_groups = request.session.get(
-            "additional_accommodations_groups", None
-        )
+        overwrite_student_groups = request.session.get("overwrite_student_groups", None)
         selected_quizzes = request.session.get("selected_quizzes", None)
 
         # if redirected, update students in database
@@ -555,10 +548,7 @@ class AccommodationsOverwrite(views.AccommodationsListView):
                     kwargs={"course_id": course_id},
                 )
             )
-        elif (
-            additional_accommodations_groups == None
-            or additional_accommodations_groups == {}
-        ):
+        elif overwrite_student_groups == None or overwrite_student_groups == {}:
             messages.error(
                 request,
                 "Please select students with additional accommodations before trying to access the overwrite page.",
@@ -574,6 +564,41 @@ class AccommodationsOverwrite(views.AccommodationsListView):
 
         return response
 
+    def post(self, request, *args, **kwargs):
+        course_id = self.kwargs["course_id"]
+        selected_quizzes = request.session["selected_quizzes"]
+
+        override_quizzes_data = request.POST.getlist("override_quizzes")
+        # selected_quizzes = list(
+        #    filter(lambda quiz: str(quiz["id"]) in selected_quiz_ids, quiz_list)
+        # )
+        override_quizzes_data = list(
+            map(
+                lambda str: (str.split("-")[0], str.split("-")[1]),
+                override_quizzes_data,
+            )
+        )
+        override_quizzes = {}
+        for key, quiz_id in override_quizzes_data:
+            if key not in override_quizzes:
+                override_quizzes[key] = []
+            override_quizzes[key].append(quiz_id)
+
+        request.session["override_quizzes"] = override_quizzes
+
+        course = models.Course.objects.get(pk=course_id)
+        logger.info(
+            f"Instructor selected {len(selected_quizzes)} quizzes to apply accommodations for",
+            extra={"course": str(course), "user": request.session["display_name"]},
+        )
+
+        return HttpResponseRedirect(
+            reverse(
+                "accommodations:accommodations_confirm",
+                kwargs={"course_id": course_id},
+            )
+        )
+
 
 class AccommodationsConfirm(views.AccommodationsListView):
     template_name = "accommodations/accommodations_confirm.html"
@@ -588,16 +613,14 @@ class AccommodationsConfirm(views.AccommodationsListView):
         existing_accommodations = self.request.session.get(
             "existing_accommodations", []
         )
-        additional_accommodations_groups = self.request.session.get(
-            "additional_accommodations_groups", {}
-        )
+        overwrite_by_student = self.request.session.get("overwrite_by_student", {})
 
         context["multiplier_student_groups"] = multiplier_student_groups
         context["multiplier_quiz_groups"] = multiplier_quiz_groups
         context["existing_accommodations"] = existing_accommodations
         context["selected_quizzes"] = selected_quizzes
         context["course"] = Course.objects.get(pk=self.kwargs["course_id"])
-        context["additional_accommodations_groups"] = additional_accommodations_groups
+        context["overwrite_by_student"] = overwrite_by_student
         # hide the "Existing Accommodations" table for now and override by default - may bring this back later
         context["include_existing_acommodations"] = True
         return context
@@ -607,6 +630,8 @@ class AccommodationsConfirm(views.AccommodationsListView):
         course_id = self.kwargs["course_id"]
         accommodations = request.session.get("accommodations", None)
         selected_quizzes = request.session.get("selected_quizzes", None)
+        override_quizzes = request.session.get("override_quizzes", None)
+        overwrite_student_groups = request.session.get("overwrite_student_groups", {})
 
         # if redirected, update students in database
         login_redirect = request.GET.get("login_redirect")
@@ -650,16 +675,22 @@ class AccommodationsConfirm(views.AccommodationsListView):
             accommodations, students, multiplier_quiz_groups, course_id
         )
 
-        additional_accommodations_groups = canvas.get_additional_accommodations_groups(
-            accommodations, students
-        )
+        overwrite_by_student = []
+        # if there are additional accommodations, get data
+        if override_quizzes:
+            overwrite_by_student = canvas.get_overwrite_by_student(
+                overwrite_student_groups,
+                override_quizzes,
+                students,
+                multiplier_quiz_groups,
+            )
+
+        print(overwrite_by_student)
 
         request.session["multiplier_student_groups"] = multiplier_student_groups
         request.session["multiplier_quiz_groups"] = multiplier_quiz_groups
         request.session["existing_accommodations"] = existing_accommodations
-        request.session["additional_accommodations_groups"] = (
-            additional_accommodations_groups
-        )
+        request.session["overwrite_by_student"] = overwrite_by_student
 
         response = super().get(request, *args, **kwargs)
 

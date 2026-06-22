@@ -88,7 +88,7 @@
                     <label class="form-label my-3">
                         Select the following quizzes which include questions in the category. The affected students' multipliers will be overridden for those selected quizzes.
                     </label>
-                    {% for group in additional_accommodations_groups %}
+                    {% for group in overwrite_student_groups %}
                         {% if group.students %}
                             <div class="card shadow-sm mb-4 px-0"
                                  style="border-radius: 1em;
@@ -148,7 +148,7 @@
                                                         <input class="form-check-input me-2 quiz-checkbox"
                                                                type="checkbox"
                                                                name="override_quizzes"
-                                                               value="{{ quiz.id }}"
+                                                               value="{{ group.key }}-{{ quiz.id }}"
                                                                id="quiz{{ quiz.id }}">
                                                     </td>
                                                     <td>

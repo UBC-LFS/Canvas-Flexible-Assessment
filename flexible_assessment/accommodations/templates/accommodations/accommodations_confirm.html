@@ -92,6 +92,74 @@
                         <div class="mb-2">Are you sure you want to override existing accommodations?</div>
                         <button type="button" class="btn btn-sm btn-success" id="quiz-override">Override</button>
                     </div>
+                    {% if overwrite_by_student %}
+                        <div class="card shadow-sm mb-4 px-0"
+                             style="border-radius: 1em;
+                                    overflow: hidden">
+                            <div class="card-header p-0">
+                                <div class="w-100 px-3 py-2">
+                                    <h3 class="mb-0">Additional accommodations for students</h3>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% for student_id, student_data in overwrite_by_student.items %}
+                                    <h5>{{ student_data.name }} ({{ student_id }})</h5>
+                                    <table class="table table-bordered table-sm mt-2">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Time Limit</th>
+                                                <th>New Multiplier</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for quiz in student_data.quizzes %}
+                                                <tr>
+                                                    <td>
+                                                        <div>
+                                                            {% if quiz.is_new_quiz %}
+                                                                <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
+                                                            {% else %}
+                                                                <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                            {% endif %}
+                                                            <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
+                                                            {{ quiz.unlock_at_readable|default:"No date set" }}
+                                                        </span>
+                                                        {% if quiz.unlock_at_new_readable %}
+                                                            <i class="bi bi-arrow-right"></i> <span class="text-muted">{{ quiz.unlock_at_new_readable }}</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
+                                                            {{ quiz.lock_at_readable|default:"No date set" }}
+                                                        </span>
+                                                        {% if quiz.lock_at_new_readable %}
+                                                            <i class="bi bi-arrow-right"></i> <span class="text-muted">{{ quiz.lock_at_new_readable }}</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
+                                                            {{ quiz.time_limit_readable|default:"No time limit set" }}
+                                                        </span>
+                                                        {% if quiz.time_limit_new_readable %}
+                                                            <i class="bi bi-arrow-right"></i> <span class="text-muted">{{ quiz.time_limit_new_readable }}</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ quiz.multiplier }}x</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
                     {% for multiplier, students in multiplier_student_groups %}
                         <div class="card shadow-sm mb-4 px-0"
                              style="border-radius: 1em;

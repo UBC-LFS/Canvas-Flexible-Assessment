@@ -8,6 +8,7 @@ from oauth.oauth import get_oauth_token
 from dateutil import parser
 from django.utils.timezone import get_current_timezone
 from datetime import timedelta, datetime, timezone
+from collections import defaultdict
 
 import math
 import json
@@ -414,6 +415,7 @@ class AccommodationsCanvas(Canvas):
                 "lock_at_readable": readable_datetime(quiz.lock_at),
                 "should_warn": False,  # set this to true if the time window between start and end date is less than the time limit
                 "is_new_quiz": False,
+                "exam_type": "default",
             }
             if is_quiz_selectable(quiz_data):
                 set_warn(quiz_data)
@@ -958,7 +960,7 @@ class AccommodationsCanvas(Canvas):
         print("synchronous execution time for add_availabilities: " + str(end - start))
         return quiz_groups, status
 
-    def get_additional_accommodations_groups(self, accommodations, students):
+    def get_overwrite_student_groups(self, accommodations, students):
         """
         Groups students by additional accommodation type.
 
@@ -976,7 +978,7 @@ class AccommodationsCanvas(Canvas):
         type = ["essay", "mult_choice", "short_ans", "fine_manip"]
         """
 
-        additional_accommodations_groups = [
+        overwrite_student_groups = [
             {
                 "key": "essay",
                 "students": [],
@@ -1006,7 +1008,7 @@ class AccommodationsCanvas(Canvas):
                 split_parts = student_note.split("^")
                 for i in range(min(5, len(split_parts))):
                     if split_parts[i]:
-                        additional_accommodations_groups[i]["students"].append(
+                        overwrite_student_groups[i]["students"].append(
                             {
                                 "id": student_id,
                                 "name": student_names_by_id[student_id],
@@ -1014,4 +1016,76 @@ class AccommodationsCanvas(Canvas):
                                 "new_multiplier": split_parts[i],
                             }
                         )
-        return additional_accommodations_groups
+        return overwrite_student_groups
+
+    def get_overwrite_by_student(
+        self,
+        overwrite_student_groups,
+        override_quizzes,
+        students,
+        multiplier_quiz_groups,
+    ):
+        """
+        Groups override quizzes with multipliers for each student.
+
+        Chooses highest multiplier for multiple overrides.
+
+        Parameters
+        ----------
+        xxx: xxx
+
+        Returns
+        -------
+            {
+                student_id: [
+                    {"title": str, "multiplier": float},
+                    ...
+                ]
+            }
+        """
+        result = defaultdict(dict)
+        student_type_multiplier = {}
+
+        name_lookup = {
+            str(student.login_id): student.display_name  # adjust field if needed
+            for student in students
+        }
+
+        quiz_lookup = {}
+        for multiplier, quizzes in multiplier_quiz_groups.items():
+            quiz_lookup[str(multiplier)] = {str(q["id"]): q for q in quizzes}
+
+        for group in overwrite_student_groups:
+            quiz_type = group["key"]
+
+            for s in group.get("students", []):
+                student_id = s["id"]
+
+                student_type_multiplier.setdefault(student_id, {})
+                student_type_multiplier[student_id][quiz_type] = float(
+                    s["new_multiplier"]
+                )
+
+        for quiz_type, quiz_ids in override_quizzes.items():
+            for quiz_id in quiz_ids:
+                for student_id, type_map in student_type_multiplier.items():
+                    if quiz_type not in type_map:
+                        continue
+                    multiplier = type_map[quiz_type]
+                    result[student_id][quiz_id] = max(
+                        result[student_id].get(quiz_id, 0), multiplier
+                    )
+
+        return {
+            student_id: {
+                "name": name_lookup.get(str(student_id), ""),
+                "quizzes": [
+                    {
+                        "multiplier": m,
+                        **quiz_lookup.get(str(m), {}).get(str(qid), {}),
+                    }
+                    for qid, m in quizzes.items()
+                ],
+            }
+            for student_id, quizzes in result.items()
+        }

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from unittest.mock import patch
 from functools import wraps
 from canvasapi.calendar_event import CalendarEvent
@@ -177,6 +178,7 @@ class MockAccommodationsCanvas(MockCanvas):
                 "unlock_at_readable": "2026-06-01 - 12:00PM",
                 "lock_at_readable": "2026-06-01 - 1:00PM",
                 "time_limit_readable": "No time limit set",
+                "exam_type": "default",
             },
             {
                 "id": 102,
@@ -186,6 +188,7 @@ class MockAccommodationsCanvas(MockCanvas):
                 "unlock_at_readable": "2026-07-05 - 9:00AM",
                 "lock_at_readable": "2026-08-10 - 11:59PM",
                 "time_limit_readable": "2h",
+                "exam_type": "default",
             },
         ]
         unavailable_quiz_list = [
@@ -197,6 +200,7 @@ class MockAccommodationsCanvas(MockCanvas):
                 "unlock_at_readable": "2026-04-05 - 9:00AM",
                 "lock_at_readable": "2026-04-05 - 11:59PM",
                 "time_limit_readable": "1h",
+                "exam_type": "default",
             }
         ]
         return quiz_list, unavailable_quiz_list
@@ -267,9 +271,9 @@ class MockAccommodationsCanvas(MockCanvas):
                 quiz["unlock_at_status"] = "success"
         return quiz_groups, True
 
-    def get_additional_accommodations_groups(self, accommodations, students):
+    def get_overwrite_student_groups(self, accommodations, students):
         """Mock method that groups students by additional accommodation type"""
-        additional_accommodations_groups = [
+        overwrite_student_groups = [
             {
                 "key": "essay",
                 "students": [],
@@ -299,7 +303,7 @@ class MockAccommodationsCanvas(MockCanvas):
                 split_parts = student_note.split("^")
                 for i in range(min(5, len(split_parts))):
                     if split_parts[i]:
-                        additional_accommodations_groups[i]["students"].append(
+                        overwrite_student_groups[i]["students"].append(
                             {
                                 "id": student_id,
                                 "name": student_names_by_id.get(
@@ -309,4 +313,76 @@ class MockAccommodationsCanvas(MockCanvas):
                                 "new_multiplier": split_parts[i],
                             }
                         )
-        return additional_accommodations_groups
+        return overwrite_student_groups
+
+    def get_overwrite_by_student(
+        self,
+        overwrite_student_groups,
+        override_quizzes,
+        students,
+        multiplier_quiz_groups,
+    ):
+        """
+        Groups override quizzes with multipliers for each student.
+
+        Chooses highest multiplier for multiple overrides.
+
+        Parameters
+        ----------
+        xxx: xxx
+
+        Returns
+        -------
+            {
+                student_id: [
+                    {"title": str, "multiplier": float},
+                    ...
+                ]
+            }
+        """
+        result = defaultdict(dict)
+        student_type_multiplier = {}
+
+        name_lookup = {
+            str(student.login_id): student.display_name  # adjust field if needed
+            for student in students
+        }
+
+        quiz_lookup = {}
+        for multiplier, quizzes in multiplier_quiz_groups.items():
+            quiz_lookup[str(multiplier)] = {str(q["id"]): q for q in quizzes}
+
+        for group in overwrite_student_groups:
+            quiz_type = group["key"]
+
+            for s in group.get("students", []):
+                student_id = s["id"]
+
+                student_type_multiplier.setdefault(student_id, {})
+                student_type_multiplier[student_id][quiz_type] = float(
+                    s["new_multiplier"]
+                )
+
+        for quiz_type, quiz_ids in override_quizzes.items():
+            for quiz_id in quiz_ids:
+                for student_id, type_map in student_type_multiplier.items():
+                    if quiz_type not in type_map:
+                        continue
+                    multiplier = type_map[quiz_type]
+                    result[student_id][quiz_id] = max(
+                        result[student_id].get(quiz_id, 0), multiplier
+                    )
+
+        return {
+            student_id: {
+                "name": name_lookup.get(str(student_id), ""),
+                "quizzes": [
+                    {
+                        "multiplier": m,
+                        **quiz_lookup.get(str(m), {}).get(str(qid), {}),
+                    }
+                    for qid, m in quizzes.items()
+                ],
+            }
+            for student_id, quizzes in result.items()
+        }

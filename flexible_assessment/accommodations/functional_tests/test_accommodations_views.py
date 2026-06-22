@@ -311,6 +311,138 @@ class TestAccommodations(StaticLiveServerTestCase):
 
         input("Press Enter in this terminal to continue\n")
 
+    @tag("slow", "view", "accommodations", "confirm_overwrite")
+    @mock_classes.use_mock_canvas_in_accommodations()
+    @patch.object(views.FinalGradeListView, "_submit_final_grades")
+    def test_accommodations_confirm_overwrite_page(
+        self, mock_submit_final_grades, mocked_flex_canvas_instance
+    ):
+        """Note, this is designed to work with the fixture data for course 1."""
+        mock_submit_final_grades.return_value = (
+            True  # When submitting final grades, just return True for that function
+        )
+        session_id = self.client.session.session_key
+
+        # Set up required session data for the quizzes page
+        session = self.client.session
+        # Required auth/display data
+        session["display_name"] = "Test Instructor"
+        # Quizzes page data - submitted accommodations
+        session["accommodations"] = [
+            ("10000001", "1.5", "user_1", "Jason Zheng (10000001)", "1.75^1.5^"),
+            ("10000002", "2.0", "user_2", "Albert Einstein (10000002)", "^1.5^3.0"),
+        ]
+
+        # Quizzes data
+        session["selected_quizzes"] = [
+            {
+                "id": 101,
+                "title": "Mock Quiz 1",
+                "is_new_quiz": False,
+                "url": "https://example.com/quiz/101",
+                "unlock_at_readable": "2026-06-01 - 12:00PM",
+                "lock_at_readable": "2026-06-01 - 1:00PM",
+                "time_limit_readable": "No time limit set",
+            },
+            {
+                "id": 102,
+                "title": "Mock Quiz 2",
+                "is_new_quiz": True,
+                "url": "https://example.com/quiz/102",
+                "unlock_at_readable": "2026-07-05 - 9:00AM",
+                "lock_at_readable": "2026-08-10 - 11:59PM",
+                "time_limit_readable": "2h",
+            },
+        ]
+
+        session["override_quizzes"] = {
+            "essay": ["101"],
+            "mult_choice": ["101", "102"],
+            "short_ans": ["102"],
+        }
+
+        session["overwrite_student_groups"] = [
+            {
+                "key": "essay",
+                "students": [
+                    {
+                        "id": "10000001",
+                        "name": "Jason Zheng",
+                        "def_multiplier": "1.5",
+                        "new_multiplier": "1.75",
+                    }
+                ],
+                "description": "essay format",
+            },
+            {
+                "key": "mult_choice",
+                "students": [
+                    {
+                        "id": "10000001",
+                        "name": "Jason Zheng",
+                        "def_multiplier": "1.5",
+                        "new_multiplier": "2.0",
+                    },
+                    {
+                        "id": "10000002",
+                        "name": "Albert Einstein",
+                        "def_multiplier": "2.0",
+                        "new_multiplier": "3.0",
+                    },
+                ],
+                "description": "multiple choice format",
+            },
+            {
+                "key": "short_ans",
+                "students": [
+                    {
+                        "id": "10000002",
+                        "name": "Albert Einstein",
+                        "def_multiplier": "2.0",
+                        "new_multiplier": "2.25",
+                    }
+                ],
+                "description": "short answer format",
+            },
+            {
+                "key": "fine_manip",
+                "students": [],
+                "description": "exams involving fine maniplations",
+            },
+            {"key": "notes", "students": [], "description": "CFA Notes"},
+        ]
+        session.save()
+
+        import logging
+        import sys
+
+        # Force Django to print exceptions during tests
+        logging.disable(logging.NOTSET)
+
+        # Or, override the client to re-raise exceptions:
+        response = self.client.get(
+            reverse("accommodations:accommodations_confirm", args=[1]),
+            raise_request_exception=True,  # ← this re-raises the actual exception
+        )
+
+        if response.status_code == 500:
+            print("\n=== 500 ERROR DETAILS ===")
+            print(response.content.decode())
+            print("=== END ERROR ===\n")
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("accommodations:accommodations_confirm", args=[1])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("accommodations:accommodations_confirm", args=[1])
+        )
+
+        input("Press Enter in this terminal to continue\n")
+
     @tag("slow", "view", "accommodations", "overwrite")
     @mock_classes.use_mock_canvas_in_accommodations()
     @patch.object(views.FinalGradeListView, "_submit_final_grades")
@@ -353,6 +485,57 @@ class TestAccommodations(StaticLiveServerTestCase):
                 "lock_at_readable": "2026-08-10 - 11:59PM",
                 "time_limit_readable": "2h",
             },
+        ]
+
+        session["overwrite_student_groups"] = [
+            {
+                "key": "essay",
+                "students": [
+                    {
+                        "id": "10000001",
+                        "name": "Jason Zheng",
+                        "def_multiplier": "1.5",
+                        "new_multiplier": "1.75",
+                    }
+                ],
+                "description": "essay format",
+            },
+            {
+                "key": "mult_choice",
+                "students": [
+                    {
+                        "id": "10000001",
+                        "name": "Jason Zheng",
+                        "def_multiplier": "1.5",
+                        "new_multiplier": "2.0",
+                    },
+                    {
+                        "id": "10000002",
+                        "name": "Albert Einstein",
+                        "def_multiplier": "2.0",
+                        "new_multiplier": "3.0",
+                    },
+                ],
+                "description": "multiple choice format",
+            },
+            {
+                "key": "short_ans",
+                "students": [
+                    {
+                        "id": "10000002",
+                        "name": "Albert Einstein",
+                        "def_multiplier": "2.0",
+                        "new_multiplier": "2.25",
+                    }
+                ],
+                "description": "short answer format",
+            },
+            {
+                "key": "fine_manip",
+                "students": [],
+                "description": "exams involving fine maniplations",
+            },
+            {"key": "notes", "students": [], "description": "CFA Notes"},
         ]
         session.save()
 
