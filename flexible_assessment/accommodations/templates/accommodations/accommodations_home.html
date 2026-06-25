@@ -270,7 +270,7 @@
                                                 Please upload the files you received from the Centre for Accessibility.
                                             </label>
                                             <div id="drop-area">
-                                                <p>Drag & drop PDF files here, or click to select</p>
+                                                <p>Drag and drop PDF files here, or click to select.</p>
                                                 <input type="file"
                                                        id="pdf-file"
                                                        name="pdf_files"
@@ -289,7 +289,7 @@
                                         <div>
                                             <label for="csv-file" class="form-label mb-3">Upload a CSV file containing student accommodations data.</label>
                                             <div id="csv-drop-area">
-                                                <p>Drag & drop CSV file here, or click to select</p>
+                                                <p>Drag and drop CSV file here, or click to select.</p>
                                                 <input type="file"
                                                        id="csv-file"
                                                        name="csv_file"
@@ -408,12 +408,14 @@
             }
 
             function parseStudentName(studentString) {
-                const match = studentString.match(/^(.+?)\s+(.+)\s*\((\d+)\)$/);
+                const match = studentString.match(/^(.+)\s+\((\w+)\)$/);
                 if (match) {
+                    const fullName = match[1].trim();
+                    const nameParts = fullName.split(/\s+/);
                     return {
-                        firstName: match[1].trim(),
-                        lastName: match[2].trim(),
-                        studentNumber: match[3]
+                        firstName: nameParts[0],
+                        lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : "",
+                        studentNumber: match[2]
                     };
                 }
                 
@@ -680,7 +682,7 @@
                         if (fromCSV) {
                             if (Array.isArray(item) && item.length === 4) {
                                 const [studentNumber, multiplier, studentName, additionalInfo] = item;
-                                addEntry(studentName, multiplier, additionalInfo, true);
+                                addEntry(`${studentName} (${studentNumber})`, multiplier, additionalInfo, true);
                             } else if (item.error) {
                                 console.warn(item.error);
                                 alert(item.error);
@@ -688,7 +690,7 @@
                         } else {
                             if (Array.isArray(item) && item.length === 3) {
                                 const [studentNumber, multiplier, studentName, additionalInfo] = item;
-                                addEntry(studentName, multiplier, additionalInfo, true);
+                                addEntry(`${studentName} (${studentNumber})`, multiplier, additionalInfo, true);
                             } else if (item.error) {
                                 console.warn(item.error);
                                 alert(item.error);
