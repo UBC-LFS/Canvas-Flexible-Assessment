@@ -471,10 +471,19 @@
                     <input type="hidden" name="student" value="${studentString}">
                     <input type="hidden" name="additional_info" value = "${additionalInfo.join("^")}">` :
                     `<input type="text" name="student" class="form-control student-input" value="${studentString}" placeholder="Enter student info" required>
+                    <div class="invalid-feedback">Please select a student.</div>
                     <input type="hidden" name="additional_info" value="${additionalInfo.join("^")}">`;
 
-                const multiplierSelect = `<select name="multiplier" class="form-select" required>${selectOptions}</select>`;
-
+                const multiplierSelect = `
+                    <div>
+                        <select name="multiplier" class="form-select">
+                            ${selectOptions}
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a multiplier.
+                        </div>
+                    </div>
+                `;
                 
 
                 
@@ -492,7 +501,8 @@
                     const cells = $(rowNode).find('td');
                     cells[0].setAttribute('colspan', '3');
                     cells[0].innerHTML = `
-                        <input type="text" name="student" class="form-control student-input" value="${studentString}" placeholder="Search by name or student number..." required>
+                        <input type="text" name="student" class="form-control student-input" value="${studentString}" placeholder="Search by name or student number...">
+                        <div class="invalid-feedback">Please select a student.</div>
                         <input type="hidden" name="additional_info" value="^^^^">
                     `;
                     $(cells[1]).hide();
@@ -627,14 +637,23 @@
                 }
 
                 let hasInvalidEntries = false;
-                
+                let hasMissingData = false;
+
                 // Validate all rows
-                dataTable.rows().every(function() {
+                dataTable.rows().every(function () {
                     const rowNode = this.node();
+                    // Existing student validation
                     const input = $(rowNode).find('input[name="student"]');
                     if (input.length > 0) {
+                        if (!input.val()) {
+                            input.addClass("is-invalid");
+                            input.parent(".awesomplete").addClass("is-invalid");
+                            hasMissingData = true;
+                        } else {
+                            input.removeClass("is-invalid");
+                            input.parent(".awesomplete").removeClass("is-invalid");
+                        }
                         const val = input.val();
-                        // If value is present but parsing fails to extract student ID
                         if (val && !parseStudentName(val).studentNumber) {
                             hasInvalidEntries = true;
                             $(rowNode).addClass('table-danger');
@@ -642,11 +661,24 @@
                             $(rowNode).removeClass('table-danger');
                         }
                     }
+
+                    // Multiplier validation
+                    const multiplier = $(rowNode).find('select[name="multiplier"]');
+                    if (multiplier.val() === "") {
+                        hasMissingData = true;
+                        multiplier.addClass("is-invalid");
+                    } else {
+                        multiplier.removeClass("is-invalid");
+                    }
                 });
 
                 if (hasInvalidEntries) {
                     e.preventDefault();
                     alert("One or more entries have an invalid format. Please ensure all students follow 'First Last (StudentNumber)' format.");
+                    return;
+                }
+                if (hasMissingData) {
+                    e.preventDefault();
                     return;
                 }
             });
