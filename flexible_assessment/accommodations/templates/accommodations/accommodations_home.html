@@ -334,7 +334,7 @@
                         <div class="col-auto" id="buttons-hidden" style="display:none">
                             <button type="button" class="btn btn-danger mx-2" id="remove-all">Remove All</button>
                             <button type="submit" class="btn btn-primary">
-                                Next <i class="bi bi-arrow-right ms-1"></i>
+                                Continue <i class="bi bi-arrow-right ms-1"></i>
                             </button>
                         </div>
                     </div>
@@ -370,7 +370,7 @@
                 }
                 
                 dataTable = $('#accommodations-table').DataTable({
-                    pageLength: 25,
+                    pageLength: 10,
                     lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
                     columnDefs: [
                         { targets: [4], orderable: false }, // Actions column not sortable
@@ -395,6 +395,12 @@
                     language: {
                         emptyTable: "No accommodations added yet",
                         search: "Search students:"
+                    },
+                    drawCallback: function () {
+                        const info = this.api().page.info();
+                        const wrapper = $(this.api().table().container());
+                        wrapper.find('.dataTables_paginate').toggle(info.pages > 1);
+                        wrapper.find('.dataTables_info').toggle(info.pages > 1);
                     }
                 });
                 
