@@ -172,14 +172,7 @@
         }
 
         .dataTables_wrapper .dataTables_paginate .paginate_button {
-            padding: 0.375rem 0.75rem;
-            margin-left: 0.125rem;
-            border-radius: 0.375rem;
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button {
-            padding: 0.375rem 0.75rem;
-            margin-left: 0.125rem;
+            padding: 0.375rem 0.75rem 0.375rem 0rem;
             border-radius: 0.375rem;
         }
 
@@ -396,6 +389,10 @@
                         emptyTable: "No accommodations added yet",
                         search: "Search students:"
                     },
+                    dom:
+                        "<'row mb-3 align-items-center'<'col-md-6 d-flex justify-content-start'f><'col-md-6 d-flex justify-content-end'i>>" +
+                        "t" +
+                        "<'row mt-3 align-items-center'<'col-md-6 d-flex justify-content-start'p><'col-md-6 d-flex justify-content-md-end justify-content-start'l>>",
                     drawCallback: function () {
                         const info = this.api().page.info();
                         const wrapper = $(this.api().table().container());
