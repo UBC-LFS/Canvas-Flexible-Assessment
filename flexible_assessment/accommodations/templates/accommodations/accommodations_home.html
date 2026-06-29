@@ -422,7 +422,6 @@
                         const info = this.api().page.info();
                         const wrapper = $(this.api().table().container());
                         wrapper.find('.dataTables_paginate').toggle(info.pages > 1);
-                        wrapper.find('.dataTables_info').toggle(info.pages > 1);
                     }
                 });
                 
