@@ -292,12 +292,14 @@
                                             </div>
                                         </div>
                                     </form>
+                                    <a class="link"
+                                       href="{% static 'accommodations/files/example_accommodations_upload.csv' %}"
+                                       download>Download example CSV file <i class="bi bi-filetype-csv"></i></a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-info" id="load-preset-csv">Reload student data from CFA server</button>
                 <form id="accommodations-form"
                       method="post"
                       action="{% url 'accommodations:accommodations_home' course.id %}">
@@ -321,11 +323,26 @@
                     </div>
                     <!-- Button Row -->
                     <div class="row justify-content-between my-4">
-                        <div class="col-auto">
+                        <div class="col-auto d-flex align-items-center gap-2">
                             <button type="button" class="btn btn-secondary" id="add-entry">Add Manually</button>
+                            <div class="dropdown">
+                                <button type="button"
+                                        class="btn btn-outline-secondary"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <button class="dropdown-item" type="button" id="reset-data">Reset to CfA Course Data</button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item" type="button" id="remove-all">Remove All</button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                         <div class="col-auto" id="buttons-hidden" style="display:none">
-                            <button type="button" class="btn btn-danger mx-2" id="remove-all">Remove All</button>
                             <button type="submit" class="btn btn-primary">
                                 Continue <i class="bi bi-arrow-right ms-1"></i>
                             </button>
@@ -348,13 +365,14 @@
             const addBtn = document.getElementById("add-entry");
             const removeAllBtn = document.getElementById("remove-all");
             const tableContainer = document.getElementById("table-container");
-            const loadPresetBtn = document.getElementById("load-preset-csv");
+            const resetBtn = document.getElementById("reset-data");
             const MAX_SIZE_MB = 10;
             let dataTable;
             let rowCounter = 0;
             let studentIds = new Set();
 
             const studentList = {{ autocomplete_data|safe}};
+            const prefillData = {{ accommodations_json|safe}};
 
             // Initialize DataTable
             function initializeDataTable() {
@@ -489,8 +507,6 @@
                     </div>
                 `;
                 
-
-                
                 
                 // Initialize Awesomplete for new student input fields
                 if (!readOnly) {
@@ -600,12 +616,18 @@
             }
 
             // Event listeners
-            loadPresetBtn.addEventListener("click", function() {
+            resetBtn.addEventListener("click", function() {
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-                loadPresetBtn.classList.add('btn-loading');
-                loadPresetBtn.disabled = true;
-            
+                resetBtn.classList.add('btn-loading');
+                resetBtn.disabled = true;
+
+                removeAllEntries();
+
+                prefillData.forEach(([studentNumber, multiplier, _, studentString, additionalInfo]) => {
+                    addEntry(studentString, multiplier, additionalInfo ? additionalInfo.split('^') : ["", "", "", "", ""], true);
+                });
+
                 $.ajax({
                     url: "{% url 'accommodations:load_preset_csv' course.id %}",
                     method: "GET",
@@ -618,8 +640,8 @@
                         alert("Failed to load from CFA server. Please contact UBC LFS Learning Center.");
                     },
                     complete: function() {
-                        loadPresetBtn.classList.remove('btn-loading');
-                        loadPresetBtn.disabled = false;
+                        resetBtn.classList.remove('btn-loading');
+                        resetBtn.disabled = false;
                     }
                 });
             });
@@ -702,7 +724,6 @@
             });
 
             //Prefill with existing data
-            const prefillData = {{ accommodations_json|safe}};
             prefillData.forEach(([studentNumber, multiplier, _, studentString, additionalInfo]) => {
                 addEntry(studentString, multiplier, additionalInfo ? additionalInfo.split('^') : ["", "", "", "", ""], true);
             });
@@ -906,7 +927,7 @@
             });
 
             // Automatically load preset data
-            loadPresetBtn.click();
+            resetBtn.click();
 
         });
     </script>
