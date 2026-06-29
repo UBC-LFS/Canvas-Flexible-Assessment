@@ -367,7 +367,14 @@
                     lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
                     columnDefs: [
                         { targets: [4], orderable: false }, // Actions column not sortable
-                        { targets: [0, 1, 2], type: 'string' },
+                        { targets: [0, 1, 2], render: function (data, type) {
+                                if (type === "sort") {
+                                    const text = $("<div>").html(data).text().trim();
+                                    return text === "" ? "\uffff" : text.toLowerCase();
+                                }
+                                return data;
+                            }
+                        },
                         { 
                             targets: [3], 
                             type: 'num',
@@ -544,6 +551,20 @@
                                 <input type="hidden" name="additional_info" value="^^^^">
                                 <span class="form-control-plaintext">${parsedInfo.studentNumber}</span>
                             `;
+
+                            dataTable
+                                .cell(rowNode, 0)
+                                .data(liveCells[0].innerHTML);
+
+                            dataTable
+                                .cell(rowNode, 1)
+                                .data(liveCells[1].innerHTML);
+
+                            dataTable
+                                .cell(rowNode, 2)
+                                .data(liveCells[2].innerHTML);
+
+                            dataTable.draw(false);
                         });
                     }
                     toggleButtons();
