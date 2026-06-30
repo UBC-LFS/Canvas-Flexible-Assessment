@@ -88,7 +88,7 @@ class TestUtils(TestCase):
 
         existing_user = models.UserProfile.objects.filter(pk=1)
         self.assertTrue(existing_user.exists())
-        self.assertEqual(existing_user.get().login_id, "test_student1")
+        self.assertEqual(existing_user.get().login_id, "10000001")
         self.assertEqual(existing_user.get().display_name, "test_student1")
 
         user = utils.set_user_profile(1, "Some ID", "Some Name")
@@ -112,7 +112,9 @@ class TestUtils(TestCase):
 
         course = utils.set_course(1, "Some Course")
         self.assertEqual(course.id, 1)
-        self.assertEqual(course.title, "test_course1")
+        self.assertEqual(
+            course.title, "Introduction to Accommodations and Accessibility - ACOM 101"
+        )
 
     def test_set_user_course_enrollment(self):
         """Make sure new UserCourses are created"""

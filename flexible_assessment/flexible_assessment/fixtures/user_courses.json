@@ -72,6 +72,15 @@
 },
 {
     "model": "flexible_assessment.usercourse",
+    "pk": 10,
+    "fields": {
+        "user_id": 6,
+        "course_id": 1,
+        "role": 4
+    }
+},
+{
+    "model": "flexible_assessment.usercourse",
     "pk": 51,
     "fields": {
         "user_id": 51,
