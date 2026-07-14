@@ -360,7 +360,7 @@
                                     </form>
                                     <a class="link"
                                        href="{% static 'accommodations/files/example_accommodations_upload.csv' %}"
-                                       download>Download example CSV file <i class="bi bi-filetype-csv"></i></a>
+                                       download><i class="bi bi-filetype-csv"></i>Download example CSV file</a>
                                 </div>
                             </div>
                         </div>
@@ -398,7 +398,9 @@
                                     <option value="-1">All</option>
                                 </select>
                             </label>
-                            <span id="accommodations-pagination-range" class="pagination-range" aria-live="polite">0 - 0 of 0</span>
+                            <span id="accommodations-pagination-range"
+                                  class="pagination-range"
+                                  aria-live="polite">0 - 0 of 0</span>
                             <div class="pagination-nav">
                                 <button type="button"
                                         class="pagination-nav-button"
@@ -487,7 +489,7 @@
                 }
                 
                 dataTable = $('#accommodations-table').DataTable({
-                    pageLength: 10,
+                    pageLength: 50,
                     lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
                     columnDefs: [
                         { targets: [4], orderable: false }, // Actions column not sortable
