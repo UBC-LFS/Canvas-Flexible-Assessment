@@ -171,9 +171,75 @@
             margin-left: 0.5rem;
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button {
-            padding: 0.375rem 0.75rem 0.375rem 0rem;
-            border-radius: 0.375rem;
+        .accommodations-table-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1rem;
+            color: #495057;
+            font-size: 0.95rem;
+            margin-top: 1rem;
+        }
+
+        .accommodations-table-pagination .page-size-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .accommodations-table-pagination .form-select {
+            width: auto;
+            min-width: 4.5rem;
+            padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+        }
+
+        .accommodations-table-pagination .pagination-range {
+            min-width: 5.5rem;
+            text-align: center;
+            color: #212529;
+        }
+
+        .accommodations-table-pagination .pagination-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .accommodations-table-pagination .pagination-nav-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            color: #212529;
+            background: transparent;
+        }
+
+        .accommodations-table-pagination .pagination-nav-button:hover:not(:disabled),
+        .accommodations-table-pagination .pagination-nav-button:focus-visible:not(:disabled) {
+            background: #f1f3f5;
+            color: #000;
+        }
+
+        .accommodations-table-pagination .pagination-nav-button:disabled {
+            color: #adb5bd;
+            cursor: not-allowed;
+            opacity: 1;
+        }
+
+        @media (max-width: 575.98px) {
+            .accommodations-table-pagination {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .accommodations-table-pagination .pagination-range {
+                text-align: left;
+            }
         }
 
         /* Loading spinner styles */
@@ -320,6 +386,34 @@
                                 <!-- Rows will be added dynamically -->
                             </tbody>
                         </table>
+                        <div id="accommodations-pagination"
+                             class="accommodations-table-pagination"
+                             aria-label="Accommodations table pagination">
+                            <label class="page-size-control" for="accommodations-page-size">
+                                <span>Rows per page:</span>
+                                <select id="accommodations-page-size" class="form-select form-select-sm">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="-1">All</option>
+                                </select>
+                            </label>
+                            <span id="accommodations-pagination-range" class="pagination-range" aria-live="polite">0 - 0 of 0</span>
+                            <div class="pagination-nav">
+                                <button type="button"
+                                        class="pagination-nav-button"
+                                        id="accommodations-page-prev"
+                                        aria-label="Previous page">
+                                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                                </button>
+                                <button type="button"
+                                        class="pagination-nav-button"
+                                        id="accommodations-page-next"
+                                        aria-label="Next page">
+                                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <!-- Button Row -->
                     <div class="row justify-content-between my-4">
@@ -373,6 +467,11 @@
             const removeAllBtn = document.getElementById("remove-all");
             const tableContainer = document.getElementById("table-container");
             const resetBtn = document.getElementById("reset-data");
+            const pagination = document.getElementById("accommodations-pagination");
+            const pageSizeSelect = document.getElementById("accommodations-page-size");
+            const paginationRange = document.getElementById("accommodations-pagination-range");
+            const previousPageBtn = document.getElementById("accommodations-page-prev");
+            const nextPageBtn = document.getElementById("accommodations-page-next");
             const MAX_SIZE_MB = 10;
             let dataTable;
             let rowCounter = 0;
@@ -422,17 +521,30 @@
                         search: "Search students:"
                     },
                     dom:
-                        "<'row mb-3 align-items-center'<'col-md-6 d-flex justify-content-start'f><'col-md-6 d-flex justify-content-end'i>>" +
-                        "t" +
-                        "<'row mt-3 align-items-center'<'col-md-6 d-flex justify-content-start'p><'col-md-6 d-flex justify-content-md-end justify-content-start'l>>",
+                        "<'row mb-3 align-items-center'<'col-md-6 d-flex justify-content-start'f>>" +
+                        "t",
                     drawCallback: function () {
-                        const info = this.api().page.info();
-                        const wrapper = $(this.api().table().container());
-                        wrapper.find('.dataTables_paginate').toggle(info.pages > 1);
+                        updateCustomPagination(this.api());
                     }
                 });
                 
                 tableContainer.style.display = 'block';
+                updateCustomPagination(dataTable);
+            }
+
+            function updateCustomPagination(table) {
+                if (!table) {
+                    return;
+                }
+
+                const info = table.page.info();
+                const start = info.recordsDisplay === 0 ? 0 : info.start + 1;
+                const end = info.recordsDisplay === 0 ? 0 : info.end;
+                paginationRange.textContent = `${start} - ${end} of ${info.recordsDisplay}`;
+                previousPageBtn.disabled = info.page === 0 || info.pages === 0;
+                nextPageBtn.disabled = info.page >= info.pages - 1 || info.pages === 0;
+                pageSizeSelect.value = String(info.length);
+                pagination.style.display = info.recordsDisplay > 0 ? "flex" : "none";
             }
 
             function parseStudentName(studentString) {
@@ -658,6 +770,24 @@
 
             removeAllBtn.addEventListener("click", function() {
                 removeAllEntries();
+            });
+
+            pageSizeSelect.addEventListener("change", function () {
+                if (dataTable) {
+                    dataTable.page.len(Number(this.value)).draw();
+                }
+            });
+
+            previousPageBtn.addEventListener("click", function () {
+                if (dataTable) {
+                    dataTable.page("previous").draw("page");
+                }
+            });
+
+            nextPageBtn.addEventListener("click", function () {
+                if (dataTable) {
+                    dataTable.page("next").draw("page");
+                }
             });
 
             // Remove individual rows using event delegation
