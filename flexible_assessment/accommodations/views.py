@@ -46,6 +46,13 @@ class AccommodationsHome(views.AccommodationsListView):
         # pass autocomplete data (list of student numbers and names)
         autocomplete_data = self.request.session.get("autocomplete_data", [])
         context["autocomplete_data"] = mark_safe(json.dumps(autocomplete_data))
+
+        context["course_users_link"] = (
+            settings.CANVAS_DOMAIN
+            + "courses/"
+            + str(self.kwargs["course_id"])
+            + "/users"
+        )
         return context
 
     def get(self, request, *args, **kwargs):
