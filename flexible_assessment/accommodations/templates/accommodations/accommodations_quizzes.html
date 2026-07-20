@@ -234,7 +234,7 @@
                                             data-bs-target="#invalidQuizzesCollapse"
                                             aria-expanded="false"
                                             aria-controls="invalidQuizzesCollapse">
-                                        <span class="h4 mb-0">Invalid Quizzes ({{ unavailable_quizzes|length }})</span>
+                                        <span class="h4 mb-0">Past/Untimed Quizzes ({{ unavailable_quizzes|length }})</span>
                                         <i class="bi bi-chevron-down"></i>
                                     </button>
                                 </div>
@@ -299,7 +299,7 @@
     </div>
     <footer class="my-5 pt-5 text-muted text-center text-small">
         <p class="mb-1">
-            Don't see your quiz here? If your quiz is untimed or its dates occur in the past, go to <a href="{{ add_quizzes_link }}" target="_blank">Quizzes</a> to add a time limit or current start and end dates before loading this page.
+            Don't see your quiz here? If your quiz is untimed or its dates occur in the past, go to <a href="{{ add_quizzes_link }}" target="_blank">Quizzes</a> to add a time limit and/or update availability dates before loading this page.
         </p>
     </footer>
     {% if messages %}
