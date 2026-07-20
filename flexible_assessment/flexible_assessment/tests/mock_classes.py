@@ -251,7 +251,9 @@ class MockAccommodationsCanvas(MockCanvas):
         """Mock method that returns existing accommodations"""
         return []
 
-    def add_time_extensions(self, student_groups, quiz_groups, course_id):
+    def add_time_extensions(
+        self, student_groups, quiz_groups, course_id, student_quiz_groups
+    ):
         for multiplier, quiz_list in quiz_groups.items():
             for quiz in quiz_list:
                 quiz["time_limit_status"] = "success"
