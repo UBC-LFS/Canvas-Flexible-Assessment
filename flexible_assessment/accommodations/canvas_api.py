@@ -705,7 +705,13 @@ class AccommodationsCanvas(Canvas):
         response = requests.post(quiz_url, headers=headers, data=json.dumps(extensions))
         response.raise_for_status()  # raise exception on HTTP error
 
-    def add_time_extensions(self, student_groups, quiz_groups, course_id):
+    def add_time_extensions(
+        self,
+        student_groups,
+        quiz_groups,
+        course_id,
+        student_quiz_data=None,
+    ):
         """
         Applies extra time limit extensions to quizzes for students with accommodations.
 
@@ -730,6 +736,7 @@ class AccommodationsCanvas(Canvas):
                 Overall status indicating whether all extensions were applied successfully.
         """
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
+        student_quiz_data = student_quiz_data or {}
         course = self.get_course(course_id)
         status = True  # represents the status of adding - if any adds fail set to false
 
@@ -748,11 +755,37 @@ class AccommodationsCanvas(Canvas):
                     extensions = []
                     # student is a tuple of login id, display name, user id
                     for student in student_list:
+                        login_id = str(student[0])
+                        # default to standard quiz in the group
+                        effective_quiz = quiz
+
+                        # returns None unless student has override for a certain quiz
+                        override_quiz = next(
+                            (
+                                item
+                                for item in student_quiz_data.get(login_id, {}).get(
+                                    "quizzes", []
+                                )
+                                if item["id"] == quiz["id"]
+                            ),
+                            None,
+                        )
+
+                        # apply the quiz for the overriden quiz
+                        if override_quiz is not None:
+                            override_multiplier = str(override_quiz["multiplier"])
+
+                            effective_quiz = next(
+                                item
+                                for item in quiz_groups[override_multiplier]
+                                if item["id"] == quiz["id"]
+                            )
                         extensions.append(
                             {
                                 "user_id": student[2],
                                 "extra_time": int(
-                                    quiz["time_limit_new"] - quiz["time_limit"]
+                                    effective_quiz["time_limit_new"]
+                                    - effective_quiz["time_limit"]
                                 ),
                             }
                         )

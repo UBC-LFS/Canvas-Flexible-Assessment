@@ -118,17 +118,16 @@
                                                     <td>{{ student.name }}</td>
                                                     <td>{{ student.id }}</td>
                                                     <td>
-                                                        <span>
-                                                            {{ student.def_multiplier }}x
-                                                            <i class="bi bi-arrow-right"></i>
-                                                        </span>
                                                         <span class="text-primary">{{ student.new_multiplier }}x</span>
+                                                        <span class="text-secondary">(default {{ student.def_multiplier }}x)</span>
                                                     </td>
                                                 </tr>
                                             {% endfor %}
                                         </tbody>
                                     </table>
-                                    <h5 class="mt-2">Select quizzes to to apply {{ group.description }}-specific overrides:</h5>
+                                    <h5 class="mt-2">
+                                        Select quizzes to apply <strong>{{ group.description }}</strong> specific overrides:
+                                    </h5>
                                     <table class="table table-bordered table-sm mt-2"
                                            style="table-layout: fixed">
                                         <thead class="table-light">

@@ -701,6 +701,7 @@ class AccommodationsConfirm(views.AccommodationsListView):
         multiplier_student_groups = request.session["multiplier_student_groups"]
         multiplier_quiz_groups = request.session["multiplier_quiz_groups"]
         existing_accommodations = request.session["existing_accommodations"]
+        overwrite_by_student = request.session["overwrite_by_student"]
 
         choice = request.POST.get("choice", None)
         should_override = False
@@ -710,7 +711,10 @@ class AccommodationsConfirm(views.AccommodationsListView):
         canvas = AccommodationsCanvas(request)
         multiplier_quiz_groups_results, time_extension_status = (
             canvas.add_time_extensions(
-                multiplier_student_groups, multiplier_quiz_groups, course_id
+                multiplier_student_groups,
+                multiplier_quiz_groups,
+                course_id,
+                overwrite_by_student,
             )
         )
         multiplier_quiz_groups_results, availabilities_status = (
