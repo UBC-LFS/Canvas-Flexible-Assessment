@@ -216,10 +216,13 @@ def parse_csv(uploaded_files, request, course_id):
                 student_number = row.get("student_no", "").strip()
                 if student_number not in valid_student_ids:
                     continue
-
+                print(student_number)
                 lastname = row.get("lastname", "").strip()
+                print("last:" + lastname)
                 firstname = row.get("firstname", "").strip()
+                print("first:" + firstname)
                 middlename = row.get("middlename", "").strip()
+                print("middle:" + middlename)
 
                 final_multiplier = None
                 # Get only all-exams multipliers
@@ -277,7 +280,7 @@ def parse_csv(uploaded_files, request, course_id):
                     (
                         student_number,
                         final_multiplier,
-                        f"{firstname + ' ' + lastname + ' ' + middlename} ({student_number})",
+                        f"{firstname + ' ' + lastname + ' ' + middlename}",
                         additional_info,
                     )
                 )
@@ -338,7 +341,7 @@ def upload_pdfs(request, course_id):
                     (
                         student_number,
                         multiplier,
-                        f"{student_name} ({str(student_number)})",
+                        student_name,
                     )
                 )
             elif student_number and multiplier:
@@ -346,7 +349,7 @@ def upload_pdfs(request, course_id):
                     (
                         student_number,
                         multiplier,
-                        f"{str(student_number)}",
+                        "",
                         "",
                     )
                 )
