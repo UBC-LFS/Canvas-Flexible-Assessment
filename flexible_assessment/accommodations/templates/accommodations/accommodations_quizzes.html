@@ -224,6 +224,11 @@
                                 Your course currently has no quizzes that can have accommodations applied to them. <a href="{{ add_quizzes_link }}" target="_blank">Add quizzes</a> with valid starting and ending dates and/or time limits to your course and reload this page to continue.
                             </span>
                         {% endif %}
+                        <div class="pb-3 text-muted text-center text-small">
+                            <p class="mb-1">
+                                Don't see your quiz here? If your quiz is untimed or its dates occur in the past, go to <a href="{{ add_quizzes_link }}" target="_blank">Quizzes</a> to add a time limit and/or update availability dates before loading this page.
+                            </p>
+                        </div>
                         {% if unavailable_quizzes %}
                             <!--Invalid Quizzes-->
                             <div class="card mt-4">
@@ -297,11 +302,6 @@
             </div>
         </div>
     </div>
-    <footer class="my-5 pt-5 text-muted text-center text-small">
-        <p class="mb-1">
-            Don't see your quiz here? If your quiz is untimed or its dates occur in the past, go to <a href="{{ add_quizzes_link }}" target="_blank">Quizzes</a> to add a time limit and/or update availability dates before loading this page.
-        </p>
-    </footer>
     {% if messages %}
         <ul class="messages" hidden>
             {% for message in messages %}
