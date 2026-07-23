@@ -417,6 +417,15 @@
                             </div>
                         </div>
                     </div>
+                    <div class="my-3 pt-0 text-muted text-center text-small">
+                        <p class="mb-1">
+                            Don't see all registered students? Registrations with the CfA may take up to 24h to appear.
+                            <br>
+                            View all current registrations
+                            <a href="https://clockwork.as.it.ubc.ca/ClockWork/user/instructor/default.aspx"
+                               target="_blank">here</a>
+                        </p>
+                    </div>
                     <!-- Button Row -->
                     <div class="row justify-content-between my-4">
                         <div class="col-auto d-flex align-items-center gap-2">
@@ -448,13 +457,6 @@
             </div>
         </div>
     </div>
-    <footer class="my-5 pt-5 text-muted text-center text-small">
-        <p class="mb-1">
-            Don't see all registered students? Registrations with the CfA may take up to 24h to appear.
-            <br>
-            View all current registrations <a href="{{ course_users_link }}" target="_blank">here</a>
-        </p>
-    </footer>
     {% if messages %}
         <ul class="messages" hidden>
             {% for message in messages %}
@@ -735,20 +737,13 @@
                 }
             }
 
-            // Event listeners
-            resetBtn.addEventListener("click", function() {
+            function getCfaData() {
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-                resetBtn.classList.add('btn-loading');
-                resetBtn.disabled = true;
-
-                removeAllEntries();
-
                 prefillData.forEach(([studentNumber, multiplier, _, studentString, additionalInfo]) => {
                     addEntry(studentString, multiplier, additionalInfo ? additionalInfo.split('^') : ["", "", "", "", ""], true);
                 });
 
-                $.ajax({
+                return $.ajax({
                     url: "{% url 'accommodations:load_preset_csv' course.id %}",
                     method: "GET",
                     headers: { "X-CSRFToken": csrftoken },
@@ -757,12 +752,24 @@
                     },
                     error: function (xhr, status, error) {
                         console.error("Failed to load preset CSV:", error);
-                        alert("Failed to load from CFA server. Please contact UBC LFS Learning Center.");
+                        alert("Failed to load data. Please contact UBC LFS Learning Center.");
                     },
-                    complete: function() {
-                        resetBtn.classList.remove('btn-loading');
-                        resetBtn.disabled = false;
-                    }
+                });
+            }
+
+            // Event listeners
+            resetBtn.addEventListener("click", function() {
+                if (!confirm('Are you sure you want to reset all student data?')) {
+                    return;
+                }
+
+                resetBtn.classList.add('btn-loading');
+                resetBtn.disabled = true;
+                
+                removeAllEntries();
+                getCfaData().always(() => {
+                    resetBtn.classList.remove('btn-loading');
+                    resetBtn.disabled = false;
                 });
             });
 
@@ -771,6 +778,9 @@
             });
 
             removeAllBtn.addEventListener("click", function() {
+                if (!confirm('Are you sure you want to remove all student rows?')) {
+                    return;
+                }
                 removeAllEntries();
             });
 
@@ -1065,7 +1075,7 @@
             });
 
             // Automatically load preset data
-            resetBtn.click();
+            getCfaData();
 
         });
     </script>
