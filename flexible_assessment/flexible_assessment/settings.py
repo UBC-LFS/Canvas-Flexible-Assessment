@@ -63,9 +63,26 @@ CANVAS_OAUTH_ACCESS_TOKEN_URL = "{}login/oauth2/token".format(CANVAS_DOMAIN)
 # GraphQL Scope not present in Canvas
 CANVAS_OAUTH_SCOPES = [
     "url:GET|/api/v1/courses/:id",
+    "url:GET|/api/v1/courses/:course_id/search_users",
+    "url:PUT|/api/v1/courses/:course_id/settings",
+    "url:GET|/api/v1/courses/:course_id/settings",
+    "url:PUT|/api/v1/courses/:id",
     "url:GET|/api/v1/courses/:course_id/assignment_groups",
     "url:GET|/api/v1/courses/:course_id/assignment_groups/:assignment_group_id",
     "url:PUT|/api/v1/courses/:course_id/assignment_groups/:assignment_group_id",
+    "url:GET|/api/v1/courses/:course_id/assignments/:id",
+    "url:GET|/api/v1/courses/:course_id/assignments/:assignment_id/overrides",
+    "url:POST|/api/v1/courses/:course_id/assignments/:assignment_id/overrides",
+    "url:GET|/api/v1/courses/:course_id/quizzes",
+    "url:GET|/api/v1/courses/:course_id/quizzes/:id",
+    "url:POST|/api/v1/courses/:course_id/quizzes/:quiz_id/extensions",
+    "url:GET|/api/quiz/v1/courses/:course_id/quizzes",
+    "url:GET|/api/quiz/v1/courses/:course_id/quizzes/:assignment_id",
+    "url:POST|/api/quiz/v1/courses/:course_id/quizzes/:assignment_id/accommodations",
+    "url:GET|/api/v1/calendar_events/:id",
+    "url:POST|/api/v1/calendar_events",
+    "url:PUT|/api/v1/calendar_events/:id",
+    "url:POST|/api/graphql",
 ]
 CANVAS_OAUTH_TOKEN_EXPIRATION_BUFFER = timedelta()
 
