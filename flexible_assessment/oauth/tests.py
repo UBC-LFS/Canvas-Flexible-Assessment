@@ -5,7 +5,12 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from oauth.middleware import OAuthMiddleware
-from oauth.oauth import error_redirect, oauth_callback
+from oauth.oauth import (
+    clear_oauth_token,
+    error_redirect,
+    handle_missing_or_invalid_token,
+    oauth_callback,
+)
 
 
 class TestOAuthMiddleware(SimpleTestCase):
@@ -43,6 +48,40 @@ class TestOAuthMiddleware(SimpleTestCase):
 
         self.assertEqual(response, "oauth redirect")
         self.assertEqual(request.session["course_id"], "150")
+        mock_handle_missing_or_invalid_token.assert_called_once_with(
+            request, clear_existing=True
+        )
+
+
+class TestOAuthTokenHandling(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    @patch("oauth.oauth.CanvasOAuth2Token.objects.filter")
+    def test_clear_oauth_token_deletes_authenticated_users_token(self, mock_filter):
+        request = self.factory.get("/accommodations/150/")
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        clear_oauth_token(request)
+
+        mock_filter.assert_called_once_with(user=request.user)
+        mock_filter.return_value.delete.assert_called_once()
+
+    @patch("oauth.oauth.clear_oauth_token")
+    @patch("oauth.oauth.canvas_oauth.get_oauth_login_url", return_value="/canvas/oauth")
+    @patch("oauth.oauth.get_random_string", return_value="state")
+    def test_handle_invalid_token_clears_existing_token(
+        self, mock_get_random_string, mock_get_oauth_login_url, mock_clear_oauth_token
+    ):
+        request = self.factory.get("/accommodations/150/")
+        request.session = {}
+        request.user = SimpleNamespace(is_authenticated=True)
+
+        response = handle_missing_or_invalid_token(request, clear_existing=True)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/canvas/oauth")
+        mock_clear_oauth_token.assert_called_once_with(request)
 
 
 class TestOAuthErrorRedirect(SimpleTestCase):
