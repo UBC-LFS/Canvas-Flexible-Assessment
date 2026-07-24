@@ -44,15 +44,7 @@ def get_oauth_token(request):
     return fernet.decrypt(bytes(oauth_token.access_token)).decode("utf-8")
 
 
-def clear_oauth_token(request):
-    if request.user.is_authenticated:
-        CanvasOAuth2Token.objects.filter(user=request.user).delete()
-
-
-def handle_missing_or_invalid_token(request, clear_existing=False):
-    if clear_existing:
-        clear_oauth_token(request)
-
+def handle_missing_or_invalid_token(request):
     request.session["canvas_oauth_initial_uri"] = request.get_full_path()
 
     oauth_request_state = get_random_string(32)

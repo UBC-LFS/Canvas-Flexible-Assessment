@@ -27,5 +27,5 @@ class OAuthMiddleware(object):
         elif isinstance(exception, CanvasOAuthError):
             return error_redirect(request, str(exception))
         elif isinstance(exception, (InvalidAccessToken, Unauthorized)):
-            return handle_missing_or_invalid_token(request, clear_existing=True)
+            return handle_missing_or_invalid_token(request)
         return
