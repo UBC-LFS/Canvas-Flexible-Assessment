@@ -86,13 +86,11 @@ def oauth_callback(request):
     binary_access_token = fernet.encrypt(access_token.encode("utf-8"))
     binary_refresh_token = fernet.encrypt(refresh_token.encode("utf-8"))
 
-    CanvasOAuth2Token.objects.update_or_create(
+    CanvasOAuth2Token.objects.get_or_create(
         user=request.user,
-        defaults={
-            "access_token": binary_access_token,
-            "expires": expires,
-            "refresh_token": binary_refresh_token,
-        },
+        access_token=binary_access_token,
+        expires=expires,
+        refresh_token=binary_refresh_token,
     )
 
     initial_uri = request.session["canvas_oauth_initial_uri"]
@@ -126,14 +124,7 @@ def refresh_oauth_token(request):
 
 def error_redirect(request, error_message):
     messages.error(request, error_message)
-    initial_uri = request.session.pop("canvas_oauth_initial_uri", "")
-    if initial_uri:
-        return HttpResponseRedirect(initial_uri)
-
     course_id = request.session.pop("course_id", "")
-    if str(course_id).isdigit():
-        return HttpResponseRedirect(
-            reverse("instructor:instructor_home", kwargs={"course_id": course_id})
-        )
-
-    return HttpResponseRedirect(reverse("login"))
+    return HttpResponseRedirect(
+        reverse("instructor:instructor_home", kwargs={"course_id": course_id})
+    )
