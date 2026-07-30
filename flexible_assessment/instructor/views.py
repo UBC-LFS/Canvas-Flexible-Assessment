@@ -656,10 +656,22 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             return self.forms_valid(formset, date_form, options_form, ordering_form)
 
         elif not formset.is_valid():
+            messages.error(
+                request,
+                "Please correct the assessment errors below.",
+            )
             return self.form_invalid(formset)
         elif not date_form.is_valid():
+            messages.error(
+                request,
+                "Please correct the availability errors below.",
+            )
             return self.form_invalid(date_form)
         else:
+            messages.error(
+                request,
+                "Please correct the options errors below.",
+            )
             return self.form_invalid(options_form)
 
     def forms_valid(self, formset, date_form, options_form, ordering_form):
@@ -719,6 +731,11 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
         hide_weights = options_form.cleaned_data["hide_weights"]
         canvas_course.update(
             course={"apply_assignment_group_weights": not hide_weights}
+        )
+
+        messages.success(
+            self.request,
+            "Assessments and availability updated successfully.",
         )
 
         return HttpResponseRedirect(self.get_success_url())
