@@ -18,6 +18,23 @@
                 <div class="col-6">
                     <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                         <h3 class="card-header mb-0">Import Assessments</h3>
+                        <div class="card-body p-4">
+                            <p>
+                                You may import assessment configurations via CSV upload. You will need to upload a CSV with the first line being:
+                                <br>
+                                <b>Assessment, Default, Minimum, Maximum</b>
+                            </p>
+                            <p>
+                                All subsequent lines represent individual assessments with a name, default weight, minimum weight, and maximum weight.
+                                You may use the below example as a template:
+                                <br>
+                                <b>Quizzes, 25, 0, 100</b>
+                                <br>
+                                <b>Midterms, 25, 0, 100</b>
+                                <br>
+                                <b>Final, 50, 0, 100</b>
+                            </p>
+                        </div>
                         <div class="card-body pt-2 pb-3">
                             <input class="mt-3 form-control" type="file" name="assessments">
                             <div class="mt-3 d-flex align-items-center justify-content-end">

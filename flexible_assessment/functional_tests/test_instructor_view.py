@@ -67,7 +67,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         user = models.UserProfile.objects.get(login_id="test_instructor1")
         self.client = Client()
         self.client.force_login(user)
-        self.launch_url = reverse("launch")
+        self.launch_url = reverse("launch_flexible_assessment")
         self.login_url = reverse("login")
 
     def tearDown(self):
@@ -89,7 +89,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
         ), patch(
             "flexible_assessment.models.Course.objects.get"
         ) as mock_course_get:
-            response = client.post(reverse("launch"))
+            response = client.post(reverse("launch_flexible_assessment"))
 
         session_id = client.session.session_key
         chromeOptions = webdriver.ChromeOptions()
@@ -137,7 +137,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
             self.live_server_url + reverse("instructor:instructor_home", args=[1])
         )
 
-        input("Press Enter in this terminal to continue")
+        input("Press Enter in this terminal to continue\n")
 
     @tag("slow", "view", "new_course")
     @mock_classes.use_mock_canvas()
@@ -946,7 +946,7 @@ class TestInstructorViews(StaticLiveServerTestCase):
     def test_logs(self, mocked_flex_canvas_instance):
         """In course 1 the teacher is exporting the logs
         For some reason, there seem to be (out of order/duplicate) log entries that are only on the production server.
-        I've added some duplicate entries and some out of order entries in the file flexible_assessment/log/info.log to simulate this.
+        I've added some duplicate entries and some out of order entries in the file flexible_assessment/log/flexible_assessment.log to simulate this.
         The log files are ignored in gitignore, so to get this test to work, you'll need to make some entries on your own machine
         1.
         """

@@ -20,6 +20,25 @@ def use_mock_canvas(location="instructor.views.FlexCanvas"):
     return decorator
 
 
+def use_mock_canvas_in_accommodations(
+    location="accommodations.views.AccommodationsCanvas",
+):
+    """Decorate a function that replaces AccommodationsCanvas with MockAccommodationsCanvas and pass the instance of MockAccommodationsCanvas to the function
+    Note: Since this passes in MockClass.return_value, you must add this argument to your function signature
+    See https://stackoverflow.com/a/42581103 for an explanation of this code"""
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            with patch(location) as MockClass:
+                MockClass.return_value = MockAccommodationsCanvas()
+                func(*args, MockClass.return_value, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
 class MockUser(object):
     def __init__(self, name, id):
         self.name = name
@@ -204,3 +223,111 @@ class MockFlexCanvas(MockCanvas):
 
     def get_calendar_event(self, calendar_event):
         return self.calendar_item
+
+
+class MockAccommodationsCanvas(MockCanvas):
+    """This is used to mock AccommodationsCanvas since AccommodationsCanvas requires Canvas authentication to use the Canvas api"""
+
+    def __init__(self):
+        super().__init__()
+
+    def get_quiz_data(self, course_id):
+        """Mock the quiz data method"""
+        quiz_list = [
+            {
+                "id": 101,
+                "title": "Mock Quiz 1",
+                "is_new_quiz": False,
+                "url": "https://example.com/quiz/101",
+                "unlock_at_readable": "2026-06-01 - 12:00PM",
+                "lock_at_readable": "2026-06-01 - 1:00PM",
+                "time_limit_readable": "No time limit set",
+            },
+            {
+                "id": 102,
+                "title": "Mock Quiz 2",
+                "is_new_quiz": True,
+                "url": "https://example.com/quiz/102",
+                "unlock_at_readable": "2026-07-05 - 9:00AM",
+                "lock_at_readable": "2026-08-10 - 11:59PM",
+                "time_limit_readable": "2h",
+            },
+        ]
+        unavailable_quiz_list = [
+            {
+                "id": 103,
+                "title": "Mock Quiz 3",
+                "is_new_quiz": False,
+                "url": "https://example.com/quiz/103",
+                "unlock_at_readable": "2026-04-05 - 9:00AM",
+                "lock_at_readable": "2026-04-05 - 11:59PM",
+                "time_limit_readable": "1h",
+            }
+        ]
+        return quiz_list, unavailable_quiz_list
+
+    def get_multiplier_student_groups(self, accommodations, students):
+        """Mock method that groups students by multiplier"""
+        multiplier_groups = {}
+        for accommodation in accommodations:
+            student_id, multiplier, user_id, student_string, additional_info = (
+                accommodation
+            )
+            if multiplier not in multiplier_groups:
+                multiplier_groups[multiplier] = []
+
+            # Find matching student name from students
+            student_name = "Test Student"
+            for student in students:
+                if str(student.login_id) == student_id:
+                    student_name = student.display_name
+                    break
+
+            multiplier_groups[multiplier].append(
+                (student_id, student_name, user_id, additional_info)
+            )
+
+        # Convert dict to list of tuples sorted by multiplier
+        return sorted(
+            [(k, v) for k, v in multiplier_groups.items()],
+            key=lambda x: float(x[0]),
+            reverse=True,
+        )
+
+    def get_multiplier_quiz_groups(self, selected_quizzes):
+        """Mock method that groups quizzes by multiplier"""
+        if selected_quizzes[0]:
+            selected_quizzes[0]["lock_at_new_readable"] = "2026-06-01 - 1:30PM"
+        if selected_quizzes[1]:
+            selected_quizzes[1]["time_limit_new_readable"] = "3h"
+        multipliers = [4.0, 3.5, 3.0, 2.5, 2.0, 1.75, 1.5, 1.25]
+        result = {}
+        for multiplier in multipliers:
+            result[str(multiplier)] = selected_quizzes
+        return result
+
+    def get_existing_accommodations(
+        self, accommodations, students, multiplier_quiz_groups, course_id
+    ):
+        """Mock method that returns existing accommodations"""
+        return []
+
+    def add_time_extensions(self, student_groups, quiz_groups, course_id):
+        for multiplier, quiz_list in quiz_groups.items():
+            for quiz in quiz_list:
+                quiz["time_limit_status"] = "success"
+        return quiz_groups, True
+
+    def add_availabilities(
+        self,
+        student_groups,
+        quiz_groups,
+        existing_accommodations,
+        should_override,
+        course_id,
+    ):
+        for multiplier, quiz_list in quiz_groups.items():
+            for quiz in quiz_list:
+                quiz["lock_at_status"] = "success"
+                quiz["unlock_at_status"] = "success"
+        return quiz_groups, True

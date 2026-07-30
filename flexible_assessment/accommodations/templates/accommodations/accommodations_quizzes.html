@@ -1,0 +1,336 @@
+{% extends "accommodations/accommodations_base.html" %}
+{% load django_bootstrap5 %}
+{% bootstrap_messages %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+{% block content %}
+    <style>
+        .disabled-table table {
+            background-color: #f8f9fa;
+        }
+
+        .disabled-table td,
+        .disabled-table th {
+            color: rgba(114, 114, 117, 0.5);
+            /* Bootstrap body text, faded */
+        }
+
+        .disabled-table a {
+            color: #0d6efd !important;
+            /* Bootstrap primary link color */
+        }
+
+        .disabled-table a:hover {
+            color: #0a58ca !important;
+            /* Darker hover state */
+        }
+
+        /*
+        .disabled-table thead th {
+            border-bottom: 1px solid #dee2e6 !important; 
+        } */
+
+        /* Tooltip container */
+        .custom-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Tooltip text */
+        .custom-tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            padding: 8px 12px;
+            line-height: 1.4;
+            border-radius: 6px;
+            font-weight: normal;
+
+            /* Position the tooltip text */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+
+            /* Fade in tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* Tooltip arrow */
+        .custom-tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -10px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        /* Show the tooltip text when you mouse over the tooltip container */
+        .custom-tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Improve link readability inside tooltip */
+        .custom-tooltip .tooltiptext a {
+            color: #71e3f2;
+            /* Light blue for good contrast */
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        .custom-tooltip .tooltiptext a:hover {
+            color: #a2eff9;
+            /* Slightly lighter on hover */
+            text-decoration: none;
+        }
+    </style>
+    <div class="container my-4">
+        <h2 class="text-center">Accommodations</h2>
+        {% if course %}<h4 class="text-center text-muted">{{ course.title }}</h4>{% endif %}
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-10 col-md-12">
+                <form id="quiz-upload-form"
+                      method="post"
+                      action="{% url 'accommodations:accommodations_quizzes' course.id %}">
+                    {% csrf_token %}
+                    <div class="my-3">
+                        <!-- Valid Quizzes -->
+                        {% if quizzes %}
+                            <h4>Select Quizzes</h4>
+                            <label class="form-label mb-3">
+                                Please select the quizzes in your course that you would like to apply accommodations to:
+                            </label>
+                            <div class="ms-3">
+                                <div class="row g-3">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">
+                                                    <input class="form-check-input me-3" type="checkbox" id="select-all">
+                                                </th>
+                                                <th scope="col">Quizzes ({{ quizzes|length }})</th>
+                                                <th scope="col">Start Date</th>
+                                                <th scope="col">End Date</th>
+                                                <th scope="col">Time Limit</th>
+                                                {% if has_quiz_with_start_end %}
+                                                    <th scope="col">
+                                                        Extend Before/After
+                                                        <div class="custom-tooltip">
+                                                            <span class="tooltiptext">Extension cannot fit within current start and end times. Choose whether to open the quiz earlier (Before) or keep the quiz open later (After).</span>
+                                                            <i class="bi bi-info-circle text-primary ms-1"></i>
+                                                        </div>
+                                                    </th>
+                                                    <th scope=""col>
+                                                        Add Buffer
+                                                        <div class="custom-tooltip">
+                                                            <span class="tooltiptext">Add a 30 minute buffer to the end date of the quiz.</span>
+                                                            <i class="bi bi-info-circle text-primary ms-1"></i>
+                                                        </div>
+                                                    </th>
+                                                {% endif %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for quiz in quizzes %}
+                                                <tr>
+                                                    <td class="align-middle">
+                                                        <input class="form-check-input me-2 quiz-checkbox"
+                                                               type="checkbox"
+                                                               name="selected_quizzes"
+                                                               value="{{ quiz.id }}"
+                                                               id="quiz{{ quiz.id }}">
+                                                    </td>
+                                                    <td class="align-middle">
+                                                        <div>
+                                                            {% if quiz.is_new_quiz %}
+                                                                <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
+                                                            {% else %}
+                                                                <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                            {% endif %}
+                                                            <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                        </div>
+                                                    </td>
+                                                    <td class="align-middle">
+                                                        <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
+                                                            {{ quiz.unlock_at_readable|default:"No date set" }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="align-middle">
+                                                        <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
+                                                            {{ quiz.lock_at_readable|default:"No date set" }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="align-middle">
+                                                        <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
+                                                            {{ quiz.time_limit_readable|default:"No time limit set" }}
+                                                        </span>
+                                                        {% if quiz.should_warn %}
+                                                            <div class="custom-tooltip">
+                                                                <span class="tooltiptext">Warning: quiz time limit exceeds the time between the start date and end date. <a href="{{ quiz.url }}" target="_blank">Edit Quiz.</a></span>
+                                                                <i class="bi bi-exclamation-triangle text-danger ms-1"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                    </td>
+                                                    {% if has_quiz_with_start_end %}
+                                                        <td class="align-middle">
+                                                            {% if quiz.unlock_at_readable and quiz.lock_at_readable %}
+                                                                <select class="form-select form-select-sm" name="add_time_{{ quiz.id }}">
+                                                                    <option value="before">Before</option>
+                                                                    <option value="after" selected>After</option>
+                                                                </select>
+                                                            {% else %}
+                                                                <select class="form-select form-select-sm"
+                                                                        name="add_time_{{ quiz.id }}"
+                                                                        disabled>
+                                                                    <option value="after">N/A</option>
+                                                                </select>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="align-middle">
+                                                            {% if quiz.unlock_at_readable and quiz.lock_at_readable %}
+                                                                <input class="form-check-input me-2 buffer-checkbox"
+                                                                       type="checkbox"
+                                                                       name="selected_buffers"
+                                                                       value="{{ quiz.id }}"
+                                                                       id="buffer{{ quiz.id }}">
+                                                            {% else %}
+                                                                <input class="form-check-input me-2"
+                                                                       type="checkbox"
+                                                                       name="selected_buffers"
+                                                                       value="{{ quiz.id }}"
+                                                                       id="buffer{{ quiz.id }}"
+                                                                       disabled>
+                                                            {% endif %}
+                                                        </td>
+                                                    {% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        {% else %}
+                            <h4>No Applicable Quizzes</h4>
+                            <span>
+                                <i class="bi bi-exclamation-triangle text-danger ms-1"></i>
+                                Your course currently has no quizzes that can have accommodations applied to them. <a href="{{ add_quizzes_link }}" target="_blank">Add quizzes</a> with valid starting and ending dates and/or time limits to your course and reload this page to continue.
+                            </span>
+                        {% endif %}
+                        {% if unavailable_quizzes %}
+                            <h4 class="mt-4">Quizzes without Current Dates/Times</h4>
+                            <label class="form-label mb-3">
+                                These quizzes cannot have accommodations applied to them. In order to be eligible for accommodations, a quiz must have a valid starting and ending date and/or a time limit.
+                            </label>
+                            <!--Invalid Quizzes-->
+                            <div class="ms-3 disabled-table">
+                                <div class="row g-3">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <th scope="col">Quizzes ({{ unavailable_quizzes|length }})</th>
+                                            <th scope="col">Start Date</th>
+                                            <th scope="col">End Date</th>
+                                            <th scope="col">Time Limit</th>
+                                        </thead>
+                                        <tbody>
+                                            {% for quiz in unavailable_quizzes %}
+                                                <tr>
+                                                    <td>
+                                                        <div>
+                                                            {% if quiz.is_new_quiz %}
+                                                                <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
+                                                            {% else %}
+                                                                <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                            {% endif %}
+                                                            <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                        </div>
+                                                    </td>
+                                                    <td>{{ quiz.unlock_at_readable|default:"No date set" }}</td>
+                                                    <td>{{ quiz.lock_at_readable|default:"No date set" }}</td>
+                                                    <td>{{ quiz.time_limit_readable|default:"No time limit set" }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <!-- Buttons -->
+                        <div class="mt-4 d-flex justify-content-between">
+                            <!-- Back button -->
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    onclick="window.location.href='{% url 'accommodations:accommodations_home' course.id %}'">
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Back
+                            </button>
+                            <!-- Next button -->
+                            {% if quizzes %}
+                                <button type="submit" class="btn btn-primary">
+                                    Next <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% if messages %}
+        <ul class="messages" hidden>
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.quiz-checkbox');
+            const quizForm = document.getElementById("quiz-upload-form");
+
+            // on submitting form, make sure at least one quiz is selected
+            quizForm.addEventListener("submit", function (e) {
+                let none_checked = true;
+                checkboxes.forEach(cb => {
+                    if (cb.checked) {
+                        none_checked = false;
+                    }
+                });
+                if (none_checked) {
+                    e.preventDefault();
+                    alert("Please select at least one quiz before submitting.");
+                }
+            });
+
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            });
+
+            
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+
+                    if (!cb.checked) {
+                        selectAll.checked = false;
+                    } else if (Array.from(checkboxes).every(cb => cb.checked)) {
+                        selectAll.checked = true;
+                    }
+                });
+            });
+
+
+        });
+    </script>
+{% endblock content %}

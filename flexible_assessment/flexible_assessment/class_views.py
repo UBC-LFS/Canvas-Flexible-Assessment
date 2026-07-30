@@ -10,7 +10,7 @@ from django.core.exceptions import (
 from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 
 from flexible_assessment.view_roles import Instructor, Student
 
@@ -36,7 +36,7 @@ class GenericView(LoginRequiredMixin, UserPassesTestMixin):
     Attributes
     ----------
     allowed_view_role : ViewRole
-        Used for defining the test function for UserPassesTesMixin
+        Used for defining the test function for UserPassesTestMixin
     raise_exception : bool
         From LoginRequiredMixin, set to True so that exception is
         thrown if user is not logged in
@@ -156,3 +156,23 @@ class InstructorFormView(FormView):
 
 class StudentFormView(FormView):
     allowed_view_role = Student
+
+
+class AccommodationsListView(InstructorListView):
+    # Accommodations list view requires instructor permissions, has access to course students, and does not redirect if students try to access it
+    def handle_no_permission(self):
+        return HttpResponseForbidden(
+            "You do not have permission to access this app. If you are an instructor, you can access the app through Canvas navigation."
+        )
+
+    def get_context_data(self, **kwargs):
+        # add display_name to context here so logs work
+        context = super().get_context_data(**kwargs)
+        context["display_name"] = self.request.session.get("display_name", "")
+        if context["display_name"] == "":
+            context["display_name"] = UserProfile.objects.get(
+                pk=self.request.session["_auth_user_id"]
+            ).display_name
+            self.request.session["display_name"] = context["display_name"]
+
+        return context

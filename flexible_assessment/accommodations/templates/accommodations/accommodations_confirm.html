@@ -1,0 +1,395 @@
+{% extends "accommodations/accommodations_base.html" %}
+{% load django_bootstrap5 %}
+{% bootstrap_messages %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+{% block content %}
+    <style>
+        input[type=checkbox][disabled] {
+            filter: invert(15%);
+        }
+
+        #overlay {
+            position: fixed;
+            display: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            cursor: pointer;
+
+            /* Center the loader */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lds-ring {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+            color: white;
+            /* Set color to white for visibility */
+        }
+
+        .lds-ring,
+        .lds-ring div {
+            box-sizing: border-box;
+        }
+
+        .lds-ring div {
+            display: block;
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border: 8px solid currentColor;
+            border-radius: 50%;
+            animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-color: currentColor transparent transparent transparent;
+        }
+
+        .lds-ring div:nth-child(1) {
+            animation-delay: -0.45s;
+        }
+
+        .lds-ring div:nth-child(2) {
+            animation-delay: -0.3s;
+        }
+
+        .lds-ring div:nth-child(3) {
+            animation-delay: -0.15s;
+        }
+
+        @keyframes lds-ring {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <div class="container my-4">
+        <h2 class="text-center">Accommodations</h2>
+        {% if course %}<h4 class="text-center text-muted">{{ course.title }}</h4>{% endif %}
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-10 col-md-12">
+                <form id="accommodations-confirm-form"
+                      method="post"
+                      action="{% url 'accommodations:accommodations_confirm' course.id %}">
+                    {% csrf_token %}
+                    <h4>Confirm Accommodations for Multiplier Groups</h4>
+                    <label class="form-label my-3">
+                        Verify the accommodations listed. If a student's time limit after applying accommodations is longer than the current availability window, that student will be assigned a new availability window with an extended end date.
+                    </label>
+                    <div class="row g-3">
+                        {% if show_warning %}
+                            <div class="card shadow-sm mb-4 px-0"
+                                 style="border-radius: 1em;
+                                        overflow: hidden;
+                                        border: 2px solid red">
+                                <div class="card-header p-0">
+                                    <div class="w-100 px-3 py-2">
+                                        <h4 class="mb-0">🚨 Warning - Please review the following additional accommodations</h4>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-bordered table-sm mt-2"
+                                           style="table-layout: fixed">
+                                        <thead class="table-light">
+                                            <tr class="align-middle">
+                                                <th>Name</th>
+                                                <th>Student ID</th>
+                                                <th>Current extended time</th>
+                                                {% if columns_populated.0 %}<th>Extended time only for essay format</th>{% endif %}
+                                                {% if columns_populated.1 %}<th>Extended time only for multiple choice format</th>{% endif %}
+                                                {% if columns_populated.2 %}<th>Extended time only for short answer format</th>{% endif %}
+                                                {% if columns_populated.3 %}<th>Extended time only for exams involving fine manipulations</th>{% endif %}
+                                                {% if columns_populated.4 %}<th>CFA Notes</th>{% endif %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for group in processed_groups %}
+                                                {% for student in group.students %}
+                                                    {% if student.parts.0 != "" or student.parts.1 != "" or student.parts.2 != "" or student.parts.3 != "" or student.parts.4 != "" %}
+                                                        <tr>
+                                                            <td>{{ student.name }}</td>
+                                                            <td>{{ student.id }}</td>
+                                                            <td class="text-success">
+                                                                {{ student.multiplier }}x
+                                                                <i class="bi bi-check-lg"></i>
+                                                            </td>
+                                                            {% if columns_populated.0 %}
+                                                                {% if student.parts.0 == "" %}
+                                                                    <td class="text-muted">N/A</td>
+                                                                {% else %}
+                                                                    <td class="text-danger">{{ student.parts.0 }}x</td>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                            {% if columns_populated.1 %}
+                                                                {% if student.parts.1 == "" %}
+                                                                    <td class="text-muted">N/A</td>
+                                                                {% else %}
+                                                                    <td class="text-danger">{{ student.parts.1 }}x</td>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                            {% if columns_populated.2 %}
+                                                                {% if student.parts.2 == "" %}
+                                                                    <td class="text-muted">N/A</td>
+                                                                {% else %}
+                                                                    <td class="text-danger">{{ student.parts.2 }}x</td>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                            {% if columns_populated.3 %}
+                                                                {% if student.parts.3 == "" %}
+                                                                    <td class="text-muted">N/A</td>
+                                                                {% else %}
+                                                                    <td class="text-danger">{{ student.parts.3 }}x</td>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                            {% if columns_populated.4 %}
+                                                                {% if student.parts.4 == "" %}
+                                                                    <td class="text-muted">N/A</td>
+                                                                {% else %}
+                                                                    <td class="">{{ student.parts.4 }}</td>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        </tr>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <h5 class="mt-2">Edit Quizzes:</h5>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        {% for quiz in selected_quizzes %}
+                                            <div>
+                                                {% if quiz.is_new_quiz %}
+                                                    <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
+                                                {% else %}
+                                                    <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                {% endif %}
+                                                <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% for multiplier, students in multiplier_student_groups %}
+                            <div class="card shadow-sm mb-4 px-0"
+                                 style="border-radius: 1em;
+                                        overflow: hidden">
+                                <div class="card-header p-0">
+                                    <div class="w-100 px-3 py-2">
+                                        <h3 class="mb-0">{{ multiplier }}x Time Multiplier</h3>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Student Table -->
+                                    <h5>Students:</h5>
+                                    <table class="table table-bordered table-sm mt-2"
+                                           style="table-layout: fixed">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Student ID</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for student_id, student_name, _, _ in students %}
+                                                <tr>
+                                                    <td>{{ student_name }}</td>
+                                                    <td>{{ student_id }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <!-- Quiz Table -->
+                                    <h5 class="mt-4">Quizzes:</h5>
+                                    <table class="table table-bordered table-sm mt-2">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Time Limit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for mult, quizzes in multiplier_quiz_groups.items %}
+                                                {% if mult == multiplier %}
+                                                    {% for quiz in quizzes %}
+                                                        <tr>
+                                                            <td>
+                                                                <div>
+                                                                    {% if quiz.is_new_quiz %}
+                                                                        <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
+                                                                    {% else %}
+                                                                        <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                                    {% endif %}
+                                                                    <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <span class="{% if not quiz.unlock_at_readable %}text-muted {% endif %}">
+                                                                    {{ quiz.unlock_at_readable|default:"No date set" }}
+                                                                </span>
+                                                                {% if quiz.unlock_at_new_readable %}
+                                                                    <i class="bi bi-arrow-right"></i> <span class="text-muted">{{ quiz.unlock_at_new_readable }}</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                <span class="{% if not quiz.lock_at_readable %}text-muted {% endif %}">
+                                                                    {{ quiz.lock_at_readable|default:"No date set" }}
+                                                                </span>
+                                                                {% if quiz.lock_at_new_readable %}
+                                                                    <i class="bi bi-arrow-right"></i> <span class="text-muted">{{ quiz.lock_at_new_readable }}</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                <span class="{% if not quiz.time_limit_readable %}text-muted {% endif %}">
+                                                                    {{ quiz.time_limit_readable|default:"No time limit set" }}
+                                                                </span>
+                                                                {% if quiz.time_limit_new_readable %}
+                                                                    <i class="bi bi-arrow-right"></i> <span class="text-muted">{{ quiz.time_limit_new_readable }}</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <!-- Hide existing accommodation table and override/ignore form for now - may implement in future depending on feedback -->
+                        {% if existing_accommodations and include_existing_acommodations %}
+                            <div class="card shadow-sm mb-4 px-0"
+                                 style="border-radius: 1em;
+                                        overflow: hidden">
+                                <div class="card-header p-0">
+                                    <div class="w-100 px-3 py-2">
+                                        <h3 class="mb-0">Existing Accommodations</h3>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p>The following accommodations have already been set:</p>
+                                    <!-- Existing Accommodation Table -->
+                                    <table class="table table-bordered table-sm mt-2"
+                                           style="table-layout: fixed">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Student Name</th>
+                                                <th>Student ID</th>
+                                                <th>Quiz</th>
+                                                <th>Current Start Date</th>
+                                                <th>Current End Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for acc in existing_accommodations %}
+                                                <tr>
+                                                    <td>{{ acc.display_name }}</td>
+                                                    <td>{{ acc.login_id }}</td>
+                                                    <td>
+                                                        <a href="{{ acc.url }}">{{ acc.title }}</a>
+                                                    </td>
+                                                    <td>
+                                                        <span class="{% if not acc.unlock_at_override_readable %}text-muted {% endif %}">
+                                                            {{ acc.unlock_at_override_readable|default:"No date set" }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="{% if not acc.lock_at_override_readable %}text-muted {% endif %}">
+                                                            {{ acc.lock_at_override_readable|default:"No date set" }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <input type="radio" name="choice" id="ignore" value="ignore"  checked>
+                                    <label for="ignore">Keep Current Accommodations</label>
+                                    <input type="radio"
+                                           name="choice"
+                                           id="override"
+                                           value="override"
+                                           class="ms-2">
+                                    <label for="override">Override</label>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="my-2">
+                        <div>
+                            <input class="form-check-input mt-1"
+                                   type="checkbox"
+                                   id="confirmed-correct"
+                                   name="confirmed-correct"
+                                   value="confirmed-correct"
+                                   required>
+                            <label class="form-check-label ms-1" for="confirmed-correct">
+                                I have confirmed that the above accommodations are correct.
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Buttons -->
+                    <div class="mt-4 d-flex justify-content-between py-0 my-0">
+                        <!-- Back button -->
+                        <button type="button"
+                                class="btn btn-secondary"
+                                onclick="window.location.href='{% url 'accommodations:accommodations_quizzes' course.id %}'">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Back
+                        </button>
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-primary" id="submit-button" disabled>
+                            Submit <i class="bi bi-upload ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="overlay" onclick="on()">
+        <div class="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+    {% if messages %}
+        <ul class="messages" hidden>
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <script>
+        function on() {
+            document.getElementById("overlay").style.display = "flex";
+        }
+        // Enable/disable submit button based on checkbox state
+        const checkbox = document.getElementById("confirmed-correct");
+        const submitButton = document.getElementById("submit-button");
+
+        checkbox.addEventListener("change", function() {
+            submitButton.disabled = !this.checked;
+        });
+
+        document.getElementById("accommodations-confirm-form").addEventListener("submit", function() {
+            if (checkbox.checked) {
+                on();
+            }
+        });
+    </script>
+{% endblock %}

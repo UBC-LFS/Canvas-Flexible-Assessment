@@ -1062,7 +1062,11 @@ class OverrideStudentAssessmentView(views.InstructorFormView):
         student_name = get_object_or_404(
             models.UserProfile, pk=self.kwargs["pk"]
         ).display_name
+        student_number = get_object_or_404(
+            models.UserProfile, pk=self.kwargs["pk"]
+        ).login_id
         context["student_name"] = student_name
+        context["student_number"] = student_number
 
         previous = self.request.GET.get("previous", "")
 
@@ -1218,6 +1222,9 @@ class ImportAssessmentView(views.InstructorFormView):
             data = []
             reader = csv.reader(csv_file)
             headers = next(reader, None)
+            headers = [
+                h.strip() for h in headers
+            ]  # strip whitespace in case instructor puts space between items
             if headers != ["Assessment", "Default", "Minimum", "Maximum"]:
                 return super().form_invalid(form)
 
@@ -1225,6 +1232,7 @@ class ImportAssessmentView(views.InstructorFormView):
                 if len(row) != 4:
                     return super().form_invalid(form)
                 try:
+                    row = [r.strip() for r in row]
                     int(row[1])
                     int(row[2])
                     int(row[3])

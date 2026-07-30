@@ -1,0 +1,855 @@
+{% extends "accommodations/accommodations_base.html" %}
+{% load django_bootstrap5 %}
+{% bootstrap_messages %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{% bootstrap_messages %}
+{% block content %}
+    <style>
+        /* This hides the input buttons for number forms. */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        #drop-area,
+        #csv-drop-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #000e1c;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            height: 200px;
+        }
+
+        #drop-area.dragover,
+        #csv-drop-area.dragover {
+            background-color: #e0f3ff;
+            border-color: #0056b3;
+        }
+
+        #drop-area p,
+        #csv-drop-area p {
+            margin: 0;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        /* Custom CSS for Awesomeplete */
+        .awesomplete [hidden] {
+            display: none
+        }
+
+        .awesomplete .visually-hidden {
+            position: absolute;
+            clip: rect(0, 0, 0, 0)
+        }
+
+        .awesomplete {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+
+        .awesomplete>input {
+            display: block
+        }
+
+        .awesomplete>ul {
+            position: absolute;
+            left: 0;
+            z-index: 1;
+            min-width: 100%;
+            box-sizing: border-box;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background: #fff
+        }
+
+        .awesomplete>ul:empty {
+            display: none
+        }
+
+        .awesomplete>ul {
+            border-radius: .3em;
+            margin: .2em 0 0;
+            background: hsla(0, 0%, 100%, .9);
+            background: linear-gradient(to bottom right, #fff, hsla(0, 0%, 100%, .8));
+            border: 1px solid rgba(0, 0, 0, .3);
+            box-shadow: .05em .2em .6em rgba(0, 0, 0, .2);
+            text-shadow: none
+        }
+
+        @supports (transform:scale(0)) {
+            .awesomplete>ul {
+                transition: .3s cubic-bezier(.4, .2, .5, 1.4);
+                transform-origin: 1.43em -.43em
+            }
+
+            .awesomplete>ul:empty,
+            .awesomplete>ul[hidden] {
+                opacity: 0;
+                transform: scale(0);
+                display: block;
+                transition-timing-function: ease
+            }
+        }
+
+        .awesomplete>ul:before {
+            content: "";
+            position: absolute;
+            top: -.43em;
+            left: 1em;
+            width: 0;
+            height: 0;
+            padding: .4em;
+            background: #fff;
+            border: inherit;
+            border-right: 0;
+            border-bottom: 0;
+            -webkit-transform: rotate(45deg);
+            transform: rotate(45deg)
+        }
+
+        .awesomplete>ul>li {
+            position: relative;
+            padding: .2em .5em;
+            cursor: pointer
+        }
+
+        .awesomplete>ul>li:hover {
+            background: #b7d2e0;
+            color: #000
+        }
+
+        .awesomplete>ul>li[aria-selected=true] {
+            background: #363636;
+            color: #fff
+        }
+
+        .awesomplete mark {
+            background: #00d9ff
+        }
+
+        .awesomplete li:hover mark {
+            background: #1184e2
+        }
+
+        .awesomplete li[aria-selected=true] mark {
+            background: #08a1b2;
+            color: inherit
+        }
+
+        /*# sourceMappingURL=awesomplete.min.css.map */
+
+        /* DataTables custom styling */
+        .dataTables_wrapper .dataTables_length select {
+            padding: 0.375rem 2rem 0.375rem 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            margin-left: 0.5rem;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.375rem 0.75rem;
+            margin-left: 0.125rem;
+            border-radius: 0.375rem;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.375rem 0.75rem;
+            margin-left: 0.125rem;
+            border-radius: 0.375rem;
+        }
+
+        /* Loading spinner styles */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .btn-loading .btn-text {
+            visibility: hidden;
+        }
+
+        .btn-loading::after {
+            content: "";
+            position: absolute;
+            width: 1rem;
+            height: 1rem;
+            top: 50%;
+            left: 50%;
+            margin-left: -0.5rem;
+            margin-top: -0.5rem;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spinner 0.6s linear infinite;
+        }
+
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Collapsible section styles */
+        .card-header .btn-link {
+            color: #212529;
+            font-weight: normal;
+            padding: 0;
+        }
+
+        .card-header .btn-link:hover {
+            color: #0056b3;
+        }
+
+        .card-header .btn-link i {
+            transition: transform 0.3s ease;
+        }
+
+        .card-header .btn-link[aria-expanded="true"] i {
+            transform: rotate(180deg);
+        }
+    </style>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <div class="container my-4">
+        <h2 class="text-center">Accommodations</h2>
+        {% if course %}<h4 class="text-center text-muted">{{ course.title }}</h4>{% endif %}
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-10 col-md-12">
+                <!-- Combined Upload -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <button class="btn btn-link text-decoration-none w-100 text-start d-flex justify-content-between align-items-center"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#uploadCollapse"
+                                aria-expanded="false"
+                                aria-controls="uploadCollapse">
+                            <h4 class="mb-0">Upload Accommodation Files</h4>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="uploadCollapse">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 border-end">
+                                    <h5 class="text-center mb-3">PDF Files</h5>
+                                    <form id="pdf-upload-form" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <div>
+                                            <label for="pdf-file" class="form-label mb-3">
+                                                Please upload the files you received from the Centre for Accessibility.
+                                            </label>
+                                            <div id="drop-area">
+                                                <p>Drag & drop PDF files here, or click to select</p>
+                                                <input type="file"
+                                                       id="pdf-file"
+                                                       name="pdf_files"
+                                                       multiple
+                                                       class="hidden-input"
+                                                       accept="application/pdf"
+                                                       autocomplete="off">
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="text-center mb-3">CSV File</h5>
+                                    <form id="csv-upload-form" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <div>
+                                            <label for="csv-file" class="form-label mb-3">Upload a CSV file containing student accommodations data.</label>
+                                            <div id="csv-drop-area">
+                                                <p>Drag & drop CSV file here, or click to select</p>
+                                                <input type="file"
+                                                       id="csv-file"
+                                                       name="csv_file"
+                                                       class="hidden-input"
+                                                       accept=".csv,text/csv"
+                                                       autocomplete="off">
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-info" id="load-preset-csv">Reload student data from CFA server</button>
+                <form id="accommodations-form"
+                      method="post"
+                      action="{% url 'accommodations:accommodations_home' course.id %}">
+                    {% csrf_token %}
+                    <!-- DataTable -->
+                    <div id="table-container" style="display: none; margin: 1rem 0;">
+                        <table id="accommodations-table" class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Last Name</th>
+                                    <th>First Name</th>
+                                    <th>Student Number</th>
+                                    <th>Multiplier</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows will be added dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Button Row -->
+                    <div class="row justify-content-between my-4">
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-secondary" id="add-entry">Add Manually</button>
+                        </div>
+                        <div class="col-auto" id="buttons-hidden" style="display:none">
+                            <button type="button" class="btn btn-danger mx-2" id="remove-all">Remove All</button>
+                            <button type="submit" class="btn btn-primary">
+                                Next <i class="bi bi-arrow-right ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% if messages %}
+        <ul class="messages" hidden>
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const accommodations_form = document.getElementById("accommodations-form");
+            const addBtn = document.getElementById("add-entry");
+            const removeAllBtn = document.getElementById("remove-all");
+            const tableContainer = document.getElementById("table-container");
+            const loadPresetBtn = document.getElementById("load-preset-csv");
+            const MAX_SIZE_MB = 10;
+            let dataTable;
+            let rowCounter = 0;
+            let studentIds = new Set();
+
+            const studentList = {{ autocomplete_data|safe}};
+
+            // Initialize DataTable
+            function initializeDataTable() {
+                if ($.fn.DataTable.isDataTable('#accommodations-table')) {
+                    dataTable.destroy();
+                }
+                
+                dataTable = $('#accommodations-table').DataTable({
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                    columnDefs: [
+                        { targets: [4], orderable: false }, // Actions column not sortable
+                        { targets: [0, 1, 2], type: 'string' },
+                        { 
+                            targets: [3], 
+                            type: 'num',
+                            render: function(data, type, row) {
+                                if (type === 'sort' || type === 'type') {
+                                    // Extract the selected value from the select element
+                                    const selectElement = $(data).find('select')[0] || $(data)[0];
+                                    if (selectElement && selectElement.tagName === 'SELECT') {
+                                        return parseFloat(selectElement.value) || 0;
+                                    }
+                                    return parseFloat(data) || 0;
+                                }
+                                return data;
+                            }
+                        }
+                    ],
+                    order: [[0, 'asc'], [1, 'asc']], // Sort by last name, then first name
+                    language: {
+                        emptyTable: "No accommodations added yet",
+                        search: "Search students:"
+                    }
+                });
+                
+                tableContainer.style.display = 'block';
+            }
+
+            function parseStudentName(studentString) {
+                const match = studentString.match(/^(.+?)\s+(.+)\s*\((\d+)\)$/);
+                if (match) {
+                    return {
+                        firstName: match[1].trim(),
+                        lastName: match[2].trim(),
+                        studentNumber: match[3]
+                    };
+                }
+                
+                // Default fallback
+                return {
+                    lastName: studentString,
+                    firstName: '',
+                    studentNumber: ''
+                };
+            }
+
+            function addEntry(studentString = "", multiplier = "", additionalInfo = ["", "", "", "", ""], readOnly = false) {
+                if (!dataTable) {
+                    initializeDataTable();
+                }
+                const studentInfo = parseStudentName(studentString);
+                if (studentString != "") {
+                    if (studentIds.has(studentInfo.studentNumber)) {
+                        return;
+                    } else {
+                        studentIds.add(studentInfo.studentNumber);
+                    }
+                }
+
+                const rowId = `row-${rowCounter++}`;
+                
+                const multiplierOptions = [
+                    { value: "", text: "Select Multiplier" },
+                    { value: "1.25", text: "1.25x" },
+                    { value: "1.5", text: "1.5x" },
+                    { value: "1.75", text: "1.75x" },
+                    { value: "2.0", text: "2.0x" },
+                    { value: "2.5", text: "2.5x" },
+                    { value: "3.0", text: "3.0x" },
+                    { value: "3.5", text: "3.5x" },
+                    { value: "4.0", text: "4.0x" }
+                ];
+
+                const selectOptions = multiplierOptions.map(opt => 
+                    `<option value="${opt.value}" ${opt.value === multiplier ? 'selected' : ''}>${opt.text}</option>`
+                ).join('');
+
+                const lastNameInput = readOnly ?
+                    `<span class="form-control-plaintext">${studentInfo.lastName}</span>` :
+                    `<input type="text" class="form-control last-name-display" value="${studentInfo.lastName}" placeholder="Last name" readonly>`;
+
+                const firstNameInput = readOnly ?
+                    `<span class="form-control-plaintext">${studentInfo.firstName}</span>` :
+                    `<input type="text" class="form-control first-name-display" value="${studentInfo.firstName}" placeholder="First name" readonly>`;
+
+                const studentNumberInput = readOnly ? 
+                    `<span class="form-control-plaintext">${studentInfo.studentNumber}</span>
+                    <input type="hidden" name="student" value="${studentString}">
+                    <input type="hidden" name="additional_info" value = "${additionalInfo.join("^")}">` :
+                    `<input type="text" name="student" class="form-control student-input" value="${studentString}" placeholder="Enter student info" required>
+                    <input type="hidden" name="additional_info" value="${additionalInfo.join("^")}">`;
+
+                const multiplierSelect = `<select name="multiplier" class="form-select" required>${selectOptions}</select>`;
+
+                
+
+                
+                
+                // Initialize Awesomplete for new student input fields
+                if (!readOnly) {
+                    const rowNode = dataTable.row.add(['', '', '', multiplierSelect,
+                        `<button type="button" class="btn btn-outline-danger btn-sm remove-entry" data-row-id="${rowId}">
+                            <i class="bi bi-trash3"></i>
+                        </button>`
+                    ]).draw().node();
+                    $(rowNode).attr('id', rowId);
+
+                    // Merge first 3 cells into one spanning input
+                    const cells = $(rowNode).find('td');
+                    cells[0].setAttribute('colspan', '3');
+                    cells[0].innerHTML = `
+                        <input type="text" name="student" class="form-control student-input" value="${studentString}" placeholder="Search by name or student number..." required>
+                        <input type="hidden" name="additional_info" value="^^^^">
+                    `;
+                    $(cells[1]).hide();
+                    $(cells[2]).hide();
+                    const studentInput = $(rowNode).find('.student-input')[0];
+                    if (studentInput) {
+                        new Awesomplete(studentInput, {
+                            list: studentList,
+                            minChars: 1,
+                            autoFirst: true
+                        });
+
+                        // Update name fields when student is selected
+                        studentInput.addEventListener('awesomplete-selectcomplete', function(e) {
+                            const selectedStudent = this.value;
+                            const parsedInfo = parseStudentName(selectedStudent);
+
+                            if (!parsedInfo.studentNumber) {
+                                alert("Invalid format. Please use 'First Last (StudentNumber)'.");
+                                this.value = "";
+                                e.preventDefault();
+                                return;
+                            }
+
+                            if (studentIds.has(parsedInfo.studentNumber)) {
+                                e.preventDefault();
+                                alert("Student already selected");
+                                this.value = '';
+                                return;
+                            } else {
+                                studentIds.add(parsedInfo.studentNumber);
+                            }
+                            
+                            const liveCells = rowNode.querySelectorAll('td');
+                            liveCells[0].removeAttribute('colspan');
+                            liveCells[0].innerHTML = `<span class="form-control-plaintext">${parsedInfo.lastName}</span>`;
+                            liveCells[1].style.display = '';
+                            liveCells[1].innerHTML = `<span class="form-control-plaintext">${parsedInfo.firstName}</span>`;
+                            liveCells[2].style.display = '';
+                            liveCells[2].innerHTML = `
+                                <input type="hidden" name="student" value="${selectedStudent}">
+                                <input type="hidden" name="additional_info" value="^^^^">
+                                <span class="form-control-plaintext">${parsedInfo.studentNumber}</span>
+                            `;
+                        });
+                    }
+                    toggleButtons();
+                    return;
+                }
+
+                const rowData = [
+                    lastNameInput,
+                    firstNameInput,
+                    studentNumberInput,
+                    multiplierSelect,
+                    `<button type="button" class="btn btn-outline-danger btn-sm remove-entry" data-row-id="${rowId}">
+                        <i class="bi bi-trash3"></i>
+                    </button>`
+                ];
+                const rowNode = dataTable.row.add(rowData).draw().node();
+                $(rowNode).attr('id', rowId);
+                toggleButtons();
+            }
+
+            function toggleButtons() {
+                const rowCount = dataTable ? dataTable.rows().count() : 0;
+                const buttons = document.getElementById("buttons-hidden");
+                buttons.style.display = rowCount > 0 ? "" : "none";
+            }
+
+            function removeAllEntries() {
+                studentIds = new Set();
+                if (dataTable) {
+                    dataTable.clear().draw();
+                    toggleButtons();
+                }
+            }
+
+            // Event listeners
+            loadPresetBtn.addEventListener("click", function() {
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                loadPresetBtn.classList.add('btn-loading');
+                loadPresetBtn.disabled = true;
+            
+                $.ajax({
+                    url: "{% url 'accommodations:load_preset_csv' course.id %}",
+                    method: "GET",
+                    headers: { "X-CSRFToken": csrftoken },
+                    success: function(response) {
+                        fillFromPDFS(response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Failed to load preset CSV:", error);
+                        alert("Failed to load from CFA server. Please contact UBC LFS Learning Center.");
+                    },
+                    complete: function() {
+                        loadPresetBtn.classList.remove('btn-loading');
+                        loadPresetBtn.disabled = false;
+                    }
+                });
+            });
+
+            addBtn.addEventListener("click", function () {
+                addEntry();
+            });
+
+            removeAllBtn.addEventListener("click", function() {
+                removeAllEntries();
+            });
+
+            // Remove individual rows using event delegation
+            $(document).on('click', '.remove-entry', function() {
+                const rowId = $(this).data('row-id');
+                const row = dataTable.row(`#${rowId}`);
+                const rowNode = row.node();
+                const studentInput = $(rowNode).find('input[name="student"]').val();
+                const studentInfo = parseStudentName(studentInput);
+                if (studentInfo.studentNumber) {
+                   studentIds.delete(studentInfo.studentNumber);
+                }
+                row.remove().draw();
+                toggleButtons();
+            });
+
+            // Form submission
+            accommodations_form.addEventListener("submit", function (e) {
+                if (!dataTable || dataTable.rows().count() === 0) {
+                    e.preventDefault();
+                    alert("Please add at least one accommodation entry before submitting.");
+                    return;
+                }
+
+                let hasInvalidEntries = false;
+                
+                // Validate all rows
+                dataTable.rows().every(function() {
+                    const rowNode = this.node();
+                    const input = $(rowNode).find('input[name="student"]');
+                    if (input.length > 0) {
+                        const val = input.val();
+                        // If value is present but parsing fails to extract student ID
+                        if (val && !parseStudentName(val).studentNumber) {
+                            hasInvalidEntries = true;
+                            $(rowNode).addClass('table-danger');
+                        } else {
+                            $(rowNode).removeClass('table-danger');
+                        }
+                    }
+                });
+
+                if (hasInvalidEntries) {
+                    e.preventDefault();
+                    alert("One or more entries have an invalid format. Please ensure all students follow 'First Last (StudentNumber)' format.");
+                    return;
+                }
+            });
+
+            //Prefill with existing data
+            const prefillData = {{ accommodations_json|safe}};
+            prefillData.forEach(([studentNumber, multiplier, _, studentString, additionalInfo]) => {
+                addEntry(studentString, multiplier, additionalInfo ? additionalInfo.split('^') : ["", "", "", "", ""], true);
+            });
+            // Fill rows from JSON data
+            function fillFromPDFS(response, fromCSV=true) {
+                if (response.results && Array.isArray(response.results)) {
+                    const invalidItems = response.results.filter(item => {
+                        if (Array.isArray(item) && item.length === 4) {
+                            return false;
+                        } else if (!fromCSV && Array.isArray(item) && item.length === 3) {
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    if (invalidItems.length > 0) {
+                        alert("Error: One or more PDF submissions was invalid.");
+                        return;  
+                    }
+
+                    if (response.results.length == 0) {
+                        alert("No students in class found on CFA list")
+                        return;
+                    }
+
+                    response.results.forEach(item => {
+                        if (fromCSV) {
+                            if (Array.isArray(item) && item.length === 4) {
+                                const [studentNumber, multiplier, studentName, additionalInfo] = item;
+                                addEntry(studentName, multiplier, additionalInfo, true);
+                            } else if (item.error) {
+                                console.warn(item.error);
+                                alert(item.error);
+                            }
+                        } else {
+                            if (Array.isArray(item) && item.length === 3) {
+                                const [studentNumber, multiplier, studentName, additionalInfo] = item;
+                                addEntry(studentName, multiplier, additionalInfo, true);
+                            } else if (item.error) {
+                                console.warn(item.error);
+                                alert(item.error);
+                            }
+                        }
+                    });
+                } else {
+                    alert("Error uploading PDFs - make sure format is correct");
+                }
+            }
+
+            // Upload PDFs to server
+            function uploadPDFs() {
+                const files = document.getElementById("pdf-file").files;
+
+                if (!files.length) {
+                    alert("Please select at least one PDF to upload.");
+                    return;
+                }
+                
+                const formData = new FormData();
+                let fileSizeSum = 0;
+
+                for (let i = 0; i < files.length; i++) {
+                    formData.append("pdf_files", files[i]);
+                    fileSizeSum += files[i].size
+                }
+
+                if (fileSizeSum > MAX_SIZE_MB * 1024 * 1024) {
+                    alert("Please upload no more than " + MAX_SIZE_MB + " MB at once.");
+                    return;
+                }
+                
+
+                // Get CSRF token from the page
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                $.ajax({
+                    url: "{% url 'accommodations:upload_pdfs' course.id %}",
+                    method: "POST",
+                    headers: { "X-CSRFToken": csrftoken },
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        fillFromPDFS(response, false);
+                        csvFileInput.value = '';
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Upload failed:", error);
+                        csvFileInput.vale = '';
+                    }
+                });
+            }
+
+            // Upload CSV to server
+            function uploadCSV() {
+                const file = document.getElementById("csv-file").files[0];
+
+                if (!file) {
+                    alert("Please select a CSV file to upload.");
+                    return;
+                }
+
+                if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+                    alert("Please upload a file no larger than " + MAX_SIZE_MB + " MB.");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("csv_file", file);
+
+                // Get CSRF token from the page
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                $.ajax({
+                    url: "{% url 'accommodations:upload_csv' course.id %}",
+                    method: "POST",
+                    headers: { "X-CSRFToken": csrftoken },
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        fillFromPDFS(response);
+                        csvFileInput.value = '';
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("CSV Upload failed:", error);
+                        csvFileInput.vale = '';
+                    }
+                });
+            }
+
+            const dropArea = document.getElementById("drop-area");
+            const fileInput = document.getElementById("pdf-file");
+
+            // Trigger file input when clicking the drop area
+            dropArea.addEventListener("click", () => fileInput.click());
+            // Automatically upload when files are selected via click
+            fileInput.addEventListener("change", () => {
+                if (fileInput.files.length > 0) {
+                    uploadPDFs();
+                }
+            });
+
+            // Handle drag over
+            dropArea.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropArea.classList.add("dragover");
+            });
+
+            // Handle drag leave
+            dropArea.addEventListener("dragleave", () => {
+                dropArea.classList.remove("dragover");
+            });
+
+            // Handle drop
+            dropArea.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropArea.classList.remove("dragover");
+
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                }
+
+                uploadPDFs();
+            });
+
+            // CSV upload event listeners
+            const csvDropArea = document.getElementById("csv-drop-area");
+            const csvFileInput = document.getElementById("csv-file");
+
+            // Trigger file input when clicking the CSV drop area
+            csvDropArea.addEventListener("click", () => csvFileInput.click());
+            // Automatically upload when CSV file is selected via click
+            csvFileInput.addEventListener("change", () => {
+                if (csvFileInput.files.length > 0) {
+                    uploadCSV();
+                }
+            });
+
+            // Handle drag over for CSV
+            csvDropArea.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                csvDropArea.classList.add("dragover");
+            });
+
+            // Handle drag leave for CSV
+            csvDropArea.addEventListener("dragleave", () => {
+                csvDropArea.classList.remove("dragover");
+            });
+
+            // Handle drop for CSV
+            csvDropArea.addEventListener("drop", (e) => {
+                e.preventDefault();
+                csvDropArea.classList.remove("dragover");
+
+                if (e.dataTransfer.files.length > 0) {
+                    csvFileInput.files = e.dataTransfer.files;
+                }
+
+                uploadCSV();
+            });
+
+            // Automatically load preset data
+            loadPresetBtn.click();
+
+        });
+    </script>
+{% endblock content %}
