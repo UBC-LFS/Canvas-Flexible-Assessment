@@ -37,33 +37,33 @@
                                         <td class="text-center align-middle" style="font-size: 110%;">
                                             <span style="font-weight: bold;">Assessment</span> (with default %)
                                         </td>
-                                        <th class="text-center align-middle" style="font-size: 110%;">
-                                            Canvas Assignment Group
-                                        </th>
+                                        <th class="text-center align-middle" style="font-size: 110%;">Canvas Assignment Group</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for field in form.visible_fields %}
                                         {% if field.name != "weight_option" %}
-                                        <tr>
-                                            <td class="text-center align-middle">{{ field.label }}</td>
-                                            <td class="align-middle">
-                                                {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td class="text-center align-middle">{{ field.label }}</td>
+                                                <td class="align-middle">
+                                                    {% bootstrap_field field show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
+                                                </td>
+                                            </tr>
                                         {% endif %}
                                     {% endfor %}
                                 </tbody>
                             </table>
                             <p class="fw-light m-0">
-                                Select how to calculate the weights of assignments within assignment groups: <br/><br/>
+                                Select how to calculate the weights of assignments within assignment groups:
+                                <br />
+                                <br />
                             </p>
                             {{ form.weight_option }}
-                            <br/>        
+                            <br />
                             <div class="d-flex align-items-center justify-content-between">
                                 <button class="btn btn-primary float-end" type="submit">
                                     Continue <i class="bi bi-chevron-right"></i>
-                                </button>                     
+                                </button>
                             </div>
                         </div>
                     </div>

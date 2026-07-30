@@ -1,12 +1,16 @@
 import csv
 import os
 import re
+from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime
 from abc import ABC, abstractmethod
 
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils import timezone
+
+from bs4 import BeautifulSoup
+from flexible_assessment.models import FlexAssessment
 
 from . import grader
 
@@ -184,7 +188,7 @@ def grades_csv(course, students, groups):
 
     for student in students:
         values = []
-        values.append("{}, {}".format(student.display_name, student.login_id))
+        values.append("{}".format(student.login_id))
 
         override_total = grader.get_override_total(groups, student, course)
         override_total = round_half_up(override_total, 3)
@@ -219,6 +223,48 @@ def grades_csv(course, students, groups):
     csv_writer.write(grader.get_averages(groups, course))
 
     return csv_writer.get_response()
+
+
+# def grades_csv(course, html):
+#     """Creates csv response for final grade list"""
+
+#     csv_writer = CSVWriter("Grades", course)
+
+#     soup = BeautifulSoup(html, "html.parser")
+#     table = soup.find("table", {"id": "final"})
+
+#     if table is None:
+#         return csv_writer.get_response()
+
+#     thead = table.thead
+#     if thead:
+#         header_cells = thead.find_all("th", recursive=True)
+#         values = [cell.get_text(" ", strip=True) for cell in header_cells[:-1]]
+#         csv_writer.write(values)
+
+#     tbody = table.tbody
+#     if tbody:
+#         for row in tbody.find_all("tr", recursive=False):
+#             cells = row.find_all("td", recursive=False)
+#             if not cells:
+#                 continue
+
+#             name = cells[0].get_text(" ", strip=True)
+#             cwl = cells[-1].get_text(" ", strip=True)
+
+#             values = [f"{name}, {cwl}"]
+#             values.extend(
+#                 cell.get_text(" ", strip=True) for cell in cells[1:-1]
+#             )
+#             csv_writer.write(values)
+
+#     tfoot = table.tfoot
+#     if tfoot:
+#         csv_writer.write(["Average Override", "Average Default", "Average Difference"])
+#         footer_cells = tfoot.find_all("td", recursive=True)
+#         values = [cell.get_text(" ", strip=True) for cell in footer_cells]
+#         csv_writer.write(values)
+#     return csv_writer.get_response()
 
 
 def assessments_csv(course):

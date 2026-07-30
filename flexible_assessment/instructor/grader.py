@@ -40,9 +40,9 @@ def get_default_total(groups, student):
     total_weight = sum(weights)
     overall = overall / total_weight * Decimal(100) if total_weight != 0 else Decimal(0)
     # return float(overall)
-    return overall
+    # return overall
 
-    # return float(round_half_up(overall, 3))
+    return float(round_half_up(overall, 2))
     # return overall
 
 
@@ -175,12 +175,12 @@ def get_override_total(groups, student, course):
     else:
         overall = Decimal(0)
 
-    print(f"printing before the rounding {overall}")
+    # print(f"printing before the rounding {overall}")
 
     # return float(overall)
 
-    return overall
-    # return float(round_half_up(overall, 3))
+    # return overall
+    return float(round_half_up(overall, 2))
     # return overall
 
 
@@ -248,8 +248,9 @@ def get_score(groups, group_id, student):
     student_id = student.user_id
     group_id_str = str(group_id)
     student_id_str = str(student_id)
-    grades = groups[group_id_str]["grade_list"]["grades"]
-    for curr_id, score in grades:
-        if student_id_str == curr_id:
-            return score
+    if group_id_str in groups.keys():
+        grades = groups[group_id_str]["grade_list"]["grades"]
+        for curr_id, score in grades:
+            if student_id_str == curr_id:
+                return score
     return None

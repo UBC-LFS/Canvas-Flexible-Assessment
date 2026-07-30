@@ -86,9 +86,22 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            flatpickr("input[type=datetime-local]", {
+            flatpickr(".opentimepicker", {
                 enableTime: true,
-                dateFormat: "Y-m-d H:i",
+                dateFormat: "Y-m-d h:i K",
+                minuteIncrement: 1,
+                time_24hr: false,
+                defaultHour: 9,
+                defaultMinute: 0,
+            });
+            flatpickr(".closetimepicker", {
+                enableTime: true,
+                dateFormat: "Y-m-d h:i K",
+                minuteIncrement: 1,
+                time_24hr: false,
+                defaultHour: 23,
+                defaultMinute: 59,
+
             });
         });
     </script>
@@ -125,13 +138,15 @@
                 </div>
                 <div class="modal-footer justify-content-between">
                     <div>
-                        <a role="button"
+                        <a id="change-calendar-btn"
+                           role="button"
                            type="button"
                            class="btn btn-secondary"
                            href="{% url 'instructor:match_calendar' course.id %}">Change Calendar</a>
                     </div>
                     <div>
-                        <a role="button"
+                        <a id="change-flex-btn"
+                           role="button"
                            type="button"
                            class="btn btn-primary"
                            href="{% url 'instructor:match_flex' course.id %}">Change Flex Dates</a>

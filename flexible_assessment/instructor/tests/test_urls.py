@@ -22,7 +22,7 @@ class TestUrls(TestCase):
 
     # Helper function to log in a student and try to access the url, students should be redirected home
     def url_invalid_for_student(self, url_name):
-        user = UserProfile.objects.get(login_id="test_student1")
+        user = UserProfile.objects.get(login_id="10000001")
         course = Course.objects.get(title="test_course1")
         self.client.force_login(user)
 
