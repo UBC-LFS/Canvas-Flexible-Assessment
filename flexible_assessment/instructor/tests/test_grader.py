@@ -1,8 +1,10 @@
 from decimal import Decimal
 
 from django.test import TestCase
+from django.template.loader import render_to_string
 from flexible_assessment.models import UserProfile
 from instructor import grader
+from instructor.templatetags.instructor_tags import get_group_weight_percentage
 from flexible_assessment.models import Roles, FlexAssessment, Assessment, Course
 from flexible_assessment.tests.mock_classes import *
 
@@ -275,6 +277,67 @@ class TestGrader(TestCase):
         self.assertEqual(grader.get_group_weight(groups_dict, "2"), 40)
         self.assertEqual(grader.get_group_weight(groups_dict, "3"), 15)
         self.assertEqual(grader.get_group_weight(groups_dict, "4"), 45)
+
+        groups_dict["2"]["group_weight"] = "40.25"
+        groups_dict["3"]["group_weight"] = ""
+        groups_dict["4"]["group_weight"] = "not a number"
+
+        self.assertEqual(grader.get_group_weight(groups_dict, "2"), Decimal("40.25"))
+        self.assertEqual(grader.get_group_weight(groups_dict, "3"), "")
+        self.assertEqual(grader.get_group_weight(groups_dict, "4"), "")
+        self.assertEqual(grader.get_group_weight(groups_dict, "missing"), "")
+
+    def test_group_weight_percentage_handles_canvas_weight_strings(self):
+        groups_dict = {
+            "1": {"group_weight": "40.25"},
+            "2": {"group_weight": ""},
+            "3": {"group_weight": "not a number"},
+            "4": {"group_weight": None},
+        }
+
+        self.assertEqual(get_group_weight_percentage(groups_dict, "1"), "40.25%")
+        self.assertEqual(get_group_weight_percentage(groups_dict, "2"), "")
+        self.assertEqual(get_group_weight_percentage(groups_dict, "3"), "")
+        self.assertEqual(get_group_weight_percentage(groups_dict, "4"), "")
+        self.assertEqual(get_group_weight_percentage(groups_dict, "missing"), "")
+
+    def test_final_grades_table_renders_canvas_weight_strings_and_missing_group(self):
+        course_id = 1
+        course = Course.objects.get(pk=course_id)
+        assessments = list(
+            Assessment.objects.filter(course=course).order_by("order", "id")
+        )
+        students = UserProfile.objects.filter(
+            usercourse__role=Roles.STUDENT, usercourse__course=course
+        )
+        student_ids = [str(student.user_id) for student in students]
+        groups_dict = self.build_group_dict(
+            student_ids,
+            [
+                [70, 25.5, round(100 / 3, 2), round(200 / 3, 2)],
+                [80, 36.7, round(50.4534, 2), round(200 / 3, 2)],
+                [90, 75, 100, round(200 / 3, 2)],
+                [100, 0, 1.11, round(200 / 3, 2)],
+            ],
+            weights=[40.25, 20, 20, 19.75],
+        )
+        groups_dict["1"]["group_weight"] = "40.25"
+        groups_dict["2"]["group_weight"] = "20"
+        groups_dict["3"]["group_weight"] = "20.00"
+        groups_dict["4"]["group_weight"] = "19.75"
+        assessments[-1].group = 999
+
+        html = render_to_string(
+            "instructor/final_grades_table.html",
+            {
+                "course": course,
+                "assessments": assessments,
+                "student_list": students,
+                "groups": groups_dict,
+            },
+        )
+
+        self.assertIn('id="final"', html)
 
     def test_Grader_gets_score_correctly(self):
         course_id = 1

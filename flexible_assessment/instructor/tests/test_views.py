@@ -47,7 +47,9 @@ class TestViews(TestCase):
             response.url, reverse("instructor:final_grades_shell", args=[course_id])
         )
 
-        # Make sure the Canvas course group weights are now updated to match the default for each assessment
+        self.client.get(reverse("instructor:final_grades_table", args=[course_id]))
+
+        # Make sure the Canvas course group weights are updated when the table loads
         canvas_groups = mocked_flex_canvas_instance.get_course(
             1
         ).get_assignment_groups()

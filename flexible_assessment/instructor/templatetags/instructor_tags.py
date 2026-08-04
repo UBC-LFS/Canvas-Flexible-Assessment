@@ -185,7 +185,7 @@ def get_score(groups, group_id, student):
 #     else:
 #         return ("used-default", default_str, default_str, "0.00%")
 
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 
 def round_half_up(value, digits=2):
@@ -243,10 +243,13 @@ def get_group_weight(groups, id):
 @register.simple_tag()
 def get_group_weight_percentage(groups, id):
     percentage = grader.get_group_weight(groups, id)
-    if percentage is None:
+    if percentage in (None, ""):
         return ""
     else:
-        percentage = Decimal(str(percentage))
+        try:
+            percentage = Decimal(str(percentage))
+        except (InvalidOperation, ValueError):
+            return ""
         return f"{percentage:.2f}%"
 
 

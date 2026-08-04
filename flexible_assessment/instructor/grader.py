@@ -1,5 +1,5 @@
 from flexible_assessment.models import UserProfile, Roles
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 
 def round_half_up(value, digits=2):
@@ -237,8 +237,11 @@ def get_group_weight(groups, id):
     """Gets Canvas assignment group weight"""
 
     try:
-        return round(groups[str(id)]["group_weight"], 2)
-    except Exception:
+        group_weight = groups[str(id)]["group_weight"]
+        if group_weight in (None, ""):
+            return ""
+        return round(Decimal(str(group_weight)), 2)
+    except (InvalidOperation, KeyError, TypeError, ValueError):
         return ""
 
 
