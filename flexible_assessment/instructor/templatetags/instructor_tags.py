@@ -246,6 +246,7 @@ def get_group_weight_percentage(groups, id):
     if percentage is None:
         return ""
     else:
+        percentage = Decimal(str(percentage))
         return f"{percentage:.2f}%"
 
 
