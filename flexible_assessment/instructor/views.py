@@ -442,9 +442,6 @@ class AssessmentGroupView(views.InstructorFormView):
             response = super().form_invalid(form)
             return response
 
-        # Set the session variable to flat if weight_option is equal_weights
-        # print(form.cleaned_data)
-        self._update_assessments_and_groups(form)
         if weight_option == "equal_weights":
             self.request.session["flat"] = True
         else:
@@ -461,47 +458,68 @@ class AssessmentGroupView(views.InstructorFormView):
         hash_id = self.compute_assignment_group_hash(course_id, selected_map, weighting)
         key = self.session_table_key(hash_id)
         self.session_set_current_key(self.request, key)
+
+        self._update_assessment_matches(form)
         response = super().form_valid(form)
         return response
 
-    def _update_assessments_and_groups(self, form):
-        """Adds assignment group to assessment, updates
-        Canvas group weights
-        """
+    def _update_assessment_matches(self, form):
+        """Save the selected Canvas assignment group for each assessment."""
 
         course_id = self.kwargs["course_id"]
-
-        canvas_course = FlexCanvas(self.request).get_course(course_id)
-        course_name = canvas_course.__getattribute__("name")
+        course = models.Course.objects.get(pk=course_id)
 
         for assessment_id, group_id in form.cleaned_data.items():
             assessment = models.Assessment.objects.get(pk=assessment_id)
             assessment.group = int(group_id)
             assessment.save()
 
-            group = canvas_course.get_assignment_group(group_id)
-            group.edit(group_weight=assessment.default)
-            group_name = group.__getattribute__("name")
-
             logger.info(
-                "Matched %s to Canvas %s group",
+                "Matched %s to Canvas assignment group %s",
                 assessment.title,
-                group_name,
+                group_id,
                 extra={
-                    "course": course_name,
+                    "course": str(course),
                     "user": self.request.session["display_name"],
                 },
             )
 
-        matched_group_ids = [int(id) for id in form.cleaned_data.values()]
-        canvas_group_ids = [group.id for group in canvas_course.get_assignment_groups()]
 
-        unmatched_group_ids = list(
-            filter(lambda id: id not in matched_group_ids, canvas_group_ids)
+def sync_canvas_assignment_group_weights(request, course):
+    """Update Canvas weights from saved assessment matches."""
+
+    canvas_course = FlexCanvas(request).get_course(course.id)
+    course_name = canvas_course.__getattribute__("name")
+
+    assessments = models.Assessment.objects.filter(course=course).order_by(
+        "order", "id"
+    )
+
+    for assessment in assessments:
+        group_id = assessment.group
+        group = canvas_course.get_assignment_group(group_id)
+        group.edit(group_weight=assessment.default)
+        group_name = group.__getattribute__("name")
+
+        logger.info(
+            "Updated Canvas %s group weight for %s",
+            group_name,
+            assessment.title,
+            extra={
+                "course": course_name,
+                "user": request.session["display_name"],
+            },
         )
 
-        for id in unmatched_group_ids:
-            canvas_course.get_assignment_group(id).edit(group_weight=0)
+    matched_group_ids = [assessment.group for assessment in assessments]
+    canvas_group_ids = [group.id for group in canvas_course.get_assignment_groups()]
+
+    unmatched_group_ids = list(
+        filter(lambda id: id not in matched_group_ids, canvas_group_ids)
+    )
+
+    for id in unmatched_group_ids:
+        canvas_course.get_assignment_group(id).edit(group_weight=0)
 
 
 class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
@@ -549,8 +567,10 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
 
         if not course.open:
             hide_total = True
+            hide_weights = True
         else:
             hide_total = course_settings["hide_final_grades"]
+            hide_weights = not canvas_course.apply_assignment_group_weights
 
         context["date_form"] = CourseSettingsForm(
             self.request.POST or None, instance=course, prefix="date"
@@ -559,7 +579,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
             self.request.POST or None,
             prefix="options",
             hide_total=hide_total,
-            hide_weights=not canvas_course.apply_assignment_group_weights,
+            hide_weights=hide_weights,
         )
 
         context["ordering_form"] = OrderingForm(self.request.POST, prefix="ordering")
@@ -1404,6 +1424,7 @@ class FinalGradeTableView(FinalGradeListView):
         self.object_list = self.get_queryset()
         course_id = self.kwargs["course_id"]
         course = models.Course.objects.get(pk=course_id)
+        sync_canvas_assignment_group_weights(request, course)
         context = self.get_context_data(**kwargs)
         curr_key = self.request.session.get("current_table_key")
 

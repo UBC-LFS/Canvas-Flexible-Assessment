@@ -7,7 +7,30 @@
     active
 {% endblock nav_item_final %}
 {% block content %}
-    <form action="" method="post">
+    <div class="modal fade"
+         id="loadingModal"
+         data-bs-backdrop="static"
+         data-bs-keyboard="false"
+         tabindex="-1"
+         role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-5">
+                    <div class="spinner-border text-primary mb-4"
+                         style="width:3rem;
+                                height:3rem"
+                         role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <strong>Please wait...</strong>
+                    <p class="mb-0">Depending on the size of the course, it may take a few minutes to load.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form action=""
+          method="post"
+          onsubmit="this.querySelector('button[type=submit]').disabled = true; bootstrap.Modal.getOrCreateInstance(document.getElementById('loadingModal')).show()">
         {% csrf_token %}
         {% bootstrap_form_errors form type='non_fields' %}
         {% for hidden_field in form.hidden_fields %}
