@@ -107,9 +107,7 @@
                         <!-- Valid Quizzes -->
                         {% if quizzes %}
                             <h4>Select Quizzes</h4>
-                            <label class="form-label mb-3">
-                                Please select the quizzes in your course that you would like to apply accommodations to:
-                            </label>
+                            <label class="form-label mb-3">Select each quiz to apply accommodations.</label>
                             <div class="ms-3">
                                 <div class="row g-3">
                                     <table class="table table-bordered">
@@ -226,41 +224,60 @@
                                 Your course currently has no quizzes that can have accommodations applied to them. <a href="{{ add_quizzes_link }}" target="_blank">Add quizzes</a> with valid starting and ending dates and/or time limits to your course and reload this page to continue.
                             </span>
                         {% endif %}
+                        <div class="pb-3 text-muted text-center text-small">
+                            <p class="mb-1">
+                                Don't see your quiz here? If your quiz is untimed or its dates occur in the past, go to <a href="{{ add_quizzes_link }}" target="_blank">Quizzes</a> to add a time limit and/or update availability dates before loading this page.
+                            </p>
+                        </div>
                         {% if unavailable_quizzes %}
-                            <h4 class="mt-4">Quizzes without Current Dates/Times</h4>
-                            <label class="form-label mb-3">
-                                These quizzes cannot have accommodations applied to them. In order to be eligible for accommodations, a quiz must have a valid starting and ending date and/or a time limit.
-                            </label>
                             <!--Invalid Quizzes-->
-                            <div class="ms-3 disabled-table">
-                                <div class="row g-3">
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <th scope="col">Quizzes ({{ unavailable_quizzes|length }})</th>
-                                            <th scope="col">Start Date</th>
-                                            <th scope="col">End Date</th>
-                                            <th scope="col">Time Limit</th>
-                                        </thead>
-                                        <tbody>
-                                            {% for quiz in unavailable_quizzes %}
-                                                <tr>
-                                                    <td>
-                                                        <div>
-                                                            {% if quiz.is_new_quiz %}
-                                                                <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
-                                                            {% else %}
-                                                                <i class="bi bi-rocket-takeoff me-1 text-success"></i>
-                                                            {% endif %}
-                                                            <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
-                                                        </div>
-                                                    </td>
-                                                    <td>{{ quiz.unlock_at_readable|default:"No date set" }}</td>
-                                                    <td>{{ quiz.lock_at_readable|default:"No date set" }}</td>
-                                                    <td>{{ quiz.time_limit_readable|default:"No time limit set" }}</td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
+                            <div class="card mt-4">
+                                <div class="card-header">
+                                    <button class="btn w-100 text-start d-flex justify-content-between align-items-center"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#invalidQuizzesCollapse"
+                                            aria-expanded="false"
+                                            aria-controls="invalidQuizzesCollapse">
+                                        <span class="h4 mb-0">Past/Untimed Quizzes ({{ unavailable_quizzes|length }})</span>
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </div>
+                                <div class="collapse" id="invalidQuizzesCollapse">
+                                    <div class="card-body">
+                                        <label class="form-label mb-3">
+                                            Quizzes must have a Time Limit and/or an End Date occurring in the future to apply accommodations.
+                                        </label>
+                                        <div class="disabled-table table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <th scope="col">Quizzes</th>
+                                                    <th scope="col">Start Date</th>
+                                                    <th scope="col">End Date</th>
+                                                    <th scope="col">Time Limit</th>
+                                                </thead>
+                                                <tbody>
+                                                    {% for quiz in unavailable_quizzes %}
+                                                        <tr>
+                                                            <td>
+                                                                <div>
+                                                                    {% if quiz.is_new_quiz %}
+                                                                        <i class="bi bi-rocket-takeoff-fill me-1 text-success"></i>
+                                                                    {% else %}
+                                                                        <i class="bi bi-rocket-takeoff me-1 text-success"></i>
+                                                                    {% endif %}
+                                                                    <a href="{{ quiz.url }}" target="_blank">{{ quiz.title }}</a>
+                                                                </div>
+                                                            </td>
+                                                            <td>{{ quiz.unlock_at_readable|default:"No date set" }}</td>
+                                                            <td>{{ quiz.lock_at_readable|default:"No date set" }}</td>
+                                                            <td>{{ quiz.time_limit_readable|default:"No time limit set" }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         {% endif %}
