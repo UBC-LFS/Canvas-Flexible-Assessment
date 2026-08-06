@@ -83,6 +83,7 @@ CANVAS_OAUTH_SCOPES = [
     "url:GET|/api/v1/calendar_events/:id",
     "url:POST|/api/v1/calendar_events",
     "url:PUT|/api/v1/calendar_events/:id",
+    "url:POST|/api/graphql",
 ]
 CANVAS_OAUTH_TOKEN_EXPIRATION_BUFFER = timedelta()
 
@@ -240,4 +241,4 @@ LOGGING = {
     },
 }
 
-# TEAMSHARE_FOLDER = os.environ["TEAMSHARE_FOLDER_PATH"]
+TEAMSHARE_FOLDER = os.environ["TEAMSHARE_FOLDER_PATH"]
