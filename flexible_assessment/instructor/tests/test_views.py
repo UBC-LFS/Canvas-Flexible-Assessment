@@ -6,6 +6,7 @@ from instructor.forms import *
 from instructor.views import *
 from flexible_assessment.tests.test_data import DATA
 import datetime
+from unittest.mock import patch
 
 import flexible_assessment.tests.mock_classes as mock_classes
 
@@ -386,6 +387,48 @@ class TestViews(TestCase):
         self.assertContains(response, "Average Override", count=1)
         self.assertContains(response, "Average Default", count=1)
         self.assertContains(response, "Average Difference", count=1)
+
+    @mock_classes.use_mock_canvas()
+    def test_FinalGradeListView_submit_success_message(
+        self, mocked_flex_canvas_instance
+    ):
+        course_id = 1
+
+        instructor_home_url = reverse("instructor:instructor_home", args=[course_id])
+        self.client.get(instructor_home_url)
+
+        with patch.object(FinalGradeListView, "_submit_final_grades", return_value=True):
+            response = self.client.post(
+                reverse("instructor:final_grades_submit", args=[course_id]),
+                follow=True,
+            )
+
+        self.assertRedirects(response, instructor_home_url)
+        self.assertContains(
+            response, "Final grades submitted to Canvas successfully."
+        )
+
+    @mock_classes.use_mock_canvas()
+    def test_FinalGradeListView_submit_error_message(self, mocked_flex_canvas_instance):
+        course_id = 1
+
+        instructor_home_url = reverse("instructor:instructor_home", args=[course_id])
+        self.client.get(instructor_home_url)
+
+        with patch.object(
+            FinalGradeListView, "_submit_final_grades", return_value=False
+        ):
+            response = self.client.post(
+                reverse("instructor:final_grades_submit", args=[course_id]),
+                follow=True,
+            )
+
+        self.assertRedirects(
+            response, reverse("instructor:final_grades_shell", args=[course_id])
+        )
+        self.assertContains(
+            response, "Something went wrong when submitting grades! Please try again."
+        )
 
     @mock_classes.use_mock_canvas()
     def test_InstructorAssessmentView_correct_csv(self, mocked_flex_canvas_instance):

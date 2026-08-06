@@ -215,7 +215,7 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
             if not success:
                 messages.error(
                     request,
-                    "Something went wrong when submitting grades!" "Please try again.",
+                    "Something went wrong when submitting grades! Please try again.",
                 )
 
                 logger.info("Error in submitting final grades", extra=log_extra)
@@ -230,6 +230,11 @@ class FinalGradeListView(views.ExportView, views.InstructorListView):
 
         release_total = request.POST.get("release_total") != "on"
         canvas.get_course(course_id).update_settings(hide_final_grades=release_total)
+
+        messages.success(
+            request,
+            "Final grades submitted to Canvas successfully.",
+        )
 
         return HttpResponseRedirect(
             reverse("instructor:instructor_home", kwargs={"course_id": course_id})
