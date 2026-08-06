@@ -97,16 +97,12 @@ class AccommodationsHome(views.AccommodationsListView):
         for student_string, mult, additional_info in zip(
             student_strings, multipliers, additional_infos
         ):
-            sn_list = re.findall(r"\d+", student_string)
-            sn = 0
-            for n in sn_list:  # get student number in string - ignore other numbers
-                if len(n) == 8:
-                    if sn != 0:
-                        errors.append(
-                            f"Multiple student numbers found in input: {student_string}"
-                        )
-                    sn = n
-            if len(sn) != 8 or not sn.isdigit():
+            match = re.search(r"\(([A-Za-z0-9]{8})\)$", student_string.strip())
+            if not match:
+                errors.append(f"Invalid student number format: {student_string}")
+            else:
+                sn = match.group(1)
+            if len(sn) != 8:
                 errors.append(f"Invalid student number format: {sn}")
             elif sn not in valid_student_ids:
                 errors.append(f"Student not found in course: {sn}")
@@ -220,10 +216,13 @@ def parse_csv(uploaded_files, request, course_id):
                 student_number = row.get("student_no", "").strip()
                 if student_number not in valid_student_ids:
                     continue
-
+                print(student_number)
                 lastname = row.get("lastname", "").strip()
+                print("last:" + lastname)
                 firstname = row.get("firstname", "").strip()
+                print("first:" + firstname)
                 middlename = row.get("middlename", "").strip()
+                print("middle:" + middlename)
 
                 final_multiplier = None
                 # Get only all-exams multipliers
@@ -281,7 +280,7 @@ def parse_csv(uploaded_files, request, course_id):
                     (
                         student_number,
                         final_multiplier,
-                        f"{firstname + ' ' + lastname + ' ' + middlename} ({student_number})",
+                        f"{firstname + ' ' + lastname + ' ' + middlename}",
                         additional_info,
                     )
                 )
@@ -342,7 +341,7 @@ def upload_pdfs(request, course_id):
                     (
                         student_number,
                         multiplier,
-                        f"{student_name} ({str(student_number)})",
+                        student_name,
                     )
                 )
             elif student_number and multiplier:
@@ -350,7 +349,7 @@ def upload_pdfs(request, course_id):
                     (
                         student_number,
                         multiplier,
-                        f"{str(student_number)}",
+                        "",
                         "",
                     )
                 )

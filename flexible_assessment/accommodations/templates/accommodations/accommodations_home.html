@@ -171,16 +171,75 @@
             margin-left: 0.5rem;
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button {
-            padding: 0.375rem 0.75rem;
-            margin-left: 0.125rem;
-            border-radius: 0.375rem;
+        .accommodations-table-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1rem;
+            color: #495057;
+            font-size: 0.95rem;
+            margin-top: 1rem;
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button {
-            padding: 0.375rem 0.75rem;
-            margin-left: 0.125rem;
-            border-radius: 0.375rem;
+        .accommodations-table-pagination .page-size-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .accommodations-table-pagination .form-select {
+            width: auto;
+            min-width: 4.5rem;
+            padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+        }
+
+        .accommodations-table-pagination .pagination-range {
+            min-width: 5.5rem;
+            text-align: center;
+            color: #212529;
+        }
+
+        .accommodations-table-pagination .pagination-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .accommodations-table-pagination .pagination-nav-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            color: #212529;
+            background: transparent;
+        }
+
+        .accommodations-table-pagination .pagination-nav-button:hover:not(:disabled),
+        .accommodations-table-pagination .pagination-nav-button:focus-visible:not(:disabled) {
+            background: #f1f3f5;
+            color: #000;
+        }
+
+        .accommodations-table-pagination .pagination-nav-button:disabled {
+            color: #adb5bd;
+            cursor: not-allowed;
+            opacity: 1;
+        }
+
+        @media (max-width: 575.98px) {
+            .accommodations-table-pagination {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .accommodations-table-pagination .pagination-range {
+                text-align: left;
+            }
         }
 
         /* Loading spinner styles */
@@ -270,7 +329,7 @@
                                                 Please upload the files you received from the Centre for Accessibility.
                                             </label>
                                             <div id="drop-area">
-                                                <p>Drag & drop PDF files here, or click to select</p>
+                                                <p>Drag and drop PDF files here, or click to select.</p>
                                                 <input type="file"
                                                        id="pdf-file"
                                                        name="pdf_files"
@@ -289,7 +348,7 @@
                                         <div>
                                             <label for="csv-file" class="form-label mb-3">Upload a CSV file containing student accommodations data.</label>
                                             <div id="csv-drop-area">
-                                                <p>Drag & drop CSV file here, or click to select</p>
+                                                <p>Drag and drop CSV file here, or click to select.</p>
                                                 <input type="file"
                                                        id="csv-file"
                                                        name="csv_file"
@@ -299,12 +358,14 @@
                                             </div>
                                         </div>
                                     </form>
+                                    <a class="link"
+                                       href="{% static 'accommodations/files/example_accommodations_upload.csv' %}"
+                                       download><i class="bi bi-filetype-csv"></i>Download example CSV file</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-info" id="load-preset-csv">Reload student data from CFA server</button>
                 <form id="accommodations-form"
                       method="post"
                       action="{% url 'accommodations:accommodations_home' course.id %}">
@@ -325,14 +386,68 @@
                                 <!-- Rows will be added dynamically -->
                             </tbody>
                         </table>
+                        <div id="accommodations-pagination"
+                             class="accommodations-table-pagination"
+                             aria-label="Accommodations table pagination">
+                            <label class="page-size-control" for="accommodations-page-size">
+                                <span>Rows per page:</span>
+                                <select id="accommodations-page-size" class="form-select form-select-sm">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="-1">All</option>
+                                </select>
+                            </label>
+                            <span id="accommodations-pagination-range"
+                                  class="pagination-range"
+                                  aria-live="polite">0 - 0 of 0</span>
+                            <div class="pagination-nav">
+                                <button type="button"
+                                        class="pagination-nav-button"
+                                        id="accommodations-page-prev"
+                                        aria-label="Previous page">
+                                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                                </button>
+                                <button type="button"
+                                        class="pagination-nav-button"
+                                        id="accommodations-page-next"
+                                        aria-label="Next page">
+                                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="my-3 pt-0 text-muted text-center text-small">
+                        <p class="mb-1">
+                            Don't see all registered students? Registrations with the CfA may take up to 24h to appear.
+                            <br>
+                            View all current registrations
+                            <a href="https://clockwork.as.it.ubc.ca/ClockWork/user/instructor/default.aspx"
+                               target="_blank">here</a>
+                        </p>
                     </div>
                     <!-- Button Row -->
                     <div class="row justify-content-between my-4">
-                        <div class="col-auto">
+                        <div class="col-auto d-flex align-items-center gap-2">
                             <button type="button" class="btn btn-secondary" id="add-entry">Add Manually</button>
+                            <div class="dropdown">
+                                <button type="button"
+                                        class="btn btn-outline-secondary"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <button class="dropdown-item" type="button" id="reset-data">Reset to CfA Course Data</button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item" type="button" id="remove-all">Remove All</button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                         <div class="col-auto" id="buttons-hidden" style="display:none">
-                            <button type="button" class="btn btn-danger mx-2" id="remove-all">Remove All</button>
                             <button type="submit" class="btn btn-primary">
                                 Next <i class="bi bi-arrow-right ms-1"></i>
                             </button>
@@ -355,13 +470,19 @@
             const addBtn = document.getElementById("add-entry");
             const removeAllBtn = document.getElementById("remove-all");
             const tableContainer = document.getElementById("table-container");
-            const loadPresetBtn = document.getElementById("load-preset-csv");
+            const resetBtn = document.getElementById("reset-data");
+            const pagination = document.getElementById("accommodations-pagination");
+            const pageSizeSelect = document.getElementById("accommodations-page-size");
+            const paginationRange = document.getElementById("accommodations-pagination-range");
+            const previousPageBtn = document.getElementById("accommodations-page-prev");
+            const nextPageBtn = document.getElementById("accommodations-page-next");
             const MAX_SIZE_MB = 10;
             let dataTable;
             let rowCounter = 0;
             let studentIds = new Set();
 
             const studentList = {{ autocomplete_data|safe}};
+            const prefillData = {{ accommodations_json|safe}};
 
             // Initialize DataTable
             function initializeDataTable() {
@@ -370,11 +491,18 @@
                 }
                 
                 dataTable = $('#accommodations-table').DataTable({
-                    pageLength: 25,
+                    pageLength: 50,
                     lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
                     columnDefs: [
                         { targets: [4], orderable: false }, // Actions column not sortable
-                        { targets: [0, 1, 2], type: 'string' },
+                        { targets: [0, 1, 2], render: function (data, type) {
+                                if (type === "sort") {
+                                    const text = $("<div>").html(data).text().trim();
+                                    return text === "" ? "\uffff" : text.toLowerCase();
+                                }
+                                return data;
+                            }
+                        },
                         { 
                             targets: [3], 
                             type: 'num',
@@ -395,19 +523,43 @@
                     language: {
                         emptyTable: "No accommodations added yet",
                         search: "Search students:"
+                    },
+                    dom:
+                        "<'row mb-3 align-items-center'<'col-md-6 d-flex justify-content-start'f>>" +
+                        "t",
+                    drawCallback: function () {
+                        updateCustomPagination(this.api());
                     }
                 });
                 
                 tableContainer.style.display = 'block';
+                updateCustomPagination(dataTable);
+            }
+
+            function updateCustomPagination(table) {
+                if (!table) {
+                    return;
+                }
+
+                const info = table.page.info();
+                const start = info.recordsDisplay === 0 ? 0 : info.start + 1;
+                const end = info.recordsDisplay === 0 ? 0 : info.end;
+                paginationRange.textContent = `${start} - ${end} of ${info.recordsDisplay}`;
+                previousPageBtn.disabled = info.page === 0 || info.pages === 0;
+                nextPageBtn.disabled = info.page >= info.pages - 1 || info.pages === 0;
+                pageSizeSelect.value = String(info.length);
+                pagination.style.display = info.recordsDisplay > 0 ? "flex" : "none";
             }
 
             function parseStudentName(studentString) {
-                const match = studentString.match(/^(.+?)\s+(.+)\s*\((\d+)\)$/);
+                const match = studentString.match(/^(.+)\s+\((\w+)\)$/);
                 if (match) {
+                    const fullName = match[1].trim();
+                    const nameParts = fullName.split(/\s+/);
                     return {
-                        firstName: match[1].trim(),
-                        lastName: match[2].trim(),
-                        studentNumber: match[3]
+                        firstName: nameParts[0],
+                        lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : "",
+                        studentNumber: match[2]
                     };
                 }
                 
@@ -463,12 +615,19 @@
                     <input type="hidden" name="student" value="${studentString}">
                     <input type="hidden" name="additional_info" value = "${additionalInfo.join("^")}">` :
                     `<input type="text" name="student" class="form-control student-input" value="${studentString}" placeholder="Enter student info" required>
+                    <div class="invalid-feedback">Please select a student.</div>
                     <input type="hidden" name="additional_info" value="${additionalInfo.join("^")}">`;
 
-                const multiplierSelect = `<select name="multiplier" class="form-select" required>${selectOptions}</select>`;
-
-                
-
+                const multiplierSelect = `
+                    <div>
+                        <select name="multiplier" class="form-select">
+                            ${selectOptions}
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a multiplier.
+                        </div>
+                    </div>
+                `;
                 
                 
                 // Initialize Awesomplete for new student input fields
@@ -484,7 +643,8 @@
                     const cells = $(rowNode).find('td');
                     cells[0].setAttribute('colspan', '3');
                     cells[0].innerHTML = `
-                        <input type="text" name="student" class="form-control student-input" value="${studentString}" placeholder="Search by name or student number..." required>
+                        <input type="text" name="student" class="form-control student-input" value="${studentString}" placeholder="Search by name or student number...">
+                        <div class="invalid-feedback">Please select a student.</div>
                         <input type="hidden" name="additional_info" value="^^^^">
                     `;
                     $(cells[1]).hide();
@@ -529,6 +689,20 @@
                                 <input type="hidden" name="additional_info" value="^^^^">
                                 <span class="form-control-plaintext">${parsedInfo.studentNumber}</span>
                             `;
+
+                            dataTable
+                                .cell(rowNode, 0)
+                                .data(liveCells[0].innerHTML);
+
+                            dataTable
+                                .cell(rowNode, 1)
+                                .data(liveCells[1].innerHTML);
+
+                            dataTable
+                                .cell(rowNode, 2)
+                                .data(liveCells[2].innerHTML);
+
+                            dataTable.draw(false);
                         });
                     }
                     toggleButtons();
@@ -563,14 +737,13 @@
                 }
             }
 
-            // Event listeners
-            loadPresetBtn.addEventListener("click", function() {
+            function getCfaData() {
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                prefillData.forEach(([studentNumber, multiplier, _, studentString, additionalInfo]) => {
+                    addEntry(studentString, multiplier, additionalInfo ? additionalInfo.split('^') : ["", "", "", "", ""], true);
+                });
 
-                loadPresetBtn.classList.add('btn-loading');
-                loadPresetBtn.disabled = true;
-            
-                $.ajax({
+                return $.ajax({
                     url: "{% url 'accommodations:load_preset_csv' course.id %}",
                     method: "GET",
                     headers: { "X-CSRFToken": csrftoken },
@@ -579,12 +752,24 @@
                     },
                     error: function (xhr, status, error) {
                         console.error("Failed to load preset CSV:", error);
-                        alert("Failed to load from CFA server. Please contact UBC LFS Learning Center.");
+                        alert("Failed to load data. Please contact UBC LFS Learning Center.");
                     },
-                    complete: function() {
-                        loadPresetBtn.classList.remove('btn-loading');
-                        loadPresetBtn.disabled = false;
-                    }
+                });
+            }
+
+            // Event listeners
+            resetBtn.addEventListener("click", function() {
+                if (!confirm('Are you sure you want to reset all student data?')) {
+                    return;
+                }
+
+                resetBtn.classList.add('btn-loading');
+                resetBtn.disabled = true;
+                
+                removeAllEntries();
+                getCfaData().always(() => {
+                    resetBtn.classList.remove('btn-loading');
+                    resetBtn.disabled = false;
                 });
             });
 
@@ -593,7 +778,28 @@
             });
 
             removeAllBtn.addEventListener("click", function() {
+                if (!confirm('Are you sure you want to remove all student rows?')) {
+                    return;
+                }
                 removeAllEntries();
+            });
+
+            pageSizeSelect.addEventListener("change", function () {
+                if (dataTable) {
+                    dataTable.page.len(Number(this.value)).draw();
+                }
+            });
+
+            previousPageBtn.addEventListener("click", function () {
+                if (dataTable) {
+                    dataTable.page("previous").draw("page");
+                }
+            });
+
+            nextPageBtn.addEventListener("click", function () {
+                if (dataTable) {
+                    dataTable.page("next").draw("page");
+                }
             });
 
             // Remove individual rows using event delegation
@@ -619,20 +825,38 @@
                 }
 
                 let hasInvalidEntries = false;
-                
+                let hasMissingData = false;
+
                 // Validate all rows
-                dataTable.rows().every(function() {
+                dataTable.rows().every(function () {
                     const rowNode = this.node();
+                    // Existing student validation
                     const input = $(rowNode).find('input[name="student"]');
                     if (input.length > 0) {
+                        if (!input.val()) {
+                            input.addClass("is-invalid");
+                            input.parent(".awesomplete").addClass("is-invalid");
+                            hasMissingData = true;
+                        } else {
+                            input.removeClass("is-invalid");
+                            input.parent(".awesomplete").removeClass("is-invalid");
+                        }
                         const val = input.val();
-                        // If value is present but parsing fails to extract student ID
                         if (val && !parseStudentName(val).studentNumber) {
                             hasInvalidEntries = true;
                             $(rowNode).addClass('table-danger');
                         } else {
                             $(rowNode).removeClass('table-danger');
                         }
+                    }
+
+                    // Multiplier validation
+                    const multiplier = $(rowNode).find('select[name="multiplier"]');
+                    if (multiplier.val() === "") {
+                        hasMissingData = true;
+                        multiplier.addClass("is-invalid");
+                    } else {
+                        multiplier.removeClass("is-invalid");
                     }
                 });
 
@@ -641,10 +865,13 @@
                     alert("One or more entries have an invalid format. Please ensure all students follow 'First Last (StudentNumber)' format.");
                     return;
                 }
+                if (hasMissingData) {
+                    e.preventDefault();
+                    return;
+                }
             });
 
             //Prefill with existing data
-            const prefillData = {{ accommodations_json|safe}};
             prefillData.forEach(([studentNumber, multiplier, _, studentString, additionalInfo]) => {
                 addEntry(studentString, multiplier, additionalInfo ? additionalInfo.split('^') : ["", "", "", "", ""], true);
             });
@@ -674,7 +901,7 @@
                         if (fromCSV) {
                             if (Array.isArray(item) && item.length === 4) {
                                 const [studentNumber, multiplier, studentName, additionalInfo] = item;
-                                addEntry(studentName, multiplier, additionalInfo, true);
+                                addEntry(`${studentName} (${studentNumber})`, multiplier, additionalInfo, true);
                             } else if (item.error) {
                                 console.warn(item.error);
                                 alert(item.error);
@@ -682,7 +909,7 @@
                         } else {
                             if (Array.isArray(item) && item.length === 3) {
                                 const [studentNumber, multiplier, studentName, additionalInfo] = item;
-                                addEntry(studentName, multiplier, additionalInfo, true);
+                                addEntry(`${studentName} (${studentNumber})`, multiplier, additionalInfo, true);
                             } else if (item.error) {
                                 console.warn(item.error);
                                 alert(item.error);
@@ -848,7 +1075,7 @@
             });
 
             // Automatically load preset data
-            loadPresetBtn.click();
+            getCfaData();
 
         });
     </script>
