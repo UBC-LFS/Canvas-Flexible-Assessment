@@ -1,0 +1,5 @@
+student_no,lastname,firstname,middlename,Extended time (4x) for all exams,Extended time (3.5x) for all exams,Extended time (3x) for all exams,Extended time (2.5x) for all exams,Extended time (2x) for all exams,Extended time (1.75x) for all exams,Extended time (1.5x) for all exams,Extended time (1.25x) for all exams,Extended time (3x)/essay format,Extended time (2x)/multiple choice format,Extended time (1.5x)/short answer format,Extended time (3x) for exams involving fine manipulations,"If other, please specify"
+10000001,Smith,Jane,A,False,False,False,False,False,False,True,False,,,,,
+10000002,Doe,John,k,False,False,False,False,True,False,False,False,,,,,
+10000003,MacDonald,James,,False,False,False,True,False,False,False,False,TRUE,,,,"Student needs essay-format accommodation for exams."
+10000004,Brown,Sarah,,False,False,True,False,False,False,False,False,,,TRUE,TRUE,"Exam involving fine manipulations."

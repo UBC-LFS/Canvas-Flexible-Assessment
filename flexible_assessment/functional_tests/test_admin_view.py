@@ -45,19 +45,19 @@ class TestAdminViews(StaticLiveServerTestCase):
     def tearDown(self):
         self.browser.close()
 
-    @tag("slow", "view")
+    @tag("slow", "view", "admin")
     @mock_classes.use_mock_canvas()
     def test_start(self, mocked_flex_canvas_instance):
+        """Note, this is designed to work with the fixture data for course 1."""
         session_id = self.client.session.session_key
-        self.client.session["display_name"] = "HEllo"
+
         self.browser.get(
             self.live_server_url + reverse("instructor:instructor_home", args=[1])
         )
         self.browser.add_cookie({"name": "sessionid", "value": session_id})
-        self.browser.add_cookie({"name": "display_name", "value": "TEST"})
 
         self.browser.get(
             self.live_server_url + reverse("instructor:instructor_home", args=[1])
         )
 
-        input("Press Enter in this terminal to continue")
+        input("Press Enter in this terminal to continue\n")
