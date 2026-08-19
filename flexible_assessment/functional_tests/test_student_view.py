@@ -35,7 +35,7 @@ class TestStudentViews(StaticLiveServerTestCase):
         chromeOptions.add_argument("disable-infobars")
 
         self.browser = webdriver.Chrome(options=chromeOptions)
-        user = UserProfile.objects.get(login_id="test_student1")
+        user = UserProfile.objects.get(login_id="10000001")
         self.client = Client()
         self.client.force_login(user)
         self.browser_teacher = webdriver.Chrome(options=chromeOptions)
@@ -109,6 +109,45 @@ class TestStudentViews(StaticLiveServerTestCase):
         bodyText = self.browser.find_element(By.TAG_NAME, "body").text
         self.assertIn("40", bodyText)
         self.assertIn("60", bodyText)
+
+    @tag("slow")
+    @mock_classes.use_mock_canvas()
+    def test_student_blank_flex_cell_shows_required_error(
+        self, mocked_flex_canvas_instance
+    ):
+        """A blank Desired % cell should show Django's inline required error."""
+        print(
+            "---------------------test_student_blank_flex_cell_shows_required_error-------------------------------"
+        )
+
+        session_id = self.client.session.session_key
+        student_form_url = reverse("student:student_form", args=[4])
+        self.browser.get(
+            self.live_server_url + reverse("student:student_home", args=[4])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+        self.browser.get(self.live_server_url + student_form_url)
+
+        flex_inputs = self.browser.find_elements(
+            By.CSS_SELECTOR, "td.flex input.form-control:not([type='hidden'])"
+        )
+        self.assertGreaterEqual(len(flex_inputs), 2)
+
+        flex_inputs[0].send_keys("100")
+        self.browser.find_element(By.ID, "id_agreement").click()
+        submit = self.browser.find_element(By.CSS_SELECTOR, "button[type='submit']")
+        self.browser.execute_script("arguments[0].click();", submit)
+
+        wait = WebDriverWait(self.browser, 5)
+        wait.until(
+            EC.text_to_be_present_in_element(
+                (By.TAG_NAME, "body"), "This field is required"
+            )
+        )
+
+        self.assertIn("form", self.browser.current_url)
+        bodyText = self.browser.find_element(By.TAG_NAME, "body").text
+        self.assertIn("This field is required", bodyText)
 
     @tag("slow")
     @mock_classes.use_mock_canvas()

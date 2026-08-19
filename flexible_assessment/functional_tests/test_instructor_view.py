@@ -943,6 +943,46 @@ class TestInstructorViews(StaticLiveServerTestCase):
 
     @tag("slow")
     @mock_classes.use_mock_canvas()
+    def test_override_student_blank_flex_cell_shows_required_error(
+        self, mocked_flex_canvas_instance
+    ):
+        """A blank override Desired % cell should show Django's inline required error."""
+        print(
+            "---------------------test_override_student_blank_flex_cell_shows_required_error-------------------------------"
+        )
+
+        session_id = self.client.session.session_key
+        override_form_url = reverse(
+            "instructor:override_student_form_percentage", args=[1, 1]
+        )
+        self.browser.get(
+            self.live_server_url + reverse("instructor:instructor_home", args=[1])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+        self.browser.get(self.live_server_url + override_form_url)
+
+        flex_inputs = self.browser.find_elements(
+            By.CSS_SELECTOR, "td.flex input.form-control:not([type='hidden'])"
+        )
+        self.assertGreaterEqual(len(flex_inputs), 1)
+
+        flex_inputs[0].clear()
+        submit = self.browser.find_element(By.CSS_SELECTOR, "button[type='submit']")
+        self.browser.execute_script("arguments[0].click();", submit)
+
+        wait = WebDriverWait(self.browser, 5)
+        wait.until(
+            EC.text_to_be_present_in_element(
+                (By.TAG_NAME, "body"), "This field is required"
+            )
+        )
+
+        self.assertIn("percentages/1", self.browser.current_url)
+        bodyText = self.browser.find_element(By.TAG_NAME, "body").text
+        self.assertIn("This field is required", bodyText)
+
+    @tag("slow")
+    @mock_classes.use_mock_canvas()
     def test_logs(self, mocked_flex_canvas_instance):
         """In course 1 the teacher is exporting the logs
         For some reason, there seem to be (out of order/duplicate) log entries that are only on the production server.

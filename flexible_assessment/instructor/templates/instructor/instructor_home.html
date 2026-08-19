@@ -58,7 +58,7 @@
                                 <div class="card-header d-flex align-items-center justify-content-between">
                                     <h3 class="mb-0">Allocation Difference</h3>
                                 </div>
-                                <div id="container" class="card-body"></div>
+                                <div id="allocation-difference" class="card-body"></div>
                             </div>
                         </div>
                     </div>
@@ -179,11 +179,11 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <script src="{% static 'js/external/highcharts/modules/highcharts.js' %}"></script>
-        <script src="https://code.highcharts.com/modules/exporting.js"></script>
-        <script src="https://code.highcharts.com/modules/export-data.js"></script>
-        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-        <script src="https://code.highcharts.com/modules/pattern-fill.js"></script>
+        <script src="{% static 'js/external/highcharts/highcharts.js' %}"></script>
+        <script src="{% static 'js/external/highcharts/modules/accessibility.js' %}"></script>
+        <script src="{% static 'js/external/highcharts/modules/exporting.js' %}"></script>
+        <script src="{% static 'js/external/highcharts/modules/export-data.js' %}"></script>
+        <script src="{% static 'js/external/highcharts/modules/pattern-fill.js' %}"></script>
         {% get_allocations course as allocations %}
         {% get_flex_difference course as flex_differences %}
         {% if course.close %}
@@ -258,7 +258,7 @@
                 var categories = Object.keys(flex_differences);
                 var data = Object.values(flex_differences);
 
-                Highcharts.chart('container', {
+                Highcharts.chart('allocation-difference', {
                     chart: {
                         type: 'bar'
                     },
