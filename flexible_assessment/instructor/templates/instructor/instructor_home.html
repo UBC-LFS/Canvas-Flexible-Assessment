@@ -3,6 +3,7 @@
 {% block nav_item_home %}
     active
 {% endblock nav_item_home %}
+{% load static %}
 {% block content %}
     {% if messages %}
         {% for message in messages %}
@@ -89,10 +90,12 @@
                             Welcome to Flexible Assessment, a Canvas integration that allows students to choose how their final grades will be weighted within ranges defined by the instructor.
                         </p>
                         <p>
-                            This system was created as part of a Teaching & Learning Enhancement Fund (TLEF) project to streamline the processes involved in Flexible Assessment, including: 
-                            <ul><li>Collecting desired percentages from students</li>
+                            This system was created as part of a Teaching & Learning Enhancement Fund (TLEF) project to streamline the processes involved in Flexible Assessment, including:
+                            <ul>
+                                <li>Collecting desired percentages from students</li>
                                 <li>Recalculating final grades according to those percentages</li>
-                                <li>Exporting the grades into the Canvas Grades page</li></ul>
+                                <li>Exporting the grades into the Canvas Grades page</li>
+                            </ul>
                             It is based on a Flexible Assessment approach devised by Dr. Candice Rideout, a Professor of Teaching in the Faculty of Land & Food Systems. This approach has been shown to increase student satisfaction and self-regulation
                             <a href="#footnote-1" style="text-decoration: none;"><sup>[1]</sup></a>.
                         </p>
@@ -176,7 +179,7 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="{% static 'js/external/highcharts/modules/highcharts.js' %}"></script>
         <script src="https://code.highcharts.com/modules/exporting.js"></script>
         <script src="https://code.highcharts.com/modules/export-data.js"></script>
         <script src="https://code.highcharts.com/modules/accessibility.js"></script>
