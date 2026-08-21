@@ -289,7 +289,7 @@
                             <p class="fw-light m-0 pb-1">This message will appear above the box where students can enter comments.</p>
                             {% bootstrap_field date_form.comment_instructions show_label=False wrapper_class='mb-3; vertical-align: middle;' %}
                         </div>
-                        {{ ordering_form }}
+                        {{ ordering_form.as_div }}
                     </div>
                 </div>
             </div>
