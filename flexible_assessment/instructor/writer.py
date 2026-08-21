@@ -119,6 +119,7 @@ def students_csv(course, students):
 
     header = (
         ["Student"]
+        + ["Student ID"]
         + ["Chose Percentages"]
         + [assessment.title for assessment in assessments]
         + ["Comments"]
@@ -128,7 +129,8 @@ def students_csv(course, students):
 
     for student in students:
         values = []
-        values.append("{}, {}".format(student.display_name, student.login_id))
+        values.append(student.display_name)
+        values.append(student.login_id)
 
         # if first flex doens't exist, student didn't choose flexes
         first_flex = student.flexassessment_set.get(assessment=assessments[0]).flex

@@ -122,6 +122,10 @@
                                     Send to Canvas <i class="bi bi-cloud-arrow-up ms-1"></i>
                                 </button>
                             </div>
+                            <div id="submit-message"
+                                 class="d-none align-items-center justify-content-center text-primary small mt-2">
+                                Depending on the size of the course, this may take a few minutes.
+                            </div>
                             <div class="d-flex align-items-center justify-content-center">
                                 <p class="fw-light">
                                     <span style="color: red; font-weight:bold;">Warning:</span> This will overwrite the Canvas Gradebook Override column with the <span style="font-weight:bold;">Override Total</span> values here.
@@ -214,134 +218,134 @@
                         format: {
                             header: function (data, columnIdx) {
                                 return data.replace(/<br\s*\/?>/gi, ' ').replace(/\s+/g, ' ').trim();
-                                    }
-                                }
-                            },
-                            // add in total average rows in the footer
-                            customize: function (csv) {
-                                const rows = csv.split('\n')
-
-                                const $footerRow = $('#final tfoot tr');
-                                if ($footerRow.length > 0) {
-                                    const avgOverride = $footerRow.find('td').eq(0).text().trim();
-                                    const avgDefault = $footerRow.find('td').eq(1).text().trim();
-                                    const avgDiff = $footerRow.find('td').eq(2).text().trim();
-
-                                    return csv + '\n' + 
-                                            '"Average Overrides","Average Default","Average Difference"\n' +
-                                            '"' + avgOverride + '","' + avgDefault + '","' + avgDiff + '"';
-                                }
-                                return csv;
                             }
-                        }], 
-                        scrollX: true,
-                        initComplete: format_table
-                    });
+                        }
+                    },
+                    // add in total average rows in the footer
+                    customize: function (csv) {
+                        const rows = csv.split('\n')
 
-                    $('#final').on('draw.dt', format_table);
-                    $('.dataTables_scrollBody').css('overflow-y', 'hidden');
-                }
+                        const $footerRow = $('#final tfoot tr');
+                        if ($footerRow.length > 0) {
+                            const avgOverride = $footerRow.find('td').eq(0).text().trim();
+                            const avgDefault = $footerRow.find('td').eq(1).text().trim();
+                            const avgDiff = $footerRow.find('td').eq(2).text().trim();
 
-                $(document).on('click', '#exportCsvBtn', function () {
-                    if (finalTable) {
-                        finalTable.button(0).trigger();
+                            return csv + '\n' + 
+                                    '"Average Overrides","Average Default","Average Difference"\n' +
+                                    '"' + avgOverride + '","' + avgDefault + '","' + avgDiff + '"';
+                        }
+                        return csv;
+                    }
+                }], 
+                scrollX: true,
+                initComplete: format_table
+            });
+
+            $('#final').on('draw.dt', format_table);
+            $('.dataTables_scrollBody').css('overflow-y', 'hidden');
+        }
+
+        $(document).on('click', '#exportCsvBtn', function () {
+            if (finalTable) {
+                finalTable.button(0).trigger();
+            }
+        });
+
+
+        (async function () {
+            const mount = document.getElementById('tableMount');
+
+            // If Django already rendered the table, just init it.
+            if (mount && mount.querySelector('#final')) {
+                initFinalTable();
+                return;
+            }
+
+            // Start fetch + delayed modal
+            var done = false;
+            modalTimer = setTimeout(() => {
+                if (!done) show_loading();
+            }, 200); 
+
+            try {
+                const response = await fetch("{% url 'instructor:final_grades_table' course.id %}");
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const html = await response.text();
+                done = true;
+                clearTimeout(modalTimer);
+
+                mount.innerHTML = html.trim();
+
+                await hide_loading();
+                initFinalTable();
+            } catch (err) {
+                done = true;
+                clearTimeout(modalTimer);
+
+                console.error("Error loading table:", err);
+                hide_loading();
+                alert("Error loading the grade table. Please try again.");
+                window.location = "{% url 'instructor:group_form' course.id %}"
+            }
+        })();
+
+
+        $('#submit-button').click(function(e) {
+            var checkBox = document.getElementById("flexCheckDefault");
+            var errorMessage = document.getElementById("checkbox-error-message");
+            if (checkBox.checked == false){
+                e.preventDefault();
+                errorMessage.style.display = "block";
+                return false;
+            }
+            else {
+                errorMessage.style.display = "none !important";
+            }
+
+            if (confirm('Are you sure you want to submit override grades to Canvas?')) {
+                $('#submit-message').removeClass('d-none');
+                $('#submit-button').prepend('<span class="spinner-border spinner-border-sm me-2"> </span>');
+                $('#submit-button').prop('disabled', true);
+                $('form#grade-submit').submit();
+            } else {
+                return false;
+            }
+        });
+
+        $(document).ready(function () {
+            var errors = [];
+            $('.error').each(function (_, error) {
+                errors.push(error.textContent);
+            });
+            var error_str = errors.join(', ');
+            if (error_str) {
+                alert(error_str);
+            }
+        });
+
+        function show_more() {
+            var moreText = $("#more");
+            var btnText = $("#myBtn");
+
+            function change_text(text) {
+                btnText.text(text);
+            }
+
+            if (moreText.is(":hidden")) {
+                moreText.fadeIn({duration: 400});
+                change_text("Hide Instructions");
+            } else {
+                moreText.fadeOut({duration: 400, complete: function() {
+                        btnText.text("Show Instructions");
                     }
                 });
-
-
-                (async function () {
-                    const mount = document.getElementById('tableMount');
-
-                    // If Django already rendered the table, just init it.
-                    if (mount && mount.querySelector('#final')) {
-                        initFinalTable();
-                        return;
-                    }
-
-                    // Start fetch + delayed modal
-                    var done = false;
-                    modalTimer = setTimeout(() => {
-                        if (!done) show_loading();
-                    }, 200); 
-
-                    try {
-                        const response = await fetch("{% url 'instructor:final_grades_table' course.id %}");
-                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                        const html = await response.text();
-                        done = true;
-                        clearTimeout(modalTimer);
-
-                        mount.innerHTML = html.trim();
-
-                        await hide_loading();
-                        initFinalTable();
-                    } catch (err) {
-                        done = true;
-                        clearTimeout(modalTimer);
-
-                        console.error("Error loading table:", err);
-                        hide_loading();
-                        alert("Error loading the grade table. Please try again.");
-                        window.location = "{% url 'instructor:group_form' course.id %}"
-                    }
-                })();
-
-
-                $('#submit-button').click(function(e) {
-                    var checkBox = document.getElementById("flexCheckDefault");
-                    var errorMessage = document.getElementById("checkbox-error-message");
-                    if (checkBox.checked == false){
-                        e.preventDefault();
-                        errorMessage.style.display = "block";
-                        return false;
-                    }
-                    else {
-                        errorMessage.style.display = "none !important";
-                    }
-
-                    if (confirm('Are you sure you want to submit override grades to Canvas?')) {
-                        $('#submit-button').prepend('<span class="spinner-border spinner-border-sm me-2"> </span>');
-                        $('#submit-button').prop('disabled', true);
-                        $('form#grade-submit').submit();
-                    } else {
-                        return false;
-                    }
-                });
-
-                $(document).ready(function () {
-                    var errors = [];
-                    $('.error').each(function (_, error) {
-                        errors.push(error.textContent);
-                    });
-                    var error_str = errors.join(', ');
-                    if (error_str) {
-                        alert(error_str);
-                    }
-                });
-
-                function show_more() {
-                    var moreText = $("#more");
-                    var btnText = $("#myBtn");
-
-                    function change_text(text) {
-                        btnText.text(text);
-                    }
-
-                    if (moreText.is(":hidden")) {
-                        moreText.fadeIn({duration: 400});
-                        change_text("Hide Instructions");
-                    } else {
-                        moreText.fadeOut({duration: 400, complete: function() {
-                                btnText.text("Show Instructions");
-                            }
-                        });
-                    }
-                }
-
-                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl)
-                });
+            }
+        }
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
     </script>
 {% endblock content %}
