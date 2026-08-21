@@ -179,11 +179,11 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <script src="{% static 'js/external/highcharts/highcharts.js' %}"></script>
-        <script src="{% static 'js/external/highcharts/modules/accessibility.js' %}"></script>
-        <script src="{% static 'js/external/highcharts/modules/exporting.js' %}"></script>
-        <script src="{% static 'js/external/highcharts/modules/export-data.js' %}"></script>
-        <script src="{% static 'js/external/highcharts/modules/pattern-fill.js' %}"></script>
+        <script src="{% static 'instructor/js/external/highcharts/highcharts.js' %}"></script>
+        <script src="{% static 'instructor/js/external/highcharts/modules/accessibility.js' %}"></script>
+        <script src="{% static 'instructor/js/external/highcharts/modules/exporting.js' %}"></script>
+        <script src="{% static 'instructor/js/external/highcharts/modules/export-data.js' %}"></script>
+        <script src="{% static 'instructor/js/external/highcharts/modules/pattern-fill.js' %}"></script>
         {% get_allocations course as allocations %}
         {% get_flex_difference course as flex_differences %}
         {% if course.close %}
