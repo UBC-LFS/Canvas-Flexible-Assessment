@@ -11,3 +11,5 @@ venv
 cookies
 downloads/
 .cookies/
+settings.example.py
+flexible_assessment/staticfiles/
