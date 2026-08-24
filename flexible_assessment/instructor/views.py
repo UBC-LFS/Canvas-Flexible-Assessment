@@ -13,6 +13,7 @@ import flexible_assessment.utils as utils
 import pytz
 
 from django.contrib import messages
+from django import forms
 from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
@@ -531,6 +532,7 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
     """FormView for instructor setup of flexible assessment for a course"""
 
     template_name = "instructor/instructor_form.html"
+    form_class = forms.Form
     success_reverse_name = "instructor:instructor_home"
 
     def get_context_data(self, **kwargs):
