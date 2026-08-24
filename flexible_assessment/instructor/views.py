@@ -531,7 +531,6 @@ class InstructorAssessmentView(views.ExportView, views.InstructorFormView):
     """FormView for instructor setup of flexible assessment for a course"""
 
     template_name = "instructor/instructor_form.html"
-    form_class = BaseModelFormSet
     success_reverse_name = "instructor:instructor_home"
 
     def get_context_data(self, **kwargs):
