@@ -298,7 +298,7 @@ class MockAccommodationsCanvas(MockCanvas):
         """Mock method that groups quizzes by multiplier"""
         if selected_quizzes[0]:
             selected_quizzes[0]["lock_at_new_readable"] = "2026-06-01 - 1:30PM"
-        if selected_quizzes[1]:
+        if len(selected_quizzes)>1 and selected_quizzes[1]:
             selected_quizzes[1]["time_limit_new_readable"] = "3h"
         multipliers = [4.0, 3.5, 3.0, 2.5, 2.0, 1.75, 1.5, 1.25]
         result = {}

@@ -68,6 +68,12 @@ class TestAccommodations(StaticLiveServerTestCase):
         user = models.UserProfile.objects.get(login_id="10000007")
         self.client = Client()
         self.client.force_login(user)
+        models.UserCourse.objects.get_or_create(
+            user_id=user.pk,
+            course_id=1,
+            defaults={"role": models.Roles.TEACHER},
+        )
+
         self.launch_url = reverse("launch_accommodations")
         self.login_url = reverse("login")
         # logging.basicConfig(level=logging.DEBUG)
@@ -274,6 +280,8 @@ class TestAccommodations(StaticLiveServerTestCase):
             self.live_server_url
             + reverse("accommodations:accommodations_confirm", args=[1])
         )
+        response = self.client.get(reverse("accommodations:accommodations_home", args=[1]))
+        print(response.status_code)
 
         input("Press Enter in this terminal to continue\n")
 
