@@ -9,9 +9,7 @@ DATA = [
 
 ACCOMMODATIONS_DATA = [
     "user_profiles_accommodations",
+    "user_courses_accommodations",
     "courses",
-    "user_courses",
     "assessments",
-    "flexes",
-    "user_comments",
 ]
