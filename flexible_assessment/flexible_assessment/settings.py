@@ -75,6 +75,7 @@ CANVAS_OAUTH_SCOPES = [
     "url:GET|/api/v1/courses/:course_id/assignments/:id",
     "url:GET|/api/v1/courses/:course_id/assignments/:assignment_id/overrides",
     "url:POST|/api/v1/courses/:course_id/assignments/:assignment_id/overrides",
+    "url:DELETE|/api/v1/courses/:course_id/assignments/:assignment_id/overrides/:id",
     "url:GET|/api/v1/courses/:course_id/quizzes",
     "url:GET|/api/v1/courses/:course_id/quizzes/:id",
     "url:POST|/api/v1/courses/:course_id/quizzes/:quiz_id/extensions",

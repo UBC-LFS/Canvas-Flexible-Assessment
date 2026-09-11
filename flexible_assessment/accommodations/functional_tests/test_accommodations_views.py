@@ -585,3 +585,98 @@ class TestAccommodations(StaticLiveServerTestCase):
         self.assertIsNotNone(warning_header)
 
         input("Press Enter in this terminal to continue\n")
+
+    @tag("slow", "view", "accommodations", "override")
+    @mock_classes.use_mock_canvas_in_accommodations()
+    @patch.object(views.FinalGradeListView, "_submit_final_grades")
+    def test_accommodations_override(
+        self, mocked_flex_canvas_instance, mock_submit_final_grades
+    ):
+        """Note, this is designed to work with the fixture data for course 1."""
+        mock_submit_final_grades.return_value = (
+            True  # When submitting final grades, just return True for that function
+        )
+        session_id = self.client.session.session_key
+
+        # Set up required session data for the quizzes page
+        session = self.client.session
+        # Required auth/display data
+        session["display_name"] = "Test Instructor"
+        # Quizzes page data - submitted accommodations
+        session["accommodations"] = [
+            ("10000001", "1.5", "user_1", "Jason Zheng (10000001)", ""),
+            ("10000002", "2.0", "user_2", "Albert Einstein (10000002)", "^1.5^"),
+        ]
+
+        # Quizzes data
+        session["selected_quizzes"] = [
+            {
+                "id": 101,
+                "title": "Mock Quiz 1",
+                "is_new_quiz": False,
+                "url": "https://example.com/quiz/101",
+                "unlock_at_readable": "2026-06-01 - 12:00PM",
+                "lock_at_readable": "2026-06-01 - 1:00PM",
+                "time_limit_readable": "No time limit set",
+            },
+            {
+                "id": 102,
+                "title": "Mock Quiz 2",
+                "is_new_quiz": True,
+                "url": "https://example.com/quiz/102",
+                "unlock_at_readable": "2026-07-05 - 9:00AM",
+                "lock_at_readable": "2026-08-10 - 11:59PM",
+                "time_limit_readable": "2h",
+            },
+        ]
+        session["existing_accommodations"] = [
+                {
+                    "login_id": "jsmith",
+                    "display_name": "John Smith",
+                    "user_id": 101,
+                    "id": 1001,
+                    "title": "Quiz 1",
+                    "url": "/courses/123/quizzes/1001",
+                    "unlock_at": "2026-09-15T09:00:00Z",
+                    "unlock_at_readable": "September 15, 2026 at 9:00 AM",
+                    "lock_at": "2026-09-15T11:00:00Z",
+                    "lock_at_readable": "September 15, 2026 at 11:00 AM",
+                    "unlock_at_override": "2026-09-15T09:30:00Z",
+                    "unlock_at_override_readable": "September 15, 2026 at 9:30 AM",
+                    "lock_at_override": "2026-09-15T12:30:00Z",
+                    "lock_at_override_readable": "September 15, 2026 at 12:30 PM",
+                },
+            ]
+        session.save()
+
+        import logging
+        import sys
+
+        # Force Django to print exceptions during tests
+        logging.disable(logging.NOTSET)
+
+        # Or, override the client to re-raise exceptions:
+        response = self.client.get(
+            reverse("accommodations:accommodations_confirm", args=[1]),
+            raise_request_exception=True,  # ← this re-raises the actual exception
+        )
+
+        if response.status_code == 500:
+            print("\n=== 500 ERROR DETAILS ===")
+            print(response.content.decode())
+            print("=== END ERROR ===\n")
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("accommodations:accommodations_confirm", args=[1])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("accommodations:accommodations_confirm", args=[1])
+        )
+        response = self.client.get(reverse("accommodations:accommodations_home", args=[1]))
+        print(response.status_code)
+
+        input("Press Enter in this terminal to continue\n")

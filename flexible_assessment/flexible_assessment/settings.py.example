@@ -1,6 +1,9 @@
 import os
 from datetime import timedelta
 
+from dotenv import load_dotenv
+load_dotenv()
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ENGINE = os.environ["DB_ENGINE"]
@@ -17,7 +20,8 @@ ENCRYPT_PASSWORD = os.environ["ENCRYPT_PASSWORD"]
 
 SECRET_KEY = DJANGO_SECRET_KEY
 
-DEBUG = False
+DEBUG = True
+DEBUG_PROPAGATE_EXCEPTIONS = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -43,6 +47,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -64,6 +69,7 @@ CANVAS_OAUTH_ACCESS_TOKEN_URL = "{}login/oauth2/token".format(CANVAS_DOMAIN)
 CANVAS_OAUTH_SCOPES = [
     "url:GET|/api/v1/courses/:id",
     "url:GET|/api/v1/courses/:course_id/search_users",
+    "url:GET|/api/v1/courses/:course_id/users",
     "url:PUT|/api/v1/courses/:course_id/settings",
     "url:GET|/api/v1/courses/:course_id/settings",
     "url:PUT|/api/v1/courses/:id",
@@ -177,11 +183,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 # FILEBROWSER_DIRECTORY = ''
 # DIRECTORY = ''
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -241,4 +256,4 @@ LOGGING = {
     },
 }
 
-TEAMSHARE_FOLDER = os.environ["TEAMSHARE_FOLDER_PATH"]
+# TEAMSHARE_FOLDER = os.environ["TEAMSHARE_FOLDER_PATH"]

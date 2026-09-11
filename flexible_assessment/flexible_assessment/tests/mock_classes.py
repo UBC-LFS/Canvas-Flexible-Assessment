@@ -310,7 +310,24 @@ class MockAccommodationsCanvas(MockCanvas):
         self, accommodations, students, multiplier_quiz_groups, course_id
     ):
         """Mock method that returns existing accommodations"""
-        return []
+        return [
+            {
+                "login_id": "10000001",
+                "display_name": "Jason Zheng",
+                "user_id": 101,
+                "id": 1001,
+                "title": "MockQuiz 1",
+                "url": "/courses/123/quizzes/1001",
+                "unlock_at": "2026-09-15T09:00:00Z",
+                "unlock_at_readable": "September 15, 2026 at 9:00 AM",
+                "lock_at": "2026-09-15T11:00:00Z",
+                "lock_at_readable": "September 15, 2026 at 11:00 AM",
+                "unlock_at_override": "2026-09-15T09:30:00Z",
+                "unlock_at_override_readable": "September 15, 2026 at 9:30 AM",
+                "lock_at_override": "2026-09-15T12:30:00Z",
+                "lock_at_override_readable": "September 15, 2026 at 12:30 PM",
+            },
+        ]
 
     def add_time_extensions(self, student_groups, quiz_groups, course_id):
         for multiplier, quiz_list in quiz_groups.items():
