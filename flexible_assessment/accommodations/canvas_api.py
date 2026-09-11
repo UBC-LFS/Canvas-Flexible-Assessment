@@ -12,6 +12,8 @@ from datetime import timedelta, datetime, timezone
 import math
 import json
 
+import logging
+logger = logging.getLogger(__name__)
 
 ACCOMMODATION_MULTIPLIERS = [4.0, 3.5, 3.0, 2.5, 2.0, 1.75, 1.5, 1.25]
 BUFFER_TIME = 30  # time of buffer in minutes
@@ -896,6 +898,7 @@ class AccommodationsCanvas(Canvas):
                                 }
                                 # it would be ideal to call override.edit() but it seems to break - deleting and creating the override works as well
                                 override.delete()
+                                logger.info(f"Override data: {override_new}")
                                 quiz_assignment.create_override(
                                     assignment_override=override_new
                                 )
@@ -937,6 +940,7 @@ class AccommodationsCanvas(Canvas):
                     else:
                         quiz["lock_at_status"] = "N/A"
                     status = False
+                    logger.info(f"Exception: {e}")
                     print(e)
                     # raise Exception("TEST EXCEPTION")
                 else:
