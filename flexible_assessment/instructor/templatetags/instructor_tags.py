@@ -263,3 +263,11 @@ def get_averages_str(groups, course):
     prefix = "+" if diff_avg > 0 else ""
     diff_str = prefix + str(diff_avg) + "%"
     return (overall_str, default_str, diff_str)
+
+@register.simple_tag()
+def split_student_name(display_name):
+    trimmed = display_name.strip()
+    parts = trimmed.split()
+    firstName = parts[0]
+    lastName = ' '.join(parts[1:]) if len(parts) > 1 else ""
+    return (firstName, lastName)
