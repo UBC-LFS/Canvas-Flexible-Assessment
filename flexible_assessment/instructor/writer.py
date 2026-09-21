@@ -109,6 +109,14 @@ def course_log(course):
 
     return csv_writer.get_response()
 
+def split_name(display_name):
+    """Returns (first_name, last_name)."""
+    trimmed = display_name.strip()
+    parts = trimmed.split()
+    first = parts[0] if parts else ""
+    last = ' '.join(parts[1:]) if len(parts) > 1 else ""
+    return first, last
+
 
 def students_csv(course, students):
     """Creates csv response for percentage list"""
@@ -128,12 +136,13 @@ def students_csv(course, students):
 
     csv_writer.write(header)
 
-    for student in students:
+    def sort_key(student):
+        first, last = split_name(student.display_name)
+        return (last.casefold(), first.casefold())
+
+    for student in sorted(students, key=sort_key):
         values = []
-        trimmed = student.display_name.strip()
-        parts = trimmed.split()
-        firstName = parts[0]
-        lastName = ' '.join(parts[1:]) if len(parts) > 1 else ""
+        firstName, lastName = split_name(student.display_name)
         values.append(lastName)
         values.append(firstName)
         values.append(student.login_id)
