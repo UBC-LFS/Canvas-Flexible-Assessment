@@ -3,6 +3,7 @@ import logging
 import flexible_assessment.class_views as views
 import flexible_assessment.models as models
 from django.forms import ValidationError
+from django.contrib import messages
 from django.utils import timezone
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -218,6 +219,11 @@ class StudentAssessmentView(views.StudentFormView):
 
         if old_comment != comment:
             logger.info("Updated comment to '%s'", log_comment, extra=log_extra)
+
+        messages.success(
+            self.request,
+            "Assessment choices updated successfully.",
+        )
 
         response = super().form_valid(form)
         return response
