@@ -83,10 +83,14 @@
                                             {% comment %} <td class="text-center align-middle text-break" style="text-align: left; word-wrap: break-word; white-space: normal">{{ user_comment.comment }}</td> {% endcomment %}
                                             <td class="text-break"
                                                 style="text-align: left;
-                                                       width: 40%;
-                                                       overflow-wrap: break-word;
-                                                       white-space: normal">
-                                                {% if user_comment %}{{ user_comment.comment }}{% endif %}
+                                                       width: 40%;">
+                                                {% if user_comment %}
+                                                    <div class="overflow-auto" style="max-height: 4.5em;
+                                                                                      white-space: normal;
+                                                                                      overflow-wrap: anywhere;">
+                                                        {{ user_comment.comment }}
+                                                    </div>
+                                                {% endif %}
                                             </td>
                                         {% endwith %}
                                     </tr>

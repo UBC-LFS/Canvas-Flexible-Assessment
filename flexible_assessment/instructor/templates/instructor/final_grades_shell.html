@@ -190,7 +190,11 @@
 
                 columnDefs: [
                     {
-                        targets: 1,
+                        targets: 0,
+                        visible: false // hide last name column, only visible in CSV
+                    },
+                    {
+                        targets: 2,
                         visible: false // hide Student ID column, only visible in CSV
                     }
                 ],
@@ -218,7 +222,21 @@
                         format: {
                             header: function (data, columnIdx) {
                                 return data.replace(/<br\s*\/?>/gi, ' ').replace(/\s+/g, ' ').trim();
+                            },
+                            body: function (data, row, column, node) {
+                                // column 1 is the student name column
+                                if (column === 1 && data) {
+                                    const trimmed = $('<div>').html(data).text().trim();
+                                    const parts = trimmed.split(/\s+/);
+                                    const firstName = parts[0] || '';
+                                    return firstName;
+                                } else {
+                                    return data;
+                                }
                             }
+                        },
+                        modifier: {
+                            order: 0
                         }
                     },
                     // add in total average rows in the footer

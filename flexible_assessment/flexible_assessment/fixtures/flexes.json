@@ -177,7 +177,28 @@
         "assessment": "123e4567-e89b-12d3-a456-426655440008",
         "flex": null
     }
-}, {
+}, 
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 21,
+    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440001", "flex": 25 }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 22,
+    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440002", "flex": 25 }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 23,
+    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440003", "flex": 25 }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 24,
+    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440004", "flex": 25 }
+},
+{
   "model": "flexible_assessment.flexassessment",
   "pk": 2000,
   "fields": {

@@ -2,6 +2,7 @@
 <table id="final" class="table table-striped mb-3 nowrap" width="100%">
     <thead>
         <tr>
+            <th style="width: 0%;">Last Name</th>
             <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
             <th style="width: 0%;">Student ID</th>
             <th class="text-center align-middle" style="width: 5%; font-size: 110%;">Override Total</th>
@@ -34,6 +35,8 @@
     <tbody>
         {% for student in student_list %}
             <tr>
+                {% split_student_name student.display_name as name%}
+                <td>{{ name.1 }}</td>
                 <td class="text-center align-middle text-break">
                     <a href="{% url 'instructor:override_student_form_final' course.id student.user_id %}?previous=final">{{ student.display_name }}</a>
                 </td>

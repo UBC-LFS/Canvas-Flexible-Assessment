@@ -37,6 +37,15 @@
     },
     {
         "model": "flexible_assessment.usercomment",
+        "pk": 7,
+        "fields": {
+            "user_id": 6,
+            "course_id": 1,
+            "comment": "student 6 comment"
+        }
+    },
+    {
+        "model": "flexible_assessment.usercomment",
         "pk": 5,
         "fields": {
             "user_id": 1,
