@@ -11,7 +11,9 @@ from datetime import timedelta, datetime, timezone
 
 import math
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 
 ACCOMMODATION_MULTIPLIERS = [4.0, 3.5, 3.0, 2.5, 2.0, 1.75, 1.5, 1.25]
 BUFFER_TIME = 30  # time of buffer in minutes
@@ -690,6 +692,7 @@ class AccommodationsCanvas(Canvas):
 
         return existing_accommodations
 
+    # TODO: Investigate extensions for new quizzes in new courses causing error
     def set_extensions_for_new_quiz(self, new_quiz, extensions, course_id):
         quiz_url = f"{self.base_url}api/quiz/v1/courses/{course_id}/quizzes/{new_quiz.id}/accommodations"
         headers = {
@@ -726,6 +729,7 @@ class AccommodationsCanvas(Canvas):
         student_groups = dict(student_groups)  # convert from tuple list to dictionary
         course = self.get_course(course_id)
         status = True  # represents the status of adding - if any adds fail set to false
+        logging.info("extending time")
 
         for multiplier in ACCOMMODATION_MULTIPLIERS:
             multiplier = str(multiplier)
@@ -760,7 +764,8 @@ class AccommodationsCanvas(Canvas):
                     else:
                         canvas_quiz = course.get_quiz(quiz["id"])
                         canvas_quiz.set_extensions(extensions)  # use built in function
-                except:
+                except Exception as e:
+                    logging.exception("Failed to extend time limits")
                     quiz["time_limit_status"] = "failure"
                     status = False
                 else:
@@ -927,6 +932,7 @@ class AccommodationsCanvas(Canvas):
                                 assignment_override=override_settings
                             )
                 except Exception as e:
+                    logging.exception("Failed to extend availabilities")
                     if quiz["unlock_at_new"]:
                         quiz["unlock_at_status"] = "failure"
                     else:
@@ -937,7 +943,6 @@ class AccommodationsCanvas(Canvas):
                     else:
                         quiz["lock_at_status"] = "N/A"
                     status = False
-                    print(e)
                     # raise Exception("TEST EXCEPTION")
                 else:
                     if quiz["unlock_at_new"]:
