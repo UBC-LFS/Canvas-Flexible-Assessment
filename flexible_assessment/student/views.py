@@ -37,7 +37,10 @@ class StudentHome(views.StudentTemplateView):
         context = self.get_context_data(**kwargs)
         course = context.get("course")
         flexes = context.get("flexes")
-        if self.should_redirect(course, flexes):
+        user_id = models.UserProfile.objects.get(
+                        pk=self.request.session["_auth_user_id"]
+                    ).user_id
+        if self.should_redirect(course, flexes, user_id):
             # Redirect to StudentAssessmentView
             return HttpResponseRedirect(
                 reverse("student:student_form", args=[course.id])
@@ -45,7 +48,7 @@ class StudentHome(views.StudentTemplateView):
         else:
             return super_dispatch
 
-    def should_redirect(self, course, flexes):
+    def should_redirect(self, course, flexes, user_id):
         # A user should be redirected if the course flexes is set up, but they have set it up, and they have not been redirected already
         if (
             not self.request.session.get("has_been_redirected", False)
@@ -56,8 +59,8 @@ class StudentHome(views.StudentTemplateView):
             is_none_in_flexes = any(f.flex is None for f in flexes)
             now = timezone.now()
             is_past_deadline = now > course.close or now < course.open
-
-            return is_none_in_flexes and not is_past_deadline
+            disabled = models.UserCourse.objects.get(user_id=user_id, course_id=course.id).locked
+            return is_none_in_flexes and not is_past_deadline and not disabled
 
         return False
 
