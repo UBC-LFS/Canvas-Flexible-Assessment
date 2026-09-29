@@ -43,7 +43,15 @@
             {% bootstrap_field hidden_field %}
         {% endfor %}
         {% not_open course as no %}
-        {% if no %}
+        {% choices_disabled user course as disabled %}
+        {% if disabled %}
+            <div class="pt-5 pb-5">
+                <div class="container">
+                    <h1>Form not open</h1>
+                    <h3>Sorry, you have been disabled from making choices. Please contact your instructor if you wish to submit changes.</h3>
+                </div>
+            </div>
+        {% elif no %}
             <div class="pt-5 pb-5">
                 <div class="container">
                     <h1>Form not open</h1>

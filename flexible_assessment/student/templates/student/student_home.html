@@ -45,32 +45,44 @@
                     <div class="card shadow-sm" style="border-radius: 1em; overflow:hidden;">
                         <h3 class="card-header">Assessment Weights</h3>
                         <div class="card-body pt-2 pb-3">
-                            <p class="fw-light mt-0 mb-1">
-                                The window to make changes is <span style="font-weight:bold;">{{ course.open }} - {{ course.close }}</span>
-                            </p>
                             {% not_open course as no %}
+                            {% choices_disabled user_id course as disabled %}
                             {% before_deadline course as before_deadline %}
                             {% after_deadline course as after_deadline %}
                             {% is_any_flex_none flexes as has_none %}
                             {% is_any_flex_overriden flexes as overriden %}
-                            {% if before_deadline %}
+                            {% if disabled %}
                                 <p class="fw-light mt-0 mb-1">
-                                    You are here before the open date, please return to this page after {{ course.open }} to enter your desired percentages.
+                                   You have been <span style="font-weight:bold;">disabled</span> from making choices for this course. If this is not what you were expecting, please contact your instructor.
                                 </p>
-                            {% elif no %}
+                                {% if not has_none %}
+                                    <p class="fw-light mt-0 mb-1">
+                                        Though you may no longer change them, your previous choices have been saved below.
+                                    </p>
+                                {% endif %}
+                            {% else %}
                                 <p class="fw-light mt-0 mb-1">
-                                    It is <span style="font-weight: bold;">past the deadline</span> to make changes.
+                                    The window to make changes is <span style="font-weight:bold;">{{ course.open }} - {{ course.close }}</span>
                                 </p>
-                            {% endif %}
-                            {% if has_none and after_deadline %}
-                                <p class="fw-light mt-0 mb-1">
-                                    The instructor's recommended default percentages will be used because you did not enter your desired percentages before the deadline.
-                                </p>
-                            {% endif %}
-                            {% if has_none and not no %}
-                                <p class="fw-light mt-0 mb-1">
-                                    Please navigate to <a href="{% url 'student:student_form' course.id %}">Assessments</a> to make your choices. The default % will be applied if any are left blank.
-                                </p>
+                                {% if before_deadline %}
+                                    <p class="fw-light mt-0 mb-1">
+                                        You are here before the open date, please return to this page after {{ course.open }} to enter your desired percentages.
+                                    </p>
+                                {% elif no %}
+                                    <p class="fw-light mt-0 mb-1">
+                                        It is <span style="font-weight: bold;">past the deadline</span> to make changes.
+                                    </p>
+                                {% endif %}
+                                {% if has_none and after_deadline %}
+                                    <p class="fw-light mt-0 mb-1">
+                                        The instructor's recommended default percentages will be used because you did not enter your desired percentages before the deadline.
+                                    </p>
+                                {% endif %}
+                                {% if has_none and not no %}
+                                    <p class="fw-light mt-0 mb-1">
+                                        Please navigate to <a href="{% url 'student:student_form' course.id %}">Assessments</a> to make your choices. The default % will be applied if any are left blank.
+                                    </p>
+                                {% endif %}
                             {% endif %}
                             <table class="table table-striped mb-2" style="table-layout: fixed;">
                                 <thead>

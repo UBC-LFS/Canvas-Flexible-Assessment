@@ -29,6 +29,7 @@ class StudentHome(views.StudentTemplateView):
         flex_assessments = models.FlexAssessment.objects.filter(
             user__user_id=user_id, assessment__course_id=course.id
         ).order_by("assessment__order")
+        context["user_id"] = user_id
         context["flexes"] = flex_assessments
         return context
 
