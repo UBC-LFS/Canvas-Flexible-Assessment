@@ -48,6 +48,54 @@
 },
 {
     "model": "flexible_assessment.assessment",
+    "pk": "123e4567-e89b-12d3-a456-426655440021",
+    "fields": {
+        "title": "assignment1",
+        "default": 20,
+        "max": 30,
+        "min": 10,
+        "course": 2,
+        "group": 1
+    }
+},
+{
+    "model": "flexible_assessment.assessment",
+    "pk": "123e4567-e89b-12d3-a456-426655440022",
+    "fields": {
+        "title": "assignment2",
+        "default": 30,
+        "max": 30,
+        "min": 10,
+        "course": 2,
+        "group": 2
+    }
+},
+{
+    "model": "flexible_assessment.assessment",
+    "pk": "123e4567-e89b-12d3-a456-426655440023",
+    "fields": {
+        "title": "assignment3",
+        "default": 25,
+        "max": 30,
+        "min": 10,
+        "course": 2,
+        "group": 3
+    }
+},
+{
+    "model": "flexible_assessment.assessment",
+    "pk": "123e4567-e89b-12d3-a456-426655440024",
+    "fields": {
+        "title": "assignment4",
+        "default": 25,
+        "max": 30,
+        "min": 10,
+        "course": 2,
+        "group": 4
+    }
+},
+{
+    "model": "flexible_assessment.assessment",
     "pk": "123e4567-e89b-12d3-a456-426655440005",
     "fields": {
         "title": "assignmentA",
