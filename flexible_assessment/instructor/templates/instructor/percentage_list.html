@@ -37,6 +37,9 @@
                         <table id='percentage' class="table table-striped mb-4 nowrap" width="100%">
                             <thead>
                                 <tr>
+                                    <th>
+                                        <input class="form-check-input me-3" type="checkbox" id="select-all">
+                                    </th>
                                     <th class="text-center align-middle" style="width: 25%; font-size: 110%;">Student</th>
                                     <th class="text-center align-middle" style="width: 25%; font-size: 110%;">
                                         Chose
@@ -56,6 +59,13 @@
                             <tbody>
                                 {% for student in student_list %}
                                     <tr>
+                                        <td class="align-middle">
+                                            <input class="form-check-input me-2 student-checkbox"
+                                                   type="checkbox"
+                                                   name="selected_students"
+                                                   value="{{student.user_id}}"
+                                                   id="student{{student.user_id}}">
+                                        </td>
                                         <td class="text-center align-middle text-break">
                                             <a href="{% url 'instructor:override_student_form_percentage' course.id student.user_id %}?previous=percentages">{{ student.display_name }}</a>
                                         </td>
@@ -103,6 +113,17 @@
         </div>
     </div>
     <script>
+    function resetSelected (e, dt) {
+        const ids = getChecked(dt);
+        console.log(ids);
+    }
+
+    function getChecked(dt) {
+        return $(dt.rows().nodes())
+            .find('td:first-child input.student-checkbox:checked')
+            .map(function (i, cb) { return cb.value; })
+            .get();
+    }
     $(document).ready(function () {
         var colspan = $('.assessment').length;
 
@@ -111,13 +132,67 @@
         
         var table = $('#percentage').DataTable({
             scrollX: true,
+            order: [[1, 'asc']],
             columnDefs: [
-                { orderable: false, targets: colspan+1 }
-            ]            
+                { orderable: false, targets: [0] }
+            ],
+            dom: "<'row mb-2 button-row invisible'<'col-12 d-flex justify-content-end align-items-center gap-3'<'selected-count text-secondary'>B>>" +
+                 "<'row mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            buttons: {
+                dom: { button: { className: 'btn btn-outline-danger btn-sm' } },
+                buttons: [
+                    { text: 'Reset to defaults', className: 'reset', action: resetSelected },
+                    { text: 'Disable students', className: 'disable', action: resetSelected }
+                ]
+            }
         });
 
+        var $container = $(table.table().container());
+
+        function updateRow() {
+            var n = getChecked(table).length;
+            $container.find('.button-row').toggleClass('invisible', n === 0);
+            $container.find('.selected-count').text(n + (n === 1 ? ' student selected' : ' students selected'));
+
+            var $boxes = $(table.rows({ search: 'applied' }).nodes())
+                .find('td:first-child input.student-checkbox');
+            var all = $boxes.length > 0 && $boxes.filter(':checked').length === $boxes.length;
+            $container.find('#select-all').prop('checked', all);
+        }
+        $container.on('change', 'input.student-checkbox', updateRow);
+        $container.on('change', '#select-all', function () {
+            var checked = this.checked;
+            $(table.rows({ search: 'applied' }).nodes())
+                .find('td:first-child input.student-checkbox').prop('checked', checked);
+            updateRow();
+        });
+        table.on('draw', updateRow);
+        updateRow();
         $('.used-default').css('color', 'gray');
         $('.used-default').css('font-style', 'italic');
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectAll = document.getElementById('select-all');
+        const checkboxes = document.querySelectorAll('.student-checkbox');
+
+        selectAll.addEventListener('change', function () {
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', () => {
+
+                if (!cb.checked) {
+                    selectAll.checked = false;
+                } else if (Array.from(checkboxes).every(cb => cb.checked)) {
+                    selectAll.checked = true;
+                }
+            });
+        });
     });
     </script>
 {% endblock %}
