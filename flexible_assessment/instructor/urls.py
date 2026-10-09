@@ -40,6 +40,12 @@ urlpatterns = [
         name="log_export",
     ),
     path(
+        "<int:course_id>/percentages/reset/",
+        views.FlexAssessmentListView.as_view(http_method_names=["post"]),
+        {"reset": True},
+        name="reset_selected",
+    ),
+    path(
         "<int:course_id>/percentages/<int:pk>/",
         views.OverrideStudentAssessmentView.as_view(),
         name="override_student_form_percentage",

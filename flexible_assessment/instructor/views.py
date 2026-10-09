@@ -18,10 +18,11 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
 from django.conf import settings
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET, require_POST
 from instructor.canvas_api import FlexCanvas
 from decimal import Decimal, ROUND_HALF_UP
 from . import grader, writer
@@ -119,6 +120,33 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
             )
 
         return response
+    
+    def post(self, request, *args, **kwargs):
+        if kwargs.get("reset", ""):
+            course_id = kwargs["course_id"]
+            try:
+                ids = json.loads(request.body).get("ids", [])
+            except:
+                messages.error(request, "Error resetting student data, please try again.")
+                return JsonResponse({"success": False}, status=400)
+            if not isinstance(ids, list) or not ids:
+                messages.error(request, "No students selected.")
+                return JsonResponse({"success": False}, status=400)
+            
+            for id in ids:
+                student_flexes = (
+                        models.FlexAssessment.objects
+                        .filter(user__user_id=id, assessment__course__id=course_id)
+                        .select_related("assessment")
+                    )
+                for flex in student_flexes:
+                    flex.flex = flex.assessment.default
+                    flex.override = True
+                    flex.save()
+            messages.success(request, "Reset students to default weights successfully.")
+            return JsonResponse({"success": True})
+        return JsonResponse({"success": False}, status=400)
+    
 
 
 class FinalGradeListView(views.ExportView, views.InstructorListView):
