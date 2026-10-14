@@ -82,13 +82,18 @@
                                             <a href="{% url 'instructor:override_student_form_percentage' course.id student.user_id %}?previous=percentages">{{ student.display_name }}</a>
                                         </td>
                                         {% with student.flexassessment_set.all|has_null_flex_assessment:course as null_flex %}
+                                        {% with student|is_disabled:course.id as disabled %}
                                             <td class="text-center align-middle">
                                                 {% if null_flex %}
                                                     No
                                                 {% else %}
                                                     Yes
                                                 {% endif %}
+                                                {% if disabled %}
+                                                    (disabled)
+                                                {% endif %}
                                             </td>
+                                        {% endwith %}
                                         {% endwith %}
                                         {% for assessment in assessments %}
                                             {% with student.flexassessment_set.all|assessment_filter:assessment.id as flex_assessment %}
@@ -125,102 +130,124 @@
         </div>
     </div>
     <script>
-    function resetSelected (e, dt) {
-        const ids = getChecked(dt);
-        if (confirm("Are you sure you want to reset " + ids.length + " selected students grades to default weights?")){
-            fetch("{% url 'instructor:reset_selected' course.id %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify({ ids: ids }),
-            })    
-            .then(async res => {
-                const data = await res.json().catch(() => null);
-                if (data === null) {
-                    throw new Error('Request failed: ' + res.status);
-                }
-                location.reload();
-            })
-            .catch(err => alert(err.message));
+        function resetSelected(e, dt) {
+            const ids = getChecked(dt);
+            url = "{% url 'instructor:reset_selected' course.id %}"
+            msg = "Are you sure you want to reset " + ids.length + " selected students grades to default weights?"
+            postSelected(ids, url, msg)
         }
-    }
 
-    function getChecked(dt) {
-        return $(dt.rows().nodes())
-            .find('td:first-child input.student-checkbox:checked')
-            .map(function (i, cb) { return cb.value; })
-            .get();
-    }
-    $(document).ready(function () {
-        var colspan = $('.assessment').length;
+        function disableSelected(e, dt) {
+            const ids = getChecked(dt);
+            url = "{% url 'instructor:reset_selected' course.id %}"
+            msg = "Are you sure you want to disable " + ids.length + " selected students from making choices?"
+            postSelected(ids, url, msg)
+        }
 
-        var width = Math.floor(50/colspan);
-        $('.assessment').css('width', width+'%');
-        
-        var table = $('#percentage').DataTable({
-            scrollX: true,
-            order: [[1, 'asc']],
-            columnDefs: [
-                { orderable: false, targets: [0] }
-            ],
-            dom: "<'row mb-2 button-row invisible'<'col-12 d-flex justify-content-end align-items-center gap-3'<'selected-count text-secondary'>B>>" +
-                 "<'row mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                 "<'row'<'col-sm-12'tr>>" +
-                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-            buttons: {
-                dom: { button: { className: 'btn btn-outline-danger btn-sm' } },
-                buttons: [
-                    { text: 'Reset to defaults', className: 'reset', action: resetSelected },
-                    { text: 'Disable students', className: 'disable', action: resetSelected }
-                ]
+        function enableSelected(e, dt) {
+            const ids = getChecked(dt);
+            url = "{% url 'instructor:enable_selected' course.id %}"
+            msg = "Are you sure you want to enable " + ids.length + " selected students to make choices?"
+            postSelected(ids, url, msg)
+        }
+
+        function postSelected (ids, url, confirmMsg) {
+            if (confirm(confirmMsg)){
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({ ids: ids }),
+                })    
+                .then(async res => {
+                    const data = await res.json().catch(() => null);
+                    if (data === null) {
+                        throw new Error('Request failed: ' + res.status);
+                    }
+                    location.reload();
+                })
+                .catch(err => alert(err.message));
             }
-        });
-
-        var $container = $(table.table().container());
-
-        function updateRow() {
-            var n = getChecked(table).length;
-            $container.find('.button-row').toggleClass('invisible', n === 0);
-            $container.find('.selected-count').text(n + (n === 1 ? ' student selected' : ' students selected'));
-
-            var $boxes = $(table.rows({ search: 'applied' }).nodes())
-                .find('td:first-child input.student-checkbox');
-            var all = $boxes.length > 0 && $boxes.filter(':checked').length === $boxes.length;
-            $container.find('#select-all').prop('checked', all);
         }
-        $container.on('change', 'input.student-checkbox', updateRow);
-        $container.on('change', '#select-all', function () {
-            var checked = this.checked;
-            $(table.rows({ search: 'applied' }).nodes())
-                .find('td:first-child input.student-checkbox').prop('checked', checked);
-            updateRow();
-        });
-        table.on('draw', updateRow);
-        updateRow();
-        $('.used-default').css('color', 'gray');
-        $('.used-default').css('font-style', 'italic');
-    });
-    document.addEventListener('DOMContentLoaded', function () {
-        const selectAll = document.getElementById('select-all');
-        const checkboxes = document.querySelectorAll('.student-checkbox');
+        
+        function getChecked(dt) {
+            return $(dt.rows().nodes())
+                .find('td:first-child input.student-checkbox:checked')
+                .map(function (i, cb) { return cb.value; })
+                .get();
+        }
+        $(document).ready(function () {
+            var colspan = $('.assessment').length;
 
-        selectAll.addEventListener('change', function () {
-            checkboxes.forEach(cb => {
-                cb.checked = this.checked;
-            });
-        });
-
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', () => {
-                if (!cb.checked) {
-                    selectAll.checked = false;
-                } else if (Array.from(checkboxes).every(cb => cb.checked)) {
-                    selectAll.checked = true;
+            var width = Math.floor(50/colspan);
+            $('.assessment').css('width', width+'%');
+            
+            var table = $('#percentage').DataTable({
+                scrollX: true,
+                order: [[1, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: [0] }
+                ],
+                dom: "<'row mb-2 button-row invisible'<'col-12 d-flex justify-content-end align-items-center gap-3'<'selected-count text-secondary'>B>>" +
+                    "<'row mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                buttons: {
+                    dom: { button: { className: 'btn btn-sm' } },
+                    buttons: [
+                    // TODO: fix button layout
+                        { text: 'Reset to defaults', className: 'btn-outline-danger reset', action: resetSelected },
+                        { text: 'Disable students', className: 'btn-outline-danger disable', action: disableSelected },
+                        { text: 'Enable students', className: 'btn-outline-primary disable', action: enableSelected }
+                    ]
                 }
             });
+
+            var $container = $(table.table().container());
+
+            function updateRow() {
+                var n = getChecked(table).length;
+                $container.find('.button-row').toggleClass('invisible', n === 0);
+                $container.find('.selected-count').text(n + (n === 1 ? ' student selected' : ' students selected'));
+
+                var $boxes = $(table.rows({ search: 'applied' }).nodes())
+                    .find('td:first-child input.student-checkbox');
+                var all = $boxes.length > 0 && $boxes.filter(':checked').length === $boxes.length;
+                $container.find('#select-all').prop('checked', all);
+            }
+            $container.on('change', 'input.student-checkbox', updateRow);
+            $container.on('change', '#select-all', function () {
+                var checked = this.checked;
+                $(table.rows({ search: 'applied' }).nodes())
+                    .find('td:first-child input.student-checkbox').prop('checked', checked);
+                updateRow();
+            });
+            table.on('draw', updateRow);
+            updateRow();
+            $('.used-default').css('color', 'gray');
+            $('.used-default').css('font-style', 'italic');
         });
-    });
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.student-checkbox');
+
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            });
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    if (!cb.checked) {
+                        selectAll.checked = false;
+                    } else if (Array.from(checkboxes).every(cb => cb.checked)) {
+                        selectAll.checked = true;
+                    }
+                });
+            });
+        });
     </script>
 {% endblock %}

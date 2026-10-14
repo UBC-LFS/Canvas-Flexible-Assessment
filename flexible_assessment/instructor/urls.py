@@ -41,9 +41,21 @@ urlpatterns = [
     ),
     path(
         "<int:course_id>/percentages/reset/",
-        views.FlexAssessmentListView.as_view(http_method_names=["post"]),
+        views.FlexAssessmentListView.as_view(http_method_names=["post"]), # restrict endpoint to POST API calls only
         {"reset": True},
         name="reset_selected",
+    ),
+    path(
+        "<int:course_id>/percentages/disable/",
+        views.FlexAssessmentListView.as_view(http_method_names=["post"]),
+        {"disable": True},
+        name="disable_selected",
+    ),
+    path(
+        "<int:course_id>/percentages/enable/",
+        views.FlexAssessmentListView.as_view(http_method_names=["post"]),
+        {"enable": True},
+        name="enable_selected",
     ),
     path(
         "<int:course_id>/percentages/<int:pk>/",

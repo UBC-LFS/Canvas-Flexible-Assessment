@@ -18,6 +18,13 @@ def comment_filter(comment_set, course_id):
 
 
 @register.filter
+def is_disabled(student, course_id):
+    return student.usercourse_set.filter(
+        course__id=course_id, locked=True
+    ).exists()
+
+
+@register.filter
 def has_null_flex_assessment(flex_assessments, course):
     return flex_assessments.filter(
         assessment__course=course, flex__isnull=True
