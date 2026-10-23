@@ -240,7 +240,7 @@
     "fields": {
         "user": 1,
         "assessment": "123e4567-e89b-12d3-a456-426655440031",
-        "flex": null,
+        "flex": 25,
         "override": true
     }
 },
@@ -250,7 +250,7 @@
     "fields": {
         "user": 1,
         "assessment": "123e4567-e89b-12d3-a456-426655440032",
-        "flex": null,
+        "flex": 25,
         "override": true
     }
 },
@@ -260,7 +260,7 @@
     "fields": {
         "user": 1,
         "assessment": "123e4567-e89b-12d3-a456-426655440033",
-        "flex": null,
+        "flex": 50,
         "override": true
     }
 },

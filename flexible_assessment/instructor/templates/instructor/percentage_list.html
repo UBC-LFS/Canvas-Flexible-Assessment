@@ -83,6 +83,7 @@
                                         </td>
                                         {% with student.flexassessment_set.all|has_null_flex_assessment:course as null_flex %}
                                         {% with student|is_disabled:course.id as disabled %}
+                                        {% with student.flexassessment_set.all|is_overriden:course as overriden %}
                                             <td class="text-center align-middle">
                                                 {% if null_flex %}
                                                     No
@@ -92,7 +93,11 @@
                                                 {% if disabled %}
                                                     (disabled)
                                                 {% endif %}
+                                                {% if overriden %}
+                                                    *
+                                                {% endif %}
                                             </td>
+                                        {% endwith %}
                                         {% endwith %}
                                         {% endwith %}
                                         {% for assessment in assessments %}
@@ -124,6 +129,11 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        {% if student_list|any_student_overriden:course %}
+                            <p class="fw-light mt-0 mb-1">
+                                <strong>*</strong> This value has been set by an instructor or a member of the course staff.
+                            </p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -139,7 +149,7 @@
 
         function disableSelected(e, dt) {
             const ids = getChecked(dt);
-            url = "{% url 'instructor:reset_selected' course.id %}"
+            url = "{% url 'instructor:disable_selected' course.id %}"
             msg = "Are you sure you want to disable " + ids.length + " selected students from making choices?"
             postSelected(ids, url, msg)
         }
@@ -190,18 +200,28 @@
                 columnDefs: [
                     { orderable: false, targets: [0] }
                 ],
-                dom: "<'row mb-2 button-row invisible'<'col-12 d-flex justify-content-end align-items-center gap-3'<'selected-count text-secondary'>B>>" +
-                    "<'row mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                    "<'row'<'col-sm-12'tr>>" +
-                    "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                dom:    "<'row mb-2 align-items-center'" +
+                            "<'col-sm-12 col-md-4'l>" +
+                            "<'col-sm-12 col-md-8 d-flex justify-content-md-end align-items-center gap-3'" +
+                                "<'button-group invisible d-flex align-items-center gap-3'<'selected-count text-secondary'>B>" +
+                                "f" +
+                            ">" +
+                        ">" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
                 buttons: {
                     dom: { button: { className: 'btn btn-sm' } },
-                    buttons: [
-                    // TODO: fix button layout
-                        { text: 'Reset to defaults', className: 'btn-outline-danger reset', action: resetSelected },
-                        { text: 'Disable students', className: 'btn-outline-danger disable', action: disableSelected },
-                        { text: 'Enable students', className: 'btn-outline-primary disable', action: enableSelected }
-                    ]
+                    buttons: [{
+                        extend: 'collection',
+                        text: 'Actions',
+                        className: 'btn-primary',
+                        buttons: [
+                            { text: 'Enable', action: enableSelected },
+                            { text: 'Disable', action: disableSelected },
+                            { text: 'Reset', action: resetSelected }
+                            
+                        ]
+                    }]
                 }
             });
 
@@ -209,7 +229,7 @@
 
             function updateRow() {
                 var n = getChecked(table).length;
-                $container.find('.button-row').toggleClass('invisible', n === 0);
+                $container.find('.button-group').toggleClass('invisible', n === 0);
                 $container.find('.selected-count').text(n + (n === 1 ? ' student selected' : ' students selected'));
 
                 var $boxes = $(table.rows({ search: 'applied' }).nodes())

@@ -80,6 +80,21 @@ class TestStudentViews(StaticLiveServerTestCase):
 
         input("Press Enter in this terminal to continue")
 
+    @tag("slow", "view", "student_view_reset")
+    @mock_classes.use_mock_canvas()
+    def test_view_page_reset(self, mocked_flex_canvas_instance):
+        session_id = self.client.session.session_key
+        self.browser.get(
+            self.live_server_url + reverse("student:student_home", args=[3])
+        )
+        self.browser.add_cookie({"name": "sessionid", "value": session_id})
+
+        self.browser.get(
+            self.live_server_url + reverse("student:student_home", args=[3])
+        )
+
+        input("Press Enter in this terminal to continue")
+
     @tag("slow")
     @mock_classes.use_mock_canvas()
     def test_student_first_time_input_flexes(self, mocked_flex_canvas_instance):

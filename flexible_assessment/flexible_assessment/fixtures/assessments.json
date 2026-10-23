@@ -100,7 +100,7 @@
     "fields": {
         "title": "assignment1",
         "default": 25,
-        "max": 30,
+        "max": 50,
         "min": 10,
         "course": 3,
         "group": 1
@@ -112,7 +112,7 @@
     "fields": {
         "title": "assignment2",
         "default": 25,
-        "max": 30,
+        "max": 50,
         "min": 10,
         "course": 3,
         "group": 2
@@ -123,8 +123,8 @@
     "pk": "123e4567-e89b-12d3-a456-426655440033",
     "fields": {
         "title": "assignment3",
-        "default": 25,
-        "max": 30,
+        "default": 50,
+        "max": 50,
         "min": 10,
         "course": 3,
         "group": 3

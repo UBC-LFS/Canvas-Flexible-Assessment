@@ -123,8 +123,17 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
     
     def post(self, request, *args, **kwargs):
         success = False
+        course_id = kwargs["course_id"]
+
+        # Check if the user making the request is a Teacher or Admin
+        if not models.UserCourse.objects.filter(
+            user__user_id=request.user.user_id,
+            course__id=course_id,
+            role__in=[models.Roles.TEACHER, models.Roles.ADMIN]
+        ).exists():
+            raise PermissionDenied
+        
         if kwargs.get("reset", ""):
-            course_id = kwargs["course_id"]
             try:
                 ids = json.loads(request.body).get("ids", [])
             except:
@@ -138,10 +147,10 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
                 student_flexes = (
                         models.FlexAssessment.objects
                         .filter(user__user_id=id, assessment__course__id=course_id)
-                        # .select_related("assessment")
+                        .select_related("assessment")
                     )
                 for flex in student_flexes:
-                    flex.flex = None # TODO: Decide to reset to assessment.default value or None (effectively no choice made)
+                    flex.flex = flex.assessment.default
                     flex.override = True
                     flex.save()
             messages.success(request, "Reset students to default weights successfully.")
@@ -190,7 +199,6 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
             success = True
         status = 200 if success else 400
         return JsonResponse({"success": success}, status=status)
-    
 
 
 class FinalGradeListView(views.ExportView, views.InstructorListView):
