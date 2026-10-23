@@ -149,10 +149,11 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
                         .filter(user__user_id=id, assessment__course__id=course_id)
                         .select_related("assessment")
                     )
-                for flex in student_flexes:
-                    flex.flex = flex.assessment.default
-                    flex.override = True
-                    flex.save()
+                if all(flex.flex is not None for flex in student_flexes):
+                    for flex in student_flexes:
+                        flex.flex = flex.assessment.default
+                        flex.override = True
+                        flex.save()
             messages.success(request, "Reset students to default weights successfully.")
             success = True
         elif kwargs.get("disable", ""):
