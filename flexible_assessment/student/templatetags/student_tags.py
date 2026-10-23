@@ -1,6 +1,7 @@
 from django import template
 from django.utils import timezone
 from flexible_assessment.models import Assessment
+from flexible_assessment.models import UserCourse
 from flexible_assessment.models import FlexAssessment
 
 register = template.Library()
@@ -15,6 +16,14 @@ def not_open(course):
         close = course.close
         now = timezone.now()
         return now > close or now < open
+    else:
+        return False
+
+@register.simple_tag()
+def choices_disabled(user_id, course):
+    if user_id and course:
+        user_course = UserCourse.objects.get(user_id=user_id, course=course)
+        return user_course.locked
     else:
         return False
 

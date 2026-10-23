@@ -57,9 +57,10 @@
                             <a class="nav-link {% block nav_item_home %}{% endblock nav_item_home %}"
                                href="{% url 'student:student_home' course.id %}"><i class="bi bi-house me-2"></i> Home</a>
                             {% not_open course as no %}
-                            {% if no %}
+                            {% choices_disabled user course as disabled %}
+                            {% if no or disabled %}
                                 <div data-toggle="tooltip"
-                                     title="It is outside the time frame to make changes.">
+                                     title="{% if disabled %}You are currently disabled from making changes by your instructor.{% else %}It is outside the time frame to make changes.{% endif %}">
                                     <a class="nav-link {% block nav_item_disabled_assessments %}{% endblock nav_item_disabled_assessments %} disabled-link"
                                        href="#"><i class="bi bi-journals me-2"></i> Assessments</a>
                                 </div>
