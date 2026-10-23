@@ -70,7 +70,8 @@
                             </thead>
                             <tbody>
                                 {% for student in student_list %}
-                                    <tr>
+                                    {% with student|is_disabled:course.id as disabled %}
+                                    <tr {% if disabled %} class="disabled-student" {% endif %}>
                                         <td class="align-middle">
                                             <input class="form-check-input me-2 student-checkbox"
                                                    type="checkbox"
@@ -82,7 +83,6 @@
                                             <a href="{% url 'instructor:override_student_form_percentage' course.id student.user_id %}?previous=percentages">{{ student.display_name }}</a>
                                         </td>
                                         {% with student.flexassessment_set.all|has_null_flex_assessment:course as null_flex %}
-                                        {% with student|is_disabled:course.id as disabled %}
                                         {% with student.flexassessment_set.all|is_overriden:course as overriden %}
                                             <td class="text-center align-middle">
                                                 {% if null_flex %}
@@ -97,7 +97,6 @@
                                                     *
                                                 {% endif %}
                                             </td>
-                                        {% endwith %}
                                         {% endwith %}
                                         {% endwith %}
                                         {% for assessment in assessments %}
@@ -126,6 +125,7 @@
                                             </td>
                                         {% endwith %}
                                     </tr>
+                                    {% endwith %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -216,8 +216,8 @@
                         text: 'Actions',
                         className: 'btn-primary',
                         buttons: [
-                            { text: 'Enable', action: enableSelected },
-                            { text: 'Disable', action: disableSelected },
+                            { text: 'Enable', enabled: false, action: enableSelected },
+                            { text: 'Disable', enabled: true, action: disableSelected },
                             { text: 'Reset', action: resetSelected }
                             
                         ]
@@ -236,6 +236,19 @@
                     .find('td:first-child input.student-checkbox');
                 var all = $boxes.length > 0 && $boxes.filter(':checked').length === $boxes.length;
                 $container.find('#select-all').prop('checked', all);
+
+                var anyDisabled = $(table.rows().nodes())
+                    .filter('.disabled-student')
+                    .filter(function () { return $(this).find('input.student-checkbox:checked').length > 0; })
+                    .length > 0;
+
+                var anyEnabled = $(table.rows().nodes())
+                    .not('.disabled-student')
+                    .filter(function () { return $(this).find('input.student-checkbox:checked').length > 0; })
+                    .length > 0;
+
+                table.button('0-0').enable(anyDisabled);
+                table.button('0-1').enable(anyEnabled);
             }
             $container.on('change', 'input.student-checkbox', updateRow);
             $container.on('change', '#select-all', function () {
