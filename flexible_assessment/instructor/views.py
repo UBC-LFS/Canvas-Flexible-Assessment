@@ -18,10 +18,11 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When
 from django.forms import BaseModelFormSet, ValidationError
 from django.conf import settings
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET, require_POST
 from instructor.canvas_api import FlexCanvas
 from decimal import Decimal, ROUND_HALF_UP
 from . import grader, writer
@@ -119,6 +120,86 @@ class FlexAssessmentListView(views.ExportView, views.InstructorListView):
             )
 
         return response
+    
+    def post(self, request, *args, **kwargs):
+        success = False
+        course_id = kwargs["course_id"]
+
+        # Check if the user making the request is a Teacher or Admin
+        if not models.UserCourse.objects.filter(
+            user__user_id=request.user.user_id,
+            course__id=course_id,
+            role__in=[models.Roles.TEACHER, models.Roles.ADMIN]
+        ).exists():
+            raise PermissionDenied
+        
+        if kwargs.get("reset", ""):
+            try:
+                ids = json.loads(request.body).get("ids", [])
+            except:
+                messages.error(request, "Error resetting student data, please try again.")
+                return JsonResponse({"success": False}, status=400)
+            if not isinstance(ids, list) or not ids:
+                messages.error(request, "No students selected.")
+                return JsonResponse({"success": False}, status=400)
+            
+            for id in ids:
+                student_flexes = (
+                        models.FlexAssessment.objects
+                        .filter(user__user_id=id, assessment__course__id=course_id)
+                        .select_related("assessment")
+                    )
+                if all(flex.flex is not None for flex in student_flexes):
+                    for flex in student_flexes:
+                        flex.flex = flex.assessment.default
+                        flex.override = True
+                        flex.save()
+            messages.success(request, "Reset students to default weights successfully.")
+            success = True
+        elif kwargs.get("disable", ""):
+            course_id = kwargs["course_id"]
+            try:
+                ids = json.loads(request.body).get("ids", [])
+            except:
+                messages.error(request, "Error disabling selected students, please try again.")
+                return JsonResponse({"success": False}, status=400)
+            if not isinstance(ids, list) or not ids:
+                messages.error(request, "No students selected.")
+                return JsonResponse({"success": False}, status=400)
+            
+            for id in ids:
+                user_courses = (
+                        models.UserCourse.objects
+                        .filter(user__user_id=id, course__id=course_id, role=models.Roles.STUDENT)
+                    )
+                for uc in user_courses:
+                    uc.locked = True
+                    uc.save()
+            messages.success(request, "Disabled selected students successfully.")
+            success = True
+        elif kwargs.get("enable", ""):
+            course_id = kwargs["course_id"]
+            try:
+                ids = json.loads(request.body).get("ids", [])
+            except:
+                messages.error(request, "Error enabling selected students, please try again.")
+                return JsonResponse({"success": False}, status=400)
+            if not isinstance(ids, list) or not ids:
+                messages.error(request, "No students selected.")
+                return JsonResponse({"success": False}, status=400)
+            
+            for id in ids:
+                user_courses = (
+                        models.UserCourse.objects
+                        .filter(user__user_id=id, course__id=course_id, role=models.Roles.STUDENT)
+                    )
+                for uc in user_courses:
+                    uc.locked = False
+                    uc.save()
+            messages.success(request, "Enabled selected students successfully.")
+            success = True
+        status = 200 if success else 400
+        return JsonResponse({"success": success}, status=status)
 
 
 class FinalGradeListView(views.ExportView, views.InstructorListView):

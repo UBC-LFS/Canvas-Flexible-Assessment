@@ -181,22 +181,88 @@
 {
     "model": "flexible_assessment.flexassessment",
     "pk": 21,
-    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440001", "flex": 25 }
+    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440001", "flex": null }
 },
 {
     "model": "flexible_assessment.flexassessment",
     "pk": 22,
-    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440002", "flex": 25 }
+    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440002", "flex": null }
 },
 {
     "model": "flexible_assessment.flexassessment",
     "pk": 23,
-    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440003", "flex": 25 }
+    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440003", "flex": null }
 },
 {
     "model": "flexible_assessment.flexassessment",
     "pk": 24,
-    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440004", "flex": 25 }
+    "fields": { "user": 6, "assessment": "123e4567-e89b-12d3-a456-426655440004", "flex": null }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 25,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440021",
+        "flex": null
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 26,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440022",
+        "flex": null
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 27,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440023",
+        "flex": null
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 28,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440024",
+        "flex": null
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 29,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440031",
+        "flex": 25,
+        "override": true
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 30,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440032",
+        "flex": 25,
+        "override": true
+    }
+},
+{
+    "model": "flexible_assessment.flexassessment",
+    "pk": 31,
+    "fields": {
+        "user": 1,
+        "assessment": "123e4567-e89b-12d3-a456-426655440033",
+        "flex": 50,
+        "override": true
+    }
 },
 {
   "model": "flexible_assessment.flexassessment",

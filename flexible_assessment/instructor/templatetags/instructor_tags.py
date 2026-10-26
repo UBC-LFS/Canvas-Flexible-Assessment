@@ -1,5 +1,5 @@
 from django import template
-from flexible_assessment.models import Assessment, Roles
+from flexible_assessment.models import FlexAssessment, Assessment, Roles
 import json
 
 from .. import grader
@@ -18,9 +18,30 @@ def comment_filter(comment_set, course_id):
 
 
 @register.filter
+def is_disabled(student, course_id):
+    return student.usercourse_set.filter(
+        course__id=course_id, locked=True
+    ).exists()
+
+
+@register.filter
 def has_null_flex_assessment(flex_assessments, course):
     return flex_assessments.filter(
         assessment__course=course, flex__isnull=True
+    ).exists()
+
+@register.filter
+def is_overriden(flex_assessments, course):
+    return flex_assessments.filter(
+        assessment__course=course, override=True
+    ).exists()
+
+@register.filter
+def any_student_overriden(students, course):
+    return FlexAssessment.objects.filter(
+        user__in=students,
+        assessment__course=course,
+        override=True
     ).exists()
 
 

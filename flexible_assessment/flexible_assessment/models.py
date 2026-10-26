@@ -6,6 +6,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.db import models
+from django.db.models import Q
 
 
 class UserProfileManager(BaseUserManager):
@@ -215,10 +216,15 @@ class UserCourse(models.Model):
     role : int
         Used as identification for role of user in course
         (see models.Roles class)
+    locked : boolean
+        Set to true when a student is disabled in course
     """
 
     class Meta:
         constraints = [
+            models.constraints.CheckConstraint(
+                condition=Q(locked=False) | Q(role=Roles.STUDENT), name="Only students can be locked"
+            ),
             models.constraints.UniqueConstraint(
                 fields=["user_id", "course_id"], name="User and Course unique"
             )
@@ -227,6 +233,7 @@ class UserCourse(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     role = models.IntegerField(choices=Roles.choices)
+    locked = models.BooleanField(default=False)
 
     def __str__(self):
         return "{}, {}, {}".format(self.user.display_name, self.course.title, self.role)

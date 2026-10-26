@@ -13,7 +13,8 @@
     "fields": {
         "user_id": 2,
         "course_id": 1,
-        "role": 4
+        "role": 4,
+        "locked": true
     }
 },
 {
@@ -40,7 +41,8 @@
     "fields": {
         "user_id": 1,
         "course_id": 2,
-        "role": 4
+        "role": 4,
+        "locked": true
     }
 },
 {
