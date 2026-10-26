@@ -8,6 +8,7 @@ from django.http import (
 )
 from django.shortcuts import redirect
 from django.utils.safestring import mark_safe
+from django.utils.html import format_html, format_html_join
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.conf import settings
@@ -639,10 +640,31 @@ class AccommodationsConfirm(views.AccommodationsListView):
         )
 
         if time_extension_status is False:
-            messages.error(
-                request,
-                "Errors were encountered when extending time limits.",
-            )
+            first_list = next(iter(multiplier_quiz_groups_results.values()), [])
+            needs_moderation = [q for q in first_list if q.get("time_limit_status") == "new_quiz_moderation_bug"]
+            if needs_moderation:
+                quizzes = format_html_join(
+                    "",
+                    '<li>{}</li>',
+                    ((q["title"],) for q in needs_moderation),
+                )
+                messages.error(
+                    request,
+                    format_html(
+                        "Errors were encountered extending time limits for the following quizzes:"
+                        '<ul class="mt-2 mb-1">{}</ul>'
+                        "Please <strong>click the button below</strong> to open the Canvas moderation page, then close the tab and retry adding Accommodations for the affected quizzes.&nbsp;"
+                        '<a href="{}" target="_blank" rel="noopener" '
+                        'class="btn btn-sm btn-secondary">Open Canvas</a></li>',
+                        quizzes, 
+                        needs_moderation[0]["moderation_url"],
+                    ),
+                )
+            else:
+                messages.error(
+                    request,
+                    "Errors were encountered when extending time limits.",
+                )
         if availabilities_status is False:
             messages.error(
                 request,
