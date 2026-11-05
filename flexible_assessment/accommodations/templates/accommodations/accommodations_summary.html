@@ -146,5 +146,56 @@
         {% endfor %}
     </ul>
 {% endif %}
-<script></script>
+<script>
+    document.addEventListener("click", async (e) => {
+        const btn = e.target.closest("#canvas-fix-btn");
+        if (!btn) return;
+        e.preventDefault();
+        console.log("canvas-fix clicked", btn.dataset.retryUrl);
+
+        const status = document.getElementById("canvas-fix-status");
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+        btn.classList.add("disabled");
+
+        const tab = window.open(btn.href, "_blank");
+        if (!tab) {
+            status.textContent = "Popup blocked. Allow popups for this site and click again.";
+            btn.classList.remove("disabled");
+            return;
+        }
+
+        const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+
+        try {
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                status.textContent = `Waiting for Canvas… (attempt ${attempt}/3)`;
+                await sleep(5000);
+
+                const resp = await fetch(btn.dataset.retryUrl, {
+                    method: "POST",
+                    headers: { "X-CSRFToken": csrf },
+                    credentials: "same-origin",
+                });
+                console.log("retry response", resp.status);
+                if (!resp.ok) throw new Error(`Retry request failed (${resp.status})`);
+
+                const data = await resp.json();
+                if (data.ok) {
+                    tab.close();
+                    status.textContent = "Done!";
+                    location.reload();
+                    return;
+                }
+            }
+            tab.close();
+            status.textContent = "Still failing. Open the page manually, then re-run the application.";
+        } catch (err) {
+            console.error(err);
+            status.textContent = `Error: ${err.message}`;
+        } finally {
+            if (!tab.closed) tab.close();
+            btn.classList.remove("disabled");
+        }
+    });
+</script>
 {% endblock content %}
