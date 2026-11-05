@@ -651,11 +651,11 @@ class AccommodationsConfirm(views.AccommodationsListView):
                 messages.error(
                     request,
                     format_html(
-                        "A bug was encountered while sextending time limits for the following quizzes:"
+                        "A known issue was encountered while extending time limits for the following quizzes:"
                         '<ul class="mt-2 mb-1">{}</ul>'
-                        "Please <strong>click the button below</strong> to open the Canvas and reload the quizzes.<br>"
+                        "Please <strong>click the button below</strong> to open Canvas and reload the quizzes.<br>"
                         '<a href="{}" target="_blank" rel="noopener" id="canvas-fix-btn" '
-                        'data-retry-url="{}" class="btn btn-sm btn-secondary"><i class ="bi bi-bug"></i> Fix Bugs</a>'
+                        'data-retry-url="{}" class="btn btn-sm btn-secondary"><i class ="bi bi-tools"></i> Fix</a>'
                         '<span id="canvas-fix-status" class="ms-2"></span>',
                         quizzes, 
                         needs_moderation[0]["moderation_url"],
