@@ -8,6 +8,7 @@ from django.http import (
 )
 from django.shortcuts import redirect
 from django.utils.safestring import mark_safe
+from django.utils.html import format_html, format_html_join
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.conf import settings
@@ -639,10 +640,33 @@ class AccommodationsConfirm(views.AccommodationsListView):
         )
 
         if time_extension_status is False:
-            messages.error(
-                request,
-                "Errors were encountered when extending time limits.",
-            )
+            first_list = next(iter(multiplier_quiz_groups_results.values()), [])
+            needs_moderation = [q for q in first_list if q.get("time_limit_status") == "new_quiz_moderation_bug"]
+            if needs_moderation:
+                quizzes = format_html_join(
+                    "",
+                    '<li>{}</li>',
+                    ((q["title"],) for q in needs_moderation),
+                )
+                messages.error(
+                    request,
+                    format_html(
+                        "A known issue was encountered while extending time limits for the following quizzes:"
+                        '<ul class="mt-2 mb-1">{}</ul>'
+                        "Please <strong>click the button below</strong> to open Canvas and reload the quizzes.<br>"
+                        '<a href="{}" target="_blank" rel="noopener" id="canvas-fix-btn" '
+                        'data-retry-url="{}" class="btn btn-sm btn-secondary"><i class ="bi bi-tools"></i> Fix</a>'
+                        '<span id="canvas-fix-status" class="ms-2"></span>',
+                        quizzes, 
+                        needs_moderation[0]["moderation_url"],
+                        reverse("accommodations:retry_moderation", kwargs={"course_id": course_id})
+                    ),
+                )
+            else:
+                messages.error(
+                    request,
+                    "Errors were encountered when extending time limits.",
+                )
         if availabilities_status is False:
             messages.error(
                 request,
@@ -680,6 +704,41 @@ class AccommodationsConfirm(views.AccommodationsListView):
             )
         )
 
+@require_POST
+def retry_moderation(request, course_id):
+    student_groups = request.session.get("multiplier_student_groups")
+    results = request.session.get("multiplier_quiz_groups_results")
+    if not student_groups or not results:
+        return JsonResponse({"ok": False, "error": "Session expired"}, status=400)
+
+    to_retry = {
+        multiplier: [
+            q for q in quizzes
+            if q.get("time_limit_status") == "new_quiz_moderation_bug"
+        ]
+        for multiplier, quizzes in results.items()
+    }
+
+    # Retry time extensions on the backend and merge
+    canvas = AccommodationsCanvas(request)
+    retried, _ =canvas.add_time_extensions(student_groups, to_retry, course_id)
+    for multiplier, retried_quizzes in retried.items():
+        updated = {q["id"]: q for q in retried_quizzes}
+        results[multiplier] = [updated.get(q["id"], q) for q in results[multiplier]]
+
+    # Check newly returned quizzes
+    all_ok = all(
+        q.get("time_limit_status") in ("success", "N/A")
+        for quizzes in results.values()
+        for q in quizzes
+    )
+
+    request.session["multiplier_quiz_groups_results"] = results
+    request.session.modified = True
+
+    if all_ok:
+        messages.success(request, "Time limit extensions applied successfully.")
+    return JsonResponse({"ok": all_ok})
 
 class AccommodationsSummary(views.AccommodationsListView):
     template_name = "accommodations/accommodations_summary.html"

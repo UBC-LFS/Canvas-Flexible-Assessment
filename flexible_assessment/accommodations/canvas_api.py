@@ -764,8 +764,15 @@ class AccommodationsCanvas(Canvas):
                     else:
                         canvas_quiz = course.get_quiz(quiz["id"])
                         canvas_quiz.set_extensions(extensions)  # use built in function
-                except Exception as e:
-                    logging.exception("Failed to extend time limits")
+                except requests.HTTPError as e:
+                    resp = e.response
+                    if (resp is not None and resp.status_code == 404 and "were not found" in resp.text):
+                        logging.warning("Moderation page needs to be opened for quiz %s", quiz["id"])
+                        quiz["time_limit_status"] = "new_quiz_moderation_bug"
+                        quiz["moderation_url"] = (f"{self.base_url}courses/{course_id}/assignments/{quiz["id"]}/moderation")
+                    status=False
+                except Exception:
+                    logging.exception("Error extending quiz %s", quiz['id'])
                     quiz["time_limit_status"] = "failure"
                     status = False
                 else:
@@ -958,3 +965,25 @@ class AccommodationsCanvas(Canvas):
         end = time.time()
         print("synchronous execution time for add_availabilities: " + str(end - start))
         return quiz_groups, status
+
+    def retry_moderation_quizzes(self, multiplier_student_groups, quiz_groups, course_id):
+        """Re-attempt only quizzes flagged new_quiz_moderation_bug.
+        Returns (quiz_groups, all_ok)."""
+        # convert to dict
+        student_groups = {str(m): students for m, students in multiplier_student_groups}
+
+        course = self.get_course(course_id)
+        all_ok = True
+        for multiplier, quizzes in quiz_groups.items():
+            student_list = student_groups.get(str(multiplier))
+            if not student_list:
+                continue
+            for quiz in quizzes:
+                if quiz.get("time_limit_status") != "new_quiz_moderation_bug":
+                    continue
+                quiz["time_limit_status"] = self._apply_quiz_extensions(
+                    course, course_id, quiz, student_list
+                )
+                if quiz["time_limit_status"] != "success":
+                    all_ok = False
+        return quiz_groups, all_ok
